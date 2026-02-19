@@ -13,6 +13,7 @@ import { toast } from "sonner";
 export default function SettingsPage() {
   const [name, setName] = useState("");
   const [slug, setSlug] = useState("");
+  const [originalSlug, setOriginalSlug] = useState("");
   const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -38,6 +39,7 @@ export default function SettingsPage() {
         setRestaurantId(restaurant.id);
         setName(restaurant.name);
         setSlug(restaurant.slug);
+        setOriginalSlug(restaurant.slug);
       }
       setLoading(false);
     }
@@ -54,6 +56,25 @@ export default function SettingsPage() {
         .eq("id", restaurantId);
 
       if (error) throw error;
+
+      // Bust cache for the old slug (in case slug changed)
+      if (originalSlug) {
+        await fetch("/api/revalidate", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ restaurantSlug: originalSlug }),
+        }).catch(() => {});
+      }
+      // Also bust cache for the new slug
+      if (slug && slug !== originalSlug) {
+        await fetch("/api/revalidate", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ restaurantSlug: slug }),
+        }).catch(() => {});
+      }
+
+      setOriginalSlug(slug);
       toast.success("Settings saved!");
     } catch {
       toast.error("Failed to save settings");

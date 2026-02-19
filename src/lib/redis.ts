@@ -44,6 +44,10 @@ export async function setCachedMenu(key: string, data: string): Promise<void> {
 export async function invalidateMenuCache(restaurantSlug: string): Promise<void> {
   if (!redis) return;
   try {
+    // Delete the exact restaurant cache key (menu:restaurant:{slug})
+    await redis.del(`menu:restaurant:${restaurantSlug}`);
+
+    // Also delete any pattern-based keys (menu:{slug}:*)
     const keys = await redis.keys(`menu:${restaurantSlug}:*`);
     if (keys.length > 0) {
       await redis.del(...keys);

@@ -40,6 +40,7 @@ export default function AppearancePage() {
   const [config, setConfig] = useState<ThemeConfig>(defaultThemeConfig);
   const [restaurantName, setRestaurantName] = useState("");
   const [restaurantId, setRestaurantId] = useState("");
+  const [restaurantSlug, setRestaurantSlug] = useState("");
   const [saving, setSaving] = useState(false);
   const [loading, setLoading] = useState(true);
 
@@ -53,13 +54,14 @@ export default function AppearancePage() {
 
       const { data: restaurant } = await supabase
         .from("restaurants")
-        .select("id, name, theme_config")
+        .select("id, name, slug, theme_config")
         .eq("owner_id", user.id)
         .single();
 
       if (restaurant) {
         setRestaurantId(restaurant.id);
         setRestaurantName(restaurant.name);
+        setRestaurantSlug(restaurant.slug);
         setConfig({ ...defaultThemeConfig, ...(restaurant.theme_config as ThemeConfig) });
       }
       setLoading(false);
@@ -77,6 +79,14 @@ export default function AppearancePage() {
         .eq("id", restaurantId);
 
       if (error) throw error;
+
+      // Bust cache so public page shows updated appearance immediately
+      await fetch("/api/revalidate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ restaurantSlug }),
+      }).catch(() => {});
+
       toast.success("Appearance saved!");
     } catch {
       toast.error("Failed to save appearance");
@@ -106,10 +116,22 @@ export default function AppearancePage() {
       data: { publicUrl },
     } = supabase.storage.from("public").getPublicUrl(path);
 
-    await supabase
+    const { error: updateError } = await supabase
       .from("restaurants")
       .update({ logo_url: publicUrl })
       .eq("id", restaurantId);
+
+    if (updateError) {
+      toast.error("Failed to save logo URL");
+      return;
+    }
+
+    // Bust cache so public page shows updated logo immediately
+    await fetch("/api/revalidate", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ restaurantSlug }),
+    }).catch(() => {});
 
     toast.success("Logo uploaded!");
   }

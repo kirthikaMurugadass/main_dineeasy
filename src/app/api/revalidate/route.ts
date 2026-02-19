@@ -6,44 +6,66 @@ import { createClient } from "@/lib/supabase/server";
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    const { menuId } = body;
+    const { menuId, restaurantSlug } = body;
 
-    if (!menuId) {
-      return NextResponse.json({ error: "Missing menuId" }, { status: 400 });
+    if (!menuId && !restaurantSlug) {
+      return NextResponse.json(
+        { error: "Provide menuId or restaurantSlug" },
+        { status: 400 }
+      );
     }
 
-    const supabase = await createClient();
+    let slug = restaurantSlug as string | undefined;
 
-    // Get the menu and restaurant info
-    const { data: menu } = await supabase
-      .from("menus")
-      .select("slug, restaurant_id")
-      .eq("id", menuId)
-      .single();
+    // If menuId is provided, resolve the restaurant slug from it
+    if (menuId && !slug) {
+      const supabase = await createClient();
 
-    if (!menu) {
-      return NextResponse.json({ error: "Menu not found" }, { status: 404 });
+      const { data: menu } = await supabase
+        .from("menus")
+        .select("restaurant_id")
+        .eq("id", menuId)
+        .single();
+
+      if (!menu) {
+        return NextResponse.json({ error: "Menu not found" }, { status: 404 });
+      }
+
+      const { data: restaurant } = await supabase
+        .from("restaurants")
+        .select("slug")
+        .eq("id", menu.restaurant_id)
+        .single();
+
+      if (!restaurant) {
+        return NextResponse.json(
+          { error: "Restaurant not found" },
+          { status: 404 }
+        );
+      }
+
+      slug = restaurant.slug;
     }
 
-    const { data: restaurant } = await supabase
-      .from("restaurants")
-      .select("slug")
-      .eq("id", menu.restaurant_id)
-      .single();
-
-    if (!restaurant) {
-      return NextResponse.json({ error: "Restaurant not found" }, { status: 404 });
+    if (!slug) {
+      return NextResponse.json(
+        { error: "Could not determine restaurant slug" },
+        { status: 400 }
+      );
     }
 
-    // Invalidate Redis cache
-    await invalidateMenuCache(restaurant.slug);
+    // 1. Invalidate Redis cache
+    await invalidateMenuCache(slug);
 
-    // Revalidate Next.js ISR page
-    revalidatePath(`/${restaurant.slug}/${menu.slug}`);
+    // 2. Revalidate the public restaurant page (/r/{slug})
+    revalidatePath(`/r/${slug}`);
 
-    return NextResponse.json({ revalidated: true });
+    return NextResponse.json({ revalidated: true, slug });
   } catch (error) {
     console.error("Revalidation error:", error);
-    return NextResponse.json({ error: "Revalidation failed" }, { status: 500 });
+    return NextResponse.json(
+      { error: "Revalidation failed" },
+      { status: 500 }
+    );
   }
 }
