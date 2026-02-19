@@ -145,12 +145,12 @@ const de: Dictionary = {
       cta: "Menü erstellen",
     },
     hero: {
-      title: "Digitale Menüs.",
-      titleAccent: "Mühelos erstellt.",
+      title: "Köstliche Gerichte geniessen.",
+      titleAccent: "Jederzeit, überall.",
       subtitle:
-        "Erstellen Sie schöne, mehrsprachige digitale Menüs für Ihr Café. Teilen Sie per QR-Code. In Echtzeit aktualisiert.",
-      cta: "Kostenloses Menü erstellen",
-      ctaSecondary: "Demo ansehen",
+        "Geniessen Sie köstliche Gerichte mit frischen Zutaten und intensiven Aromen. Bestellen Sie einfach und geniessen Sie Restaurantqualität jederzeit und überall.",
+      cta: "Jetzt bestellen",
+      ctaSecondary: "Menü ansehen",
     },
     features: {
       title: "Alles was Ihr Café braucht",
@@ -253,12 +253,12 @@ const fr: Dictionary = {
       cta: "Créer un menu",
     },
     hero: {
-      title: "Menus Digitaux.",
-      titleAccent: "Simplifiés.",
+      title: "Savourez des plats délicieux.",
+      titleAccent: "Partout, à tout moment.",
       subtitle:
-        "Créez de beaux menus digitaux multilingues pour votre café. Partagez avec un QR code. Mis à jour en temps réel.",
-      cta: "Créer un menu gratuit",
-      ctaSecondary: "Voir la démo",
+        "Savourez des plats délicieux préparés avec des ingrédients frais et des saveurs riches. Commandez facilement et dégustez une cuisine de qualité restaurant, où que vous soyez.",
+      cta: "Commander maintenant",
+      ctaSecondary: "Voir le menu",
     },
     features: {
       title: "Tout ce dont votre café a besoin",
@@ -304,12 +304,12 @@ const it: Dictionary = {
       cta: "Crea menu",
     },
     hero: {
-      title: "Menu Digitali.",
-      titleAccent: "Senza sforzo.",
+      title: "Gusta piatti deliziosi.",
+      titleAccent: "Ovunque, in qualsiasi momento.",
       subtitle:
-        "Crea bellissimi menu digitali multilingue per il tuo bar. Condividi con un QR code. Aggiornati in tempo reale.",
-      cta: "Crea menu gratis",
-      ctaSecondary: "Vedi demo",
+        "Gusta piatti deliziosi preparati con ingredienti freschi e sapori intensi. Ordina facilmente e assapora cibo di qualità ristorante ovunque tu sia.",
+      cta: "Ordina ora",
+      ctaSecondary: "Vedi il menu",
     },
     features: {
       title: "Tutto ciò di cui il tuo bar ha bisogno",

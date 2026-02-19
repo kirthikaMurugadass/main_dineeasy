@@ -1,8 +1,18 @@
 "use client";
 
-import { createContext, useContext, useState, useCallback, type ReactNode } from "react";
+import {
+  createContext,
+  useContext,
+  useState,
+  useEffect,
+  useCallback,
+  type ReactNode,
+} from "react";
 import { getDictionary, type Dictionary, SUPPORTED_LANGUAGES } from "./dictionaries";
 import type { Language } from "@/types/database";
+
+const STORAGE_KEY = "dineeasy-lang";
+const VALID_LANGUAGES = new Set<string>(["de", "en", "fr", "it"]);
 
 interface I18nContextType {
   language: Language;
@@ -27,11 +37,16 @@ export function I18nProvider({
 }) {
   const [language, setLang] = useState<Language>(defaultLanguage);
 
+  useEffect(() => {
+    const stored = localStorage.getItem(STORAGE_KEY);
+    if (stored && VALID_LANGUAGES.has(stored) && stored !== defaultLanguage) {
+      setLang(stored as Language);
+    }
+  }, [defaultLanguage]);
+
   const setLanguage = useCallback((lang: Language) => {
     setLang(lang);
-    if (typeof window !== "undefined") {
-      localStorage.setItem("dineeasy-lang", lang);
-    }
+    localStorage.setItem(STORAGE_KEY, lang);
   }, []);
 
   const t = getDictionary(language);

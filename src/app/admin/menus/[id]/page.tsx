@@ -43,6 +43,8 @@ import { createClient } from "@/lib/supabase/client";
 import { SUPPORTED_LANGUAGES } from "@/lib/i18n/dictionaries";
 import { toast } from "sonner";
 import type { Language } from "@/types/database";
+import { ItemImageUpload } from "@/components/admin/item-image-upload";
+import { uploadItemImage, deleteItemImage } from "@/lib/upload";
 import Link from "next/link";
 
 interface ItemTranslation {
@@ -54,10 +56,15 @@ interface ItemTranslation {
 interface EditableItem {
   id: string;
   price_chf: string;
+  image_url: string | null;
   is_active: boolean;
   sort_order: number;
   translations: ItemTranslation[];
   isNew?: boolean;
+  /** Staged file waiting to be uploaded on save */
+  _pendingFile?: File;
+  /** Flag to delete the current image on save */
+  _deleteImage?: boolean;
 }
 
 interface EditableCategory {
@@ -77,6 +84,7 @@ function SortableItem({
   onUpdate,
   onRemove,
   langTab,
+  saving,
 }: {
   item: EditableItem;
   categoryIndex: number;
@@ -84,6 +92,7 @@ function SortableItem({
   onUpdate: (catIdx: number, itemIdx: number, updates: Partial<EditableItem>) => void;
   onRemove: (catIdx: number, itemIdx: number) => void;
   langTab: Language;
+  saving: boolean;
 }) {
   const { attributes, listeners, setNodeRef, transform, transition } = useSortable({
     id: item.id,
@@ -116,6 +125,26 @@ function SortableItem({
       >
         <GripVertical size={16} />
       </button>
+
+      {/* Item image */}
+      <ItemImageUpload
+        imageUrl={item.image_url}
+        uploading={saving && !!item._pendingFile}
+        disabled={saving}
+        onFileSelected={(file) =>
+          onUpdate(categoryIndex, itemIndex, {
+            _pendingFile: file,
+            _deleteImage: false,
+          })
+        }
+        onRemove={() =>
+          onUpdate(categoryIndex, itemIndex, {
+            image_url: null,
+            _pendingFile: undefined,
+            _deleteImage: true,
+          })
+        }
+      />
 
       <div className="flex-1 space-y-2">
         <Input
@@ -225,7 +254,7 @@ export default function MenuEditorPage() {
 
       const { data: items } = await supabase
         .from("menu_items")
-        .select("id, category_id, price_chf, sort_order, is_active")
+        .select("id, category_id, price_chf, sort_order, is_active, image_url")
         .in("category_id", catIds)
         .order("sort_order");
 
@@ -265,6 +294,7 @@ export default function MenuEditorPage() {
             .map((item) => ({
               id: item.id,
               price_chf: item.price_chf.toString(),
+              image_url: item.image_url ?? null,
               is_active: item.is_active,
               sort_order: item.sort_order,
               translations: ensureAllLangs(item.id),
@@ -315,6 +345,7 @@ export default function MenuEditorPage() {
     const newItem: EditableItem = {
       id: `new-item-${Date.now()}`,
       price_chf: "",
+      image_url: null,
       is_active: true,
       sort_order: cat.items.length,
       translations: SUPPORTED_LANGUAGES.map((l) => ({
@@ -377,7 +408,11 @@ export default function MenuEditorPage() {
         .eq("owner_id", user.id)
         .single();
 
-      if (!restaurant) throw new Error("No restaurant found");
+      if (!restaurant) {
+        toast.error("Please set up your restaurant first.");
+        router.push("/admin/onboarding");
+        return;
+      }
 
       let currentMenuId = menuId;
 
@@ -446,6 +481,7 @@ export default function MenuEditorPage() {
         for (let itemIdx = 0; itemIdx < cat.items.length; itemIdx++) {
           const item = cat.items[itemIdx];
           let itemId = item.id;
+          let imageUrl = item.image_url;
 
           if (item.isNew) {
             const { data: newItem, error } = await supabase
@@ -455,21 +491,56 @@ export default function MenuEditorPage() {
                 price_chf: parseFloat(item.price_chf) || 0,
                 sort_order: itemIdx,
                 is_active: item.is_active,
+                image_url: null, // set after upload
               })
               .select("id")
               .single();
 
             if (error || !newItem) throw error;
             itemId = newItem.id;
-          } else {
+          }
+
+          // Handle image upload / delete
+          if (item._deleteImage && !item._pendingFile) {
+            // User wants to remove the image
+            await deleteItemImage(restaurant.id, itemId);
+            imageUrl = null;
+          }
+
+          if (item._pendingFile) {
+            // Upload new image (replaces any existing)
+            try {
+              const result = await uploadItemImage(
+                restaurant.id,
+                itemId,
+                item._pendingFile
+              );
+              imageUrl = result.url;
+            } catch (uploadErr) {
+              console.error("Image upload failed:", uploadErr);
+              toast.error(`Image upload failed for item: ${item.translations[0]?.title || "unknown"}`);
+              // Continue saving — just skip the image
+            }
+          }
+
+          if (!item.isNew) {
             await supabase
               .from("menu_items")
               .update({
                 price_chf: parseFloat(item.price_chf) || 0,
                 sort_order: itemIdx,
                 is_active: item.is_active,
+                image_url: imageUrl,
               })
               .eq("id", itemId);
+          } else {
+            // Update the newly created item with image URL
+            if (imageUrl) {
+              await supabase
+                .from("menu_items")
+                .update({ image_url: imageUrl })
+                .eq("id", itemId);
+            }
           }
 
           // Save item translations
@@ -672,6 +743,7 @@ export default function MenuEditorPage() {
                                           onUpdate={updateItem}
                                           onRemove={removeItem}
                                           langTab={langTab}
+                                          saving={saving}
                                         />
                                       ))}
                                     </div>

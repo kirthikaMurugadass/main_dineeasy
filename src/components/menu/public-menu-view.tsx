@@ -4,27 +4,36 @@ import { useState, useRef, useEffect, useCallback } from "react";
 import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
 import { Globe } from "lucide-react";
-import type { PublicMenu, Language } from "@/types/database";
+import type { PublicMenu, PublicRestaurantData, Language } from "@/types/database";
 import { SUPPORTED_LANGUAGES } from "@/lib/i18n/dictionaries";
 
+type ViewData = PublicMenu | (PublicRestaurantData & { menu?: { id: string; slug: string } });
+
 interface Props {
-  data: PublicMenu;
+  data: ViewData;
 }
 
 export function PublicMenuView({ data }: Props) {
-  const [lang, setLang] = useState<Language>(() => {
-    if (typeof window !== "undefined") {
-      const stored = localStorage.getItem("dineeasy-menu-lang") as Language;
-      if (stored && data.availableLanguages.includes(stored)) return stored;
-      const browserLang = navigator.language.substring(0, 2) as Language;
-      if (data.availableLanguages.includes(browserLang)) return browserLang;
-    }
-    return "de";
-  });
+  // Always start with "de" so server and client render identical HTML.
+  // After hydration, sync from localStorage / browser language.
+  const [lang, setLang] = useState<Language>("de");
   const [activeCategory, setActiveCategory] = useState(data.categories[0]?.id ?? "");
   const [showLangPicker, setShowLangPicker] = useState(false);
   const categoryRefs = useRef<Map<string, HTMLDivElement>>(new Map());
   const navRef = useRef<HTMLDivElement>(null);
+
+  // Restore preferred language AFTER hydration to avoid mismatch
+  useEffect(() => {
+    const stored = localStorage.getItem("dineeasy-menu-lang") as Language | null;
+    if (stored && data.availableLanguages.includes(stored)) {
+      setLang(stored);
+      return;
+    }
+    const browserLang = navigator.language.substring(0, 2) as Language;
+    if (data.availableLanguages.includes(browserLang)) {
+      setLang(browserLang);
+    }
+  }, [data.availableLanguages]);
 
   useEffect(() => {
     localStorage.setItem("dineeasy-menu-lang", lang);
@@ -210,6 +219,7 @@ export function PublicMenuView({ data }: Props) {
                         src={item.image_url}
                         alt={item.title[lang] || ""}
                         fill
+                        unoptimized
                         className="object-cover transition-transform duration-300 group-hover:scale-105"
                         sizes="64px"
                       />

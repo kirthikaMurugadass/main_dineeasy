@@ -1,0 +1,55 @@
+# ============================================
+# DineEasy — Supplementary Docker Services
+# ============================================
+# Supabase services (Postgres, Auth, Storage, Realtime, Studio)
+# are managed by `supabase start`. This file handles Redis and
+# any future services that Supabase CLI does not manage.
+
+services:
+  redis:
+    image: redis:7-alpine
+    container_name: dineeasy-redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    command: >
+      redis-server
+      --appendonly yes
+      --maxmemory 256mb
+      --maxmemory-policy allkeys-lru
+      --save 60 1000
+      --loglevel warning
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 5s
+    networks:
+      - dineeasy
+
+  redis-commander:
+    image: rediscommander/redis-commander:latest
+    container_name: dineeasy-redis-ui
+    restart: unless-stopped
+    ports:
+      - "8085:8081"
+    environment:
+      REDIS_HOSTS: "local:redis:6379"
+    depends_on:
+      redis:
+        condition: service_healthy
+    networks:
+      - dineeasy
+    profiles:
+      - debug
+
+volumes:
+  redis_data:
+    driver: local
+
+networks:
+  dineeasy:
+    driver: bridge

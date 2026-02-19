@@ -28,7 +28,10 @@ export async function POST(request: Request) {
       .single();
 
     if (existing) {
-      return NextResponse.json({ error: "Restaurant already exists" }, { status: 409 });
+      return NextResponse.json(
+        { error: "Restaurant already exists" },
+        { status: 409 }
+      );
     }
 
     // Generate slug from name
@@ -37,7 +40,10 @@ export async function POST(request: Request) {
       .replace(/[^a-z0-9]+/g, "-")
       .replace(/^-|-$/g, "");
 
-    // Create restaurant
+    // Build the permanent QR URL
+    const qrUrl = `/r/${slug}`;
+
+    // Create restaurant with QR URL
     const { data: restaurant, error } = await supabase
       .from("restaurants")
       .insert({
@@ -45,14 +51,17 @@ export async function POST(request: Request) {
         slug,
         owner_id: user.id,
         theme_config: defaultThemeConfig,
+        qr_url: qrUrl,
       })
-      .select("id, slug")
+      .select("id, slug, qr_url")
       .single();
 
     if (error) {
-      // Slug collision
+      // Slug collision — append unique suffix
       if (error.code === "23505") {
         const uniqueSlug = `${slug}-${Date.now().toString(36)}`;
+        const uniqueQrUrl = `/r/${uniqueSlug}`;
+
         const { data: retry, error: retryError } = await supabase
           .from("restaurants")
           .insert({
@@ -60,8 +69,9 @@ export async function POST(request: Request) {
             slug: uniqueSlug,
             owner_id: user.id,
             theme_config: defaultThemeConfig,
+            qr_url: uniqueQrUrl,
           })
-          .select("id, slug")
+          .select("id, slug, qr_url")
           .single();
 
         if (retryError) throw retryError;

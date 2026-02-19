@@ -1,11 +1,28 @@
 "use client";
 
-import { motion } from "framer-motion";
+import { motion, type Variants } from "framer-motion";
 import { ArrowRight, QrCode } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { FadeIn } from "@/components/motion";
 import { useI18n } from "@/lib/i18n/context";
+
+const slideFromLeft: Variants = {
+  hidden: { x: -60, opacity: 0 },
+  visible: (i: number) => ({
+    x: 0,
+    opacity: 1,
+    transition: { duration: 0.7, ease: "easeOut", delay: i * 0.1 },
+  }),
+};
+
+const slideFromRight: Variants = {
+  hidden: { x: 60, opacity: 0 },
+  visible: {
+    x: 0,
+    opacity: 1,
+    transition: { duration: 0.7, ease: "easeOut", delay: 0.2 },
+  },
+};
 
 function FloatingQR() {
   return (
@@ -27,7 +44,7 @@ function FloatingQR() {
                 }`}
                 initial={{ opacity: 0, scale: 0 }}
                 animate={{ opacity: 1, scale: 1 }}
-                transition={{ delay: 0.8 + i * 0.03, duration: 0.3 }}
+                transition={{ delay: 1.0 + i * 0.03, duration: 0.3 }}
               />
             ))}
           </div>
@@ -37,7 +54,6 @@ function FloatingQR() {
           <span className="text-[10px] font-medium text-muted-foreground">dineeasy.app/demo</span>
         </div>
       </div>
-      {/* Glow behind */}
       <div className="absolute -inset-4 -z-10 rounded-3xl bg-gold/10 blur-2xl" />
     </motion.div>
   );
@@ -50,46 +66,59 @@ export function Hero() {
     <section className="relative flex min-h-screen items-center overflow-hidden">
       {/* Background */}
       <div className="absolute inset-0 -z-20">
-        <div
-          className="absolute inset-0 animate-kenburns bg-cover bg-center"
-          style={{
-            backgroundImage:
-              'url("https://images.unsplash.com/photo-1554118811-1e0d58224f24?w=1920&q=80")',
-          }}
-        />
+        <div className="absolute inset-0 bg-[url('/images/image2.jpg')] bg-cover bg-center bg-no-repeat" />
         <div className="absolute inset-0 bg-gradient-to-r from-background/95 via-background/80 to-background/60" />
         <div className="absolute inset-0 bg-gradient-to-t from-background via-transparent to-background/40" />
       </div>
 
-      {/* Noise overlay */}
       <div className="noise absolute inset-0 -z-10" />
 
       {/* Content */}
       <div className="mx-auto grid max-w-7xl grid-cols-1 items-center gap-16 px-6 pt-24 lg:grid-cols-2 lg:pt-0">
-        {/* Left: Text */}
+        {/* Left: Text — slides in from the left, children staggered by 0.1s */}
         <div className="max-w-2xl">
-          <FadeIn delay={0.2}>
+          <motion.div
+            variants={slideFromLeft}
+            initial="hidden"
+            animate="visible"
+            custom={0}
+          >
             <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-gold/20 bg-gold/5 px-4 py-1.5">
               <div className="h-1.5 w-1.5 rounded-full bg-gold animate-pulse" />
               <span className="text-xs font-medium text-gold">Made for Swiss Cafés</span>
             </div>
-          </FadeIn>
+          </motion.div>
 
-          <FadeIn delay={0.3}>
+          <motion.div
+            variants={slideFromLeft}
+            initial="hidden"
+            animate="visible"
+            custom={1}
+          >
             <h1 className="font-serif text-5xl font-bold leading-[1.1] tracking-tight sm:text-6xl lg:text-7xl">
               {t.landing.hero.title}
               <br />
               <span className="text-gradient-gold">{t.landing.hero.titleAccent}</span>
             </h1>
-          </FadeIn>
+          </motion.div>
 
-          <FadeIn delay={0.5}>
+          <motion.div
+            variants={slideFromLeft}
+            initial="hidden"
+            animate="visible"
+            custom={2}
+          >
             <p className="mt-6 max-w-lg text-lg leading-relaxed text-muted-foreground">
               {t.landing.hero.subtitle}
             </p>
-          </FadeIn>
+          </motion.div>
 
-          <FadeIn delay={0.7}>
+          <motion.div
+            variants={slideFromLeft}
+            initial="hidden"
+            animate="visible"
+            custom={3}
+          >
             <div className="mt-10 flex flex-wrap items-center gap-4">
               <Link href="/login">
                 <Button
@@ -113,9 +142,14 @@ export function Hero() {
                 </Button>
               </a>
             </div>
-          </FadeIn>
+          </motion.div>
 
-          <FadeIn delay={0.9}>
+          <motion.div
+            variants={slideFromLeft}
+            initial="hidden"
+            animate="visible"
+            custom={4}
+          >
             <div className="mt-12 flex items-center gap-6 text-sm text-muted-foreground">
               <div className="flex items-center gap-2">
                 <div className="h-1.5 w-1.5 rounded-full bg-green-500" />
@@ -130,11 +164,16 @@ export function Hero() {
                 4 languages
               </div>
             </div>
-          </FadeIn>
+          </motion.div>
         </div>
 
-        {/* Right: Floating QR + Device Preview */}
-        <FadeIn delay={0.6} direction="left" className="hidden lg:flex justify-center">
+        {/* Right: Mockup — slides in from the right */}
+        <motion.div
+          variants={slideFromRight}
+          initial="hidden"
+          animate="visible"
+          className="hidden lg:flex justify-center"
+        >
           <div className="relative">
             {/* Phone frame */}
             <motion.div
@@ -145,7 +184,6 @@ export function Hero() {
               style={{ perspective: 1000 }}
             >
               <div className="overflow-hidden rounded-[2rem]">
-                {/* Status bar */}
                 <div className="flex items-center justify-between bg-card px-5 py-2">
                   <span className="text-[10px] font-medium">12:30</span>
                   <div className="mx-auto h-5 w-20 rounded-full bg-foreground/10" />
@@ -154,7 +192,6 @@ export function Hero() {
                     <div className="h-2 w-2 rounded-full bg-foreground/20" />
                   </div>
                 </div>
-                {/* Menu preview */}
                 <div className="space-y-3 p-4">
                   <div className="h-24 rounded-xl bg-gradient-to-br from-warm to-warm/50 dark:from-white/5 dark:to-white/10" />
                   <div className="space-y-1">
@@ -194,11 +231,10 @@ export function Hero() {
               <FloatingQR />
             </motion.div>
 
-            {/* Background decorative elements */}
             <div className="absolute -left-20 -bottom-20 h-60 w-60 rounded-full bg-gold/5 blur-3xl" />
             <div className="absolute -right-20 -top-20 h-40 w-40 rounded-full bg-olive/10 blur-3xl" />
           </div>
-        </FadeIn>
+        </motion.div>
       </div>
     </section>
   );

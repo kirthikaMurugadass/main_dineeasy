@@ -13,6 +13,9 @@ CREATE TABLE restaurants (
   logo_url TEXT,
   owner_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
   theme_config JSONB NOT NULL DEFAULT '{}'::jsonb,
+  qr_url TEXT,
+  qr_svg TEXT,
+  qr_png TEXT,
   created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
   updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );

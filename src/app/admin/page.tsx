@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import { Plus, UtensilsCrossed, Eye, QrCode } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -19,6 +20,7 @@ interface DashboardStats {
 
 export default function AdminDashboard() {
   const { t } = useI18n();
+  const router = useRouter();
   const [stats, setStats] = useState<DashboardStats>({
     totalMenus: 0,
     activeMenus: 0,
@@ -42,7 +44,7 @@ export default function AdminDashboard() {
         .single();
 
       if (!restaurant) {
-        setLoading(false);
+        router.push("/admin/onboarding");
         return;
       }
 

@@ -131,6 +131,21 @@ export default function LoginPage() {
                   <p className="text-center text-xs text-muted-foreground">
                     No password needed. We&apos;ll send you a secure login link.
                   </p>
+
+                  {process.env.NODE_ENV === "development" && (
+                    <p className="text-center text-xs text-muted-foreground/60 border border-dashed border-border/50 rounded-lg p-2">
+                      🛠️ Dev mode: Check{" "}
+                      <a
+                        href="http://127.0.0.1:54324"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="underline hover:text-foreground"
+                      >
+                        Mailpit
+                      </a>{" "}
+                      for the magic link email
+                    </p>
+                  )}
                 </motion.form>
               ) : (
                 <motion.div

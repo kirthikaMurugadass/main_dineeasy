@@ -7,6 +7,9 @@ export interface Restaurant {
   logo_url: string | null;
   owner_id: string;
   theme_config: ThemeConfig;
+  qr_url: string | null;
+  qr_svg: string | null;
+  qr_png: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -103,19 +106,35 @@ export interface PublicMenu {
     id: string;
     slug: string;
   };
-  categories: Array<{
-    id: string;
-    sort_order: number;
-    title: Record<Language, string>;
-    description: Record<Language, string | null>;
-    items: Array<{
-      id: string;
-      price_chf: number;
-      image_url: string | null;
-      sort_order: number;
-      title: Record<Language, string>;
-      description: Record<Language, string | null>;
-    }>;
-  }>;
+  categories: PublicCategory[];
+  availableLanguages: Language[];
+}
+
+export interface PublicCategory {
+  id: string;
+  sort_order: number;
+  title: Record<Language, string>;
+  description: Record<Language, string | null>;
+  items: PublicMenuItem[];
+}
+
+export interface PublicMenuItem {
+  id: string;
+  price_chf: number;
+  image_url: string | null;
+  sort_order: number;
+  title: Record<Language, string>;
+  description: Record<Language, string | null>;
+}
+
+/* ─── Public restaurant view (all menus combined) ─── */
+export interface PublicRestaurantData {
+  restaurant: {
+    name: string;
+    slug: string;
+    logo_url: string | null;
+    theme_config: ThemeConfig;
+  };
+  categories: PublicCategory[];
   availableLanguages: Language[];
 }

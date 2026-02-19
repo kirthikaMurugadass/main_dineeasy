@@ -18,11 +18,6 @@ export function Navbar() {
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
-  const navLinks = [
-    { href: "#features", label: t.landing.nav.features },
-    { href: "#demo", label: t.landing.nav.demo },
-  ];
-
   return (
     <>
       <motion.header
@@ -45,19 +40,6 @@ export function Navbar() {
               Dine<span className="text-gold">Easy</span>
             </span>
           </Link>
-
-          {/* Desktop Nav */}
-          <nav className="hidden items-center gap-8 md:flex">
-            {navLinks.map((link) => (
-              <a
-                key={link.href}
-                href={link.href}
-                className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
-              >
-                {link.label}
-              </a>
-            ))}
-          </nav>
 
           {/* Desktop CTA */}
           <div className="hidden items-center gap-3 md:flex">
@@ -96,16 +78,6 @@ export function Navbar() {
             className="fixed inset-0 top-16 z-40 glass-strong p-6 md:hidden"
           >
             <nav className="flex flex-col gap-6 pt-4">
-              {navLinks.map((link) => (
-                <a
-                  key={link.href}
-                  href={link.href}
-                  onClick={() => setMobileOpen(false)}
-                  className="text-lg font-medium"
-                >
-                  {link.label}
-                </a>
-              ))}
               <div className="flex flex-col gap-3 pt-4 border-t">
                 <Link href="/login" onClick={() => setMobileOpen(false)}>
                   <Button variant="outline" className="w-full">

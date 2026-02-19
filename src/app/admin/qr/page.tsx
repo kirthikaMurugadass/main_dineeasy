@@ -1,34 +1,28 @@
 "use client";
 
-import { useEffect, useState, useRef, useCallback } from "react";
-import { Download, Printer, Copy, Check, RefreshCw } from "lucide-react";
+import { useEffect, useState, useCallback } from "react";
+import { useRouter } from "next/navigation";
+import { Download, Printer, Copy, Check, RefreshCw, Store } from "lucide-react";
 import QRCode from "qrcode";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { FadeIn, HoverScale } from "@/components/motion";
 import { useI18n } from "@/lib/i18n/context";
 import { createClient } from "@/lib/supabase/client";
 import { toast } from "sonner";
 
-interface MenuOption {
-  id: string;
-  slug: string;
-  title: string;
-}
-
 export default function QRPage() {
   const { t } = useI18n();
-  const [menus, setMenus] = useState<MenuOption[]>([]);
-  const [selectedMenu, setSelectedMenu] = useState("");
+  const router = useRouter();
+  const [restaurantName, setRestaurantName] = useState("");
   const [restaurantSlug, setRestaurantSlug] = useState("");
   const [qrDataUrl, setQrDataUrl] = useState("");
   const [qrColor, setQrColor] = useState("#3E2723");
   const [bgColor, setBgColor] = useState("#FFFFFF");
   const [copied, setCopied] = useState(false);
-  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     async function load() {
@@ -40,52 +34,30 @@ export default function QRPage() {
 
       const { data: restaurant } = await supabase
         .from("restaurants")
-        .select("id, slug")
+        .select("id, name, slug")
         .eq("owner_id", user.id)
         .single();
 
-      if (!restaurant) return;
-      setRestaurantSlug(restaurant.slug);
-
-      const { data: menuData } = await supabase
-        .from("menus")
-        .select("id, slug")
-        .eq("restaurant_id", restaurant.id);
-
-      if (!menuData) return;
-
-      const menuIds = menuData.map((m) => m.id);
-      const { data: translations } = await supabase
-        .from("translations")
-        .select("entity_id, title")
-        .eq("entity_type", "menu")
-        .eq("language", "en")
-        .in("entity_id", menuIds);
-
-      const titleMap = new Map(
-        translations?.map((tr) => [tr.entity_id, tr.title]) ?? []
-      );
-
-      setMenus(
-        menuData.map((m) => ({
-          id: m.id,
-          slug: m.slug,
-          title: titleMap.get(m.id) ?? m.slug,
-        }))
-      );
-
-      if (menuData.length > 0) {
-        setSelectedMenu(menuData[0].id);
+      if (!restaurant) {
+        router.push("/admin/onboarding");
+        return;
       }
+
+      setRestaurantName(restaurant.name);
+      setRestaurantSlug(restaurant.slug);
+      setLoading(false);
     }
     load();
-  }, []);
+  }, [router]);
+
+  const getQrUrl = useCallback(() => {
+    if (!restaurantSlug) return "";
+    return `${typeof window !== "undefined" ? window.location.origin : ""}/r/${restaurantSlug}`;
+  }, [restaurantSlug]);
 
   const generateQR = useCallback(async () => {
-    const menu = menus.find((m) => m.id === selectedMenu);
-    if (!menu || !restaurantSlug) return;
-
-    const url = `${window.location.origin}/${restaurantSlug}/${menu.slug}`;
+    const url = getQrUrl();
+    if (!url) return;
 
     try {
       const dataUrl = await QRCode.toDataURL(url, {
@@ -101,20 +73,18 @@ export default function QRPage() {
     } catch (err) {
       console.error(err);
     }
-  }, [selectedMenu, restaurantSlug, menus, qrColor, bgColor]);
+  }, [getQrUrl, qrColor, bgColor]);
 
   useEffect(() => {
-    generateQR();
-  }, [generateQR]);
-
-  function getMenuUrl() {
-    const menu = menus.find((m) => m.id === selectedMenu);
-    if (!menu || !restaurantSlug) return "";
-    return `${window.location.origin}/${restaurantSlug}/${menu.slug}`;
-  }
+    if (!loading && restaurantSlug) {
+      generateQR();
+    }
+  }, [generateQR, loading, restaurantSlug]);
 
   async function copyUrl() {
-    await navigator.clipboard.writeText(getMenuUrl());
+    const url = getQrUrl();
+    if (!url) return;
+    await navigator.clipboard.writeText(url);
     setCopied(true);
     toast.success("URL copied!");
     setTimeout(() => setCopied(false), 2000);
@@ -123,17 +93,16 @@ export default function QRPage() {
   function downloadPNG() {
     if (!qrDataUrl) return;
     const link = document.createElement("a");
-    link.download = `qr-${restaurantSlug}-${menus.find((m) => m.id === selectedMenu)?.slug}.png`;
+    link.download = `qr-${restaurantSlug}.png`;
     link.href = qrDataUrl;
     link.click();
-    toast.success("QR code downloaded!");
+    toast.success("QR code downloaded as PNG!");
   }
 
   async function downloadSVG() {
-    const menu = menus.find((m) => m.id === selectedMenu);
-    if (!menu || !restaurantSlug) return;
+    const url = getQrUrl();
+    if (!url) return;
 
-    const url = `${window.location.origin}/${restaurantSlug}/${menu.slug}`;
     const svgString = await QRCode.toString(url, {
       type: "svg",
       width: 1024,
@@ -147,10 +116,36 @@ export default function QRPage() {
 
     const blob = new Blob([svgString], { type: "image/svg+xml" });
     const link = document.createElement("a");
-    link.download = `qr-${restaurantSlug}-${menu.slug}.svg`;
+    link.download = `qr-${restaurantSlug}.svg`;
     link.href = URL.createObjectURL(blob);
     link.click();
-    toast.success("SVG downloaded!");
+    toast.success("QR code downloaded as SVG!");
+  }
+
+  function handlePrint() {
+    const w = window.open();
+    if (w && qrDataUrl) {
+      w.document.write(`
+        <html>
+          <head><title>QR Code — ${restaurantName}</title></head>
+          <body style="display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;margin:0;font-family:system-ui,sans-serif;">
+            <img src="${qrDataUrl}" style="width:100%;max-width:500px;" />
+            <p style="margin-top:24px;font-size:18px;font-weight:600;color:#333;">${restaurantName}</p>
+            <p style="margin-top:4px;font-size:13px;color:#888;">Scan to view our digital menu</p>
+          </body>
+        </html>
+      `);
+      w.document.close();
+      w.print();
+    }
+  }
+
+  if (loading) {
+    return (
+      <div className="flex h-[60vh] items-center justify-center">
+        <div className="h-8 w-8 animate-spin rounded-full border-2 border-gold border-t-transparent" />
+      </div>
+    );
   }
 
   return (
@@ -159,7 +154,8 @@ export default function QRPage() {
         <div>
           <h1 className="font-serif text-3xl font-bold">{t.admin.qr.title}</h1>
           <p className="mt-1 text-muted-foreground">
-            Generate print-ready QR codes for your digital menus
+            Your restaurant&apos;s permanent QR code — customers scan to view
+            your full digital menu
           </p>
         </div>
       </FadeIn>
@@ -172,32 +168,35 @@ export default function QRPage() {
               <CardTitle className="text-lg">Settings</CardTitle>
             </CardHeader>
             <CardContent className="space-y-6">
-              {/* Menu selector */}
-              <div className="space-y-2">
-                <Label>Select Menu</Label>
-                <Select value={selectedMenu} onValueChange={setSelectedMenu}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Choose a menu" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {menus.map((menu) => (
-                      <SelectItem key={menu.id} value={menu.id}>
-                        {menu.title}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+              {/* Restaurant info */}
+              <div className="flex items-center gap-3 rounded-lg border border-border/50 bg-muted/30 p-4">
+                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-espresso text-warm font-serif font-bold text-lg">
+                  {restaurantName.charAt(0)}
+                </div>
+                <div>
+                  <p className="font-semibold">{restaurantName}</p>
+                  <p className="text-xs text-muted-foreground font-mono">
+                    /r/{restaurantSlug}
+                  </p>
+                </div>
               </div>
 
-              {/* URL display */}
+              {/* QR URL display */}
               <div className="space-y-2">
-                <Label>Menu URL</Label>
+                <Label>QR Code URL</Label>
                 <div className="flex gap-2">
-                  <Input value={getMenuUrl()} readOnly className="font-mono text-xs" />
+                  <Input
+                    value={getQrUrl()}
+                    readOnly
+                    className="font-mono text-xs"
+                  />
                   <Button variant="outline" size="icon" onClick={copyUrl}>
                     {copied ? <Check size={16} /> : <Copy size={16} />}
                   </Button>
                 </div>
+                <p className="text-xs text-muted-foreground">
+                  This URL loads all active menus for your restaurant
+                </p>
               </div>
 
               {/* Color customization */}
@@ -259,36 +258,42 @@ export default function QRPage() {
                       alt="QR Code"
                       className="h-64 w-64"
                     />
-                    <p className="mt-3 text-center text-xs font-medium text-gray-500">
-                      {menus.find((m) => m.id === selectedMenu)?.title}
+                    <p className="mt-3 text-center text-sm font-semibold text-gray-700">
+                      {restaurantName}
+                    </p>
+                    <p className="text-center text-xs text-gray-400">
+                      Scan to view menu
                     </p>
                   </div>
                 </HoverScale>
               ) : (
-                <div className="flex h-64 w-64 items-center justify-center rounded-2xl bg-muted">
-                  <p className="text-sm text-muted-foreground">Select a menu</p>
+                <div className="flex h-64 w-64 flex-col items-center justify-center rounded-2xl bg-muted gap-2">
+                  <Store size={24} className="text-muted-foreground" />
+                  <p className="text-sm text-muted-foreground">
+                    Generating QR code...
+                  </p>
                 </div>
               )}
 
               <div className="flex gap-3">
-                <Button onClick={downloadPNG} className="gap-2 bg-espresso text-warm hover:bg-espresso/90">
+                <Button
+                  onClick={downloadPNG}
+                  className="gap-2 bg-espresso text-warm hover:bg-espresso/90"
+                >
                   <Download size={14} />
                   PNG
                 </Button>
-                <Button onClick={downloadSVG} variant="outline" className="gap-2">
+                <Button
+                  onClick={downloadSVG}
+                  variant="outline"
+                  className="gap-2"
+                >
                   <Download size={14} />
                   SVG
                 </Button>
                 <Button
                   variant="outline"
-                  onClick={() => {
-                    const w = window.open();
-                    if (w && qrDataUrl) {
-                      w.document.write(`<img src="${qrDataUrl}" style="width:100%;max-width:600px;margin:auto;display:block;" />`);
-                      w.document.close();
-                      w.print();
-                    }
-                  }}
+                  onClick={handlePrint}
                   className="gap-2"
                 >
                   <Printer size={14} />
