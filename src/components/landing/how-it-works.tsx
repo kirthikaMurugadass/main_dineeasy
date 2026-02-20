@@ -25,7 +25,7 @@ export function HowItWorks() {
             </p>
           </FadeIn>
           <FadeIn delay={0.1}>
-            <h2 className="font-serif text-4xl font-bold tracking-tight sm:text-5xl">
+            <h2 className="font-sans text-4xl font-semibold tracking-tight sm:text-5xl">
               {t.landing.howItWorks.title}
             </h2>
           </FadeIn>
@@ -44,7 +44,7 @@ export function HowItWorks() {
               <StaggerItem key={i}>
                 <div className="relative text-center">
                   {/* Step number background */}
-                  <div className="absolute -top-4 left-1/2 -translate-x-1/2 font-serif text-[120px] font-bold leading-none text-foreground/[0.03] select-none">
+                  <div className="absolute -top-4 left-1/2 -translate-x-1/2 font-sans text-[120px] font-semibold leading-none text-foreground/[0.03] select-none">
                     {i + 1}
                   </div>
 

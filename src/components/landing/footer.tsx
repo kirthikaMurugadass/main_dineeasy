@@ -1,6 +1,6 @@
 "use client";
 
-import Link from "next/link";
+import { AppLogo } from "@/components/ui/app-logo";
 import { useI18n } from "@/lib/i18n/context";
 import { SUPPORTED_LANGUAGES } from "@/lib/i18n/dictionaries";
 import type { Language } from "@/types/database";
@@ -14,14 +14,7 @@ export function Footer() {
         <div className="grid grid-cols-2 gap-12 md:grid-cols-4">
           {/* Brand */}
           <div className="col-span-2 md:col-span-1">
-            <Link href="/" className="flex items-center gap-2">
-              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-espresso text-warm font-serif font-bold text-sm">
-                D
-              </div>
-              <span className="font-serif text-lg font-bold">
-                Dine<span className="text-gold">Easy</span>
-              </span>
-            </Link>
+            <AppLogo href="/" size="sm" />
             <p className="mt-3 text-sm text-muted-foreground">{t.landing.footer.tagline}</p>
 
             {/* Language selector */}

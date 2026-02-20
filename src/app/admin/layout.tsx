@@ -1,11 +1,16 @@
 "use client";
 
-import { ThemeProvider, useTheme } from "@/components/providers/theme-provider";
+import dynamic from "next/dynamic";
+import { ThemeProvider } from "@/components/providers/theme-provider";
 import { I18nProvider } from "@/lib/i18n/context";
 import { PageTransition } from "@/components/motion";
 import { AdminSidebar } from "@/components/admin/sidebar";
-import { AdminTopbar } from "@/components/admin/topbar";
 import { SidebarProvider, SidebarInset } from "@/components/ui/sidebar";
+
+// Dynamically import AdminTopbar to avoid hydration errors from Radix UI DropdownMenu
+const AdminTopbar = dynamic(() => import("@/components/admin/topbar").then((mod) => ({ default: mod.AdminTopbar })), {
+  ssr: false,
+});
 
 function AdminLayoutInner({ children }: { children: React.ReactNode }) {
   return (

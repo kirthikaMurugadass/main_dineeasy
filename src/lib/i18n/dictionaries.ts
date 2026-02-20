@@ -7,7 +7,7 @@ interface StepEntry { title: string; description: string }
 interface Dictionary {
   landing: {
     nav: { features: string; demo: string; pricing: string; login: string; cta: string };
-    hero: { title: string; titleAccent: string; subtitle: string; cta: string; ctaSecondary: string };
+    hero: { badge: string; title: string; titleAccent: string; subtitle: string; cta: string; ctaSecondary: string };
     features: {
       title: string; subtitle: string;
       qr: FeatureEntry; multilang: FeatureEntry; themes: FeatureEntry;
@@ -20,7 +20,7 @@ interface Dictionary {
   };
   menu: { language: string; currency: string; poweredBy: string };
   admin: {
-    dashboard: { title: string; welcome: string; totalMenus: string; activeMenus: string; quickCreate: string };
+    dashboard: { title: string; welcome: string; totalCategories: string; activeCategories: string; quickCreate: string };
     menus: { title: string; create: string; edit: string; categories: string; items: string; addCategory: string; addItem: string; active: string; inactive: string };
     appearance: { title: string; theme: string; colors: string; typography: string; logo: string };
     qr: { title: string; generate: string; download: string; print: string };
@@ -37,15 +37,16 @@ const en: Dictionary = {
       cta: "Create Free Menu",
     },
     hero: {
-      title: "Digital Menus.",
-      titleAccent: "Made Effortless.",
+      badge: "Made for Cafés & Restaurants",
+      title: "Where Dining Meets",
+      titleAccent: "Digital Elegance.",
       subtitle:
-        "Create beautiful, multilingual digital menus for your café. Share with a QR code. Updated in real-time.",
+        "Transform your café or restaurant with seamless QR menus. Because great food deserves a great presentation.",
       cta: "Create Free Menu",
       ctaSecondary: "See Demo",
     },
     features: {
-      title: "Everything your café needs",
+      title: "Everything your café & restaurant needs",
       subtitle: "Powerful features, beautifully simple",
       qr: {
         title: "QR Code Generator",
@@ -85,11 +86,11 @@ const en: Dictionary = {
     },
     cta: {
       title: "Ready to go digital?",
-      subtitle: "Join Swiss cafés already using DineEasy to delight their guests.",
-      button: "Start Free — No Card Required",
+      subtitle: "Join Swiss cafés and restaurants already using DineEasy to delight their guests.",
+      button: "Get Started",
     },
     footer: {
-      tagline: "Digital menus for Swiss cafés",
+      tagline: "Digital menus for cafés & restaurants",
       product: "Product",
       company: "Company",
       legal: "Legal",
@@ -104,8 +105,8 @@ const en: Dictionary = {
     dashboard: {
       title: "Dashboard",
       welcome: "Welcome back",
-      totalMenus: "Total Menus",
-      activeMenus: "Active Menus",
+      totalCategories: "Total Categories",
+      activeCategories: "Active Categories",
       quickCreate: "Create New Menu",
     },
     menus: {
@@ -145,6 +146,7 @@ const de: Dictionary = {
       cta: "Menü erstellen",
     },
     hero: {
+      badge: "Für Cafés & Restaurants",
       title: "Köstliche Gerichte geniessen.",
       titleAccent: "Jederzeit, überall.",
       subtitle:
@@ -153,7 +155,7 @@ const de: Dictionary = {
       ctaSecondary: "Menü ansehen",
     },
     features: {
-      title: "Alles was Ihr Café braucht",
+      title: "Alles was Ihr Café & Restaurant braucht",
       subtitle: "Leistungsstarke Funktionen, wunderschön einfach",
       qr: {
         title: "QR-Code Generator",
@@ -193,11 +195,11 @@ const de: Dictionary = {
     },
     cta: {
       title: "Bereit für digital?",
-      subtitle: "Schliessen Sie sich Schweizer Cafés an, die DineEasy bereits nutzen.",
+      subtitle: "Schliessen Sie sich Schweizer Cafés und Restaurants an, die DineEasy bereits nutzen.",
       button: "Kostenlos starten — Keine Karte nötig",
     },
     footer: {
-      tagline: "Digitale Menüs für Schweizer Cafés",
+      tagline: "Digitale Menüs für Cafés & Restaurants",
       product: "Produkt",
       company: "Unternehmen",
       legal: "Rechtliches",
@@ -212,8 +214,8 @@ const de: Dictionary = {
     dashboard: {
       title: "Dashboard",
       welcome: "Willkommen zurück",
-      totalMenus: "Alle Menüs",
-      activeMenus: "Aktive Menüs",
+      totalCategories: "Alle Kategorien",
+      activeCategories: "Aktive Kategorien",
       quickCreate: "Neues Menü erstellen",
     },
     menus: {
@@ -253,6 +255,7 @@ const fr: Dictionary = {
       cta: "Créer un menu",
     },
     hero: {
+      badge: "Pour cafés et restaurants",
       title: "Savourez des plats délicieux.",
       titleAccent: "Partout, à tout moment.",
       subtitle:
@@ -261,7 +264,7 @@ const fr: Dictionary = {
       ctaSecondary: "Voir le menu",
     },
     features: {
-      title: "Tout ce dont votre café a besoin",
+      title: "Tout ce dont votre café et restaurant ont besoin",
       subtitle: "Des fonctionnalités puissantes, magnifiquement simples",
       qr: { title: "Générateur QR", description: "Codes QR prêts à imprimer liés à votre menu digital" },
       multilang: { title: "Multilingue", description: "Allemand, anglais, français & italien — détection auto" },
@@ -280,14 +283,14 @@ const fr: Dictionary = {
     },
     cta: {
       title: "Prêt à passer au digital?",
-      subtitle: "Rejoignez les cafés suisses qui utilisent déjà DineEasy.",
+      subtitle: "Rejoignez les cafés et restaurants suisses qui utilisent déjà DineEasy.",
       button: "Commencer gratuitement",
     },
-    footer: { tagline: "Menus digitaux pour cafés suisses", product: "Produit", company: "Entreprise", legal: "Juridique" },
+    footer: { tagline: "Menus digitaux pour cafés et restaurants", product: "Produit", company: "Entreprise", legal: "Juridique" },
   },
   menu: { language: "Langue", currency: "CHF", poweredBy: "Powered by DineEasy" },
   admin: {
-    dashboard: { title: "Tableau de bord", welcome: "Bienvenue", totalMenus: "Total menus", activeMenus: "Menus actifs", quickCreate: "Créer un menu" },
+    dashboard: { title: "Tableau de bord", welcome: "Bienvenue", totalCategories: "Total catégories", activeCategories: "Catégories actives", quickCreate: "Créer un menu" },
     menus: { title: "Menus", create: "Nouveau menu", edit: "Modifier", categories: "Catégories", items: "Articles", addCategory: "Ajouter catégorie", addItem: "Ajouter article", active: "Actif", inactive: "Inactif" },
     appearance: { title: "Apparence", theme: "Thème", colors: "Couleurs", typography: "Typographie", logo: "Logo" },
     qr: { title: "Codes QR", generate: "Générer", download: "Télécharger", print: "Prêt impression" },
@@ -304,6 +307,7 @@ const it: Dictionary = {
       cta: "Crea menu",
     },
     hero: {
+      badge: "Per bar e ristoranti",
       title: "Gusta piatti deliziosi.",
       titleAccent: "Ovunque, in qualsiasi momento.",
       subtitle:
@@ -312,7 +316,7 @@ const it: Dictionary = {
       ctaSecondary: "Vedi il menu",
     },
     features: {
-      title: "Tutto ciò di cui il tuo bar ha bisogno",
+      title: "Tutto ciò di cui il tuo bar e ristorante hanno bisogno",
       subtitle: "Funzionalità potenti, splendidamente semplici",
       qr: { title: "Generatore QR", description: "Codici QR pronti per la stampa collegati al tuo menu digitale" },
       multilang: { title: "Multilingue", description: "Tedesco, inglese, francese e italiano — rilevamento auto" },
@@ -331,14 +335,14 @@ const it: Dictionary = {
     },
     cta: {
       title: "Pronto per il digitale?",
-      subtitle: "Unisciti ai bar svizzeri che usano già DineEasy.",
+      subtitle: "Unisciti a bar e ristoranti svizzeri che usano già DineEasy.",
       button: "Inizia gratis",
     },
-    footer: { tagline: "Menu digitali per bar svizzeri", product: "Prodotto", company: "Azienda", legal: "Legale" },
+    footer: { tagline: "Menu digitali per bar e ristoranti", product: "Prodotto", company: "Azienda", legal: "Legale" },
   },
   menu: { language: "Lingua", currency: "CHF", poweredBy: "Powered by DineEasy" },
   admin: {
-    dashboard: { title: "Dashboard", welcome: "Bentornato", totalMenus: "Menu totali", activeMenus: "Menu attivi", quickCreate: "Crea menu" },
+    dashboard: { title: "Dashboard", welcome: "Bentornato", totalCategories: "Categorie totali", activeCategories: "Categorie attive", quickCreate: "Crea menu" },
     menus: { title: "Menu", create: "Nuovo menu", edit: "Modifica", categories: "Categorie", items: "Articoli", addCategory: "Aggiungi categoria", addItem: "Aggiungi articolo", active: "Attivo", inactive: "Inattivo" },
     appearance: { title: "Aspetto", theme: "Tema", colors: "Colori", typography: "Tipografia", logo: "Logo" },
     qr: { title: "Codici QR", generate: "Genera", download: "Scarica", print: "Pronto stampa" },

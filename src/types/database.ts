@@ -14,6 +14,48 @@ export interface Restaurant {
   updated_at: string;
 }
 
+export interface HeroBannerConfig {
+  backgroundType: "image" | "gradient" | "solid";
+  backgroundImage: string | null;
+  gradientStart: string;
+  gradientEnd: string;
+  gradientDirection: "to-r" | "to-b" | "to-br" | "to-bl";
+  solidColor: string;
+  overlayColor: string;
+  overlayOpacity: number; // 0-80
+  title: string;
+  subtitle: string;
+  textAlign: "left" | "center" | "right";
+  fontSize: number; // in rem
+  fontWeight: "300" | "400" | "500" | "600" | "700";
+  showCta: boolean;
+  ctaText: string;
+  ctaLink: string;
+  ctaStyle: "solid" | "outline";
+}
+
+export interface TypographyConfig {
+  headingFont: string;
+  bodyFont: string;
+  accentFont?: string;
+  headingWeight: "300" | "400" | "500" | "600" | "700" | "800";
+  bodyWeight: "300" | "400" | "500" | "600" | "700" | "800";
+  heroTitleSize: number; // rem
+  sectionHeadingSize: number; // rem
+  categoryTitleSize: number; // rem
+  itemNameSize: number; // rem
+  itemDescriptionSize: number; // rem
+  priceSize: number; // rem
+  lineHeight: number; // multiplier (e.g., 1.5)
+  letterSpacing: number; // em (e.g., 0.01)
+  paragraphSpacing: boolean;
+  textPrimary: string | null; // null = auto
+  textSecondary: string | null; // null = auto
+  textMuted: string | null; // null = auto
+  readableMode: boolean;
+  preset?: "modern" | "elegant" | "minimal" | "classic" | "premium" | null;
+}
+
 export interface ThemeConfig {
   mode: "light" | "dark" | "auto";
   primaryColor: string;
@@ -22,7 +64,51 @@ export interface ThemeConfig {
   fontBody: string;
   headerImageUrl: string | null;
   showLogo: boolean;
+  heroBanner?: HeroBannerConfig;
+  typography?: TypographyConfig;
 }
+
+export const defaultHeroBannerConfig: HeroBannerConfig = {
+  backgroundType: "image",
+  backgroundImage: null,
+  gradientStart: "#1a1714",
+  gradientEnd: "#3a2f28",
+  gradientDirection: "to-b",
+  solidColor: "#1a1714",
+  overlayColor: "#000000",
+  overlayOpacity: 65,
+  title: "Our Menu",
+  subtitle: "DELICIOUS & AMAZING",
+  textAlign: "center",
+  fontSize: 4.5,
+  fontWeight: "300",
+  showCta: false,
+  ctaText: "Order Now",
+  ctaLink: "",
+  ctaStyle: "solid",
+};
+
+export const defaultTypographyConfig: TypographyConfig = {
+  headingFont: "playfair",
+  bodyFont: "inter",
+  accentFont: undefined,
+  headingWeight: "400",
+  bodyWeight: "400",
+  heroTitleSize: 4.5,
+  sectionHeadingSize: 2.5,
+  categoryTitleSize: 1.5,
+  itemNameSize: 1.1,
+  itemDescriptionSize: 0.875,
+  priceSize: 1.125,
+  lineHeight: 1.6,
+  letterSpacing: 0,
+  paragraphSpacing: true,
+  textPrimary: null,
+  textSecondary: null,
+  textMuted: null,
+  readableMode: false,
+  preset: null,
+};
 
 export const defaultThemeConfig: ThemeConfig = {
   mode: "light",
@@ -32,6 +118,8 @@ export const defaultThemeConfig: ThemeConfig = {
   fontBody: "inter",
   headerImageUrl: null,
   showLogo: true,
+  heroBanner: defaultHeroBannerConfig,
+  typography: defaultTypographyConfig,
 };
 
 export interface Menu {

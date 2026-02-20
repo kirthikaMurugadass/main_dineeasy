@@ -58,6 +58,23 @@
 :root {
   --radius: 0.75rem;
 
+  /* ─── Unified Typography System ─── */
+  --font-ui: var(--font-inter), system-ui, -apple-system, sans-serif;
+  --font-weight-normal: 400;
+  --font-weight-medium: 500;
+  --font-weight-semibold: 600;
+  --font-weight-bold: 700;
+  --tracking-tight: -0.025em;
+  --tracking-normal: 0;
+  /* Brand & headings */
+  --brand-font: var(--font-ui);
+  --brand-weight: 600;
+  --page-title-font: var(--font-ui);
+  --page-title-size: 1.5rem;
+  --page-title-size-sm: 1.875rem;
+  --page-title-weight: 600;
+  --page-title-tracking: var(--tracking-tight);
+
   /* DineEasy palette */
   --gold: #C6A75E;
   --olive: #6B705C;

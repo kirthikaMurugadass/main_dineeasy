@@ -23,23 +23,23 @@ const mono = JetBrains_Mono({
 
 export const metadata: Metadata = {
   title: {
-    default: "DineEasy — Digital Menus for Swiss Cafés",
+    default: "DineEasy — Digital Menus for Cafés & Restaurants",
     template: "%s | DineEasy",
   },
   description:
-    "Create beautiful, multilingual digital menus for your restaurant. QR code sharing, instant updates, premium design. Made in Switzerland.",
+    "Create beautiful, multilingual digital menus for your café or restaurant. QR code sharing, instant updates, premium design. Made in Switzerland.",
   keywords: [
     "digital menu",
     "restaurant menu",
     "QR code menu",
-    "Swiss café",
+    "café menu",
     "menu maker",
     "DineEasy",
   ],
   openGraph: {
     title: "DineEasy — Digital Menus Made Effortless",
     description:
-      "Premium digital menus for Swiss cafés. Multi-language, beautiful themes, instant publishing.",
+      "Premium digital menus for cafés and restaurants. Multi-language, beautiful themes, instant publishing.",
     type: "website",
     locale: "en_CH",
   },
@@ -51,9 +51,10 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang="en" className="scroll-smooth" suppressHydrationWarning>
       <body
         className={`${inter.variable} ${playfair.variable} ${mono.variable} font-sans antialiased`}
+        suppressHydrationWarning
       >
         {children}
         <Toaster position="top-right" richColors />

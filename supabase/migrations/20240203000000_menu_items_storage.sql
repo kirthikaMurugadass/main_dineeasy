@@ -2,13 +2,13 @@
 -- Menu Items image storage bucket + policies
 -- ============================================
 
--- Create a dedicated bucket for menu item images
+-- Create a dedicated bucket for menu item images (500 MB limit)
 INSERT INTO storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
 VALUES (
   'menu-items',
   'menu-items',
   true,
-  5242880,  -- 5 MB
+  524288000,  -- 500 MB
   ARRAY['image/jpeg', 'image/png', 'image/webp']
 )
 ON CONFLICT (id) DO NOTHING;

@@ -1,11 +1,11 @@
 "use client";
 
-import { useState, useRef, useEffect, useCallback } from "react";
+import { useState, useRef, useEffect, useCallback, useMemo } from "react";
 import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
-import { Globe } from "lucide-react";
-import type { PublicMenu, PublicRestaurantData, Language } from "@/types/database";
-import { SUPPORTED_LANGUAGES } from "@/lib/i18n/dictionaries";
+import type { PublicMenu, PublicRestaurantData, Language, ThemeConfig } from "@/types/database";
+import { defaultThemeConfig } from "@/types/database";
+import { GoogleFontsLoader } from "./google-fonts-loader";
 
 type ViewData = PublicMenu | (PublicRestaurantData & { menu?: { id: string; slug: string } });
 
@@ -13,16 +13,185 @@ interface Props {
   data: ViewData;
 }
 
+/* ─── Helpers ─── */
+
+function contrastText(hex: string): string {
+  const c = hex.replace("#", "");
+  const r = parseInt(c.substring(0, 2), 16);
+  const g = parseInt(c.substring(2, 4), 16);
+  const b = parseInt(c.substring(4, 6), 16);
+  const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+  return luminance > 0.55 ? "#1a1a1a" : "#ffffff";
+}
+
+function resolveFontFamily(key: string, type: "heading" | "body" | "accent"): string {
+  const map: Record<string, string> = {
+    playfair: "'Playfair Display', Georgia, serif",
+    poppins: "'Poppins', system-ui, sans-serif",
+    inter: "'Inter', system-ui, sans-serif",
+    dmsans: "'DM Sans', system-ui, sans-serif",
+    montserrat: "'Montserrat', system-ui, sans-serif",
+    lora: "'Lora', Georgia, serif",
+    merriweather: "'Merriweather', Georgia, serif",
+    roboto: "'Roboto', system-ui, sans-serif",
+    opensans: "'Open Sans', system-ui, sans-serif",
+    nunito: "'Nunito', system-ui, sans-serif",
+    plusjakarta: "'Plus Jakarta Sans', system-ui, sans-serif",
+    georgia: "Georgia, 'Times New Roman', serif",
+  };
+  return (
+    map[key] ??
+    (type === "heading"
+      ? "'Playfair Display', Georgia, serif"
+      : type === "accent"
+      ? "'Inter', system-ui, sans-serif"
+      : "'Inter', system-ui, sans-serif")
+  );
+}
+
+/** Get best available title from translations; prefers current lang, then de, en, fr, it */
+function getDisplayTitle(
+  titleRecord: Record<Language, string> | undefined,
+  lang: Language
+): string {
+  if (!titleRecord) return "";
+  const order: Language[] = [lang, "de", "en", "fr", "it"];
+  for (const l of order) {
+    const v = titleRecord[l];
+    if (v && String(v).trim()) return v.trim();
+  }
+  return "";
+}
+
+function getDisplayDescription(
+  descriptionRecord: Record<Language, string | null> | undefined,
+  lang: Language
+): string {
+  if (!descriptionRecord) return "";
+  const order: Language[] = [lang, "de", "en", "fr", "it"];
+  for (const l of order) {
+    const v = descriptionRecord[l];
+    if (v && String(v).trim()) return v.trim();
+  }
+  return "";
+}
+
+/* ─── Decorative Ornamental Divider ─── */
+function OrnamentalDivider({ accentColor, isDark }: { accentColor: string; isDark: boolean }) {
+  const goldColor = accentColor; // Use the accent color from theme
+  return (
+    <div className="flex items-center justify-center gap-2 py-3">
+      <div
+        className="h-px flex-1 max-w-16"
+        style={{ background: `linear-gradient(to right, transparent, ${goldColor}60)` }}
+      />
+      <span className="text-[10px] opacity-70" style={{ color: goldColor }}>
+        ◆
+      </span>
+      <div className="h-px w-1 bg-current opacity-40" style={{ color: goldColor }} />
+      <span className="text-[8px] opacity-50" style={{ color: goldColor }}>
+        ●
+      </span>
+      <div className="h-px w-1 bg-current opacity-40" style={{ color: goldColor }} />
+      <span className="text-[10px] opacity-70" style={{ color: goldColor }}>
+        ◆
+      </span>
+      <div
+        className="h-px flex-1 max-w-16"
+        style={{ background: `linear-gradient(to left, transparent, ${goldColor}60)` }}
+      />
+    </div>
+  );
+}
+
 export function PublicMenuView({ data }: Props) {
-  // Always start with "de" so server and client render identical HTML.
-  // After hydration, sync from localStorage / browser language.
   const [lang, setLang] = useState<Language>("de");
   const [activeCategory, setActiveCategory] = useState(data.categories[0]?.id ?? "");
-  const [showLangPicker, setShowLangPicker] = useState(false);
   const categoryRefs = useRef<Map<string, HTMLDivElement>>(new Map());
-  const navRef = useRef<HTMLDivElement>(null);
 
-  // Restore preferred language AFTER hydration to avoid mismatch
+  const theme: ThemeConfig = useMemo(
+    () => ({ ...defaultThemeConfig, ...data.restaurant.theme_config }),
+    [data.restaurant.theme_config]
+  );
+
+  // Get typography config or use defaults
+  // If typography exists, use it; otherwise create from legacy font fields or defaults
+  const typography = theme.typography || {
+    headingFont: theme.fontHeading || "playfair",
+    bodyFont: theme.fontBody || "inter",
+    accentFont: undefined,
+    headingWeight: "400",
+    bodyWeight: "400",
+    heroTitleSize: 4.5,
+    sectionHeadingSize: 2.5,
+    categoryTitleSize: 1.5,
+    itemNameSize: 1.1,
+    itemDescriptionSize: 0.875,
+    priceSize: 1.125,
+    lineHeight: 1.6,
+    letterSpacing: 0,
+    paragraphSpacing: true,
+    textPrimary: null,
+    textSecondary: null,
+    textMuted: null,
+    readableMode: false,
+    preset: null,
+  };
+
+  const primaryColor = theme.primaryColor;
+  const accentColor = theme.accentColor;
+  const primaryText = contrastText(primaryColor);
+  const headingFont = resolveFontFamily(typography.headingFont, "heading");
+  const bodyFont = resolveFontFamily(typography.bodyFont, "body");
+  const accentFont = typography.accentFont ? resolveFontFamily(typography.accentFont, "accent") : bodyFont;
+
+  // Set CSS variables for fonts to ensure they're applied dynamically
+  useEffect(() => {
+    // Set on document root for global access
+    const root = document.documentElement;
+    root.style.setProperty("--font-heading", headingFont);
+    root.style.setProperty("--font-body", bodyFont);
+    root.style.setProperty("--font-accent", accentFont);
+    
+    // Also set on the component's root div (backup)
+    const componentRoot = document.querySelector('[data-menu-root]') as HTMLElement;
+    if (componentRoot) {
+      componentRoot.style.setProperty("--font-heading", headingFont);
+      componentRoot.style.setProperty("--font-body", bodyFont);
+      componentRoot.style.setProperty("--font-accent", accentFont);
+    }
+    
+    // Debug logging (remove in production)
+    if (process.env.NODE_ENV === "development") {
+      console.log("Typography applied:", {
+        headingFont: typography.headingFont,
+        bodyFont: typography.bodyFont,
+        accentFont: typography.accentFont,
+        resolvedHeading: headingFont,
+        resolvedBody: bodyFont,
+        resolvedAccent: accentFont,
+        cssVars: {
+          "--font-heading": headingFont,
+          "--font-body": bodyFont,
+          "--font-accent": accentFont,
+        },
+      });
+    }
+  }, [headingFont, bodyFont, accentFont, typography.headingFont, typography.bodyFont, typography.accentFont]);
+
+  const [isDark, setIsDark] = useState(theme.mode === "dark");
+
+  useEffect(() => {
+    if (theme.mode === "auto") {
+      const mq = window.matchMedia("(prefers-color-scheme: dark)");
+      setIsDark(mq.matches);
+      const handler = (e: MediaQueryListEvent) => setIsDark(e.matches);
+      mq.addEventListener("change", handler);
+      return () => mq.removeEventListener("change", handler);
+    }
+    setIsDark(theme.mode === "dark");
+  }, [theme.mode]);
+
   useEffect(() => {
     const stored = localStorage.getItem("dineeasy-menu-lang") as Language | null;
     if (stored && data.availableLanguages.includes(stored)) {
@@ -30,9 +199,7 @@ export function PublicMenuView({ data }: Props) {
       return;
     }
     const browserLang = navigator.language.substring(0, 2) as Language;
-    if (data.availableLanguages.includes(browserLang)) {
-      setLang(browserLang);
-    }
+    if (data.availableLanguages.includes(browserLang)) setLang(browserLang);
   }, [data.availableLanguages]);
 
   useEffect(() => {
@@ -42,17 +209,16 @@ export function PublicMenuView({ data }: Props) {
   const scrollToCategory = useCallback((categoryId: string) => {
     const el = categoryRefs.current.get(categoryId);
     if (el) {
-      const offset = 140;
+      const offset = 120;
       const top = el.getBoundingClientRect().top + window.scrollY - offset;
       window.scrollTo({ top, behavior: "smooth" });
     }
     setActiveCategory(categoryId);
   }, []);
 
-  // Track scroll position to highlight active category
   useEffect(() => {
     function onScroll() {
-      const offset = 160;
+      const offset = 140;
       for (const [id, el] of categoryRefs.current) {
         const rect = el.getBoundingClientRect();
         if (rect.top <= offset && rect.bottom > offset) {
@@ -65,209 +231,398 @@ export function PublicMenuView({ data }: Props) {
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
-  const theme = data.restaurant.theme_config;
+  // Fine-dining color palette (fixed backgrounds)
+  const darkBg = "#1a1714"; // Warm dark charcoal (fixed)
+  const lightBg = "#f5f0eb"; // Warm cream (fixed)
+  const goldAccent = accentColor || "#c9a96e"; // Use accent color from theme (only accent changes)
+  const mutedGray = "#a8a29e"; // Warm gray (fixed)
+  const sectionBg = "#201d19"; // Slightly lighter charcoal (fixed)
+
+  const bgColor = isDark ? darkBg : lightBg;
+  // Use typography colors if set, otherwise use theme defaults
+  const textPrimary = typography.textPrimary || (isDark ? "#f5f0eb" : "#1a1714");
+  const textSecondary = typography.textSecondary || (isDark ? "#f5f0eb" : "#1a1714");
+  const textMuted = typography.textMuted || (isDark ? mutedGray : "#6b6b6b");
+  const sectionBackground = isDark ? sectionBg : "#faf8f5";
+
+  // Get hero banner config or use defaults
+  const heroBanner = theme.heroBanner || {
+    backgroundType: "image" as const,
+    backgroundImage: theme.headerImageUrl,
+    gradientStart: "#1a1714",
+    gradientEnd: "#3a2f28",
+    gradientDirection: "to-b" as const,
+    solidColor: "#1a1714",
+    overlayColor: "#000000",
+    overlayOpacity: 65,
+    title: "Our Menu",
+    subtitle: "DELICIOUS & AMAZING",
+    textAlign: "center" as const,
+    fontSize: 4.5,
+    fontWeight: "300" as const,
+    showCta: false,
+    ctaText: "Order Now",
+    ctaLink: "",
+    ctaStyle: "solid" as const,
+  };
+
+  // Get background style based on type
+  const getBackgroundStyle = () => {
+    if (heroBanner.backgroundType === "image" && heroBanner.backgroundImage) {
+      return {
+        backgroundImage: `url(${heroBanner.backgroundImage})`,
+        backgroundSize: "cover",
+        backgroundPosition: "center",
+      };
+    } else if (heroBanner.backgroundType === "gradient") {
+      const directionMap = {
+        "to-r": "to right",
+        "to-b": "to bottom",
+        "to-br": "to bottom right",
+        "to-bl": "to bottom left",
+      };
+      return {
+        background: `linear-gradient(${directionMap[heroBanner.gradientDirection]}, ${heroBanner.gradientStart}, ${heroBanner.gradientEnd})`,
+      };
+    } else {
+      return {
+        backgroundColor: heroBanner.solidColor,
+      };
+    }
+  };
+
+  // Get overlay style
+  const overlayStyle = {
+    backgroundColor: heroBanner.overlayColor,
+    opacity: heroBanner.overlayOpacity / 100,
+  };
+
+  // Get text alignment class
+  const textAlignClass = {
+    left: "items-start text-left",
+    center: "items-center text-center",
+    right: "items-end text-right",
+  }[heroBanner.textAlign];
 
   return (
-    <div className="min-h-screen bg-background">
-      {/* Header image */}
-      <div className="relative h-56 sm:h-72 overflow-hidden">
-        {theme.headerImageUrl ? (
-          <Image
-            src={theme.headerImageUrl}
-            alt={data.restaurant.name}
-            fill
-            className="object-cover animate-kenburns"
-            priority
-          />
-        ) : (
-          <div
-            className="absolute inset-0 bg-cover bg-center animate-kenburns"
-            style={{
-              backgroundImage:
-                'url("https://images.unsplash.com/photo-1559925393-8be0ec4767c8?w=1200&q=80")',
-            }}
-          />
-        )}
-        <div className="absolute inset-0 bg-gradient-to-t from-background via-background/30 to-transparent" />
+    <>
+      <GoogleFontsLoader 
+        key={`fonts-${typography.headingFont}-${typography.bodyFont}-${typography.accentFont || 'none'}`}
+        typography={typography} 
+      />
+      <div
+        data-menu-root
+        className="min-h-screen scroll-smooth"
+        style={{
+          backgroundColor: bgColor,
+          color: textPrimary,
+          fontFamily: bodyFont,
+          lineHeight: typography.lineHeight,
+          letterSpacing: `${typography.letterSpacing}em`,
+          // CSS variables for dynamic font application
+          "--font-heading": headingFont,
+          "--font-body": bodyFont,
+          "--font-accent": accentFont,
+        } as React.CSSProperties & {
+          "--font-heading": string;
+          "--font-body": string;
+          "--font-accent": string;
+        }}
+      >
+      {/* ─── Hero Banner ─── */}
+      <header className="relative min-h-[60vh] sm:min-h-[70vh] flex flex-col overflow-hidden">
+        <div className="absolute inset-0" style={getBackgroundStyle()}>
+          {heroBanner.backgroundType === "image" && heroBanner.backgroundImage && (
+            <Image
+              src={heroBanner.backgroundImage}
+              alt=""
+              fill
+              className="object-cover"
+              priority
+              sizes="100vw"
+              unoptimized={
+                heroBanner.backgroundImage.includes("127.0.0.1") || heroBanner.backgroundImage.includes("localhost")
+              }
+            />
+          )}
+          {/* Customizable overlay */}
+          <div className="absolute inset-0" style={overlayStyle} />
+        </div>
 
-        {/* Restaurant info overlay */}
-        <div className="absolute bottom-0 left-0 right-0 p-6">
-          <div className="flex items-end gap-4">
-            {data.restaurant.logo_url ? (
+        {/* Top bar: Logo + Name (left), Language (right) */}
+        <div className="relative z-10 flex items-center justify-between px-4 pt-6 sm:px-8 sm:pt-8">
+          <div className="flex items-center gap-3">
+            {data.restaurant.logo_url && theme.showLogo ? (
               <Image
                 src={data.restaurant.logo_url}
-                alt="Logo"
-                width={56}
-                height={56}
-                className="h-14 w-14 rounded-2xl border-2 border-background object-cover shadow-lg"
+                alt=""
+                width={48}
+                height={48}
+                unoptimized
+                className="h-12 w-12 rounded-lg object-cover"
               />
             ) : (
-              <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-espresso text-warm font-serif font-bold text-2xl border-2 border-background shadow-lg">
+              <div
+                className="flex h-12 w-12 items-center justify-center rounded-lg font-bold text-lg"
+                style={{
+                  backgroundColor: primaryColor,
+                  color: primaryText,
+                  fontFamily: headingFont,
+                }}
+              >
                 {data.restaurant.name.charAt(0)}
               </div>
             )}
-            <div>
-              <h1 className="font-serif text-2xl font-bold text-white drop-shadow-lg sm:text-3xl">
-                {data.restaurant.name}
-              </h1>
-            </div>
+            <h1
+              className="font-semibold text-white text-lg sm:text-xl"
+              style={{
+                fontFamily: headingFont,
+                textShadow: "0 2px 12px rgba(0,0,0,0.8)",
+              }}
+            >
+              {data.restaurant.name}
+            </h1>
           </div>
         </div>
 
-        {/* Language button */}
-        <button
-          onClick={() => setShowLangPicker(!showLangPicker)}
-          className="absolute right-4 top-4 flex items-center gap-1.5 rounded-full bg-black/30 px-3 py-1.5 text-xs font-medium text-white backdrop-blur-md transition-colors hover:bg-black/40"
-        >
-          <Globe size={14} />
-          {SUPPORTED_LANGUAGES.find((l) => l.code === lang)?.flag}{" "}
-          {lang.toUpperCase()}
-        </button>
-
-        {/* Language picker dropdown */}
-        <AnimatePresence>
-          {showLangPicker && (
-            <motion.div
-              initial={{ opacity: 0, y: -10, scale: 0.95 }}
-              animate={{ opacity: 1, y: 0, scale: 1 }}
-              exit={{ opacity: 0, y: -10, scale: 0.95 }}
-              className="absolute right-4 top-14 z-50 overflow-hidden rounded-xl border border-white/10 bg-black/60 backdrop-blur-xl shadow-lg"
+        {/* Center: Customizable hero content */}
+        <div className={`relative z-10 flex flex-1 flex-col justify-center px-4 pb-12 ${textAlignClass}`}>
+          {heroBanner.subtitle && (
+            <motion.p
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6 }}
+              className="mb-4 text-xs font-medium tracking-[0.3em] uppercase sm:text-sm"
+              style={{ color: accentColor }}
             >
-              {SUPPORTED_LANGUAGES.map((l) => (
-                <button
-                  key={l.code}
-                  onClick={() => {
-                    setLang(l.code);
-                    setShowLangPicker(false);
-                  }}
-                  className={`flex w-full items-center gap-2 px-4 py-2.5 text-sm transition-colors ${
-                    lang === l.code
-                      ? "bg-white/10 text-white"
-                      : "text-white/70 hover:bg-white/5 hover:text-white"
-                  }`}
-                >
-                  <span>{l.flag}</span>
-                  <span>{l.label}</span>
-                </button>
-              ))}
+              {heroBanner.subtitle}
+            </motion.p>
+          )}
+
+          {heroBanner.subtitle && <OrnamentalDivider accentColor={accentColor} isDark={isDark} />}
+
+          {heroBanner.title && (
+            <motion.h2
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.2 }}
+              className="py-4 font-light italic text-white"
+              style={{
+                fontFamily: headingFont,
+                fontSize: `${typography.heroTitleSize}rem`,
+                fontWeight: typography.headingWeight,
+                letterSpacing: `${typography.letterSpacing}em`,
+                lineHeight: typography.lineHeight,
+                textShadow: "0 4px 24px rgba(0,0,0,0.8)",
+              }}
+            >
+              {heroBanner.title}
+            </motion.h2>
+          )}
+
+          {heroBanner.subtitle && <OrnamentalDivider accentColor={accentColor} isDark={isDark} />}
+
+          {/* CTA Button */}
+          {heroBanner.showCta && heroBanner.ctaText && heroBanner.ctaLink && (
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.4 }}
+              className="mt-6"
+            >
+              <a
+                href={heroBanner.ctaLink}
+                target="_blank"
+                rel="noopener noreferrer"
+                className={`inline-block rounded-full px-8 py-3 text-sm font-semibold transition-all ${
+                  heroBanner.ctaStyle === "solid"
+                    ? "bg-white text-gray-900 hover:bg-gray-100"
+                    : "border-2 border-white text-white hover:bg-white/10"
+                }`}
+              >
+                {heroBanner.ctaText}
+              </a>
             </motion.div>
           )}
-        </AnimatePresence>
-      </div>
+        </div>
+      </header>
 
-      {/* Sticky category navigation */}
-      <div
-        ref={navRef}
-        className="sticky top-0 z-30 border-b border-border/50 bg-background/80 backdrop-blur-lg"
+      {/* ─── Sticky Category Navigation ─── */}
+      <nav
+        className="sticky top-0 z-30 border-b backdrop-blur-xl"
+        style={{
+          borderColor: isDark ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.08)",
+          backgroundColor: isDark ? `${darkBg}E6` : `${lightBg}E6`,
+        }}
       >
-        <div className="flex gap-1 overflow-x-auto px-4 py-3 scrollbar-hide">
+        <div className="mx-auto max-w-[1200px] flex gap-2 overflow-x-auto px-4 py-4 scrollbar-hide sm:justify-center sm:gap-3">
           {data.categories.map((cat) => (
             <button
               key={cat.id}
               onClick={() => scrollToCategory(cat.id)}
-              className={`shrink-0 rounded-full px-5 py-2 text-sm font-medium transition-all ${
+              className="shrink-0 rounded-full px-6 py-2.5 text-sm font-medium transition-all duration-300"
+              style={
                 activeCategory === cat.id
-                  ? "bg-espresso text-warm shadow-sm dark:bg-gold dark:text-espresso"
-                  : "bg-muted/50 text-muted-foreground hover:bg-muted"
-              }`}
+                  ? {
+                      backgroundColor: accentColor,
+                      color: "#1a1714",
+                      boxShadow: `0 0 20px ${accentColor}59`,
+                    }
+                  : {
+                      color: isDark ? "rgba(245,240,235,0.75)" : "rgba(26,26,26,0.6)",
+                      border: `1px solid ${isDark ? "rgba(255,255,255,0.15)" : "rgba(0,0,0,0.1)"}`,
+                    }
+              }
             >
-              {cat.title[lang] || cat.title.de || "Untitled"}
+              {getDisplayTitle(cat.title, lang) || "Untitled"}
             </button>
           ))}
         </div>
-      </div>
+      </nav>
 
-      {/* Menu content */}
-      <div className="mx-auto max-w-2xl px-4 pb-24 pt-6">
+      {/* ─── Menu Content ─── */}
+      <main className="mx-auto max-w-[1200px] px-4 py-16 sm:px-8">
         {data.categories.map((category, catIndex) => (
-          <motion.div
+          <motion.section
             key={category.id}
             ref={(el) => {
               if (el) categoryRefs.current.set(category.id, el);
             }}
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: catIndex * 0.1, duration: 0.5 }}
-            className="mb-10"
+            initial={{ opacity: 0, y: 24 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: "-50px" }}
+            transition={{ duration: 0.5, delay: catIndex * 0.05 }}
+            className="scroll-mt-28 pb-20 sm:pb-24"
+            style={{
+              backgroundColor: sectionBackground,
+              padding: "80px 24px",
+              borderRadius: "8px",
+              marginBottom: "24px",
+            }}
           >
-            {/* Category header */}
-            <div className="mb-4">
-              <h2 className="font-serif text-2xl font-bold">
-                {category.title[lang] || category.title.de || "Untitled"}
-              </h2>
-              {category.description[lang] && (
-                <p className="mt-1 text-sm text-muted-foreground">
-                  {category.description[lang]}
-                </p>
-              )}
+            {/* Section label (uppercase, gold, tracking-wide) */}
+            <div className="mb-6 text-center">
+              <p
+                className="mb-4 text-xs font-medium uppercase tracking-[0.3em] sm:text-sm"
+                style={{ color: accentColor }}
+              >
+                {getDisplayTitle(category.title, lang)?.toUpperCase() || "MENU SECTION"}
+              </p>
+
+              <OrnamentalDivider accentColor={accentColor} isDark={isDark} />
             </div>
 
-            {/* Items */}
-            <div className="space-y-2">
+            {/* Menu items: 2-column grid, flexbox rows */}
+            <div className="grid gap-8 sm:grid-cols-2">
               {category.items.map((item, itemIndex) => (
-                <motion.div
+                <motion.article
                   key={item.id}
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: catIndex * 0.1 + itemIndex * 0.04, duration: 0.4 }}
-                  className="group flex items-start gap-4 rounded-xl border border-border/30 p-4 transition-all hover:border-border/60 hover:bg-muted/20"
+                  initial={{ opacity: 0, y: 16 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ duration: 0.4, delay: itemIndex * 0.03 }}
+                  className="flex items-start gap-4"
                 >
-                  {/* Image */}
-                  {item.image_url && (
-                    <div className="relative h-16 w-16 shrink-0 overflow-hidden rounded-lg">
+                  {/* Circular food thumbnail (70-80px) */}
+                  <div className="relative h-20 w-20 shrink-0 sm:h-24 sm:w-24">
+                    {item.image_url ? (
                       <Image
                         src={item.image_url}
-                        alt={item.title[lang] || ""}
+                        alt={getDisplayTitle(item.title, lang) || "Menu item"}
                         fill
                         unoptimized
-                        className="object-cover transition-transform duration-300 group-hover:scale-105"
-                        sizes="64px"
+                        className="rounded-full object-cover"
+                        sizes="96px"
+                        loading="lazy"
+                        style={{
+                          border: `2px solid ${isDark ? "rgba(201,169,110,0.2)" : "rgba(201,169,110,0.3)"}`,
+                        }}
                       />
-                    </div>
-                  )}
-
-                  {/* Content */}
-                  <div className="flex-1 min-w-0">
-                    <h3 className="font-semibold leading-tight">
-                      {item.title[lang] || item.title.de || "Untitled"}
-                    </h3>
-                    {item.description[lang] && (
-                      <p className="mt-1 text-sm leading-snug text-muted-foreground line-clamp-2">
-                        {item.description[lang]}
-                      </p>
+                    ) : (
+                      <div
+                        className="h-full w-full rounded-full flex items-center justify-center"
+                        style={{
+                          backgroundColor: isDark ? `${accentColor}1A` : `${accentColor}26`,
+                          border: `2px solid ${isDark ? `${accentColor}33` : `${accentColor}4D`}`,
+                        }}
+                      >
+                        <span className="text-2xl opacity-40" style={{ color: accentColor }}>
+                          ◆
+                        </span>
+                      </div>
                     )}
                   </div>
 
-                  {/* Price */}
-                  <div className="shrink-0 pt-0.5">
-                    <span className="font-mono text-sm font-semibold text-gold">
-                      CHF {item.price_chf.toFixed(2)}
-                    </span>
+                  {/* Text content: name, description, price */}
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-start justify-between gap-4">
+                      <h4
+                        className="font-semibold leading-tight flex-1"
+                        style={{
+                          fontFamily: bodyFont,
+                          color: textPrimary,
+                          fontSize: `${typography.itemNameSize}rem`,
+                          fontWeight: typography.bodyWeight,
+                          letterSpacing: `${typography.letterSpacing}em`,
+                          lineHeight: typography.lineHeight,
+                        }}
+                      >
+                        {getDisplayTitle(item.title, lang) || "Untitled"}
+                      </h4>
+                      <span
+                        className="font-mono font-semibold tracking-wide shrink-0"
+                        style={{
+                          color: accentColor,
+                          fontSize: `${typography.priceSize}rem`,
+                          fontFamily: accentFont,
+                          fontWeight: typography.bodyWeight,
+                        }}
+                      >
+                        CHF {item.price_chf.toFixed(2)}
+                      </span>
+                    </div>
+                    {getDisplayDescription(item.description, lang) && (
+                      <p
+                        className={typography.paragraphSpacing ? "mt-2" : "mt-1"}
+                        style={{
+                          color: textMuted,
+                          fontSize: `${typography.itemDescriptionSize}rem`,
+                          fontFamily: bodyFont,
+                          fontWeight: typography.bodyWeight,
+                          letterSpacing: `${typography.letterSpacing}em`,
+                          lineHeight: typography.lineHeight,
+                        }}
+                      >
+                        {getDisplayDescription(item.description, lang)}
+                      </p>
+                    )}
                   </div>
-                </motion.div>
+                </motion.article>
               ))}
             </div>
-
-            {/* Divider */}
-            {catIndex < data.categories.length - 1 && (
-              <div className="mt-8 border-b border-border/30" />
-            )}
-          </motion.div>
+          </motion.section>
         ))}
 
-        {/* Powered by */}
-        <div className="mt-16 text-center">
+        {/* ─── Footer ─── */}
+        <footer className="mt-24 border-t pt-12 text-center" style={{ borderColor: isDark ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.1)" }}>
           <a
             href="https://dineeasy.app"
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center gap-1.5 rounded-full bg-muted/50 px-4 py-2 text-xs text-muted-foreground transition-colors hover:text-foreground"
+            className="inline-flex items-center gap-2 text-xs transition-colors hover:opacity-80"
+            style={{ color: textMuted }}
           >
-            <span className="font-serif font-bold text-gold">D</span>
+            <span
+              className="font-bold"
+              style={{ color: accentColor, fontFamily: headingFont }}
+            >
+              D
+            </span>
             Powered by DineEasy
           </a>
-        </div>
-      </div>
+        </footer>
+      </main>
     </div>
+    </>
   );
 }
