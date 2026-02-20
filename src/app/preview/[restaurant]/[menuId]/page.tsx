@@ -3,6 +3,7 @@ import { createClient } from "@/lib/supabase/server";
 import { PublicMenuView } from "@/components/menu/public-menu-view";
 import { PreviewBanner } from "@/components/menu/preview-banner";
 import type { PublicRestaurantData, Language, ThemeConfig } from "@/types/database";
+import { defaultThemeConfig } from "@/types/database";
 import type { Metadata } from "next";
 
 interface PageProps {
@@ -158,9 +159,7 @@ export async function generateMetadata({
   };
 }
 
-// Disable caching for preview pages
-export const dynamic = "force-dynamic";
-export const revalidate = 0;
+// Preview pages are dynamic by default
 
 export default async function PreviewPage({ params, searchParams }: PageProps) {
   const { restaurant, menuId } = await params;
@@ -184,17 +183,21 @@ export default async function PreviewPage({ params, searchParams }: PageProps) {
 
   // Override theme_config with preview config if provided
   if (previewConfig) {
-    // Always use preview config directly, ensuring typography is included
+    // Extract logoUrl before merging (it's not part of ThemeConfig)
+    const { logoUrl, ...themeConfigFromPreview } = previewConfig;
+    
+    // Merge with defaults and existing config to ensure all required fields are present
     data.restaurant.theme_config = {
-      ...data.restaurant.theme_config,
-      ...previewConfig,
+      ...defaultThemeConfig,
+      ...(data.restaurant.theme_config || {}),
+      ...themeConfigFromPreview,
       // Ensure typography is always set from preview config if provided
       typography: previewConfig.typography || data.restaurant.theme_config?.typography,
-    } as unknown as Record<string, unknown>;
+    } as ThemeConfig;
     
     // Override logo_url if provided in preview config (for instant updates)
-    if (previewConfig.logoUrl !== undefined) {
-      data.restaurant.logo_url = previewConfig.logoUrl;
+    if (logoUrl !== undefined) {
+      data.restaurant.logo_url = logoUrl;
     }
     // Hero banner config is already included in previewConfig.heroBanner
   }
