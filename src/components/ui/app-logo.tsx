@@ -67,16 +67,21 @@ export function AppLogo({
 
   const wrapperClass = "flex items-center gap-2.5";
 
-  const Wrapper = href ? Link : "div";
-  const wrapperProps = href ? { href } : {};
+  if (href) {
+    return (
+      <Link
+        href={href}
+        className={cn(wrapperClass, className)}
+      >
+        {content}
+      </Link>
+    );
+  }
 
   return (
-    <Wrapper
-      {...wrapperProps}
-      className={cn(wrapperClass, className)}
-    >
+    <div className={cn(wrapperClass, className)}>
       {content}
-    </Wrapper>
+    </div>
   );
 }
 

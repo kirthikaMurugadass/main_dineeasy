@@ -215,10 +215,7 @@ export async function generateMetadata({
   };
 }
 
-// Disable caching for public menu pages to ensure fresh data (especially typography)
-export const dynamic = "force-dynamic";
-export const revalidate = 0;
-export const fetchCache = "force-no-store";
+// Public menu pages are dynamic by default
 
 export default async function SubdomainMenuPage({ params }: PageProps) {
   const { restaurant } = await params;

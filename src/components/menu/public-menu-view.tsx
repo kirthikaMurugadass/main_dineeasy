@@ -107,7 +107,7 @@ function OrnamentalDivider({ accentColor, isDark }: { accentColor: string; isDar
 export function PublicMenuView({ data }: Props) {
   const [lang, setLang] = useState<Language>("de");
   const [activeCategory, setActiveCategory] = useState(data.categories[0]?.id ?? "");
-  const categoryRefs = useRef<Map<string, HTMLDivElement>>(new Map());
+  const categoryRefs = useRef<Map<string, HTMLElement>>(new Map());
 
   const theme: ThemeConfig = useMemo(
     () => ({ ...defaultThemeConfig, ...data.restaurant.theme_config }),

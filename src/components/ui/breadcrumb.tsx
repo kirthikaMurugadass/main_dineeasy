@@ -45,15 +45,18 @@ const BreadcrumbLink = React.forwardRef<
 >(({ asChild, className, children, ...props }, ref) => {
   if (asChild) {
     // When asChild is true, clone the child and merge props
-    const child = React.Children.only(children) as React.ReactElement;
-    return React.cloneElement(child, {
-      ...child.props,
+    const child = React.Children.only(children) as React.ReactElement<Record<string, unknown>>;
+    const existingProps = (child.props || {}) as Record<string, unknown>;
+    const mergedProps = {
+      ...existingProps,
       className: cn(
         "transition-colors hover:text-foreground",
         className,
-        child.props.className
+        existingProps.className as string | undefined
       ),
-    });
+      ref,
+    };
+    return React.cloneElement(child, mergedProps);
   }
   return (
     <a

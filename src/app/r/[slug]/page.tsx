@@ -194,8 +194,9 @@ export async function generateMetadata({
   };
 }
 
-// ISR: revalidate every 60 seconds (0 in development for instant updates)
-export const revalidate = process.env.NODE_ENV === "development" ? 0 : 60;
+// ISR: revalidate every 60 seconds
+// Note: In development, Next.js automatically disables caching
+export const revalidate = 60;
 
 export default async function RestaurantPublicPage({
   params,
