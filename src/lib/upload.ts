@@ -1,7 +1,6 @@
 import { createClient } from "@/lib/supabase/client";
 
 const BUCKET = "menu-items";
-const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5 MB
 const ACCEPTED_TYPES = ["image/jpeg", "image/png", "image/webp"];
 
 export interface UploadResult {
@@ -23,12 +22,6 @@ export function validateImageFile(file: File): void {
   if (!ACCEPTED_TYPES.includes(file.type)) {
     throw new UploadError(
       `Invalid file type "${file.type}". Accepted: JPG, PNG, WebP.`
-    );
-  }
-  if (file.size > MAX_FILE_SIZE) {
-    const sizeMB = (file.size / (1024 * 1024)).toFixed(1);
-    throw new UploadError(
-      `File too large (${sizeMB} MB). Maximum size is 5 MB.`
     );
   }
 }

@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { PageTitle } from "@/components/ui/page-title";
 import { FadeIn } from "@/components/motion";
 import { createClient } from "@/lib/supabase/client";
 import { toast } from "sonner";
@@ -95,12 +96,9 @@ export default function SettingsPage() {
     <div className="space-y-8">
       <FadeIn>
         <div className="flex items-center justify-between">
-          <div>
-            <h1 className="font-serif text-3xl font-bold">Settings</h1>
-            <p className="mt-1 text-muted-foreground">
-              Manage your restaurant profile and account
-            </p>
-          </div>
+          <PageTitle description="Manage your restaurant profile and account">
+            Settings
+          </PageTitle>
           <Button
             onClick={handleSave}
             disabled={saving}
@@ -124,7 +122,7 @@ export default function SettingsPage() {
                 <Input
                   value={name}
                   onChange={(e) => setName(e.target.value)}
-                  placeholder="My Café"
+                  placeholder="My Café or Restaurant"
                 />
               </div>
               <div className="space-y-2">

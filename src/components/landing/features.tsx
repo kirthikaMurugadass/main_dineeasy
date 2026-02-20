@@ -34,7 +34,7 @@ export function Features() {
             </p>
           </FadeIn>
           <FadeIn delay={0.1}>
-            <h2 className="font-serif text-4xl font-bold tracking-tight sm:text-5xl">
+            <h2 className="font-sans text-4xl font-semibold tracking-tight sm:text-5xl">
               {t.landing.features.title}
             </h2>
           </FadeIn>

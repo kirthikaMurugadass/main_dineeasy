@@ -7,16 +7,34 @@ function getRedisClient(): Redis | null {
 
   if (globalForRedis.redis) return globalForRedis.redis;
 
-  const redis = new Redis(process.env.REDIS_URL, {
-    maxRetriesPerRequest: 3,
-    lazyConnect: true,
-  });
+  try {
+    const redis = new Redis(process.env.REDIS_URL, {
+      maxRetriesPerRequest: 1,
+      retryStrategy(times) {
+        // Stop retrying after 3 attempts — Redis is optional
+        if (times > 3) return null;
+        return Math.min(times * 200, 1000);
+      },
+      lazyConnect: true,
+      enableOfflineQueue: false,
+    });
 
-  if (process.env.NODE_ENV !== "production") {
-    globalForRedis.redis = redis;
+    // Attach an error handler so unhandled 'error' events don't crash the process
+    redis.on("error", (err) => {
+      // Log once, then silence — Redis is an optional cache layer
+      if (process.env.NODE_ENV === "development") {
+        console.warn("[redis] Connection failed (cache disabled):", err.message);
+      }
+    });
+
+    if (process.env.NODE_ENV !== "production") {
+      globalForRedis.redis = redis;
+    }
+
+    return redis;
+  } catch {
+    return null;
   }
-
-  return redis;
 }
 
 const redis = getRedisClient();
@@ -51,6 +69,12 @@ export async function invalidateMenuCache(restaurantSlug: string): Promise<void>
     const keys = await redis.keys(`menu:${restaurantSlug}:*`);
     if (keys.length > 0) {
       await redis.del(...keys);
+    }
+    
+    // Also delete restaurant:slug pattern
+    const restaurantKeys = await redis.keys(`menu:restaurant:${restaurantSlug}*`);
+    if (restaurantKeys.length > 0) {
+      await redis.del(...restaurantKeys);
     }
   } catch {
     // Silently fail

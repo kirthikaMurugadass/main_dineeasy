@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import { ArrowRight, Loader2, Store } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { PageTitle } from "@/components/ui/page-title";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
@@ -52,10 +53,12 @@ export default function OnboardingPage() {
           <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-gold/10">
             <Store size={28} className="text-gold" />
           </div>
-          <h1 className="font-serif text-3xl font-bold">Set up your restaurant</h1>
-          <p className="mt-2 text-muted-foreground">
-            Let&apos;s get your digital menu ready in minutes
-          </p>
+          <PageTitle
+            className="text-center"
+            description="Let's get your digital menu ready in minutes"
+          >
+            Set up your restaurant
+          </PageTitle>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-6">
@@ -65,7 +68,7 @@ export default function OnboardingPage() {
             </Label>
             <Input
               id="name"
-              placeholder="e.g. Café Helvetia"
+              placeholder="e.g. Café Helvetia or Restaurant Zum Löwen"
               value={name}
               onChange={(e) => setName(e.target.value)}
               className="h-12 text-base"

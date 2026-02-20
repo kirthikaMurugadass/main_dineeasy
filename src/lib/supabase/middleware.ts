@@ -33,10 +33,26 @@ export async function updateSession(request: NextRequest) {
     data: { user },
   } = await supabase.auth.getUser();
 
-  // Protect admin routes
-  if (request.nextUrl.pathname.startsWith("/admin") && !user) {
+  // Allow access to login and signup pages without authentication
+  // Support both old routes (/admin/login) and new routes (/(auth)/login)
+  // Route groups like (auth) don't appear in pathname, so we check for /login and /signup
+  const isAuthPage =
+    request.nextUrl.pathname === "/admin/login" ||
+    request.nextUrl.pathname === "/admin/signup" ||
+    request.nextUrl.pathname === "/login" ||
+    request.nextUrl.pathname === "/signup";
+
+  // Protect admin routes (except login and signup)
+  if (request.nextUrl.pathname.startsWith("/admin") && !isAuthPage && !user) {
     const url = request.nextUrl.clone();
     url.pathname = "/login";
+    return NextResponse.redirect(url);
+  }
+
+  // Redirect authenticated users away from login/signup pages
+  if (isAuthPage && user) {
+    const url = request.nextUrl.clone();
+    url.pathname = "/admin";
     return NextResponse.redirect(url);
   }
 

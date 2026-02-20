@@ -8,9 +8,12 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { PageTitle } from "@/components/ui/page-title";
 import { FadeIn, HoverScale } from "@/components/motion";
 import { useI18n } from "@/lib/i18n/context";
 import { createClient } from "@/lib/supabase/client";
+import { getSubdomainUrl } from "@/lib/subdomain";
+import { generateQRWithLogoPNG, generateQRWithLogoSVG } from "@/lib/qr-with-logo";
 import { toast } from "sonner";
 
 export default function QRPage() {
@@ -18,6 +21,8 @@ export default function QRPage() {
   const router = useRouter();
   const [restaurantName, setRestaurantName] = useState("");
   const [restaurantSlug, setRestaurantSlug] = useState("");
+  const [menuId, setMenuId] = useState<string | null>(null);
+  const [logoUrl, setLogoUrl] = useState<string | null>(null);
   const [qrDataUrl, setQrDataUrl] = useState("");
   const [qrColor, setQrColor] = useState("#3E2723");
   const [bgColor, setBgColor] = useState("#FFFFFF");
@@ -34,7 +39,7 @@ export default function QRPage() {
 
       const { data: restaurant } = await supabase
         .from("restaurants")
-        .select("id, name, slug")
+        .select("id, name, slug, logo_url")
         .eq("owner_id", user.id)
         .single();
 
@@ -43,8 +48,22 @@ export default function QRPage() {
         return;
       }
 
+      // Fetch menu for this restaurant
+      const { data: menu } = await supabase
+        .from("menus")
+        .select("id")
+        .eq("restaurant_id", restaurant.id)
+        .limit(1)
+        .maybeSingle();
+
       setRestaurantName(restaurant.name);
       setRestaurantSlug(restaurant.slug);
+      // Add cache-busting to logo URL to ensure fresh image
+      const logoUrlWithCache = restaurant.logo_url 
+        ? `${restaurant.logo_url}?t=${Date.now()}` 
+        : null;
+      setLogoUrl(logoUrlWithCache);
+      setMenuId(menu?.id || null);
       setLoading(false);
     }
     load();
@@ -52,34 +71,51 @@ export default function QRPage() {
 
   const getQrUrl = useCallback(() => {
     if (!restaurantSlug) return "";
-    return `${typeof window !== "undefined" ? window.location.origin : ""}/r/${restaurantSlug}`;
-  }, [restaurantSlug]);
+    return getSubdomainUrl(restaurantSlug, menuId || undefined);
+  }, [restaurantSlug, menuId]);
 
   const generateQR = useCallback(async () => {
     const url = getQrUrl();
     if (!url) return;
 
     try {
-      const dataUrl = await QRCode.toDataURL(url, {
+      // Fetch latest logo URL to ensure we have the most recent version
+      let currentLogoUrl = logoUrl;
+      if (restaurantSlug) {
+        const supabase = createClient();
+        const { data: restaurant } = await supabase
+          .from("restaurants")
+          .select("logo_url")
+          .eq("slug", restaurantSlug)
+          .single();
+        if (restaurant?.logo_url) {
+          // Add cache-busting to ensure fresh logo
+          currentLogoUrl = `${restaurant.logo_url}?t=${Date.now()}`;
+        }
+      }
+
+      const dataUrl = await generateQRWithLogoPNG({
+        url,
+        logoUrl: currentLogoUrl,
         width: 1024,
         margin: 2,
-        color: {
-          dark: qrColor,
-          light: bgColor,
-        },
+        qrColor,
+        bgColor,
+        logoSize: 0.22, // 22% of QR size
         errorCorrectionLevel: "H",
       });
       setQrDataUrl(dataUrl);
     } catch (err) {
       console.error(err);
+      toast.error("Failed to generate QR code");
     }
-  }, [getQrUrl, qrColor, bgColor]);
+  }, [getQrUrl, logoUrl, qrColor, bgColor, restaurantSlug]);
 
   useEffect(() => {
     if (!loading && restaurantSlug) {
       generateQR();
     }
-  }, [generateQR, loading, restaurantSlug]);
+  }, [generateQR, loading, restaurantSlug, logoUrl]);
 
   async function copyUrl() {
     const url = getQrUrl();
@@ -103,23 +139,28 @@ export default function QRPage() {
     const url = getQrUrl();
     if (!url) return;
 
-    const svgString = await QRCode.toString(url, {
-      type: "svg",
-      width: 1024,
-      margin: 2,
-      color: {
-        dark: qrColor,
-        light: bgColor,
-      },
-      errorCorrectionLevel: "H",
-    });
+    try {
+      const svgString = await generateQRWithLogoSVG({
+        url,
+        logoUrl,
+        width: 1024,
+        margin: 2,
+        qrColor,
+        bgColor,
+        logoSize: 0.22,
+        errorCorrectionLevel: "H",
+      });
 
-    const blob = new Blob([svgString], { type: "image/svg+xml" });
-    const link = document.createElement("a");
-    link.download = `qr-${restaurantSlug}.svg`;
-    link.href = URL.createObjectURL(blob);
-    link.click();
-    toast.success("QR code downloaded as SVG!");
+      const blob = new Blob([svgString], { type: "image/svg+xml" });
+      const link = document.createElement("a");
+      link.download = `qr-${restaurantSlug}.svg`;
+      link.href = URL.createObjectURL(blob);
+      link.click();
+      toast.success("QR code downloaded as SVG!");
+    } catch (err) {
+      console.error(err);
+      toast.error("Failed to generate SVG");
+    }
   }
 
   function handlePrint() {
@@ -151,13 +192,11 @@ export default function QRPage() {
   return (
     <div className="space-y-8">
       <FadeIn>
-        <div>
-          <h1 className="font-serif text-3xl font-bold">{t.admin.qr.title}</h1>
-          <p className="mt-1 text-muted-foreground">
-            Your restaurant&apos;s permanent QR code — customers scan to view
-            your full digital menu
-          </p>
-        </div>
+        <PageTitle
+          description="Your restaurant's permanent QR code — customers scan to view your full digital menu"
+        >
+          {t.admin.qr.title}
+        </PageTitle>
       </FadeIn>
 
       <div className="grid gap-8 lg:grid-cols-2">
@@ -170,13 +209,14 @@ export default function QRPage() {
             <CardContent className="space-y-6">
               {/* Restaurant info */}
               <div className="flex items-center gap-3 rounded-lg border border-border/50 bg-muted/30 p-4">
-                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-espresso text-warm font-serif font-bold text-lg">
+                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-espresso text-warm font-sans font-semibold text-lg">
                   {restaurantName.charAt(0)}
                 </div>
                 <div>
                   <p className="font-semibold">{restaurantName}</p>
                   <p className="text-xs text-muted-foreground font-mono">
-                    /r/{restaurantSlug}
+                    {restaurantSlug}.{process.env.NODE_ENV === "development" ? "localhost:3000" : "dineeasy.app"}
+                    {menuId ? `/${menuId}` : ""}
                   </p>
                 </div>
               </div>
@@ -195,7 +235,9 @@ export default function QRPage() {
                   </Button>
                 </div>
                 <p className="text-xs text-muted-foreground">
-                  This URL loads all active menus for your restaurant
+                  {menuId
+                    ? "This URL loads the specific menu for your restaurant"
+                    : "This URL loads the default active menu for your restaurant"}
                 </p>
               </div>
 

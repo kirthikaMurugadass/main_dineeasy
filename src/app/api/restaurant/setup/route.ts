@@ -75,10 +75,25 @@ export async function POST(request: Request) {
           .single();
 
         if (retryError) throw retryError;
+        
+        // Auto-create menu for the restaurant
+        await supabase.from("menus").insert({
+          restaurant_id: retry.id,
+          slug: "menu",
+          is_active: true,
+        }).select("id").single();
+        
         return NextResponse.json(retry);
       }
       throw error;
     }
+
+    // Auto-create menu for the restaurant
+    await supabase.from("menus").insert({
+      restaurant_id: restaurant.id,
+      slug: "menu",
+      is_active: true,
+    }).select("id").single();
 
     return NextResponse.json(restaurant);
   } catch (error) {

@@ -12,6 +12,7 @@ interface Props {
   onRemove: () => void;
   uploading?: boolean;
   disabled?: boolean;
+  size?: "sm" | "md" | "lg";
 }
 
 export function ItemImageUpload({
@@ -20,7 +21,18 @@ export function ItemImageUpload({
   onRemove,
   uploading = false,
   disabled = false,
+  size = "sm",
 }: Props) {
+  const sizeClasses = {
+    sm: "h-16 w-16",
+    md: "h-24 w-24",
+    lg: "h-32 w-32",
+  };
+  const iconSizes = {
+    sm: 16,
+    md: 20,
+    lg: 24,
+  };
   const inputRef = useRef<HTMLInputElement>(null);
   const [dragOver, setDragOver] = useState(false);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
@@ -79,14 +91,14 @@ export function ItemImageUpload({
 
       {displayUrl ? (
         /* ── Image preview ── */
-        <div className="group relative h-16 w-16 shrink-0 overflow-hidden rounded-lg border border-border/50">
+        <div className={`group relative ${sizeClasses[size]} shrink-0 overflow-hidden rounded-lg border border-border/50`}>
           <Image
             src={displayUrl}
             alt="Item image"
             fill
             className="object-cover"
-            sizes="64px"
-            unoptimized={displayUrl.startsWith("blob:")}
+            sizes={size === "lg" ? "128px" : size === "md" ? "96px" : "64px"}
+            unoptimized={displayUrl.startsWith("blob:") || displayUrl.includes("127.0.0.1") || displayUrl.includes("localhost")}
           />
 
           {/* Overlay with actions */}
@@ -95,18 +107,18 @@ export function ItemImageUpload({
               <button
                 type="button"
                 onClick={() => inputRef.current?.click()}
-                className="rounded-full bg-white/20 p-1 text-white backdrop-blur-sm hover:bg-white/30"
+                className="rounded-full bg-white/20 p-1.5 text-white backdrop-blur-sm hover:bg-white/30"
                 title="Replace image"
               >
-                <ImagePlus size={12} />
+                <ImagePlus size={iconSizes[size] * 0.75} />
               </button>
               <button
                 type="button"
                 onClick={handleRemove}
-                className="rounded-full bg-white/20 p-1 text-white backdrop-blur-sm hover:bg-red-500/70"
+                className="rounded-full bg-white/20 p-1.5 text-white backdrop-blur-sm hover:bg-red-500/70"
                 title="Remove image"
               >
-                <X size={12} />
+                <X size={iconSizes[size] * 0.75} />
               </button>
             </div>
           )}
@@ -114,7 +126,7 @@ export function ItemImageUpload({
           {/* Upload spinner overlay */}
           {uploading && (
             <div className="absolute inset-0 flex items-center justify-center bg-black/50">
-              <Loader2 size={16} className="animate-spin text-white" />
+              <Loader2 size={iconSizes[size]} className="animate-spin text-white" />
             </div>
           )}
         </div>
@@ -130,16 +142,16 @@ export function ItemImageUpload({
           onDragLeave={() => setDragOver(false)}
           onDrop={handleDrop}
           disabled={disabled || uploading}
-          className={`flex h-16 w-16 shrink-0 flex-col items-center justify-center rounded-lg border-2 border-dashed transition-colors ${
+          className={`flex ${sizeClasses[size]} shrink-0 flex-col items-center justify-center rounded-lg border-2 border-dashed transition-colors ${
             dragOver
               ? "border-gold bg-gold/5"
               : "border-border/50 hover:border-border hover:bg-muted/30"
           } ${disabled ? "cursor-not-allowed opacity-50" : "cursor-pointer"}`}
         >
           {uploading ? (
-            <Loader2 size={16} className="animate-spin text-muted-foreground" />
+            <Loader2 size={iconSizes[size]} className="animate-spin text-muted-foreground" />
           ) : (
-            <ImagePlus size={16} className="text-muted-foreground" />
+            <ImagePlus size={iconSizes[size]} className="text-muted-foreground" />
           )}
         </button>
       )}

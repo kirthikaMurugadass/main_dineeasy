@@ -12,9 +12,11 @@ interface PageProps {
 async function getRestaurantData(
   slug: string
 ): Promise<PublicRestaurantData | null> {
-  // Try Redis cache first
+  // Try Redis cache first (skip in development for instant updates)
   const cacheKey = `restaurant:${slug}`;
-  const cached = await getCachedMenu(cacheKey);
+  const cached = process.env.NODE_ENV === "development" 
+    ? null 
+    : await getCachedMenu(cacheKey);
   if (cached) {
     try {
       return JSON.parse(cached);
@@ -100,7 +102,8 @@ async function getRestaurantData(
   const { data: translations } = await supabase
     .from("translations")
     .select("entity_type, entity_id, language, title, description")
-    .in("entity_id", entityIds);
+    .in("entity_id", entityIds)
+    .in("entity_type", ["category", "menu_item"]);
 
   const translationMap = new Map<
     string,
@@ -191,8 +194,8 @@ export async function generateMetadata({
   };
 }
 
-// ISR: revalidate every 60 seconds
-export const revalidate = 60;
+// ISR: revalidate every 60 seconds (0 in development for instant updates)
+export const revalidate = process.env.NODE_ENV === "development" ? 0 : 60;
 
 export default async function RestaurantPublicPage({
   params,
