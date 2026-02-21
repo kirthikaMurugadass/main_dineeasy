@@ -3,6 +3,11 @@
 ## Problem
 Restaurant creation fails in production (Vercel) with "setup failed" error, likely due to Row Level Security (RLS) policies blocking inserts.
 
+## Quick Fix (Applied)
+The API route has been updated to use a service role client for restaurant creation, which bypasses RLS temporarily. This ensures restaurant creation works immediately while you apply the RLS migration.
+
+**Important**: Make sure `SUPABASE_SERVICE_ROLE_KEY` is set in your Vercel environment variables.
+
 ## Solution
 A comprehensive SQL migration has been created to fix all RLS policies for production-grade multi-tenant SaaS architecture.
 

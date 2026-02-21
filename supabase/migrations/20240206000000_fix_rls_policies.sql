@@ -69,6 +69,7 @@ CREATE POLICY "Public can read restaurants"
 
 -- Policy 1: Authenticated users can INSERT menus for their restaurants
 -- Uses EXISTS check to verify ownership through restaurant
+-- Note: In WITH CHECK for INSERT, we reference the new row being inserted
 CREATE POLICY "Owners can insert menus"
   ON menus FOR INSERT
   TO authenticated
