@@ -1374,7 +1374,7 @@ export default function CategoryDetailPage() {
                           <Button
                             variant="outline"
                             onClick={addItem}
-                            className="gap-2 border-dashed border-2 border-border/50 hover:border-gold/50 hover:bg-gold/5 transition-all"
+                            className="gap-2 border-dashed border-2 border-border/50 hover:border-gold/50 hover:bg-gold/5 transition-all w-full sm:w-auto"
                             size="lg"
                           >
                             <Plus size={18} />
