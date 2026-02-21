@@ -71,10 +71,10 @@ export function Hero() {
             animate="visible"
             custom={1}
           >
-            <h1 className="font-sans text-5xl font-semibold leading-[1.1] tracking-tight text-white sm:text-6xl lg:text-7xl">
-              <span className="whitespace-nowrap">{t.landing.hero.title}</span>
+            <h1 className="font-sans text-3xl font-semibold leading-[1.15] tracking-tight text-white sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl">
+              <span className="block sm:whitespace-nowrap">{t.landing.hero.title}</span>
               <br />
-              <span className="text-gradient-gold">{t.landing.hero.titleAccent}</span>
+              <span className="block text-gradient-gold sm:whitespace-nowrap">{t.landing.hero.titleAccent}</span>
             </h1>
           </motion.div>
 

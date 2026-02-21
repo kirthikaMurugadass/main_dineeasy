@@ -43,7 +43,7 @@ NEXT_PUBLIC_SITE_URL=https://dineeasy.app
 3. Add:
    - **Key**: `NEXT_PUBLIC_SITE_URL`
    - **Value**: `https://dineeasy-new.vercel.app` (or your custom domain)
-   - **Environment**: Production, Preview, Development (select all)
+   - **Environment**: ProduWhatsApp Image 2026-02-21 at 1.15.03 PM.jpegpment (select all)
 4. Click **Save**
 5. **Redeploy** your application
 
