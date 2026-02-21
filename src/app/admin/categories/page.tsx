@@ -272,25 +272,26 @@ export default function CategoriesPage() {
   return (
     <div className="space-y-8">
       <FadeIn>
-        <div className="flex items-center justify-between">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <PageTitle description={`${categories.length} ${categories.length === 1 ? "category" : "categories"} in your menu`}>
             Categories
           </PageTitle>
-          <div className="flex items-center gap-3">
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-3">
             {restaurantSlug && (
               <a
                 href={`/r/${restaurantSlug}`}
                 target="_blank"
                 rel="noopener noreferrer"
+                className="w-full sm:w-auto"
               >
-                <Button variant="outline" className="gap-2">
+                <Button variant="outline" className="gap-2 w-full sm:w-auto">
                   <ExternalLink size={14} />
                   View Public
                 </Button>
               </a>
             )}
-            <Link href="/admin/menu/category/new">
-              <Button className="gap-2 bg-espresso text-warm hover:bg-espresso/90">
+            <Link href="/admin/menu/category/new" className="w-full sm:w-auto">
+              <Button className="gap-2 bg-espresso text-warm hover:bg-espresso/90 w-full sm:w-auto">
                 <Plus size={16} />
                 Add Category
               </Button>

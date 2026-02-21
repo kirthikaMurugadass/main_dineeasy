@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
@@ -21,6 +22,7 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
+  useSidebar,
 } from "@/components/ui/sidebar";
 import { AppLogo } from "@/components/ui/app-logo";
 import { useI18n } from "@/lib/i18n/context";
@@ -38,6 +40,14 @@ export function AdminSidebar() {
   const pathname = usePathname();
   const { t } = useI18n();
   const router = useRouter();
+  const { setOpenMobile, isMobile } = useSidebar();
+
+  // Close sidebar on mobile when pathname changes
+  useEffect(() => {
+    if (isMobile) {
+      setOpenMobile(false);
+    }
+  }, [pathname, isMobile, setOpenMobile]);
 
   const labels: Record<string, string> = {
     dashboard: t.admin.dashboard.title,

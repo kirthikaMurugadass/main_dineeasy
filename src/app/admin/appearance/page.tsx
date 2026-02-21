@@ -583,7 +583,7 @@ export default function AppearancePage() {
             </CardHeader>
             <CardContent className="space-y-4">
               {/* Presets */}
-              <div className="grid grid-cols-3 gap-2">
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
                 {colorPresets.map((preset) => (
                   <button
                     key={preset.name}
@@ -594,7 +594,7 @@ export default function AppearancePage() {
                         accentColor: preset.accent,
                       })
                     }
-                    className={`flex items-center gap-2 rounded-lg border p-2.5 transition-all ${
+                    className={`flex items-center gap-2 rounded-lg border p-2 sm:p-2.5 transition-all ${
                       config.primaryColor === preset.primary
                         ? "border-gold bg-gold/5"
                         : "border-border/50 hover:border-border"
