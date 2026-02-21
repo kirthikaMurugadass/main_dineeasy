@@ -126,39 +126,59 @@ function SortableItem({
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, x: -20 }}
-      className="group relative rounded-xl border border-border/50 bg-card p-4 shadow-sm transition-all hover:border-gold/30 hover:shadow-md"
+      className="group relative rounded-xl border border-border/50 bg-card p-3 sm:p-4 shadow-sm transition-all hover:border-gold/30 hover:shadow-md"
     >
-      <div className="flex items-start gap-4">
-        {/* Drag Handle */}
-        <button
-          {...attributes}
-          {...listeners}
-          className="mt-3 cursor-grab rounded p-1.5 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground active:cursor-grabbing"
-        >
-          <GripVertical size={18} />
-        </button>
+      <div className="flex flex-col sm:flex-row sm:items-start gap-3 sm:gap-4">
+        {/* Top Row: Drag Handle, Image, and Controls (Mobile) */}
+        <div className="flex items-start gap-3 sm:contents">
+          {/* Drag Handle */}
+          <button
+            {...attributes}
+            {...listeners}
+            className="mt-1 sm:mt-3 cursor-grab rounded p-1.5 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground active:cursor-grabbing flex-shrink-0"
+          >
+            <GripVertical size={18} />
+          </button>
 
-        {/* Image Upload */}
-        <div className="flex-shrink-0">
-          <ItemImageUpload
-            imageUrl={item.image_url}
-            uploading={saving && !!item._pendingFile}
-            disabled={saving}
-            size="lg"
-            onFileSelected={(file) =>
-              onUpdate(itemIndex, {
-                _pendingFile: file,
-                _deleteImage: false,
-              })
-            }
-            onRemove={() =>
-              onUpdate(itemIndex, {
-                image_url: null,
-                _pendingFile: undefined,
-                _deleteImage: true,
-              })
-            }
-          />
+          {/* Image Upload */}
+          <div className="flex-shrink-0">
+            <ItemImageUpload
+              imageUrl={item.image_url}
+              uploading={saving && !!item._pendingFile}
+              disabled={saving}
+              size="lg"
+              onFileSelected={(file) =>
+                onUpdate(itemIndex, {
+                  _pendingFile: file,
+                  _deleteImage: false,
+                })
+              }
+              onRemove={() =>
+                onUpdate(itemIndex, {
+                  image_url: null,
+                  _pendingFile: undefined,
+                  _deleteImage: true,
+                })
+              }
+            />
+          </div>
+
+          {/* Controls - Mobile Only (shown on top right) */}
+          <div className="flex items-center gap-2 ml-auto sm:hidden">
+            <Switch
+              checked={item.is_active}
+              onCheckedChange={(checked) => onUpdate(itemIndex, { is_active: checked })}
+              className="data-[state=checked]:bg-green-500"
+            />
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => onRemove(itemIndex)}
+              className="h-8 w-8 text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors"
+            >
+              <Trash2 size={14} />
+            </Button>
+          </div>
         </div>
 
         {/* Item Details */}
@@ -168,7 +188,7 @@ function SortableItem({
               placeholder="Item name"
               value={tr?.title ?? ""}
               onChange={(e) => updateTranslation("title", e.target.value)}
-              className="h-11 text-sm font-medium border-border/50 focus:border-gold/50 focus:ring-gold/20"
+              className="h-10 sm:h-11 text-sm font-medium border-border/50 focus:border-gold/50 focus:ring-gold/20"
             />
             <Textarea
               placeholder="Description (optional)"
@@ -180,9 +200,9 @@ function SortableItem({
           </div>
         </div>
 
-        {/* Price & Controls */}
-        <div className="flex items-start gap-3 flex-shrink-0">
-          <div className="w-32">
+        {/* Price & Controls - Desktop */}
+        <div className="flex sm:flex-col items-start sm:items-end gap-3 flex-shrink-0 sm:pt-0 pt-0">
+          <div className="w-full sm:w-32">
             <Label className="text-xs text-muted-foreground mb-1.5 block">Price</Label>
             <div className="relative">
               <span className="absolute left-3 top-1/2 -translate-y-1/2 text-xs font-medium text-muted-foreground">
@@ -195,12 +215,13 @@ function SortableItem({
                 placeholder="0.00"
                 value={item.price_chf}
                 onChange={(e) => onUpdate(itemIndex, { price_chf: e.target.value })}
-                className="h-11 pl-12 text-right font-mono text-sm font-semibold border-border/50 focus:border-gold/50 focus:ring-gold/20"
+                className="h-10 sm:h-11 pl-12 text-right font-mono text-sm font-semibold border-border/50 focus:border-gold/50 focus:ring-gold/20"
               />
             </div>
           </div>
 
-          <div className="flex flex-col items-end gap-3 pt-6">
+          {/* Controls - Desktop Only */}
+          <div className="hidden sm:flex flex-col items-end gap-3 pt-6">
             <div className="flex items-center gap-3">
               <div className="flex flex-col items-end gap-1">
                 <Label className="text-xs text-muted-foreground">Status</Label>
