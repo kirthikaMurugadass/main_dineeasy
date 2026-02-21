@@ -214,9 +214,8 @@ export default function QRPage() {
                 </div>
                 <div>
                   <p className="font-semibold">{restaurantName}</p>
-                  <p className="text-xs text-muted-foreground font-mono">
-                    {restaurantSlug}.{process.env.NODE_ENV === "development" ? "localhost:3000" : "dineeasy.app"}
-                    {menuId ? `/${menuId}` : ""}
+                  <p className="text-xs text-muted-foreground font-mono break-all">
+                    {getQrUrl() || "Loading..."}
                   </p>
                 </div>
               </div>
