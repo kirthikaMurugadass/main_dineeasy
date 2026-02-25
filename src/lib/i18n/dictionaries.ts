@@ -147,7 +147,7 @@ const en: Dictionary = {
       title: "Where Dining Meets",
       titleAccent: "Digital Elegance.",
       subtitle:
-        "Transform your café or restaurant with seamless QR menus. Because great food deserves a great presentation.",
+        "Transform your café or restaurant with seamless QR menu. Because great food deserves a great presentation.",
       cta: "Create Free Menu",
       ctaSecondary: "See Demo",
     },
