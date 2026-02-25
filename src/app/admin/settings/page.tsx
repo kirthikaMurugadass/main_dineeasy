@@ -10,8 +10,10 @@ import { PageTitle } from "@/components/ui/page-title";
 import { FadeIn } from "@/components/motion";
 import { createClient } from "@/lib/supabase/client";
 import { toast } from "sonner";
+import { useI18n } from "@/lib/i18n/context";
 
 export default function SettingsPage() {
+  const { t } = useI18n();
   const [name, setName] = useState("");
   const [slug, setSlug] = useState("");
   const [originalSlug, setOriginalSlug] = useState("");
@@ -76,9 +78,9 @@ export default function SettingsPage() {
       }
 
       setOriginalSlug(slug);
-      toast.success("Settings saved!");
+      toast.success(t.admin.settings.saved);
     } catch {
-      toast.error("Failed to save settings");
+      toast.error(t.admin.settings.error);
     } finally {
       setSaving(false);
     }
@@ -96,8 +98,8 @@ export default function SettingsPage() {
     <div className="space-y-8">
       <FadeIn>
         <div className="flex items-center justify-between">
-          <PageTitle description="Manage your restaurant profile and account">
-            Settings
+          <PageTitle description={t.admin.settings.description}>
+            {t.admin.settings.title}
           </PageTitle>
           <Button
             onClick={handleSave}
@@ -105,7 +107,7 @@ export default function SettingsPage() {
             className="gap-2 bg-espresso text-warm hover:bg-espresso/90"
           >
             {saving ? <Loader2 size={16} className="animate-spin" /> : <Save size={16} />}
-            Save
+            {t.admin.settings.save}
           </Button>
         </div>
       </FadeIn>
@@ -114,28 +116,28 @@ export default function SettingsPage() {
         <FadeIn delay={0.1}>
           <Card className="border-border/50">
             <CardHeader>
-              <CardTitle className="text-lg">Restaurant Profile</CardTitle>
+              <CardTitle className="text-lg">{t.admin.settings.restaurantProfile}</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="space-y-2">
-                <Label>Restaurant Name</Label>
+                <Label>{t.admin.settings.restaurantName}</Label>
                 <Input
                   value={name}
                   onChange={(e) => setName(e.target.value)}
-                  placeholder="My Café or Restaurant"
+                  placeholder={t.admin.settings.restaurantNamePlaceholder}
                 />
               </div>
               <div className="space-y-2">
-                <Label>URL Slug</Label>
+                <Label>{t.admin.settings.urlSlug}</Label>
                 <Input
                   value={slug}
                   onChange={(e) =>
                     setSlug(e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, "-"))
                   }
-                  placeholder="my-cafe"
+                  placeholder={t.admin.settings.urlSlugPlaceholder}
                 />
                 <p className="text-xs text-muted-foreground">
-                  Your menu will be at: dineeasy.app/<strong>{slug}</strong>/menu-slug
+                  {t.admin.settings.urlDescription}<strong>{slug}</strong>
                 </p>
               </div>
             </CardContent>
@@ -145,14 +147,14 @@ export default function SettingsPage() {
         <FadeIn delay={0.15}>
           <Card className="border-border/50">
             <CardHeader>
-              <CardTitle className="text-lg">Account</CardTitle>
+              <CardTitle className="text-lg">{t.admin.settings.account}</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="space-y-2">
-                <Label>Email</Label>
+                <Label>{t.admin.settings.email}</Label>
                 <Input value={email} disabled className="bg-muted" />
                 <p className="text-xs text-muted-foreground">
-                  This is your login email and cannot be changed here.
+                  {t.admin.settings.emailDescription}
                 </p>
               </div>
             </CardContent>

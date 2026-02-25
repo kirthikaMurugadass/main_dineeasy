@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import { Inter, Playfair_Display, JetBrains_Mono } from "next/font/google";
 import { Toaster } from "@/components/ui/sonner";
+import { I18nProviderWrapper } from "@/components/providers/i18n-provider-wrapper";
+import { ThemeProvider } from "@/components/providers/theme-provider";
 import "./globals.css";
 
 const inter = Inter({
@@ -56,8 +58,12 @@ export default function RootLayout({
         className={`${inter.variable} ${playfair.variable} ${mono.variable} font-sans antialiased`}
         suppressHydrationWarning
       >
-        {children}
-        <Toaster position="top-right" richColors />
+        <ThemeProvider>
+          <I18nProviderWrapper>
+            {children}
+            <Toaster position="top-right" richColors />
+          </I18nProviderWrapper>
+        </ThemeProvider>
       </body>
     </html>
   );

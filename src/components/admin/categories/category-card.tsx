@@ -14,6 +14,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { cn } from "@/lib/utils";
+import { useI18n } from "@/lib/i18n/context";
 import type { Language } from "@/types/database";
 
 interface CategoryItem {
@@ -30,6 +31,7 @@ interface CategoryCardProps {
   itemCount: number;
   activeItemCount: number;
   is_active: boolean;
+  image_url: string | null;
   items: CategoryItem[];
   avgPrice: number;
   language: Language;
@@ -44,6 +46,7 @@ export function CategoryCard({
   itemCount,
   activeItemCount,
   is_active,
+  image_url: categoryImageUrl,
   items,
   avgPrice,
   language,
@@ -51,6 +54,9 @@ export function CategoryCard({
   onDelete,
   deleting = false,
 }: CategoryCardProps) {
+  const { t, language: currentLang } = useI18n();
+  // German & Italian have longer "Add Item" labels — use compact stacked layout
+  const needsCompactButtons = currentLang === "de" || currentLang === "it";
   const featuredItems = items.filter((item) => item.is_active).slice(0, 4);
   const remainingCount = itemCount - featuredItems.length;
 
@@ -74,17 +80,17 @@ export function CategoryCard({
       className="h-full"
     >
       <Card className="group relative h-full overflow-hidden border-border/50 bg-card/50 backdrop-blur-sm transition-all duration-300 hover:border-gold/30 hover:shadow-lg hover:shadow-gold/10 p-0">
-        {/* Banner Image / Gradient */}
+        {/* Banner Image / Gradient - prefer category image, fallback to first item image */}
         <div
           className={cn(
             "relative h-32 w-full overflow-hidden",
-            !items.some((i) => i.image_url) && `bg-gradient-to-br ${gradient}`
+            !categoryImageUrl && !items.some((i) => i.image_url) && `bg-gradient-to-br ${gradient}`
           )}
         >
-          {items.find((i) => i.image_url) ? (
+          {(categoryImageUrl || items.find((i) => i.image_url)?.image_url) ? (
             <div className="relative h-full w-full">
               <Image
-                src={items.find((i) => i.image_url)!.image_url!}
+                src={categoryImageUrl || items.find((i) => i.image_url)!.image_url!}
                 alt={name}
                 fill
                 className="object-cover"
@@ -112,7 +118,7 @@ export function CategoryCard({
                     : "bg-gray-500/90 text-white border-gray-400/50"
                 )}
               >
-                {is_active ? "Active" : "Inactive"}
+                {is_active ? t.admin.menus.active : t.admin.menus.inactive}
               </Badge>
             </div>
           </div>
@@ -133,11 +139,11 @@ export function CategoryCard({
                 <DropdownMenuItem onClick={() => onToggleActive(id, is_active)}>
                   {is_active ? (
                     <>
-                      <EyeOff size={14} className="mr-2" /> Deactivate
+                      <EyeOff size={14} className="mr-2" /> {t.admin.categories.deactivate}
                     </>
                   ) : (
                     <>
-                      <Eye size={14} className="mr-2" /> Activate
+                      <Eye size={14} className="mr-2" /> {t.admin.categories.activate}
                     </>
                   )}
                 </DropdownMenuItem>
@@ -147,7 +153,7 @@ export function CategoryCard({
                   disabled={deleting}
                 >
                   <Trash2 size={14} className="mr-2" />
-                  {deleting ? "Deleting..." : "Delete"}
+                  {deleting ? t.admin.categories.deleting : t.admin.categories.delete}
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
@@ -193,18 +199,18 @@ export function CategoryCard({
             </div>
           ) : (
             <div className="mb-4 flex h-16 items-center justify-center rounded-lg border border-dashed border-border/50 bg-muted/30">
-              <p className="text-xs text-muted-foreground">No items yet</p>
+              <p className="text-xs text-muted-foreground">{t.admin.categories.noItemsYet}</p>
             </div>
           )}
 
           {/* Stats */}
           <div className="mb-4 grid grid-cols-2 gap-2 text-xs">
             <div className="rounded-lg bg-muted/30 p-2">
-              <div className="text-muted-foreground">Items</div>
+              <div className="text-muted-foreground">{t.admin.categories.items}</div>
               <div className="text-lg font-semibold">{itemCount}</div>
             </div>
             <div className="rounded-lg bg-muted/30 p-2">
-              <div className="text-muted-foreground">Active</div>
+              <div className="text-muted-foreground">{t.admin.menus.active}</div>
               <div className="text-lg font-semibold text-green-500">{activeItemCount}</div>
             </div>
           </div>
@@ -212,23 +218,41 @@ export function CategoryCard({
           {avgPrice > 0 && (
             <div className="mb-4 flex items-center gap-2 rounded-lg bg-gold/10 p-2">
               <TrendingUp size={14} className="text-gold" />
-              <span className="text-xs text-muted-foreground">Avg Price:</span>
+              <span className="text-xs text-muted-foreground">{t.admin.categories.avgPrice}:</span>
               <span className="font-semibold text-gold">CHF {avgPrice.toFixed(2)}</span>
             </div>
           )}
 
-          {/* Action Buttons */}
-          <div className="flex gap-2">
-            <Link href={`/admin/menu/category/${id}`} className="flex-1">
-              <Button variant="outline" size="sm" className="w-full gap-1.5">
-                <Edit2 size={14} />
-                Edit
+          {/* Action Buttons - DE/IT: stacked + compact for long labels */}
+          <div
+            className={cn(
+              "flex gap-2",
+              needsCompactButtons ? "flex-col" : "flex-col sm:flex-row"
+            )}
+          >
+            <Link href={`/admin/menu/category/${id}`} className="flex-1 min-w-0">
+              <Button
+                variant="outline"
+                size="sm"
+                className={cn(
+                  "h-9 w-full gap-1.5",
+                  needsCompactButtons ? "text-xs" : "text-xs sm:text-sm"
+                )}
+              >
+                <Edit2 size={14} className="shrink-0" />
+                <span>{t.admin.categories.edit}</span>
               </Button>
             </Link>
-            <Link href={`/admin/menu/category/${id}`} className="flex-1">
-              <Button size="sm" className="w-full gap-1.5 bg-espresso text-warm hover:bg-espresso/90">
-                <Plus size={14} />
-                Add Item
+            <Link href={`/admin/menu/category/${id}`} className="flex-1 min-w-0">
+              <Button
+                size="sm"
+                className={cn(
+                  "h-9 w-full gap-1.5 bg-espresso text-warm hover:bg-espresso/90",
+                  needsCompactButtons ? "text-xs justify-center" : "text-xs sm:text-sm"
+                )}
+              >
+                <Plus size={14} className="shrink-0" />
+                <span>{t.admin.categories.addItem}</span>
               </Button>
             </Link>
           </div>

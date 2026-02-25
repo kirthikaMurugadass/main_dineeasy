@@ -30,6 +30,7 @@ interface CategoryCard {
   activeItemCount: number;
   is_active: boolean;
   sort_order: number;
+  image_url: string | null;
   items: CategoryItem[];
   avgPrice: number;
 }
@@ -119,7 +120,7 @@ export default function CategoriesPage() {
       // Ensure menu exists (auto-create if needed)
       const menuId = await ensureMenuExists(restaurant.id);
       if (!menuId) {
-        toast.error("Failed to initialize menu");
+        toast.error(t.admin.categories.initError);
         setLoading(false);
         return;
       }
@@ -127,11 +128,34 @@ export default function CategoriesPage() {
       setMenuId(menuId);
 
       // Load categories with translations and item counts
-      const { data: cats, error: catsError } = await supabase
+      // Try with image_url first; if column doesn't exist (migration not run), fallback without it
+      let cats: { id: string; sort_order: number; is_active: boolean; image_url?: string | null }[] | null;
+      let catsError: { message?: string } | null = null;
+
+      const resultWithImage = await supabase
         .from("categories")
-        .select("id, sort_order, is_active")
+        .select("id, sort_order, is_active, image_url")
         .eq("menu_id", menuId)
         .order("sort_order");
+
+      if (resultWithImage.error) {
+        // Column may not exist yet - retry without image_url
+        const resultWithoutImage = await supabase
+          .from("categories")
+          .select("id, sort_order, is_active")
+          .eq("menu_id", menuId)
+          .order("sort_order");
+
+        if (resultWithoutImage.error) {
+          catsError = resultWithoutImage.error;
+          cats = null;
+        } else {
+          cats = (resultWithoutImage.data ?? []).map((c) => ({ ...c, image_url: null }));
+        }
+      } else {
+        cats = resultWithImage.data;
+        catsError = null;
+      }
 
       if (catsError) {
         console.error("Error loading categories:", catsError);
@@ -140,14 +164,15 @@ export default function CategoriesPage() {
         return;
       }
 
-      if (!cats?.length) {
+      const categoriesList = cats ?? [];
+      if (!categoriesList.length) {
         setCategories([]);
         setLoading(false);
         return;
       }
 
       // Get item counts and details per category
-      const catIds = cats.map((c) => c.id);
+      const catIds = categoriesList.map((c) => c.id);
       const { data: items } = await supabase
         .from("menu_items")
         .select("id, category_id, price_chf, image_url, is_active")
@@ -194,7 +219,7 @@ export default function CategoriesPage() {
       const translationMap = new Map(translations?.map((t) => [t.entity_id, t.title]) ?? []);
 
       // Build category cards with stats
-      const categoryCards: CategoryCard[] = cats.map((cat) => {
+      const categoryCards: CategoryCard[] = categoriesList.map((cat) => {
         const categoryItems = itemsByCategory.get(cat.id) ?? [];
         const activeItems = categoryItems.filter((i) => i.is_active);
         const totalPrice = categoryItems.reduce((sum, item) => sum + item.price, 0);
@@ -202,11 +227,12 @@ export default function CategoriesPage() {
 
         return {
           id: cat.id,
-          name: translationMap.get(cat.id) || "Untitled Category",
+          name: translationMap.get(cat.id) || t.admin.categories.emptyTitle,
           itemCount: categoryItems.length,
           activeItemCount: activeItems.length,
           is_active: cat.is_active,
           sort_order: cat.sort_order,
+          image_url: cat.image_url ?? null,
           items: categoryItems,
           avgPrice,
         };
@@ -215,7 +241,7 @@ export default function CategoriesPage() {
       setCategories(categoryCards);
     } catch (err) {
       console.error("Error in loadCategories:", err);
-      toast.error("Failed to load categories");
+      toast.error(t.admin.categories.loadError);
     } finally {
       setLoading(false);
     }
@@ -234,7 +260,7 @@ export default function CategoriesPage() {
         .eq("id", categoryId);
 
       if (error) throw error;
-      toast.success(currentActive ? "Category deactivated" : "Category activated");
+      toast.success(currentActive ? t.admin.menus.inactive : t.admin.menus.active);
       await loadCategories();
     } catch (err) {
       toast.error("Failed to update category");
@@ -242,7 +268,7 @@ export default function CategoriesPage() {
   }
 
   async function handleDeleteCategory(categoryId: string) {
-    if (!confirm("Are you sure you want to delete this category? All items in this category will also be deleted.")) {
+    if (!confirm(t.admin.categories.deleteConfirm)) {
       return;
     }
 
@@ -252,10 +278,10 @@ export default function CategoriesPage() {
       const { error } = await supabase.from("categories").delete().eq("id", categoryId);
 
       if (error) throw error;
-      toast.success("Category deleted");
+      toast.success(t.admin.categories.deleteSuccess);
       await loadCategories();
     } catch (err) {
-      toast.error("Failed to delete category");
+      toast.error(t.admin.categories.deleteError);
     } finally {
       setDeleting(null);
     }
@@ -273,8 +299,8 @@ export default function CategoriesPage() {
     <div className="space-y-8">
       <FadeIn>
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-          <PageTitle description={`${categories.length} ${categories.length === 1 ? "category" : "categories"} in your menu`}>
-            Categories
+          <PageTitle description={t.admin.categories.description}>
+            {t.admin.categories.title}
           </PageTitle>
           <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-3">
             {restaurantSlug && (
@@ -286,14 +312,14 @@ export default function CategoriesPage() {
               >
                 <Button variant="outline" className="gap-2 w-full sm:w-auto">
                   <ExternalLink size={14} />
-                  View Public
+                  {t.admin.categories.viewPublic}
                 </Button>
               </a>
             )}
             <Link href="/admin/menu/category/new" className="w-full sm:w-auto">
               <Button className="gap-2 bg-espresso text-warm hover:bg-espresso/90 w-full sm:w-auto">
                 <Plus size={16} />
-                Add Category
+                {t.admin.categories.addCategory}
               </Button>
             </Link>
           </div>
@@ -315,6 +341,7 @@ export default function CategoriesPage() {
                 itemCount={category.itemCount}
                 activeItemCount={category.activeItemCount}
                 is_active={category.is_active}
+                image_url={category.image_url}
                 items={category.items}
                 avgPrice={category.avgPrice}
                 language={language}

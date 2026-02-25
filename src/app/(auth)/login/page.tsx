@@ -11,9 +11,11 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { createClient } from "@/lib/supabase/client";
 import { toast } from "sonner";
+import { useI18n } from "@/lib/i18n/context";
 
 export default function LoginPage() {
   const router = useRouter();
+  const { t } = useI18n();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
@@ -22,7 +24,7 @@ export default function LoginPage() {
   async function handleLogin(e: React.FormEvent) {
     e.preventDefault();
     if (!email || !password) {
-      toast.error("Please enter both email and password");
+      toast.error(t.auth.login.errors.emptyFields);
       return;
     }
 
@@ -38,7 +40,7 @@ export default function LoginPage() {
       if (error) throw error;
 
       if (data.user) {
-        toast.success("Welcome back!");
+        toast.success(t.auth.login.success);
         router.push("/admin");
         router.refresh();
       }
@@ -46,8 +48,8 @@ export default function LoginPage() {
       console.error("Login error:", err);
       const errorMessage =
         err.message === "Invalid login credentials"
-          ? "Invalid email or password. Please try again."
-          : err.message || "Failed to sign in. Please try again.";
+          ? t.auth.login.errors.invalidCredentials
+          : err.message || t.auth.login.errors.genericError;
       toast.error(errorMessage);
     } finally {
       setLoading(false);
@@ -75,10 +77,10 @@ export default function LoginPage() {
               {/* Title */}
               <div className="space-y-2">
                 <h1 className="text-3xl font-bold text-foreground font-serif">
-                  Sign In
+                  {t.auth.login.title}
                 </h1>
                 <p className="text-sm text-muted-foreground">
-                  or use your email for login
+                  {t.auth.login.subtitle}
                 </p>
               </div>
 
@@ -90,7 +92,7 @@ export default function LoginPage() {
                     htmlFor="email"
                     className="text-sm font-medium text-foreground"
                   >
-                    Email address
+                    {t.auth.login.emailLabel}
                   </Label>
                   <div className="relative">
                     <Mail
@@ -104,7 +106,7 @@ export default function LoginPage() {
                     <Input
                       id="email"
                       type="email"
-                      placeholder="you@restaurant.ch"
+                      placeholder={t.auth.login.emailPlaceholder}
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
                       onFocus={() => setFocusedField("email")}
@@ -128,14 +130,14 @@ export default function LoginPage() {
                       htmlFor="password"
                       className="text-sm font-medium text-foreground"
                     >
-                      Password
+                      {t.auth.login.passwordLabel}
                     </Label>
                     <button
                       type="button"
                       onClick={() => toast.info("Password reset coming soon")}
                       className="text-xs font-medium text-primary transition-colors hover:text-primary/80"
                     >
-                      Forgot?
+                      {t.auth.login.forgotPassword}
                     </button>
                   </div>
                   <div className="relative">
@@ -150,7 +152,7 @@ export default function LoginPage() {
                     <Input
                       id="password"
                       type="password"
-                      placeholder="Enter your password"
+                      placeholder={t.auth.login.passwordPlaceholder}
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
                       onFocus={() => setFocusedField("password")}
@@ -183,7 +185,7 @@ export default function LoginPage() {
                         className="flex items-center justify-center gap-2"
                       >
                         <Loader2 size={18} className="animate-spin" />
-                        <span>Signing in...</span>
+                        <span>{t.auth.login.submitButton}...</span>
                       </motion.div>
                     ) : (
                       <motion.span
@@ -192,7 +194,7 @@ export default function LoginPage() {
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
                       >
-                        Sign In
+                        {t.auth.login.submitButton}
                       </motion.span>
                     )}
                   </AnimatePresence>
@@ -200,12 +202,12 @@ export default function LoginPage() {
 
                 {/* Sign Up Link */}
                 <p className="text-center text-sm text-muted-foreground">
-                  Don&apos;t have an account?{" "}
+                  {t.auth.login.noAccount}{" "}
                   <Link
                     href="/signup"
                     className="font-medium text-primary transition-colors hover:text-primary/80"
                   >
-                    Sign up
+                    {t.auth.login.signUpLink}
                   </Link>
                 </p>
               </form>
@@ -243,17 +245,17 @@ export default function LoginPage() {
                 className="space-y-6"
               >
                 <h2 className="text-4xl font-bold text-white font-serif">
-                  Hello, Friend!
+                  {t.auth.login.panelGreeting}
                 </h2>
                 <p className="text-lg text-white/90 max-w-sm">
-                  Enter your personal details and start your journey with us
+                  {t.auth.login.panelDescription}
                 </p>
                 <Link href="/signup">
                   <Button
                     variant="outline"
                     className="border-2 border-white/50 bg-transparent px-8 py-6 text-base font-semibold text-white transition-all hover:bg-white/10 hover:border-white/70"
                   >
-                    SIGN UP
+                    {t.auth.login.panelButton}
                   </Button>
                 </Link>
               </motion.div>

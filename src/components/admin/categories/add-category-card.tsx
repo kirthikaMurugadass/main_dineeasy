@@ -5,8 +5,10 @@ import { motion } from "framer-motion";
 import { Plus } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
+import { useI18n } from "@/lib/i18n/context";
 
 export function AddCategoryCard() {
+  const { t } = useI18n();
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -25,9 +27,9 @@ export function AddCategoryCard() {
             >
               <Plus size={32} className="text-gold" />
             </motion.div>
-            <h3 className="mb-2 text-lg font-semibold">Add Category</h3>
+            <h3 className="mb-2 text-lg font-semibold">{t.admin.categories.addCategory}</h3>
             <p className="max-w-xs text-sm text-muted-foreground">
-              Create a new category to organize your menu items
+              {t.admin.categories.description}
             </p>
           </CardContent>
         </Card>

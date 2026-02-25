@@ -1,7 +1,5 @@
 "use client";
 
-import { ThemeProvider } from "@/components/providers/theme-provider";
-import { I18nProvider } from "@/lib/i18n/context";
 import { PageTransition } from "@/components/motion";
 import { Navbar } from "@/components/landing/navbar";
 import { Hero } from "@/components/landing/hero";
@@ -14,21 +12,17 @@ import { Footer } from "@/components/landing/footer";
 
 export default function LandingPage() {
   return (
-    <ThemeProvider>
-      <I18nProvider>
-        <PageTransition>
-          <Navbar />
-          <main>
-            <Hero />
-            <Features />
-            <AboutSection />
-            <DemoPreview />
-            <HowItWorks />
-            <CTASection />
-          </main>
-          <Footer />
-        </PageTransition>
-      </I18nProvider>
-    </ThemeProvider>
+    <PageTransition>
+      <Navbar />
+      <main>
+        <Hero />
+        <Features />
+        <AboutSection />
+        <DemoPreview />
+        <HowItWorks />
+        <CTASection />
+      </main>
+      <Footer />
+    </PageTransition>
   );
 }

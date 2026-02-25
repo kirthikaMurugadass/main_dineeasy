@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
-import { Download, Printer, Copy, Check, RefreshCw, Store } from "lucide-react";
+import { Download, Printer, Copy, Check, Store } from "lucide-react";
 import QRCode from "qrcode";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -193,7 +193,7 @@ export default function QRPage() {
     <div className="space-y-8">
       <FadeIn>
         <PageTitle
-          description="Your restaurant's permanent QR code — customers scan to view your full digital menu"
+          description={t.admin.qr.description}
         >
           {t.admin.qr.title}
         </PageTitle>
@@ -204,7 +204,7 @@ export default function QRPage() {
         <FadeIn delay={0.1}>
           <Card className="border-border/50">
             <CardHeader>
-              <CardTitle className="text-lg">Settings</CardTitle>
+              <CardTitle className="text-lg">{t.admin.qr.settings}</CardTitle>
             </CardHeader>
             <CardContent className="space-y-6">
               {/* Restaurant info */}
@@ -215,14 +215,14 @@ export default function QRPage() {
                 <div>
                   <p className="font-semibold">{restaurantName}</p>
                   <p className="text-xs text-muted-foreground font-mono break-all">
-                    {getQrUrl() || "Loading..."}
+                    {getQrUrl() || t.admin.qr.loading}
                   </p>
                 </div>
               </div>
 
               {/* QR URL display */}
               <div className="space-y-2">
-                <Label>QR Code URL</Label>
+                <Label>{t.admin.qr.qrCodeUrl}</Label>
                 <div className="flex gap-2">
                   <Input
                     value={getQrUrl()}
@@ -235,15 +235,15 @@ export default function QRPage() {
                 </div>
                 <p className="text-xs text-muted-foreground">
                   {menuId
-                    ? "This URL loads the specific menu for your restaurant"
-                    : "This URL loads the default active menu for your restaurant"}
+                    ? t.admin.qr.urlDescriptionMenu
+                    : t.admin.qr.urlDescription}
                 </p>
               </div>
 
               {/* Color customization */}
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label>QR Color</Label>
+                  <Label>{t.admin.qr.qrColor}</Label>
                   <div className="flex gap-2">
                     <input
                       type="color"
@@ -259,7 +259,7 @@ export default function QRPage() {
                   </div>
                 </div>
                 <div className="space-y-2">
-                  <Label>Background</Label>
+                  <Label>{t.admin.qr.background}</Label>
                   <div className="flex gap-2">
                     <input
                       type="color"
@@ -275,11 +275,6 @@ export default function QRPage() {
                   </div>
                 </div>
               </div>
-
-              <Button variant="outline" onClick={generateQR} className="gap-2">
-                <RefreshCw size={14} />
-                Regenerate
-              </Button>
             </CardContent>
           </Card>
         </FadeIn>
@@ -288,7 +283,7 @@ export default function QRPage() {
         <FadeIn delay={0.2}>
           <Card className="border-border/50">
             <CardHeader>
-              <CardTitle className="text-lg">Preview</CardTitle>
+              <CardTitle className="text-lg">{t.admin.qr.preview}</CardTitle>
             </CardHeader>
             <CardContent className="flex flex-col items-center space-y-6">
               {qrDataUrl ? (
@@ -303,7 +298,7 @@ export default function QRPage() {
                       {restaurantName}
                     </p>
                     <p className="text-center text-xs text-gray-400">
-                      Scan to view menu
+                      {t.menu.language}
                     </p>
                   </div>
                 </HoverScale>
@@ -311,7 +306,7 @@ export default function QRPage() {
                 <div className="flex h-64 w-64 flex-col items-center justify-center rounded-2xl bg-muted gap-2">
                   <Store size={24} className="text-muted-foreground" />
                   <p className="text-sm text-muted-foreground">
-                    Generating QR code...
+                    {t.admin.qr.loading}
                   </p>
                 </div>
               )}

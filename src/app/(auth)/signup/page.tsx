@@ -11,9 +11,11 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { createClient } from "@/lib/supabase/client";
 import { toast } from "sonner";
+import { useI18n } from "@/lib/i18n/context";
 
 export default function SignupPage() {
   const router = useRouter();
+  const { t } = useI18n();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -24,17 +26,17 @@ export default function SignupPage() {
     e.preventDefault();
 
     if (!email || !password || !confirmPassword) {
-      toast.error("Please fill in all fields");
+      toast.error(t.auth.signup.errors.emptyFields);
       return;
     }
 
     if (password !== confirmPassword) {
-      toast.error("Passwords do not match");
+      toast.error(t.auth.signup.errors.passwordMismatch);
       return;
     }
 
     if (password.length < 6) {
-      toast.error("Password must be at least 6 characters long");
+      toast.error(t.auth.signup.errors.passwordTooShort);
       return;
     }
 
@@ -53,7 +55,7 @@ export default function SignupPage() {
       if (error) throw error;
 
       if (data.user) {
-        toast.success("Account created successfully! Signing you in...");
+        toast.success(t.auth.signup.success);
 
         // Automatically sign in after signup
         const { error: signInError } = await supabase.auth.signInWithPassword({
@@ -62,7 +64,7 @@ export default function SignupPage() {
         });
 
         if (signInError) {
-          toast.error("Account created but sign in failed. Please try logging in.");
+          toast.error(t.auth.signup.signInAfterSignup);
           router.push("/login");
           return;
         }
@@ -75,8 +77,8 @@ export default function SignupPage() {
       console.error("Signup error:", err);
       const errorMessage =
         err.message === "User already registered"
-          ? "An account with this email already exists. Please sign in instead."
-          : err.message || "Failed to create account. Please try again.";
+          ? t.auth.signup.errors.userExists
+          : err.message || t.auth.signup.errors.genericError;
       toast.error(errorMessage);
     } finally {
       setLoading(false);
@@ -124,17 +126,17 @@ export default function SignupPage() {
                 className="space-y-6"
               >
                 <h2 className="text-4xl font-bold text-white font-serif">
-                  Welcome Back!
+                  {t.auth.signup.panelGreeting}
                 </h2>
                 <p className="text-lg text-white/90 max-w-sm">
-                  To keep connected with us please login with your personal info
+                  {t.auth.signup.panelDescription}
                 </p>
                 <Link href="/login">
                   <Button
                     variant="outline"
                     className="border-2 border-white/50 bg-transparent px-8 py-6 text-base font-semibold text-white transition-all hover:bg-white/10 hover:border-white/70"
                   >
-                    SIGN IN
+                    {t.auth.signup.panelButton}
                   </Button>
                 </Link>
               </motion.div>
@@ -152,10 +154,10 @@ export default function SignupPage() {
               {/* Title */}
               <div className="space-y-2">
                 <h1 className="text-3xl font-bold text-foreground font-serif">
-                  Create Account
+                  {t.auth.signup.title}
                 </h1>
                 <p className="text-sm text-muted-foreground">
-                  or use your email for registration
+                  {t.auth.signup.subtitle}
                 </p>
               </div>
 
@@ -167,7 +169,7 @@ export default function SignupPage() {
                     htmlFor="email"
                     className="text-sm font-medium text-foreground"
                   >
-                    Email address
+                    {t.auth.signup.emailLabel}
                   </Label>
                   <div className="relative">
                     <Mail
@@ -181,7 +183,7 @@ export default function SignupPage() {
                     <Input
                       id="email"
                       type="email"
-                      placeholder="you@restaurant.ch"
+                      placeholder={t.auth.signup.emailPlaceholder}
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
                       onFocus={() => setFocusedField("email")}
@@ -204,7 +206,7 @@ export default function SignupPage() {
                     htmlFor="password"
                     className="text-sm font-medium text-foreground"
                   >
-                    Password
+                    {t.auth.signup.passwordLabel}
                   </Label>
                   <div className="relative">
                     <Lock
@@ -218,7 +220,7 @@ export default function SignupPage() {
                     <Input
                       id="password"
                       type="password"
-                      placeholder="At least 6 characters"
+                      placeholder={t.auth.signup.passwordPlaceholder}
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
                       onFocus={() => setFocusedField("password")}
@@ -242,7 +244,7 @@ export default function SignupPage() {
                     htmlFor="confirmPassword"
                     className="text-sm font-medium text-foreground"
                   >
-                    Confirm Password
+                    {t.auth.signup.confirmPasswordLabel}
                   </Label>
                   <div className="relative">
                     <Lock
@@ -256,7 +258,7 @@ export default function SignupPage() {
                     <Input
                       id="confirmPassword"
                       type="password"
-                      placeholder="Confirm your password"
+                      placeholder={t.auth.signup.confirmPasswordPlaceholder}
                       value={confirmPassword}
                       onChange={(e) => setConfirmPassword(e.target.value)}
                       onFocus={() => setFocusedField("confirmPassword")}
@@ -290,7 +292,7 @@ export default function SignupPage() {
                         className="flex items-center justify-center gap-2"
                       >
                         <Loader2 size={18} className="animate-spin" />
-                        <span>Creating account...</span>
+                        <span>{t.auth.signup.submitButton}...</span>
                       </motion.div>
                     ) : (
                       <motion.span
@@ -299,7 +301,7 @@ export default function SignupPage() {
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
                       >
-                        Sign Up
+                        {t.auth.signup.submitButton}
                       </motion.span>
                     )}
                   </AnimatePresence>
@@ -307,12 +309,12 @@ export default function SignupPage() {
 
                 {/* Sign In Link */}
                 <p className="text-center text-sm text-muted-foreground">
-                  Already have an account?{" "}
+                  {t.auth.signup.haveAccount}{" "}
                   <Link
                     href="/login"
                     className="font-medium text-primary transition-colors hover:text-primary/80"
                   >
-                    Sign in
+                    {t.auth.signup.signInLink}
                   </Link>
                 </p>
               </form>

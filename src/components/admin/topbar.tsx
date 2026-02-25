@@ -1,6 +1,7 @@
 "use client";
 
 import { Moon, Sun, Monitor } from "lucide-react";
+import { useRouter } from "next/navigation";
 import { useTheme } from "@/components/providers/theme-provider";
 import { Button } from "@/components/ui/button";
 import { SidebarTrigger } from "@/components/ui/sidebar";
@@ -16,8 +17,9 @@ import { SUPPORTED_LANGUAGES } from "@/lib/i18n/dictionaries";
 import type { Language } from "@/types/database";
 
 export function AdminTopbar() {
+  const router = useRouter();
   const { theme, setTheme } = useTheme();
-  const { language, setLanguage } = useI18n();
+  const { language, setLanguage, t } = useI18n();
 
   const themeIcon = theme === "dark" ? Moon : theme === "light" ? Sun : Monitor;
   const ThemeIcon = themeIcon;
@@ -41,7 +43,10 @@ export function AdminTopbar() {
           {SUPPORTED_LANGUAGES.map((lang) => (
             <DropdownMenuItem
               key={lang.code}
-              onClick={() => setLanguage(lang.code as Language)}
+              onClick={() => {
+                setLanguage(lang.code as Language);
+                router.refresh(); // Refresh to update all translated content
+              }}
             >
               <span className="mr-2">{lang.flag}</span>
               {lang.label}
@@ -59,13 +64,13 @@ export function AdminTopbar() {
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end">
           <DropdownMenuItem onClick={() => setTheme("light")}>
-            <Sun size={14} className="mr-2" /> Light
+            <Sun size={14} className="mr-2" /> {t.admin.topbar.light}
           </DropdownMenuItem>
           <DropdownMenuItem onClick={() => setTheme("dark")}>
-            <Moon size={14} className="mr-2" /> Dark
+            <Moon size={14} className="mr-2" /> {t.admin.topbar.dark}
           </DropdownMenuItem>
           <DropdownMenuItem onClick={() => setTheme("system")}>
-            <Monitor size={14} className="mr-2" /> System
+            <Monitor size={14} className="mr-2" /> {t.admin.topbar.system}
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>

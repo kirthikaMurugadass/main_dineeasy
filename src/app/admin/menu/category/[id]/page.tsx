@@ -59,7 +59,12 @@ import { toast } from "sonner";
 import type { Language } from "@/types/database";
 import { ItemImageUpload } from "@/components/admin/item-image-upload";
 import { PageTitle } from "@/components/ui/page-title";
-import { uploadItemImage, deleteItemImage } from "@/lib/upload";
+import {
+  uploadItemImage,
+  deleteItemImage,
+  uploadCategoryImage,
+  deleteCategoryImage,
+} from "@/lib/upload";
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -275,6 +280,7 @@ export default function CategoryDetailPage() {
   const [categoryImage, setCategoryImage] = useState<string | null>(null);
   const [categoryImageFile, setCategoryImageFile] = useState<File | null>(null);
   const [categoryImagePreview, setCategoryImagePreview] = useState<string | null>(null);
+  const [categoryImageDelete, setCategoryImageDelete] = useState(false);
   const [displayOrder, setDisplayOrder] = useState(0);
   const [slug, setSlug] = useState("");
   const [slugEditable, setSlugEditable] = useState(false);
@@ -408,12 +414,24 @@ export default function CategoryDetailPage() {
 
       setRestaurantId(restaurant.id);
 
-      // Get category
-      const { data: category } = await supabase
+      // Get category (try with image_url; fallback without if column doesn't exist yet)
+      let category: { id: string; menu_id: string; is_active: boolean; image_url?: string | null } | null;
+      const resWithImage = await supabase
         .from("categories")
-        .select("id, menu_id, is_active")
+        .select("id, menu_id, is_active, image_url")
         .eq("id", categoryId)
         .single();
+
+      if (resWithImage.error) {
+        const resWithoutImage = await supabase
+          .from("categories")
+          .select("id, menu_id, is_active")
+          .eq("id", categoryId)
+          .single();
+        category = resWithoutImage.data ? { ...resWithoutImage.data, image_url: null } : null;
+      } else {
+        category = resWithImage.data;
+      }
 
       if (!category) {
         toast.error("Category not found");
@@ -423,6 +441,8 @@ export default function CategoryDetailPage() {
 
       setMenuId(category.menu_id);
       setCategoryActive(category.is_active);
+      setCategoryImage(category.image_url ?? null);
+      setCategoryImagePreview(category.image_url ?? null);
 
       // Get category translations
       const { data: translations } = await supabase
@@ -694,7 +714,7 @@ export default function CategoryDetailPage() {
 
       let currentCategoryId = categoryId;
 
-      // Create or update category
+      // Create or update category (create first so we have categoryId for image upload)
       if (isNew) {
         const { data: newCat, error: catError } = await supabase
           .from("categories")
@@ -702,18 +722,44 @@ export default function CategoryDetailPage() {
             menu_id: menuId,
             sort_order: 0,
             is_active: categoryActive,
+            image_url: null,
           })
           .select("id")
           .single();
 
         if (catError || !newCat) throw catError;
         currentCategoryId = newCat.id;
-      } else {
-        await supabase
-          .from("categories")
-          .update({ is_active: categoryActive })
-          .eq("id", currentCategoryId);
       }
+
+      // Handle category image: upload, delete, or keep
+      let categoryImageUrl: string | null = isNew ? null : categoryImage;
+      if (categoryImageDelete && !categoryImageFile) {
+        await deleteCategoryImage(restaurant.id, currentCategoryId);
+        categoryImageUrl = null;
+      } else if (categoryImageFile) {
+        try {
+          const result = await uploadCategoryImage(
+            restaurant.id,
+            currentCategoryId,
+            categoryImageFile
+          );
+          categoryImageUrl = result.url;
+        } catch (uploadErr) {
+          console.error("Category image upload failed:", uploadErr);
+          toast.error("Failed to upload category image");
+          setSaving(false);
+          return;
+        }
+      }
+
+      // Update category with image_url (for both new and edit)
+      await supabase
+        .from("categories")
+        .update({
+          is_active: categoryActive,
+          image_url: categoryImageUrl,
+        })
+        .eq("id", currentCategoryId);
 
       // Save category translations
       for (const tr of categoryTranslations) {
@@ -1128,6 +1174,7 @@ export default function CategoryDetailPage() {
                                     onClick={() => {
                                       setCategoryImagePreview(null);
                                       setCategoryImageFile(null);
+                                      if (categoryImage) setCategoryImageDelete(true);
                                     }}
                                   >
                                     <X className="h-4 w-4" />

@@ -5,8 +5,10 @@ import { motion } from "framer-motion";
 import { Plus, FolderOpen } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { useI18n } from "@/lib/i18n/context";
 
 export function CategoriesEmptyState() {
+  const { t } = useI18n();
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -29,7 +31,7 @@ export function CategoriesEmptyState() {
             transition={{ delay: 0.3 }}
             className="mb-2 text-2xl font-semibold"
           >
-            No categories yet
+            {t.admin.categories.emptyTitle}
           </motion.h3>
           <motion.p
             initial={{ opacity: 0, y: 10 }}
@@ -37,8 +39,7 @@ export function CategoriesEmptyState() {
             transition={{ delay: 0.4 }}
             className="mb-8 max-w-md text-muted-foreground"
           >
-            Start building your digital menu by creating your first category. Organize your dishes,
-            set prices, and add beautiful images.
+            {t.admin.categories.emptyDescription}
           </motion.p>
           <motion.div
             initial={{ opacity: 0, y: 10 }}
@@ -48,7 +49,7 @@ export function CategoriesEmptyState() {
             <Link href="/admin/menu/category/new">
               <Button size="lg" className="gap-2 bg-espresso text-warm hover:bg-espresso/90">
                 <Plus size={20} />
-                Create your first category
+                {t.admin.categories.emptyButton}
               </Button>
             </Link>
           </motion.div>

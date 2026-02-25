@@ -8,7 +8,7 @@ import type { Metadata } from "next";
 
 interface PageProps {
   params: Promise<{ restaurant: string; menuId: string }>;
-  searchParams: Promise<{ config?: string; iframe?: string }>;
+  searchParams: Promise<{ config?: string; iframe?: string; lang?: string }>;
 }
 
 async function getRestaurantDataForPreview(
@@ -38,15 +38,28 @@ async function getRestaurantDataForPreview(
     return null;
   }
 
-  // Fetch categories for this menu
-  const { data: categories } = await supabase
+  // Fetch categories for this menu (try with image_url; fallback without if migration not run)
+  let categories: { id: string; menu_id: string; sort_order: number; is_active: boolean; image_url?: string | null }[];
+  const resWithImage = await supabase
     .from("categories")
-    .select("id, menu_id, sort_order, is_active")
+    .select("id, menu_id, sort_order, is_active, image_url")
     .eq("menu_id", menu.id)
     .eq("is_active", true)
     .order("sort_order");
 
-  if (!categories?.length) {
+  if (resWithImage.error) {
+    const resWithout = await supabase
+      .from("categories")
+      .select("id, menu_id, sort_order, is_active")
+      .eq("menu_id", menu.id)
+      .eq("is_active", true)
+      .order("sort_order");
+    categories = (resWithout.data ?? []).map((c) => ({ ...c, image_url: null }));
+  } else {
+    categories = resWithImage.data ?? [];
+  }
+
+  if (!categories.length) {
     const result: PublicRestaurantData = {
       restaurant: {
         name: restaurant.name,
@@ -120,6 +133,7 @@ async function getRestaurantDataForPreview(
     categories: categories.map((cat) => ({
       id: cat.id,
       sort_order: cat.sort_order,
+      image_url: cat.image_url ?? null,
       title: getTranslationRecord(cat.id, "title") as Record<Language, string>,
       description: getTranslationRecord(cat.id, "description") as Record<
         Language,
@@ -163,8 +177,9 @@ export async function generateMetadata({
 
 export default async function PreviewPage({ params, searchParams }: PageProps) {
   const { restaurant, menuId } = await params;
-  const { config: configParam, iframe } = await searchParams;
+  const { config: configParam, iframe, lang } = await searchParams;
   const isIframe = iframe === "true";
+  const validatedLang = lang && ["de", "en", "fr", "it"].includes(lang) ? (lang as Language) : undefined;
 
   // Decode preview config from URL
   let previewConfig: ThemeConfig & { logoUrl?: string | null } | null = null;
@@ -212,7 +227,7 @@ export default async function PreviewPage({ params, searchParams }: PageProps) {
   if (isIframe) {
     return (
       <div style={{ minHeight: "100vh", backgroundColor: "transparent" }}>
-        <PublicMenuView data={viewData} />
+        <PublicMenuView data={viewData} initialLang={validatedLang} />
       </div>
     );
   }
@@ -220,7 +235,7 @@ export default async function PreviewPage({ params, searchParams }: PageProps) {
   return (
     <>
       <PreviewBanner restaurantSlug={restaurant} menuId={menuId} />
-      <PublicMenuView data={viewData} />
+      <PublicMenuView data={viewData} initialLang={validatedLang} />
     </>
   );
 }

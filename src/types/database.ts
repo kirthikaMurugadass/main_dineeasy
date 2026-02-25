@@ -136,6 +136,7 @@ export interface Category {
   menu_id: string;
   sort_order: number;
   is_active: boolean;
+  image_url: string | null;
   created_at: string;
 }
 
@@ -201,6 +202,7 @@ export interface PublicMenu {
 export interface PublicCategory {
   id: string;
   sort_order: number;
+  image_url: string | null;
   title: Record<Language, string>;
   description: Record<Language, string | null>;
   items: PublicMenuItem[];

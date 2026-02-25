@@ -9,8 +9,10 @@ import { PageTitle } from "@/components/ui/page-title";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
+import { useI18n } from "@/lib/i18n/context";
 
 export default function OnboardingPage() {
+  const { t } = useI18n();
   const [name, setName] = useState("");
   const [loading, setLoading] = useState(false);
   const router = useRouter();
@@ -35,7 +37,7 @@ export default function OnboardingPage() {
       toast.success("Restaurant created! Welcome to DineEasy.");
       router.push("/admin");
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Setup failed");
+      toast.error(err instanceof Error ? err.message : t.admin.onboarding.error);
     } finally {
       setLoading(false);
     }
@@ -55,20 +57,20 @@ export default function OnboardingPage() {
           </div>
           <PageTitle
             className="text-center"
-            description="Let's get your digital menu ready in minutes"
+            description={t.admin.onboarding.description}
           >
-            Set up your restaurant
+            {t.admin.onboarding.title}
           </PageTitle>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-6">
           <div className="space-y-2">
             <Label htmlFor="name" className="text-sm font-medium">
-              Restaurant Name
+              {t.admin.onboarding.restaurantName}
             </Label>
             <Input
               id="name"
-              placeholder="e.g. Café Helvetia or Restaurant Zum Löwen"
+              placeholder={t.admin.onboarding.restaurantNamePlaceholder}
               value={name}
               onChange={(e) => setName(e.target.value)}
               className="h-12 text-base"
@@ -81,7 +83,7 @@ export default function OnboardingPage() {
                 animate={{ opacity: 1 }}
                 className="text-xs text-muted-foreground"
               >
-                Your URL: dineeasy.app/
+                {t.admin.onboarding.yourUrl}
                 <strong>
                   {name
                     .toLowerCase()
@@ -101,7 +103,7 @@ export default function OnboardingPage() {
               <Loader2 size={18} className="animate-spin" />
             ) : (
               <>
-                Continue
+                {t.admin.onboarding.create}
                 <ArrowRight size={16} />
               </>
             )}
