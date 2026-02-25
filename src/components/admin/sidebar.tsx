@@ -66,12 +66,16 @@ export function AdminSidebar() {
   return (
     <Sidebar className="border-r border-sidebar-border">
       <SidebarHeader className="p-4">
-        <AppLogo href="/admin" subtitle="Admin Panel" />
+        <AppLogo href="/admin" subtitle={t.admin.sidebar.adminPanel} />
       </SidebarHeader>
 
       <SidebarContent>
         <SidebarGroup>
-          <SidebarGroupLabel>Navigation</SidebarGroupLabel>
+          <SidebarGroupLabel>
+            <span suppressHydrationWarning translate="no">
+              {t.admin.sidebar.navigation}
+            </span>
+          </SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
               {navItems.map((item) => {
@@ -86,7 +90,7 @@ export function AdminSidebar() {
                     <SidebarMenuButton asChild isActive={isActive}>
                       <Link href={item.href} className="gap-3">
                         <item.icon size={18} />
-                        <span>{labels[item.key]}</span>
+                        <span suppressHydrationWarning translate="no">{labels[item.key]}</span>
                       </Link>
                     </SidebarMenuButton>
                   </SidebarMenuItem>
@@ -103,14 +107,14 @@ export function AdminSidebar() {
             <SidebarMenuButton asChild>
               <Link href="/admin/settings" className="gap-3">
                 <Settings size={18} />
-                <span>Settings</span>
+                <span suppressHydrationWarning translate="no">{t.admin.sidebar.settings}</span>
               </Link>
             </SidebarMenuButton>
           </SidebarMenuItem>
           <SidebarMenuItem>
             <SidebarMenuButton onClick={handleLogout} className="gap-3 text-destructive hover:text-destructive">
               <LogOut size={18} />
-              <span>Sign Out</span>
+              <span suppressHydrationWarning translate="no">{t.admin.sidebar.signOut}</span>
             </SidebarMenuButton>
           </SidebarMenuItem>
         </SidebarMenu>

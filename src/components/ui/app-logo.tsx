@@ -1,3 +1,6 @@
+"use client";
+
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 
@@ -33,9 +36,34 @@ export function AppLogo({
   className,
   iconOnly = false,
 }: AppLogoProps) {
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
+
   const s = sizeMap[size];
   const textColor = variant === "light" ? "text-white" : "text-foreground";
   const accentColor = variant === "light" ? "text-gold" : "text-gold";
+
+  // Render logo text only after mount to avoid hydration mismatch from browser
+  // extensions (e.g. Google Translate) that inject <font> tags before React hydrates
+  const logoText = mounted ? (
+    <div className="flex flex-col">
+      <span
+        className={cn(
+          "font-sans font-semibold tracking-tight",
+          textColor,
+          s.text
+        )}
+      >
+        Dine<span className={accentColor}>Easy</span>
+      </span>
+      {subtitle && (
+        <span className="text-[10px] text-muted-foreground">{subtitle}</span>
+      )}
+    </div>
+  ) : (
+    <div className={cn("flex flex-col min-w-[5.5rem]", s.text)} aria-hidden="true" />
+  );
+
   const content = (
     <>
       <div
@@ -46,22 +74,7 @@ export function AppLogo({
       >
         D
       </div>
-      {!iconOnly && (
-        <div className="flex flex-col">
-          <span
-            className={cn(
-              "font-sans font-semibold tracking-tight",
-              textColor,
-              s.text
-            )}
-          >
-            Dine<span className={accentColor}>Easy</span>
-          </span>
-          {subtitle && (
-            <span className="text-[10px] text-muted-foreground">{subtitle}</span>
-          )}
-        </div>
-      )}
+      {!iconOnly && logoText}
     </>
   );
 
@@ -87,6 +100,13 @@ export function AppLogo({
 
 /** Inline brand text "DineEasy" — same font as UI */
 export function BrandText({ className }: { className?: string }) {
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
+
+  if (!mounted) {
+    return <span className={cn("font-sans font-semibold tracking-tight text-foreground min-w-[5.5rem]", className)} aria-hidden="true" />;
+  }
+
   return (
     <span
       className={cn(

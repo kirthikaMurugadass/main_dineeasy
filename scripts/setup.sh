@@ -39,11 +39,6 @@ echo -e "${GREEN}All prerequisites met.${NC}"
 step "Installing npm dependencies..."
 npm install
 
-# ─── Start Redis ───
-
-step "Starting Redis via Docker Compose..."
-docker compose up -d redis
-
 # ─── Start Supabase ───
 
 step "Starting local Supabase stack..."
@@ -66,7 +61,6 @@ cat > .env.local <<EOF
 NEXT_PUBLIC_SUPABASE_URL=${api_url}
 NEXT_PUBLIC_SUPABASE_ANON_KEY=${anon_key}
 SUPABASE_SERVICE_ROLE_KEY=${service_key}
-REDIS_URL=redis://127.0.0.1:6379
 NEXT_PUBLIC_SITE_URL=http://localhost:3000
 EOF
 
@@ -83,7 +77,6 @@ echo "  Next.js      -> npm run dev         -> http://localhost:3000"
 echo "  Supabase API -> supabase status      -> ${api_url}"
 echo "  Studio       ->                      -> http://127.0.0.1:54323"
 echo "  Inbucket     -> (email testing)      -> http://127.0.0.1:54324"
-echo "  Redis        -> docker compose up -d -> redis://127.0.0.1:6379"
 echo ""
 echo "  Test login:  dev@dineeasy.local / password123"
 echo ""

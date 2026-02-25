@@ -2,8 +2,9 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
-import { Menu, X, Moon, Sun, Monitor } from "lucide-react";
+import { Menu, X, Moon, Sun, Monitor, Globe } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { AppLogo } from "@/components/ui/app-logo";
 import { useI18n } from "@/lib/i18n/context";
@@ -18,10 +19,17 @@ import {
 export function Navbar() {
   const [scrolled, setScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
-  const { t } = useI18n();
+  const router = useRouter();
+  const { t, language, setLanguage, languages } = useI18n();
   const { theme, setTheme } = useTheme();
 
   const ThemeIcon = theme === "light" ? Sun : theme === "dark" ? Moon : Monitor;
+
+  const handleLanguageChange = (langCode: string) => {
+    setLanguage(langCode as typeof language);
+    // Trigger a router refresh to update all translated content across the app
+    router.refresh();
+  };
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 20);
@@ -47,6 +55,40 @@ export function Navbar() {
 
           {/* Desktop CTA */}
           <div className="hidden items-center gap-3 md:flex">
+            {/* Language Switcher */}
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button 
+                  variant="ghost" 
+                  size="icon" 
+                  className={`h-9 w-9 ${!scrolled ? "text-white hover:bg-white/10 hover:text-white" : ""}`}
+                  title="Select Language"
+                >
+                  <Globe size={18} />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-auto min-w-[140px] px-1.5 py-1.5">
+                {languages.map((lang) => (
+                  <DropdownMenuItem
+                    key={lang.code}
+                    onClick={() => handleLanguageChange(lang.code)}
+                    className={`flex items-center gap-2.5 cursor-pointer px-3 py-2 w-full ${
+                      language === lang.code ? "bg-accent font-medium" : ""
+                    }`}
+                  >
+                    <span className="text-lg shrink-0">{lang.flag}</span>
+                    <span className="whitespace-nowrap">{lang.label}</span>
+                    <span className="text-xs text-muted-foreground shrink-0 ml-auto">
+                      {lang.code.toUpperCase()}
+                    </span>
+                    {language === lang.code && (
+                      <span className="ml-1.5 text-primary shrink-0">✓</span>
+                    )}
+                  </DropdownMenuItem>
+                ))}
+              </DropdownMenuContent>
+            </DropdownMenu>
+
             {/* Theme Switcher */}
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
@@ -106,6 +148,33 @@ export function Navbar() {
             className="fixed inset-0 top-16 z-40 glass-strong p-6 md:hidden"
           >
             <nav className="flex flex-col gap-6 pt-4">
+              {/* Language Switcher in Mobile Menu */}
+              <div className="flex flex-col gap-3 pt-4 border-t">
+                <div className="px-2 py-2 text-sm font-medium text-muted-foreground">Language</div>
+                <div className="flex flex-col gap-2">
+                  {languages.map((lang) => (
+                    <Button
+                      key={lang.code}
+                      variant={language === lang.code ? "default" : "ghost"}
+                      className="w-full justify-start px-3 py-2.5"
+                      onClick={() => {
+                        handleLanguageChange(lang.code);
+                        setMobileOpen(false);
+                      }}
+                    >
+                      <span className="text-lg mr-2.5 shrink-0">{lang.flag}</span>
+                      <span className="flex-1 text-left whitespace-nowrap">{lang.label}</span>
+                      <span className="text-xs text-muted-foreground shrink-0 ml-2">
+                        {lang.code.toUpperCase()}
+                      </span>
+                      {language === lang.code && (
+                        <span className="ml-2 text-primary shrink-0">✓</span>
+                      )}
+                    </Button>
+                  ))}
+                </div>
+              </div>
+
               {/* Theme Switcher in Mobile Menu */}
               <div className="flex flex-col gap-3 pt-4 border-t">
                 <div className="px-2 py-2 text-sm font-medium text-muted-foreground">Theme</div>

@@ -1,15 +1,28 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import { Globe } from "lucide-react";
-import { ThemeProvider } from "@/components/providers/theme-provider";
-import { I18nProvider, useI18n } from "@/lib/i18n/context";
-import { SUPPORTED_LANGUAGES } from "@/lib/i18n/dictionaries";
+import { Button } from "@/components/ui/button";
+import { useI18n } from "@/lib/i18n/context";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import type { Language } from "@/types/database";
 
 function AuthNavbar() {
-  const { language, setLanguage } = useI18n();
+  const router = useRouter();
+  const { language, setLanguage, languages } = useI18n();
+
+  const handleLanguageChange = (langCode: string) => {
+    setLanguage(langCode as typeof language);
+    // Trigger a router refresh to update all translated content
+    router.refresh();
+  };
 
   return (
     <motion.header
@@ -29,24 +42,39 @@ function AuthNavbar() {
           </span>
         </Link>
 
-        {/* Language Toggle */}
-        <div className="relative">
-          <select
-            value={language}
-            onChange={(e) => setLanguage(e.target.value as Language)}
-            className="appearance-none rounded-lg border border-border/30 bg-background/80 px-3 py-1.5 pl-8 pr-8 text-sm font-medium text-foreground backdrop-blur-sm transition-all hover:border-border/50 hover:bg-background focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
-          >
-            {SUPPORTED_LANGUAGES.map((lang) => (
-              <option key={lang.code} value={lang.code} className="bg-background text-foreground">
-                {lang.flag} {lang.label}
-              </option>
+        {/* Language Switcher */}
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-9 w-9"
+              title="Select Language"
+            >
+              <Globe size={18} />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" className="w-auto min-w-[140px] px-1.5 py-1.5">
+            {languages.map((lang) => (
+              <DropdownMenuItem
+                key={lang.code}
+                onClick={() => handleLanguageChange(lang.code)}
+                className={`flex items-center gap-2.5 cursor-pointer px-3 py-2 w-full ${
+                  language === lang.code ? "bg-accent font-medium" : ""
+                }`}
+              >
+                <span className="text-lg shrink-0">{lang.flag}</span>
+                <span className="whitespace-nowrap">{lang.label}</span>
+                <span className="text-xs text-muted-foreground shrink-0 ml-auto">
+                  {lang.code.toUpperCase()}
+                </span>
+                {language === lang.code && (
+                  <span className="ml-1.5 text-primary shrink-0">✓</span>
+                )}
+              </DropdownMenuItem>
             ))}
-          </select>
-          <Globe
-            size={14}
-            className="pointer-events-none absolute left-2.5 top-1/2 -translate-y-1/2 text-muted-foreground"
-          />
-        </div>
+          </DropdownMenuContent>
+        </DropdownMenu>
       </div>
     </motion.header>
   );
@@ -54,30 +82,26 @@ function AuthNavbar() {
 
 export default function AuthLayout({ children }: { children: React.ReactNode }) {
   return (
-    <ThemeProvider>
-      <I18nProvider>
-        <div className="relative min-h-screen bg-background">
-          {/* Theme-aware background gradient */}
-          <div className="absolute inset-0 -z-10">
-            <div className="absolute inset-0 bg-gradient-to-br from-background via-background/98 to-background/95 dark:from-background dark:via-background/95 dark:to-background/90" />
-            <div
-              className="absolute inset-0 bg-cover bg-center opacity-[0.02] dark:opacity-[0.03]"
-              style={{
-                backgroundImage:
-                  'url("https://images.unsplash.com/photo-1501339847302-ac426a4a7cbb?w=1920&q=80")',
-              }}
-            />
-          </div>
+    <div className="relative min-h-screen bg-background">
+      {/* Theme-aware background gradient */}
+      <div className="absolute inset-0 -z-10">
+        <div className="absolute inset-0 bg-gradient-to-br from-background via-background/98 to-background/95 dark:from-background dark:via-background/95 dark:to-background/90" />
+        <div
+          className="absolute inset-0 bg-cover bg-center opacity-[0.02] dark:opacity-[0.03]"
+          style={{
+            backgroundImage:
+              'url("https://images.unsplash.com/photo-1501339847302-ac426a4a7cbb?w=1920&q=80")',
+          }}
+        />
+      </div>
 
-          {/* Minimal Navbar */}
-          <AuthNavbar />
+      {/* Minimal Navbar */}
+      <AuthNavbar />
 
-          {/* Full Screen Content */}
-          <div className="pt-20">
-            {children}
-          </div>
-        </div>
-      </I18nProvider>
-    </ThemeProvider>
+      {/* Full Screen Content */}
+      <div className="pt-20">
+        {children}
+      </div>
+    </div>
   );
 }

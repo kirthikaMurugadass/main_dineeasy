@@ -2,55 +2,57 @@
 
 import { useRef } from "react";
 import { motion, useScroll, useTransform, useSpring } from "framer-motion";
-import { ChefHat, UtensilsCrossed, Leaf, Home } from "lucide-react";
+import { ChefHat, UtensilsCrossed, Leaf, Home, ArrowRight } from "lucide-react";
 import { FadeIn } from "@/components/motion";
 import { Button } from "@/components/ui/button";
-import { ArrowRight } from "lucide-react";
-
-const features = [
-  {
-    icon: ChefHat,
-    title: "Specialist Chefs",
-    description: "Our expert culinary team brings years of experience and passion to every dish.",
-  },
-  {
-    icon: UtensilsCrossed,
-    title: "Premium Restaurant",
-    description: "Experience fine dining in an elegant atmosphere designed for memorable occasions.",
-  },
-  {
-    icon: Leaf,
-    title: "Fresh Ingredients",
-    description: "We source only the finest, locally-sourced ingredients for exceptional flavor.",
-  },
-  {
-    icon: Home,
-    title: "Cozy Atmosphere",
-    description: "Enjoy warm hospitality and a welcoming ambiance that makes you feel at home.",
-  },
-];
+import { useI18n } from "@/lib/i18n/context";
 
 export function AboutSection() {
-  const videoRef = useRef<HTMLVideoElement>(null);
+  const { t } = useI18n();
   const sectionRef = useRef<HTMLElement>(null);
 
-  // Scroll-based animations for 3D effect
+  const features = [
+    {
+      icon: ChefHat,
+      title: t.landing.about.features.chefs.title,
+      description: t.landing.about.features.chefs.description,
+    },
+    {
+      icon: UtensilsCrossed,
+      title: t.landing.about.features.premium.title,
+      description: t.landing.about.features.premium.description,
+    },
+    {
+      icon: Leaf,
+      title: t.landing.about.features.fresh.title,
+      description: t.landing.about.features.fresh.description,
+    },
+    {
+      icon: Home,
+      title: t.landing.about.features.cozy.title,
+      description: t.landing.about.features.cozy.description,
+    },
+  ];
+
+  // Scroll animation
   const { scrollYProgress } = useScroll({
     target: sectionRef,
     offset: ["start end", "end start"],
   });
 
-  // Smooth spring animations
   const smoothProgress = useSpring(scrollYProgress, {
     stiffness: 100,
     damping: 30,
     restDelta: 0.001,
   });
 
-  // Transform values for 3D effect
   const scale = useTransform(smoothProgress, [0, 1], [1, 1.05]);
   const y = useTransform(smoothProgress, [0, 1], [0, -30]);
-  const rotateX = useTransform(smoothProgress, [0, 1], [0, 2]);
+
+  const phoneFloatY = useTransform(smoothProgress, [0, 1], [0, -16]);
+  const phoneRotateX = useTransform(smoothProgress, [0, 1], [7, 10]);
+  const phoneRotateY = useTransform(smoothProgress, [0, 1], [0, 6]);
+  const phoneRotateZ = useTransform(smoothProgress, [0, 1], [2, 4]);
 
   return (
     <section
@@ -58,7 +60,7 @@ export function AboutSection() {
       id="about"
       className="relative overflow-hidden py-32 bg-background"
     >
-      {/* Subtle background gradients */}
+      {/* Background glow */}
       <div className="absolute inset-0 -z-10">
         <div className="absolute top-0 right-1/4 h-96 w-96 rounded-full bg-gold/5 blur-3xl dark:bg-gold/10" />
         <div className="absolute bottom-0 left-1/4 h-96 w-96 rounded-full bg-olive/5 blur-3xl dark:bg-olive/10" />
@@ -66,62 +68,79 @@ export function AboutSection() {
 
       <div className="mx-auto max-w-7xl px-6">
         <div className="grid grid-cols-1 gap-12 lg:grid-cols-2 lg:gap-16 items-center">
-          {/* Left: Video with 3D scroll animation */}
+
+          {/* LEFT SIDE — 3D PHONE */}
           <FadeIn direction="left" delay={0.1}>
             <motion.div
-              className="relative w-full"
-              style={{
-                scale,
-                y,
-                rotateX,
-              }}
-              whileHover={{
-                scale: 1.02,
-                transition: { duration: 0.3, ease: "easeOut" },
-              }}
+              className="relative flex w-full items-center justify-center [perspective:1800px]"
+              style={{ scale, y }}
             >
-              <video
-                ref={videoRef}
-                className="w-full h-auto aspect-[4/5] object-cover bg-transparent"
+              <motion.div
+                className="relative w-[250px] sm:w-[250px]"
                 style={{
-                  backgroundColor: "transparent",
+                  y: phoneFloatY,
+                  rotateX: phoneRotateX,
+                  rotateY: phoneRotateY,
+                  rotateZ: phoneRotateZ,
+                  transformStyle: "preserve-3d",
                 }}
-                autoPlay
-                muted
-                loop
-                playsInline
-                aria-label="Restaurant ambiance video"
+                animate={{ y: [0, -10, 0] }}
+                transition={{ duration: 5.5, repeat: Infinity, ease: "easeInOut" }}
               >
-                <source src="/video.mp4" type="video/mp4" />
-                Your browser does not support the video tag.
-              </video>
+                {/* Shadow */}
+                <div className="pointer-events-none absolute left-1/2 top-[104%] -z-10 h-12 w-[75%] -translate-x-1/2 rounded-full bg-black/40 blur-xl" />
+
+                <div className="relative aspect-[9/19.5] rounded-[2.8rem] bg-zinc-950 shadow-[0_35px_90px_-25px_rgba(0,0,0,0.85)] overflow-hidden">
+
+                  {/* Metallic border */}
+                  <div className="absolute inset-0 rounded-[2.8rem] border border-white/10 pointer-events-none z-30" />
+
+                  {/* Screen */}
+                  <div className="absolute inset-[6px] rounded-[2.62rem] overflow-hidden bg-transparent">
+
+                    <video
+                      className="absolute inset-0 h-full w-full translate-x-6.5 scale-[1.45] object-cover object-center"
+                      autoPlay
+                      muted
+                      loop
+                      playsInline
+                      aria-label="Restaurant ambiance video"
+                    >
+                      <source src="/video.mp4" type="video/mp4" />
+                    </video>
+
+                    {/* Dynamic island */}
+                    <div className="absolute left-1/2 top-0.5 z-20 h-4 w-24 -translate-x-1/2 rounded-full bg-black" />
+
+                    {/* Glass reflection */}
+                    <div className="pointer-events-none absolute inset-0 bg-gradient-to-tr from-black/20 via-transparent to-[#f4bf77]/10" />
+                    <div className="pointer-events-none absolute -left-8 -top-10 h-28 w-28 rounded-full bg-white/10 blur-2xl" />
+                  </div>
+                </div>
+              </motion.div>
             </motion.div>
           </FadeIn>
 
-          {/* Right: Content */}
+          {/* RIGHT SIDE CONTENT */}
           <div className="space-y-8">
             <FadeIn direction="right" delay={0.2}>
               <div>
                 <p className="mb-3 text-sm font-semibold uppercase tracking-wider text-gold">
-                  About Us
+                  {t.landing.about.badge}
                 </p>
                 <h2 className="font-sans text-4xl font-semibold tracking-tight sm:text-5xl lg:text-6xl text-foreground">
-                  Enjoy An Exceptional Journey of Taste
+                  {t.landing.about.title}
                 </h2>
               </div>
             </FadeIn>
 
             <FadeIn direction="right" delay={0.3}>
               <p className="text-lg leading-relaxed text-muted-foreground max-w-xl">
-                Experience the perfect blend of culinary artistry and warm hospitality. 
-                Our expert chefs craft each dish with passion, using only the freshest 
-                ingredients to deliver an unforgettable dining experience. From the elegant 
-                ambiance to the attentive service, every detail is designed to make your 
-                visit exceptional.
+                {t.landing.about.description}
               </p>
             </FadeIn>
 
-            {/* Feature List */}
+            {/* Features */}
             <FadeIn direction="right" delay={0.4}>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 mt-10">
                 {features.map((feature, index) => {
@@ -135,12 +154,10 @@ export function AboutSection() {
                       viewport={{ once: true, margin: "-40px" }}
                       transition={{ delay: 0.5 + index * 0.1, duration: 0.5 }}
                     >
-                      <div className="flex-shrink-0">
-                        <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gold/10 text-gold transition-colors group-hover:bg-gold/15 dark:bg-gold/20 dark:group-hover:bg-gold/30">
-                          <Icon size={22} />
-                        </div>
+                      <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gold/10 text-gold transition-colors group-hover:bg-gold/15 dark:bg-gold/20 dark:group-hover:bg-gold/30">
+                        <Icon size={22} />
                       </div>
-                      <div className="flex-1">
+                      <div>
                         <h3 className="text-lg font-semibold mb-1 text-foreground">
                           {feature.title}
                         </h3>
@@ -154,26 +171,23 @@ export function AboutSection() {
               </div>
             </FadeIn>
 
-            {/* Primary Button */}
+            {/* Button */}
             <FadeIn direction="right" delay={0.6}>
               <motion.div
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-                transition={{ type: "spring", stiffness: 400, damping: 17 }}
+                whileHover={{ scale: 1.03 }}
+                whileTap={{ scale: 0.97 }}
               >
                 <Button
                   size="lg"
-                  className="mt-8 h-12 rounded-full bg-gold px-8 text-base font-semibold text-espresso hover:bg-gold/90 transition-all duration-300 shadow-lg hover:shadow-xl"
+                  className="mt-8 h-12 rounded-full bg-gold px-8 text-base font-semibold text-espresso hover:bg-gold/90 shadow-lg"
                 >
-                  Read More
-                  <ArrowRight
-                    size={18}
-                    className="ml-2 transition-transform group-hover:translate-x-1"
-                  />
+                  {t.landing.about.readMore}
+                  <ArrowRight size={18} className="ml-2" />
                 </Button>
               </motion.div>
             </FadeIn>
           </div>
+
         </div>
       </div>
     </section>

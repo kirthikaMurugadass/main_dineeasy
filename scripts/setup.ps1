@@ -43,11 +43,6 @@ Write-Host "All prerequisites met." -ForegroundColor Green
 Write-Step "Installing npm dependencies..."
 npm install
 
-# ─── Start Redis ───
-
-Write-Step "Starting Redis via Docker Compose..."
-docker compose up -d redis
-
 # ─── Start Supabase ───
 
 Write-Step "Starting local Supabase stack..."
@@ -71,7 +66,6 @@ $envContent = @"
 NEXT_PUBLIC_SUPABASE_URL=$api_url
 NEXT_PUBLIC_SUPABASE_ANON_KEY=$anon_key
 SUPABASE_SERVICE_ROLE_KEY=$service_key
-REDIS_URL=redis://127.0.0.1:6379
 NEXT_PUBLIC_SITE_URL=http://localhost:3000
 "@
 
@@ -90,7 +84,6 @@ Write-Host "  Next.js      -> npm run dev         -> http://localhost:3000"
 Write-Host "  Supabase API -> supabase status      -> $api_url"
 Write-Host "  Studio       ->                      -> http://127.0.0.1:54323"
 Write-Host "  Inbucket     -> (email testing)      -> http://127.0.0.1:54324"
-Write-Host "  Redis        -> docker compose up -d -> redis://127.0.0.1:6379"
 Write-Host ""
 Write-Host "  Test login:  dev@dineeasy.local / password123"
 Write-Host ""

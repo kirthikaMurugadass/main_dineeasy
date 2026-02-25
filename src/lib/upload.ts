@@ -48,6 +48,19 @@ function buildPath(restaurantId: string, itemId: string, file: File): string {
 }
 
 /**
+ * Build the storage path for a category image.
+ * Format: restaurants/{restaurantId}/categories/{categoryId}.{ext}
+ */
+function buildCategoryPath(
+  restaurantId: string,
+  categoryId: string,
+  file: File
+): string {
+  const ext = getExtension(file);
+  return `restaurants/${restaurantId}/categories/${categoryId}.${ext}`;
+}
+
+/**
  * Upload a menu item image to Supabase Storage.
  * Replaces any existing image at the same path.
  */
@@ -107,4 +120,55 @@ export async function deleteItemImage(
 export async function deleteImageByPath(path: string): Promise<void> {
   const supabase = createClient();
   await supabase.storage.from(BUCKET).remove([path]);
+}
+
+/**
+ * Upload a category image to Supabase Storage.
+ * Replaces any existing image at the same path.
+ */
+export async function uploadCategoryImage(
+  restaurantId: string,
+  categoryId: string,
+  file: File
+): Promise<UploadResult> {
+  validateImageFile(file);
+
+  const supabase = createClient();
+  const path = buildCategoryPath(restaurantId, categoryId, file);
+
+  const { error } = await supabase.storage
+    .from(BUCKET)
+    .upload(path, file, {
+      cacheControl: "3600",
+      upsert: true,
+      contentType: file.type,
+    });
+
+  if (error) {
+    throw new UploadError(`Upload failed: ${error.message}`);
+  }
+
+  const {
+    data: { publicUrl },
+  } = supabase.storage.from(BUCKET).getPublicUrl(path);
+
+  return { url: publicUrl, path };
+}
+
+/**
+ * Delete a category image from Supabase Storage.
+ * Silently ignores errors (image may not exist).
+ */
+export async function deleteCategoryImage(
+  restaurantId: string,
+  categoryId: string
+): Promise<void> {
+  const supabase = createClient();
+
+  const extensions = ["jpg", "png", "webp"];
+  const paths = extensions.map(
+    (ext) => `restaurants/${restaurantId}/categories/${categoryId}.${ext}`
+  );
+
+  await supabase.storage.from(BUCKET).remove(paths);
 }

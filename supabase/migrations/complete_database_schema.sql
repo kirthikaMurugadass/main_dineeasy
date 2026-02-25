@@ -59,6 +59,7 @@ CREATE TABLE categories (
   menu_id UUID NOT NULL REFERENCES menus(id) ON DELETE CASCADE,
   sort_order INTEGER NOT NULL DEFAULT 0,
   is_active BOOLEAN NOT NULL DEFAULT true,
+  image_url TEXT,
   created_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 

@@ -35,19 +35,51 @@ export function I18nProvider({
   children: ReactNode;
   defaultLanguage?: Language;
 }) {
+  // Start with defaultLanguage to match server render
   const [language, setLang] = useState<Language>(defaultLanguage);
+  const [mounted, setMounted] = useState(false);
 
+  // Only read from localStorage/cookies after component mounts (client-side only)
+  // This ensures server and client render the same initial content (preventing hydration errors)
   useEffect(() => {
+    setMounted(true);
+    
+    // Try to read from cookie first (for cross-route persistence)
+    const cookies = document.cookie.split(";");
+    const langCookie = cookies.find((c) => c.trim().startsWith(`${STORAGE_KEY}=`));
+    if (langCookie) {
+      const lang = langCookie.split("=")[1]?.trim();
+      if (lang && VALID_LANGUAGES.has(lang) && lang !== defaultLanguage) {
+        // Only update if different from default to avoid unnecessary re-renders
+        setLang(lang as Language);
+        return;
+      }
+    }
+    
+    // Fallback to localStorage
     const stored = localStorage.getItem(STORAGE_KEY);
     if (stored && VALID_LANGUAGES.has(stored) && stored !== defaultLanguage) {
       setLang(stored as Language);
+      // Sync to cookie
+      const expires = new Date();
+      expires.setFullYear(expires.getFullYear() + 1);
+      document.cookie = `${STORAGE_KEY}=${stored}; expires=${expires.toUTCString()}; path=/; SameSite=Lax`;
     }
   }, [defaultLanguage]);
 
   const setLanguage = useCallback((lang: Language) => {
     setLang(lang);
-    localStorage.setItem(STORAGE_KEY, lang);
-  }, []);
+    if (mounted) {
+      // Store in localStorage for client-side persistence
+      localStorage.setItem(STORAGE_KEY, lang);
+      
+      // Also set cookie for SSR consistency and cross-route persistence
+      // Cookie expires in 1 year
+      const expires = new Date();
+      expires.setFullYear(expires.getFullYear() + 1);
+      document.cookie = `${STORAGE_KEY}=${lang}; expires=${expires.toUTCString()}; path=/; SameSite=Lax`;
+    }
+  }, [mounted]);
 
   const t = getDictionary(language);
 

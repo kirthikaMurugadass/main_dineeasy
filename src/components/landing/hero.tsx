@@ -50,9 +50,9 @@ export function Hero() {
       <div className="noise absolute inset-0 -z-10" />
 
       {/* Content */}
-      <div className="mx-auto grid max-w-7xl grid-cols-1 items-center gap-16 px-6 pt-32 pb-24 lg:grid-cols-2 lg:pt-32">
+      <div className="mx-auto grid max-w-7xl grid-cols-1 items-center gap-12 px-6 pt-32 pb-24 lg:grid-cols-2 lg:gap-16 lg:pt-32">
         {/* Left: Text — slides in from the left, children staggered by 0.1s */}
-        <div className="max-w-2xl">
+        <div className="w-full max-w-2xl lg:max-w-none lg:pr-8">
           <motion.div
             variants={slideFromLeft}
             initial="hidden"
@@ -72,9 +72,9 @@ export function Hero() {
             custom={1}
           >
             <h1 className="font-sans text-3xl font-semibold leading-[1.15] tracking-tight text-white sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl">
-              <span className="block sm:whitespace-nowrap">{t.landing.hero.title}</span>
+              <span className="block">{t.landing.hero.title}</span>
               <br />
-              <span className="block text-gradient-gold sm:whitespace-nowrap">{t.landing.hero.titleAccent}</span>
+              <span className="block text-gradient-gold">{t.landing.hero.titleAccent}</span>
             </h1>
           </motion.div>
 
@@ -84,7 +84,7 @@ export function Hero() {
             animate="visible"
             custom={2}
           >
-            <p className="mt-6 max-w-lg text-lg leading-relaxed text-white/85">
+            <p className="mt-6 text-lg leading-relaxed text-white/85 lg:max-w-xl">
               {t.landing.hero.subtitle}
             </p>
           </motion.div>
@@ -148,10 +148,10 @@ export function Hero() {
           variants={slideFromRight}
           initial="hidden"
           animate="visible"
-          className="flex justify-center lg:justify-end"
+          className="flex justify-center lg:justify-end relative z-10"
           style={parallaxY ? { y: parallaxY } : undefined}
         >
-          <div className="relative w-full max-w-sm">
+          <div className="relative w-full max-w-sm shrink-0">
             <PhoneMockup withFloating={true} />
             {/* Decorative glow effects */}
             <div className="absolute -left-16 top-1/2 -translate-y-1/2 h-64 w-32 rounded-full bg-gold/10 blur-3xl -z-10" />

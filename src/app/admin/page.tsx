@@ -138,7 +138,7 @@ export default function AdminDashboard() {
           activities.push({
             id: menu.id,
             type: "menu",
-            title: "Menu updated",
+            title: t.admin.dashboard.activity.menuUpdated,
             timestamp: new Date(menu.updated_at),
             icon: FileText,
             color: "text-purple-500",
@@ -150,7 +150,7 @@ export default function AdminDashboard() {
       activities.push({
         id: "qr-1",
         type: "qr",
-        title: "QR code generated",
+        title: t.admin.dashboard.activity.qrGenerated,
         timestamp: new Date(Date.now() - 2 * 60 * 60 * 1000), // 2 hours ago
         icon: QrCode,
         color: "text-gold",
@@ -293,7 +293,7 @@ export default function AdminDashboard() {
         <div className="space-y-6">
           <div className="flex items-center gap-2">
             <Sparkles className="h-5 w-5 text-gold" />
-            <h2 className="text-xl font-semibold">Smart Dashboard Insights</h2>
+            <h2 className="text-xl font-semibold">{t.admin.dashboard.smartInsights}</h2>
           </div>
 
           {/* Top Section: Activity Timeline + Quick Actions */}
@@ -303,7 +303,7 @@ export default function AdminDashboard() {
               <CardHeader>
                 <CardTitle className="flex items-center gap-2 text-lg">
                   <Activity className="h-5 w-5 text-gold" />
-                  Recent Activity
+                  {t.admin.dashboard.recentActivity}
                 </CardTitle>
               </CardHeader>
               <CardContent>
@@ -346,7 +346,7 @@ export default function AdminDashboard() {
                   </div>
                 ) : (
                   <div className="py-8 text-center text-sm text-muted-foreground">
-                    No recent activity
+                    {t.admin.dashboard.noRecentActivity}
                   </div>
                 )}
               </CardContent>
@@ -357,7 +357,7 @@ export default function AdminDashboard() {
               <CardHeader>
                 <CardTitle className="flex items-center gap-2 text-lg">
                   <Sparkles className="h-5 w-5 text-gold" />
-                  Quick Actions
+                  {t.admin.dashboard.quickActions}
                 </CardTitle>
               </CardHeader>
               <CardContent>
@@ -371,7 +371,7 @@ export default function AdminDashboard() {
                         <div className="rounded-lg bg-blue-500/10 p-2">
                           <Plus className="h-5 w-5 text-blue-500" />
                         </div>
-                        <span className="text-xs font-medium">Add Category</span>
+                        <span className="text-xs font-medium">{t.admin.dashboard.addCategory}</span>
                       </Button>
                     </Link>
                   </HoverScale>
@@ -385,7 +385,7 @@ export default function AdminDashboard() {
                         <div className="rounded-lg bg-gold/10 p-2">
                           <QrCode className="h-5 w-5 text-gold" />
                         </div>
-                        <span className="text-xs font-medium">Generate QR</span>
+                        <span className="text-xs font-medium">{t.admin.dashboard.generateQr}</span>
                       </Button>
                     </Link>
                   </HoverScale>
@@ -399,7 +399,7 @@ export default function AdminDashboard() {
                         <div className="rounded-lg bg-purple-500/10 p-2">
                           <FileText className="h-5 w-5 text-purple-500" />
                         </div>
-                        <span className="text-xs font-medium">Manage Menu</span>
+                        <span className="text-xs font-medium">{t.admin.menus.title}</span>
                       </Button>
                     </Link>
                   </HoverScale>
@@ -413,7 +413,7 @@ export default function AdminDashboard() {
                       <div className="rounded-lg bg-green-500/10 p-2">
                         <BarChart3 className="h-5 w-5 text-green-500" />
                       </div>
-                      <span className="text-xs font-medium">View Analytics</span>
+                      <span className="text-xs font-medium">{t.admin.dashboard.viewAnalytics}</span>
                     </Button>
                   </HoverScale>
                 </div>
@@ -428,7 +428,7 @@ export default function AdminDashboard() {
               <CardHeader>
                 <CardTitle className="flex items-center gap-2 text-lg">
                   <TrendingUp className="h-5 w-5 text-blue-500" />
-                  Category Growth
+                  {t.admin.dashboard.categoryGrowth}
                 </CardTitle>
               </CardHeader>
               <CardContent>
@@ -447,7 +447,7 @@ export default function AdminDashboard() {
               <CardHeader>
                 <CardTitle className="flex items-center gap-2 text-lg">
                   <QrCode className="h-5 w-5 text-gold" />
-                  QR Code Activity
+                  {t.admin.dashboard.qrActivity}
                 </CardTitle>
               </CardHeader>
               <CardContent>

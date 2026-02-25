@@ -1,6 +1,5 @@
 import { NextResponse } from "next/server";
 import { revalidatePath } from "next/cache";
-import { invalidateMenuCache } from "@/lib/redis";
 import { createClient } from "@/lib/supabase/server";
 
 export async function POST(request: Request) {
@@ -54,10 +53,7 @@ export async function POST(request: Request) {
       );
     }
 
-    // 1. Invalidate Redis cache
-    await invalidateMenuCache(slug);
-
-    // 2. Revalidate all public menu routes
+    // Revalidate all public menu routes
     revalidatePath(`/r/${slug}`);
     revalidatePath(`/public-menu/${slug}`);
     revalidatePath(`/public-menu/${slug}`, "page");
@@ -67,9 +63,6 @@ export async function POST(request: Request) {
       revalidatePath(`/public-menu/${slug}/${menuId}`);
       revalidatePath(`/public-menu/${slug}/${menuId}`, "page");
     }
-    
-    // Invalidate all cache patterns for this restaurant (double-check)
-    await invalidateMenuCache(slug);
 
     return NextResponse.json({ revalidated: true, slug });
   } catch (error) {

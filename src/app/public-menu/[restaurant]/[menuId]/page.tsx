@@ -1,6 +1,5 @@
 import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
-import { getCachedMenu, setCachedMenu } from "@/lib/redis";
 import { PublicMenuView } from "@/components/menu/public-menu-view";
 import type { PublicRestaurantData, Language } from "@/types/database";
 import type { Metadata } from "next";
@@ -13,19 +12,6 @@ async function getRestaurantDataBySlugAndMenu(
   restaurantSlug: string,
   menuId: string
 ): Promise<PublicRestaurantData | null> {
-  // Try Redis cache first (skip in development for instant updates)
-  const cacheKey = `restaurant:${restaurantSlug}:${menuId}`;
-  const cached = process.env.NODE_ENV === "development" 
-    ? null 
-    : await getCachedMenu(cacheKey);
-  if (cached) {
-    try {
-      return JSON.parse(cached);
-    } catch {
-      // Cache corrupted, continue to DB
-    }
-  }
-
   const supabase = await createClient();
 
   // Fetch restaurant by slug (subdomain)
@@ -49,15 +35,28 @@ async function getRestaurantDataBySlugAndMenu(
     return null;
   }
 
-  // Fetch categories for this menu
-  const { data: categories } = await supabase
+  // Fetch categories for this menu (try with image_url; fallback without if migration not run)
+  let categories: { id: string; menu_id: string; sort_order: number; is_active: boolean; image_url?: string | null }[];
+  const resWithImage = await supabase
     .from("categories")
-    .select("id, menu_id, sort_order, is_active")
+    .select("id, menu_id, sort_order, is_active, image_url")
     .eq("menu_id", menu.id)
     .eq("is_active", true)
     .order("sort_order");
 
-  if (!categories?.length) {
+  if (resWithImage.error) {
+    const resWithout = await supabase
+      .from("categories")
+      .select("id, menu_id, sort_order, is_active")
+      .eq("menu_id", menu.id)
+      .eq("is_active", true)
+      .order("sort_order");
+    categories = (resWithout.data ?? []).map((c) => ({ ...c, image_url: null }));
+  } else {
+    categories = resWithImage.data ?? [];
+  }
+
+  if (!categories.length) {
     const result: PublicRestaurantData = {
       restaurant: {
         name: restaurant.name,
@@ -68,7 +67,6 @@ async function getRestaurantDataBySlugAndMenu(
       categories: [],
       availableLanguages: ["de", "en", "fr", "it"],
     };
-    await setCachedMenu(cacheKey, JSON.stringify(result));
     return result;
   }
 
@@ -132,6 +130,7 @@ async function getRestaurantDataBySlugAndMenu(
     categories: categories.map((cat) => ({
       id: cat.id,
       sort_order: cat.sort_order,
+      image_url: cat.image_url ?? null,
       title: getTranslationRecord(cat.id, "title") as Record<Language, string>,
       description: getTranslationRecord(cat.id, "description") as Record<
         Language,
@@ -157,9 +156,6 @@ async function getRestaurantDataBySlugAndMenu(
     })),
     availableLanguages: ["de", "en", "fr", "it"],
   };
-
-  // Cache the result
-  await setCachedMenu(cacheKey, JSON.stringify(publicData));
 
   return publicData;
 }

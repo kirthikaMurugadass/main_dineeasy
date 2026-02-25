@@ -6,11 +6,14 @@ import { motion, AnimatePresence } from "framer-motion";
 import type { PublicMenu, PublicRestaurantData, Language, ThemeConfig } from "@/types/database";
 import { defaultThemeConfig } from "@/types/database";
 import { GoogleFontsLoader } from "./google-fonts-loader";
+import { useI18n } from "@/lib/i18n/context";
 
 type ViewData = PublicMenu | (PublicRestaurantData & { menu?: { id: string; slug: string } });
 
 interface Props {
   data: ViewData;
+  /** When provided (e.g. from preview iframe), use this language and sync with I18n context */
+  initialLang?: Language;
 }
 
 /* ─── Helpers ─── */
@@ -104,10 +107,26 @@ function OrnamentalDivider({ accentColor, isDark }: { accentColor: string; isDar
   );
 }
 
-export function PublicMenuView({ data }: Props) {
-  const [lang, setLang] = useState<Language>("de");
+export function PublicMenuView({ data, initialLang }: Props) {
+  const { t, setLanguage } = useI18n();
+  const [lang, setLang] = useState<Language>(initialLang ?? "de");
   const [activeCategory, setActiveCategory] = useState(data.categories[0]?.id ?? "");
   const categoryRefs = useRef<Map<string, HTMLElement>>(new Map());
+
+  // When initialLang is provided (preview mode), sync with I18n context so UI strings translate
+  useEffect(() => {
+    if (initialLang) {
+      setLang(initialLang);
+      setLanguage(initialLang);
+    }
+  }, [initialLang, setLanguage]);
+
+  // Sync lang when initialLang changes (e.g. iframe reloaded with new lang param)
+  useEffect(() => {
+    if (initialLang && lang !== initialLang) {
+      setLang(initialLang);
+    }
+  }, [initialLang, lang]);
 
   const theme: ThemeConfig = useMemo(
     () => ({ ...defaultThemeConfig, ...data.restaurant.theme_config }),
@@ -192,7 +211,9 @@ export function PublicMenuView({ data }: Props) {
     setIsDark(theme.mode === "dark");
   }, [theme.mode]);
 
+  // Only read from localStorage when NOT in preview mode (no initialLang)
   useEffect(() => {
+    if (initialLang) return; // Preview mode: lang is controlled by URL
     const stored = localStorage.getItem("dineeasy-menu-lang") as Language | null;
     if (stored && data.availableLanguages.includes(stored)) {
       setLang(stored);
@@ -200,11 +221,13 @@ export function PublicMenuView({ data }: Props) {
     }
     const browserLang = navigator.language.substring(0, 2) as Language;
     if (data.availableLanguages.includes(browserLang)) setLang(browserLang);
-  }, [data.availableLanguages]);
+  }, [data.availableLanguages, initialLang]);
 
+  // Persist lang to localStorage only when NOT in preview mode
   useEffect(() => {
+    if (initialLang) return;
     localStorage.setItem("dineeasy-menu-lang", lang);
-  }, [lang]);
+  }, [lang, initialLang]);
 
   const scrollToCategory = useCallback((categoryId: string) => {
     const el = categoryRefs.current.get(categoryId);
@@ -474,7 +497,7 @@ export function PublicMenuView({ data }: Props) {
                     }
               }
             >
-              {getDisplayTitle(cat.title, lang) || "Untitled"}
+              {getDisplayTitle(cat.title, lang) || t.menu.untitled}
             </button>
           ))}
         </div>
@@ -506,7 +529,7 @@ export function PublicMenuView({ data }: Props) {
                 className="mb-4 text-xs font-medium uppercase tracking-[0.3em] sm:text-sm"
                 style={{ color: accentColor }}
               >
-                {getDisplayTitle(category.title, lang)?.toUpperCase() || "MENU SECTION"}
+                {getDisplayTitle(category.title, lang)?.toUpperCase() || t.menu.menuSection.toUpperCase()}
               </p>
 
               <OrnamentalDivider accentColor={accentColor} isDark={isDark} />
@@ -528,7 +551,7 @@ export function PublicMenuView({ data }: Props) {
                     {item.image_url ? (
                       <Image
                         src={item.image_url}
-                        alt={getDisplayTitle(item.title, lang) || "Menu item"}
+                        alt={getDisplayTitle(item.title, lang) || t.menu.untitled}
                         fill
                         unoptimized
                         className="rounded-full object-cover"
@@ -567,7 +590,7 @@ export function PublicMenuView({ data }: Props) {
                           lineHeight: typography.lineHeight,
                         }}
                       >
-                        {getDisplayTitle(item.title, lang) || "Untitled"}
+                        {getDisplayTitle(item.title, lang) || t.menu.untitled}
                       </h4>
                       <span
                         className="font-mono font-semibold tracking-wide shrink-0"
@@ -578,7 +601,7 @@ export function PublicMenuView({ data }: Props) {
                           fontWeight: typography.bodyWeight,
                         }}
                       >
-                        CHF {item.price_chf.toFixed(2)}
+                        {t.menu.currency} {item.price_chf.toFixed(2)}
                       </span>
                     </div>
                     {getDisplayDescription(item.description, lang) && (
@@ -618,7 +641,7 @@ export function PublicMenuView({ data }: Props) {
             >
               D
             </span>
-            Powered by DineEasy
+            {t.menu.poweredBy}
           </a>
         </footer>
       </main>
