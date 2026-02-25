@@ -54,7 +54,7 @@ import { Slider } from "@/components/ui/slider";
 import { FadeIn } from "@/components/motion";
 import { useI18n } from "@/lib/i18n/context";
 import { createClient } from "@/lib/supabase/client";
-import { SUPPORTED_LANGUAGES } from "@/lib/i18n/dictionaries";
+import { SUPPORTED_LANGUAGES, type Dictionary } from "@/lib/i18n/dictionaries";
 import { toast } from "sonner";
 import type { Language } from "@/types/database";
 import { ItemImageUpload } from "@/components/admin/item-image-upload";
@@ -98,6 +98,7 @@ function SortableItem({
   onRemove,
   langTab,
   saving,
+  t,
 }: {
   item: EditableItem;
   itemIndex: number;
@@ -105,6 +106,7 @@ function SortableItem({
   onRemove: (itemIdx: number) => void;
   langTab: Language;
   saving: boolean;
+  t: Dictionary;
 }) {
   const { attributes, listeners, setNodeRef, transform, transition } = useSortable({
     id: item.id,
@@ -190,13 +192,13 @@ function SortableItem({
         <div className="flex-1 space-y-3 min-w-0">
           <div className="space-y-2">
             <Input
-              placeholder="Item name"
+              placeholder={t.admin.categories.menuItemNamePlaceholder}
               value={tr?.title ?? ""}
               onChange={(e) => updateTranslation("title", e.target.value)}
               className="h-10 sm:h-11 text-sm font-medium border-border/50 focus:border-gold/50 focus:ring-gold/20"
             />
             <Textarea
-              placeholder="Description (optional)"
+              placeholder={t.admin.categories.menuItemDescriptionPlaceholder}
               value={tr?.description ?? ""}
               onChange={(e) => updateTranslation("description", e.target.value)}
               className="min-h-[60px] text-xs resize-none border-border/50 focus:border-gold/50 focus:ring-gold/20"
@@ -208,7 +210,7 @@ function SortableItem({
         {/* Price & Controls - Desktop */}
         <div className="flex sm:flex-col items-start sm:items-end gap-3 flex-shrink-0 sm:pt-0 pt-0">
           <div className="w-full sm:w-32">
-            <Label className="text-xs text-muted-foreground mb-1.5 block">Price</Label>
+            <Label className="text-xs text-muted-foreground mb-1.5 block">{t.admin.categories.menuItemPriceLabel}</Label>
             <div className="relative">
               <span className="absolute left-3 top-1/2 -translate-y-1/2 text-xs font-medium text-muted-foreground">
                 CHF
@@ -229,7 +231,7 @@ function SortableItem({
           <div className="hidden sm:flex flex-col items-end gap-3 pt-6">
             <div className="flex items-center gap-3">
               <div className="flex flex-col items-end gap-1">
-                <Label className="text-xs text-muted-foreground">Status</Label>
+                <Label className="text-xs text-muted-foreground">{t.admin.categories.menuItemStatusLabel}</Label>
                 <Switch
                   checked={item.is_active}
                   onCheckedChange={(checked) => onUpdate(itemIndex, { is_active: checked })}
@@ -251,7 +253,7 @@ function SortableItem({
                 animate={{ opacity: 1 }}
                 className="text-xs text-muted-foreground"
               >
-                Inactive
+                {t.admin.categories.menuItemInactive}
               </motion.span>
             )}
           </div>
@@ -286,7 +288,8 @@ export default function CategoryDetailPage() {
   const [slugEditable, setSlugEditable] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
   const [items, setItems] = useState<EditableItem[]>([]);
-  const [langTab, setLangTab] = useState<Language>("en");
+  // Start with default "de" to match server render and avoid hydration mismatch.
+  const [langTab, setLangTab] = useState<Language>("de");
   const [saving, setSaving] = useState(false);
   const [loading, setLoading] = useState(!isNew);
   const [menuId, setMenuId] = useState<string | null>(null);
@@ -298,6 +301,46 @@ export default function CategoryDetailPage() {
     useSensor(PointerSensor),
     useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates })
   );
+
+  // Keep item/category language tab in sync with global UI language
+  useEffect(() => {
+    setLangTab(language);
+  }, [language]);
+
+  // Ensure a completely fresh form when creating a new category
+  useEffect(() => {
+    if (!isNew) return;
+
+    // Reset all category-level state
+    setCategoryTranslations(
+      SUPPORTED_LANGUAGES.map((l) => ({
+        language: l.code as Language,
+        title: "",
+        description: "",
+      }))
+    );
+    setCategoryActive(true);
+    setCategoryVisible(true);
+    setCategoryImage(null);
+    setCategoryImageFile(null);
+    setCategoryImagePreview(null);
+    setCategoryImageDelete(false);
+    setDisplayOrder(0);
+    setSlug("");
+    setSlugEditable(false);
+    setItems([]);
+    setValidationErrors({});
+    setAutoSaveStatus("unsaved");
+
+    // Clear any previous draft cached in localStorage
+    if (typeof window !== "undefined") {
+      try {
+        localStorage.removeItem("category-draft");
+      } catch {
+        // ignore storage errors
+      }
+    }
+  }, [isNew]);
 
   // Auto-create menu if it doesn't exist
   const ensureMenuExists = useCallback(async (restaurantId: string) => {
@@ -375,7 +418,7 @@ export default function CategoryDetailPage() {
         // Ensure menu exists (auto-create if needed)
         const menuId = await ensureMenuExists(restaurant.id);
         if (!menuId) {
-          toast.error("Failed to initialize menu");
+          toast.error(t.admin.categories.initError);
           setLoading(false);
           return;
         }
@@ -434,7 +477,7 @@ export default function CategoryDetailPage() {
       }
 
       if (!category) {
-        toast.error("Category not found");
+        toast.error(t.admin.categories.notFound);
         router.push("/admin/categories");
         return;
       }
@@ -516,7 +559,7 @@ export default function CategoryDetailPage() {
       );
     } catch (err) {
       console.error("Error loading category:", err);
-      toast.error("Failed to load category");
+      toast.error(t.admin.categories.loadError);
     } finally {
       setLoading(false);
     }
@@ -556,9 +599,9 @@ export default function CategoryDetailPage() {
     const errors = { ...validationErrors };
     if (field === "title") {
       if (!value.trim()) {
-        errors.title = "Category name is required";
+        errors.title = t.admin.categories.validationNameRequired;
       } else if (value.length < 3) {
-        errors.title = "Category name must be at least 3 characters";
+        errors.title = t.admin.categories.validationNameTooShort;
       } else {
         delete errors.title;
       }
@@ -618,27 +661,6 @@ export default function CategoryDetailPage() {
     return () => clearTimeout(autoSaveTimer);
   }, [categoryTranslations, categoryActive, categoryVisible, displayOrder, slug, categoryImageFile, isNew, loading]);
 
-  // Load draft on mount
-  useEffect(() => {
-    if (!isNew || loading) return;
-    try {
-      const draft = localStorage.getItem("category-draft");
-      if (draft) {
-        const parsed = JSON.parse(draft);
-        setCategoryTranslations(parsed.translations || categoryTranslations);
-        setCategoryActive(parsed.active ?? true);
-        setCategoryVisible(parsed.visible ?? true);
-        setDisplayOrder(parsed.displayOrder ?? 0);
-        setSlug(parsed.slug || "");
-        // Note: imagePreview is not loaded from draft (was excluded to save space)
-        // User will need to re-upload image if they refresh
-      }
-    } catch (error) {
-      // Ignore invalid draft or quota errors
-      console.warn("Failed to load draft:", error);
-    }
-  }, [isNew, loading]);
-
   function handleDragEnd(event: DragEndEvent) {
     const { active, over } = event;
     if (!over || active.id === over.id) return;
@@ -680,7 +702,7 @@ export default function CategoryDetailPage() {
       // Ensure menu exists (auto-create if needed)
       const menuId = await ensureMenuExists(restaurant.id);
       if (!menuId) {
-        toast.error("Failed to initialize menu");
+      toast.error(t.admin.categories.initError);
         return;
       }
 
@@ -746,7 +768,7 @@ export default function CategoryDetailPage() {
           categoryImageUrl = result.url;
         } catch (uploadErr) {
           console.error("Category image upload failed:", uploadErr);
-          toast.error("Failed to upload category image");
+          toast.error(t.admin.categories.imageUploadError);
           setSaving(false);
           return;
         }
@@ -859,11 +881,13 @@ export default function CategoryDetailPage() {
         }).catch(() => {});
       }
 
-      toast.success(isNew ? "Category created!" : "Category saved!");
+      toast.success(
+        isNew ? t.admin.categories.createdSuccess : t.admin.categories.savedSuccess
+      );
       router.push("/admin/categories");
     } catch (err) {
       console.error(err);
-      toast.error("Failed to save category");
+      toast.error(t.admin.categories.saveError);
     } finally {
       setSaving(false);
     }
@@ -885,17 +909,17 @@ export default function CategoryDetailPage() {
           <BreadcrumbList>
             <BreadcrumbItem>
               <BreadcrumbLink asChild>
-                <Link href="/admin/categories">Categories</Link>
+                <Link href="/admin/categories">{t.admin.categories.title}</Link>
               </BreadcrumbLink>
             </BreadcrumbItem>
             <BreadcrumbSeparator />
             <BreadcrumbItem>
               <span className="text-muted-foreground">
                 {isNew
-                  ? "New Category"
+                  ? t.admin.categories.newCategory
                   : categoryTranslations.find((t) => t.language === language)?.title ||
                     categoryTranslations.find((t) => t.title)?.title ||
-                    "Category"}
+                    t.admin.categories.title}
               </span>
             </BreadcrumbItem>
           </BreadcrumbList>
@@ -904,49 +928,56 @@ export default function CategoryDetailPage() {
 
       {/* Header */}
       <FadeIn>
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-4">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4">
+          <div className="flex items-center gap-2 sm:gap-4 min-w-0 flex-1">
             <Link href="/admin/categories">
-              <Button variant="ghost" size="icon" className="h-9 w-9">
+              <Button variant="ghost" size="icon" className="h-9 w-9 flex-shrink-0">
                 <ArrowLeft size={18} />
               </Button>
             </Link>
-            <PageTitle>
+            <PageTitle className="truncate">
               {isNew
-                ? "New Category"
+                ? t.admin.categories.newCategory
                 : categoryTranslations.find((t) => t.language === language)?.title ||
                   categoryTranslations.find((t) => t.title)?.title ||
-                  "Edit Category"}
+                  t.admin.categories.editCategory}
             </PageTitle>
           </div>
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 sm:gap-3 flex-shrink-0">
             {autoSaveStatus === "saving" && (
               <motion.div
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
-                className="flex items-center gap-2 text-sm text-muted-foreground"
+                className="flex items-center gap-1.5 sm:gap-2 text-xs sm:text-sm text-muted-foreground"
               >
-                <Loader2 className="h-4 w-4 animate-spin" />
-                <span>Saving...</span>
+                <Loader2 className="h-3.5 w-3.5 sm:h-4 sm:w-4 animate-spin" />
+                <span className="hidden sm:inline">{t.admin.categories.saving}</span>
               </motion.div>
             )}
             {autoSaveStatus === "saved" && (
               <motion.div
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
-                className="flex items-center gap-2 text-sm text-green-600"
+                className="flex items-center gap-1.5 sm:gap-2 text-xs sm:text-sm text-green-600"
               >
-                <CheckCircle2 className="h-4 w-4" />
-                <span>Draft saved</span>
+                <CheckCircle2 className="h-3.5 w-3.5 sm:h-4 sm:w-4 flex-shrink-0" />
+                <span className="hidden sm:inline">{t.admin.categories.draftSaved}</span>
+                <span className="sm:hidden">{t.admin.categories.save}</span>
               </motion.div>
             )}
             <Button
               onClick={handleSave}
               disabled={saving}
-              className="gap-2 bg-espresso text-warm hover:bg-espresso/90"
+              className="gap-1.5 sm:gap-2 bg-espresso text-warm hover:bg-espresso/90 text-xs sm:text-sm h-9 sm:h-10 px-3 sm:px-4 flex-shrink-0"
+              size="sm"
             >
-              {saving ? <Loader2 size={16} className="animate-spin" /> : <Save size={16} />}
-              Save Category
+              {saving ? (
+                <Loader2 size={14} className="animate-spin sm:w-4 sm:h-4" />
+              ) : (
+                <Save size={14} className="sm:w-4 sm:h-4" />
+              )}
+              <span className="hidden sm:inline">{t.admin.categories.saveCategory}</span>
+              <span className="sm:hidden">{t.admin.categories.save}</span>
             </Button>
           </div>
         </div>
@@ -960,7 +991,7 @@ export default function CategoryDetailPage() {
               <div className="flex items-center gap-2">
                 <Switch checked={categoryActive} onCheckedChange={setCategoryActive} />
                 <Label className="text-sm">
-                  {categoryActive ? "Active" : "Inactive"}
+                  {categoryActive ? t.admin.categories.active : t.admin.categories.inactive}
                 </Label>
               </div>
             </div>
@@ -994,13 +1025,15 @@ export default function CategoryDetailPage() {
                       <FadeIn delay={0.1}>
                         <Card className="border-border/50 shadow-sm">
                           <CardHeader>
-                            <CardTitle className="text-lg">Category Details</CardTitle>
+                            <CardTitle className="text-lg">{t.admin.categories.detailsTitle}</CardTitle>
                           </CardHeader>
                           <CardContent className="space-y-5">
                             {/* Category Name with Floating Label */}
                             <div className="space-y-2">
                               <div className="flex items-center justify-between">
-                                <Label className="text-sm font-medium">Category Name</Label>
+                                <Label className="text-sm font-medium">
+                                  {t.admin.categories.nameLabel}
+                                </Label>
                                 <span className="text-xs text-muted-foreground">
                                   {catTr?.title?.length || 0}/50
                                 </span>
@@ -1027,7 +1060,7 @@ export default function CategoryDetailPage() {
                                     // Validate
                                     validateField("title", value);
                                   }}
-                                  placeholder="e.g. Coffee, Appetizers, Main Courses"
+                                  placeholder={t.admin.categories.namePlaceholder}
                                   className={`h-12 pr-10 ${
                                     validationErrors.title
                                       ? "border-destructive focus-visible:ring-destructive"
@@ -1064,7 +1097,9 @@ export default function CategoryDetailPage() {
                             {/* Auto-generated Slug */}
                             <div className="space-y-2">
                               <div className="flex items-center justify-between">
-                                <Label className="text-sm font-medium">URL Slug</Label>
+                                <Label className="text-sm font-medium">
+                                  {t.admin.categories.urlSlugLabel}
+                                </Label>
                                 <Button
                                   variant="ghost"
                                   size="sm"
@@ -1074,12 +1109,12 @@ export default function CategoryDetailPage() {
                                   {slugEditable ? (
                                     <>
                                       <Copy className="h-3 w-3 mr-1" />
-                                      Lock
+                                      {t.admin.categories.save}
                                     </>
                                   ) : (
                                     <>
                                       <Edit2 className="h-3 w-3 mr-1" />
-                                      Edit
+                                      {t.admin.categories.edit}
                                     </>
                                   )}
                                 </Button>
@@ -1094,19 +1129,21 @@ export default function CategoryDetailPage() {
                                     .replace(/^-+|-+$/g, "");
                                   setSlug(value);
                                 }}
-                                placeholder="auto-generated-slug"
+                                placeholder={t.admin.categories.urlSlugPlaceholder}
                                 disabled={!slugEditable}
                                 className="h-10 font-mono text-sm"
                               />
                               <p className="text-xs text-muted-foreground">
-                                Used in URLs. Auto-generated from category name.
+                                {t.admin.categories.urlSlugHelper}
                               </p>
                             </div>
 
                             {/* Description with Character Limit */}
                             <div className="space-y-2">
                               <div className="flex items-center justify-between">
-                                <Label className="text-sm font-medium">Description</Label>
+                                <Label className="text-sm font-medium">
+                                  {t.admin.categories.descriptionLabel}
+                                </Label>
                                 <span className="text-xs text-muted-foreground">
                                   {catTr?.description?.length || 0}/200
                                 </span>
@@ -1122,7 +1159,7 @@ export default function CategoryDetailPage() {
                                   );
                                   setCategoryTranslations(updated);
                                 }}
-                                placeholder="Brief description of this category (optional)"
+                                placeholder={t.admin.categories.descriptionPlaceholder}
                                 className="min-h-[100px] resize-none"
                                 maxLength={200}
                               />
@@ -1135,7 +1172,9 @@ export default function CategoryDetailPage() {
                       <FadeIn delay={0.15}>
                         <Card className="border-border/50 shadow-sm">
                           <CardHeader>
-                            <CardTitle className="text-lg">Category Image</CardTitle>
+                            <CardTitle className="text-lg">
+                              {t.admin.categories.imageTitle}
+                            </CardTitle>
                           </CardHeader>
                           <CardContent>
                             <div
@@ -1184,10 +1223,10 @@ export default function CategoryDetailPage() {
                                 <div className="text-center">
                                   <ImageIcon className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
                                   <p className="text-sm font-medium mb-2">
-                                    Drag & drop an image here
+                                    {t.admin.categories.imageUploadCta}
                                   </p>
                                   <p className="text-xs text-muted-foreground mb-4">
-                                    or click to browse
+                                    {t.admin.categories.imageUploadHint}
                                   </p>
                                   <label>
                                     <input
@@ -1202,12 +1241,12 @@ export default function CategoryDetailPage() {
                                     <Button variant="outline" type="button" asChild>
                                       <span>
                                         <Upload className="h-4 w-4 mr-2" />
-                                        Upload Image
+                                        {t.admin.categories.uploadImageButton}
                                       </span>
                                     </Button>
                                   </label>
                                   <p className="text-xs text-muted-foreground mt-3">
-                                    Recommended: 1200x600px, JPG/PNG/WEBP
+                                    {t.admin.categories.imageUploadHint}
                                   </p>
                                 </div>
                               )}
@@ -1218,16 +1257,20 @@ export default function CategoryDetailPage() {
 
                       {/* Settings Card */}
                       <FadeIn delay={0.2}>
-                        <Card className="border-border/50 shadow-sm">
-                          <CardHeader>
-                            <CardTitle className="text-lg">Settings</CardTitle>
-                          </CardHeader>
+                      <Card className="border-border/50 shadow-sm">
+                        <CardHeader>
+                          <CardTitle className="text-lg">{t.admin.categories.settingsTitle}</CardTitle>
+                        </CardHeader>
                           <CardContent className="space-y-5">
                             <div className="flex items-center justify-between">
                               <div className="space-y-0.5">
-                                <Label className="text-sm font-medium">Status</Label>
+                                <Label className="text-sm font-medium">
+                                  {t.admin.categories.statusLabel}
+                                </Label>
                                 <p className="text-xs text-muted-foreground">
-                                  {categoryActive ? "Visible to customers" : "Hidden from menu"}
+                                  {categoryActive
+                                    ? t.admin.categories.statusActiveHint
+                                    : t.admin.categories.statusInactiveHint}
                                 </p>
                               </div>
                               <Switch
@@ -1237,9 +1280,13 @@ export default function CategoryDetailPage() {
                             </div>
                             <div className="flex items-center justify-between">
                               <div className="space-y-0.5">
-                                <Label className="text-sm font-medium">Visibility</Label>
+                                <Label className="text-sm font-medium">
+                                  {t.admin.categories.visibilityLabel}
+                                </Label>
                                 <p className="text-xs text-muted-foreground">
-                                  {categoryVisible ? "Public" : "Private"}
+                                  {categoryVisible
+                                    ? t.admin.categories.visibilityPublic
+                                    : t.admin.categories.visibilityPrivate}
                                 </p>
                               </div>
                               <Switch
@@ -1249,7 +1296,9 @@ export default function CategoryDetailPage() {
                             </div>
                             <div className="space-y-3">
                               <div className="flex items-center justify-between">
-                                <Label className="text-sm font-medium">Display Order</Label>
+                                <Label className="text-sm font-medium">
+                                  {t.admin.categories.displayOrderLabel}
+                                </Label>
                                 <span className="text-sm font-mono text-muted-foreground">
                                   {displayOrder}
                                 </span>
@@ -1263,7 +1312,7 @@ export default function CategoryDetailPage() {
                                 className="w-full"
                               />
                               <p className="text-xs text-muted-foreground">
-                                Lower numbers appear first in the menu
+                                {t.admin.categories.displayOrderHint}
                               </p>
                             </div>
                           </CardContent>
@@ -1279,7 +1328,7 @@ export default function CategoryDetailPage() {
                           <CardHeader>
                             <CardTitle className="text-lg flex items-center gap-2">
                               <Eye className="h-5 w-5 text-gold" />
-                              Live Preview
+                              {t.admin.categories.livePreviewTitle}
                             </CardTitle>
                           </CardHeader>
                           <CardContent>
@@ -1305,7 +1354,7 @@ export default function CategoryDetailPage() {
                                     />
                                   )}
                                   <h3 className="font-semibold text-lg">
-                                    {catTr?.title || "Category Name"}
+                                    {catTr?.title || t.admin.categories.livePreviewFallbackName}
                                   </h3>
                                   {catTr?.description && (
                                     <p className="text-sm text-muted-foreground line-clamp-2">
@@ -1320,10 +1369,10 @@ export default function CategoryDetailPage() {
                                           : "bg-muted text-muted-foreground"
                                       }`}
                                     >
-                                      {categoryActive ? "Active" : "Inactive"}
+                                      {categoryActive ? t.admin.categories.previewActive : t.admin.categories.previewInactive}
                                     </span>
                                     <span className="text-muted-foreground">
-                                      Order: {displayOrder}
+                                      {t.admin.categories.previewOrder}: {displayOrder}
                                     </span>
                                   </div>
                                 </motion.div>
@@ -1339,7 +1388,7 @@ export default function CategoryDetailPage() {
                           <CardHeader>
                             <CardTitle className="text-lg flex items-center gap-2">
                               <Lightbulb className="h-5 w-5 text-gold" />
-                              Smart Tips
+                              {t.admin.categories.tipsTitle}
                             </CardTitle>
                           </CardHeader>
                           <CardContent className="space-y-4">
@@ -1347,30 +1396,33 @@ export default function CategoryDetailPage() {
                               <div className="flex gap-3">
                                 <Info className="h-4 w-4 text-blue-500 mt-0.5 flex-shrink-0" />
                                 <div>
-                                  <p className="text-sm font-medium">Naming Best Practices</p>
+                                  <p className="text-sm font-medium">
+                                    {t.admin.categories.tipsNamingTitle}
+                                  </p>
                                   <p className="text-xs text-muted-foreground">
-                                    Use clear, descriptive names. Keep it under 30 characters for
-                                    best display.
+                                    {t.admin.categories.tipsNamingBody}
                                   </p>
                                 </div>
                               </div>
                               <div className="flex gap-3">
                                 <TrendingUp className="h-4 w-4 text-green-500 mt-0.5 flex-shrink-0" />
                                 <div>
-                                  <p className="text-sm font-medium">SEO Tips</p>
+                                  <p className="text-sm font-medium">
+                                    {t.admin.categories.tipsSeoTitle}
+                                  </p>
                                   <p className="text-xs text-muted-foreground">
-                                    Add a description with keywords. This helps customers find your
-                                    menu items.
+                                    {t.admin.categories.tipsSeoBody}
                                   </p>
                                 </div>
                               </div>
                               <div className="flex gap-3">
                                 <ImageIcon className="h-4 w-4 text-purple-500 mt-0.5 flex-shrink-0" />
                                 <div>
-                                  <p className="text-sm font-medium">Image Best Practices</p>
+                                  <p className="text-sm font-medium">
+                                    {t.admin.categories.tipsImageTitle}
+                                  </p>
                                   <p className="text-xs text-muted-foreground">
-                                    Use high-quality images (1200x600px). Show your best dishes to
-                                    attract customers.
+                                    {t.admin.categories.tipsImageBody}
                                   </p>
                                 </div>
                               </div>
@@ -1386,9 +1438,9 @@ export default function CategoryDetailPage() {
                     <Card className="border-border/50 shadow-sm">
                       <CardHeader>
                         <div className="flex items-center justify-between">
-                          <CardTitle className="text-lg">Menu Items</CardTitle>
+                          <CardTitle className="text-lg">{t.admin.categories.menuItemsTitle}</CardTitle>
                           <span className="text-sm text-muted-foreground">
-                            {items.length} {items.length === 1 ? "item" : "items"}
+                            {items.length} {items.length === 1 ? t.admin.categories.menuItemsItem : t.admin.categories.menuItemsItems}
                           </span>
                         </div>
                       </CardHeader>
@@ -1414,6 +1466,7 @@ export default function CategoryDetailPage() {
                                       onRemove={removeItem}
                                       langTab={langTab}
                                       saving={saving}
+                                      t={t}
                                     />
                                   ))}
                                 </AnimatePresence>
@@ -1428,10 +1481,10 @@ export default function CategoryDetailPage() {
                               </div>
                               <div>
                                 <p className="text-sm font-medium text-foreground">
-                                  No menu items yet
+                                  {t.admin.categories.menuItemsEmptyTitle}
                                 </p>
                                 <p className="text-xs text-muted-foreground mt-1">
-                                  Add your first item to get started
+                                  {t.admin.categories.menuItemsEmptyDescription}
                                 </p>
                               </div>
                             </div>
@@ -1446,7 +1499,7 @@ export default function CategoryDetailPage() {
                             size="lg"
                           >
                             <Plus size={18} />
-                            <span className="font-medium">Add Menu Item</span>
+                            <span className="font-medium">{t.admin.categories.menuItemsAddButton}</span>
                           </Button>
                         </div>
                       </CardContent>

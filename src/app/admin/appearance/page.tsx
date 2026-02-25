@@ -525,16 +525,16 @@ export default function AppearancePage() {
   }
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-8 overflow-x-hidden">
       <FadeIn>
-        <div className="flex items-center justify-between">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4">
           <PageTitle description={t.admin.appearance.description}>
             {t.admin.appearance.title}
           </PageTitle>
           <Button
             onClick={handleSave}
             disabled={saving}
-            className="gap-2 bg-espresso text-warm hover:bg-espresso/90"
+            className="gap-2 bg-espresso text-warm hover:bg-espresso/90 w-full sm:w-auto justify-center"
           >
             {saving ? <Loader2 size={16} className="animate-spin" /> : <Save size={16} />}
             {t.admin.appearance.save}
@@ -542,7 +542,7 @@ export default function AppearancePage() {
         </div>
       </FadeIn>
 
-      <div className="grid gap-8 lg:grid-cols-[1fr_1fr]">
+      <div className="grid gap-8 lg:grid-cols-[1fr_1fr] max-w-6xl mx-auto px-4 sm:px-6 lg:px-0">
         {/* Left Column: Settings */}
         <div className="space-y-6">
           {/* Theme mode */}
@@ -552,7 +552,7 @@ export default function AppearancePage() {
               <CardTitle className="text-lg">{t.admin.appearance.theme}</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="grid grid-cols-3 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                 {([
                   { value: "light", labelKey: "themeLight", icon: Sun },
                   { value: "dark", labelKey: "themeDark", icon: Moon },
@@ -584,7 +584,7 @@ export default function AppearancePage() {
             </CardHeader>
             <CardContent className="space-y-4">
               {/* Presets */}
-              <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
                 {colorPresets.map((preset) => (
                   <button
                     key={preset.name}
@@ -617,7 +617,7 @@ export default function AppearancePage() {
               </div>
 
               {/* Custom colors */}
-              <div className="grid grid-cols-2 gap-4 pt-2">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
                 <div className="space-y-1.5">
                   <Label className="text-xs">{t.admin.appearance.primary}</Label>
                   <div className="flex gap-2">
@@ -670,7 +670,7 @@ export default function AppearancePage() {
               <CardTitle className="text-lg">{t.admin.appearance.logo}</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="flex items-center gap-3">
+              <div className="flex flex-col sm:flex-row sm:items-center gap-3">
                 <Switch
                   checked={config.showLogo}
                   onCheckedChange={(checked) =>
@@ -747,7 +747,7 @@ export default function AppearancePage() {
         <FadeIn delay={0.3}>
           <Card className="border-border/50">
             <CardHeader>
-              <div className="flex items-center justify-between">
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-0">
                 <CardTitle className="text-lg">{t.admin.appearance.heroBanner}</CardTitle>
                 <Button
                   variant="ghost"
@@ -764,7 +764,7 @@ export default function AppearancePage() {
               {/* Background Type */}
               <div className="space-y-2">
                 <Label className="text-xs">{t.admin.appearance.backgroundType}</Label>
-                <div className="grid grid-cols-3 gap-2">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
                   {([
                     { value: "image", labelKey: "image", icon: ImageIcon },
                     { value: "gradient", labelKey: "gradient", icon: Palette },
@@ -854,7 +854,7 @@ export default function AppearancePage() {
               {/* Gradient Picker */}
               {config.heroBanner?.backgroundType === "gradient" && (
                 <div className="space-y-4">
-                  <div className="grid grid-cols-2 gap-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div className="space-y-1.5">
                       <Label className="text-xs">{t.admin.appearance.startColor}</Label>
                       <div className="flex gap-2">
@@ -931,7 +931,7 @@ export default function AppearancePage() {
               {/* Overlay Controls */}
               <div className="space-y-4 border-t pt-4">
                 <Label className="text-xs">{t.admin.appearance.overlay}</Label>
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div className="space-y-1.5">
                     <Label className="text-xs">{t.admin.appearance.color}</Label>
                     <div className="flex gap-2">
@@ -982,7 +982,7 @@ export default function AppearancePage() {
                       placeholder="Our Menu"
                     />
                   </div>
-                  <div className="grid grid-cols-2 gap-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div className="space-y-1.5">
                       <Label className="text-xs">{t.admin.appearance.alignment}</Label>
                       <div className="flex gap-2">
@@ -1041,7 +1041,7 @@ export default function AppearancePage() {
 
               {/* CTA Button */}
               <div className="space-y-4 border-t pt-4">
-                <div className="flex items-center justify-between">
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-0">
                   <Label className="text-xs">{t.admin.appearance.ctaButton}</Label>
                   <Switch
                     checked={config.heroBanner?.showCta || false}
@@ -1092,7 +1092,7 @@ export default function AppearancePage() {
         <FadeIn delay={0.4}>
           <Card className="border-border/50">
             <CardHeader>
-              <div className="flex items-center justify-between">
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-0">
                 <CardTitle className="text-lg">{t.admin.appearance.advancedTypography}</CardTitle>
                 <div className="flex gap-2">
                   <Button
@@ -1131,7 +1131,7 @@ export default function AppearancePage() {
               {/* Font Families */}
               <div className="space-y-4 border-t pt-4">
                 <Label className="text-xs">{t.admin.appearance.fontFamilies}</Label>
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div className="space-y-1.5">
                     <Label className="text-xs">{t.admin.appearance.headingFont}</Label>
                     <Select
@@ -1211,7 +1211,7 @@ export default function AppearancePage() {
               {/* Font Weights */}
               <div className="space-y-4 border-t pt-4">
                 <Label className="text-xs">{t.admin.appearance.fontWeights}</Label>
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div className="space-y-1.5">
                     <Label className="text-xs">{t.admin.appearance.headingWeight}</Label>
                     <Select
@@ -1258,7 +1258,7 @@ export default function AppearancePage() {
                 <Label className="text-xs">{t.admin.appearance.fontSizes}</Label>
                 <div className="space-y-4">
                   <div className="space-y-1.5">
-                    <div className="flex items-center justify-between">
+                  image.png                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1 sm:gap-0">
                       <Label className="text-xs">{t.admin.appearance.heroTitle}: {config.typography?.heroTitleSize || 4.5}rem</Label>
                       <Select
                         value={(() => {
@@ -1388,7 +1388,7 @@ export default function AppearancePage() {
                       className="w-full"
                     />
                   </div>
-                  <div className="flex items-center justify-between">
+                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1 sm:gap-0">
                     <Label className="text-xs">{t.admin.appearance.paragraphSpacing}</Label>
                     <Switch
                       checked={config.typography?.paragraphSpacing !== false}
@@ -1401,7 +1401,7 @@ export default function AppearancePage() {
               {/* Text Colors */}
               <div className="space-y-4 border-t pt-4">
                 <Label className="text-xs">{t.admin.appearance.textColors} ({t.admin.appearance.textColorsHint})</Label>
-                <div className="grid grid-cols-3 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                   <div className="space-y-1.5">
                     <Label className="text-xs">{t.admin.appearance.primary}</Label>
                     <div className="flex gap-2">
@@ -1458,8 +1458,8 @@ export default function AppearancePage() {
 
               {/* Accessibility */}
               <div className="space-y-4 border-t pt-4">
-                <div className="flex items-center justify-between">
-                  <div>
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-0">
+                  <div className="space-y-0.5">
                     <Label className="text-xs">{t.admin.appearance.readableMode}</Label>
                     <p className="text-[10px] text-muted-foreground mt-0.5">
                       {t.admin.appearance.readableModeDesc}
@@ -1493,7 +1493,8 @@ export default function AppearancePage() {
 
         {/* Right Column: Live Preview */}
         <FadeIn delay={0.2}>
-          <Card className="border-border/50 sticky top-6 h-fit">
+          {/* Sticky only on large screens to avoid clipping on mobile */}
+          <Card className="border-border/50 lg:sticky lg:top-6 h-fit w-full max-w-full overflow-hidden">
             <CardHeader>
               <div className="flex items-center justify-between">
                 <CardTitle className="text-lg flex items-center gap-2">
@@ -1507,60 +1508,64 @@ export default function AppearancePage() {
                 )}
               </div>
             </CardHeader>
-            <CardContent>
+            <CardContent className="p-3 sm:p-6 overflow-x-hidden">
               {menuId && previewUrl ? (
-                <div className="relative w-full overflow-hidden rounded-lg border border-border/50 bg-muted/20">
-                  {previewLoading && (
-                    <div className="absolute inset-0 z-10 flex items-center justify-center bg-muted/50">
-                      <Loader2 className="h-8 w-8 animate-spin text-gold" />
+                <div className="flex justify-center">
+                  <div className="relative w-full max-w-full sm:max-w-[420px] overflow-hidden rounded-lg border border-border/50 bg-muted/20">
+                    {previewLoading && (
+                      <div className="absolute inset-0 z-10 flex items-center justify-center bg-muted/50">
+                        <Loader2 className="h-8 w-8 animate-spin text-gold" />
+                      </div>
+                    )}
+                    {previewError && (
+                      <div className="absolute inset-0 z-10 flex flex-col items-center justify-center bg-muted/50 p-4">
+                        <p className="text-sm font-medium text-destructive mb-2">
+                          {previewError}
+                        </p>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => {
+                            setPreviewError(null);
+                            setPreviewLoading(true);
+                            // Force iframe reload by updating key
+                            const iframe = document.querySelector('iframe[title="Menu Preview"]') as HTMLIFrameElement;
+                            if (iframe) {
+                              iframe.src = iframe.src;
+                            }
+                          }}
+                        >
+                          {t.admin.appearance.retry}
+                        </Button>
+                      </div>
+                    )}
+                    {/* Simple responsive preview container */}
+                    <div className="relative py-4">
+                      <div className="relative mx-auto w-full max-w-[420px] aspect-[9/16] overflow-hidden rounded-[32px] shadow-lg bg-background">
+                        <iframe
+                          key={`${previewUrl}-${language}-${config.typography?.headingFont}-${config.typography?.bodyFont}-${config.typography?.headingWeight}-${config.typography?.bodyWeight}`}
+                          src={previewUrl}
+                          className="block w-full h-full border-0 rounded-[32px]"
+                          title="Menu Preview"
+                          style={{
+                            backgroundColor: "transparent",
+                          }}
+                          onLoad={() => {
+                            setPreviewLoading(false);
+                            setPreviewError(null);
+                          }}
+                          onError={() => {
+                            setPreviewLoading(false);
+                            setPreviewError(t.admin.appearance.previewLoadError);
+                          }}
+                        />
+                        <div className="absolute top-3 right-4 rounded-md bg-yellow-500/20 px-2 py-1 z-20">
+                          <p className="text-[10px] font-medium text-yellow-700 dark:text-yellow-300">
+                            {t.admin.appearance.livePreview}
+                          </p>
+                        </div>
+                      </div>
                     </div>
-                  )}
-                  {previewError && (
-                    <div className="absolute inset-0 z-10 flex flex-col items-center justify-center bg-muted/50 p-4">
-                      <p className="text-sm font-medium text-destructive mb-2">
-                        {previewError}
-                      </p>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => {
-                          setPreviewError(null);
-                          setPreviewLoading(true);
-                          // Force iframe reload by updating key
-                          const iframe = document.querySelector('iframe[title="Menu Preview"]') as HTMLIFrameElement;
-                          if (iframe) {
-                            iframe.src = iframe.src;
-                          }
-                        }}
-                      >
-                        {t.admin.appearance.retry}
-                      </Button>
-                    </div>
-                  )}
-                  <div className="relative h-[600px] w-full overflow-auto">
-                    <iframe
-                      key={`${previewUrl}-${language}-${config.typography?.headingFont}-${config.typography?.bodyFont}-${config.typography?.headingWeight}-${config.typography?.bodyWeight}`}
-                      src={previewUrl}
-                      className="h-full w-full border-0"
-                      title="Menu Preview"
-                      style={{ 
-                        minHeight: "800px",
-                        backgroundColor: "transparent",
-                      }}
-                      onLoad={() => {
-                        setPreviewLoading(false);
-                        setPreviewError(null);
-                      }}
-                      onError={() => {
-                        setPreviewLoading(false);
-                        setPreviewError(t.admin.appearance.previewLoadError);
-                      }}
-                    />
-                  </div>
-                  <div className="absolute top-2 right-2 rounded-md bg-yellow-500/20 px-2 py-1 z-20">
-                    <p className="text-xs font-medium text-yellow-700 dark:text-yellow-300">
-                      {t.admin.appearance.livePreview}
-                    </p>
                   </div>
                 </div>
               ) : (
