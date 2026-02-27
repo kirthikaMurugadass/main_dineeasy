@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Inter, Playfair_Display, JetBrains_Mono } from "next/font/google";
+import { Inter } from "next/font/google";
 import { Toaster } from "@/components/ui/sonner";
 import { I18nProviderWrapper } from "@/components/providers/i18n-provider-wrapper";
 import { ThemeProvider } from "@/components/providers/theme-provider";
@@ -7,18 +7,6 @@ import "./globals.css";
 
 const inter = Inter({
   variable: "--font-inter",
-  subsets: ["latin"],
-  display: "swap",
-});
-
-const playfair = Playfair_Display({
-  variable: "--font-playfair",
-  subsets: ["latin"],
-  display: "swap",
-});
-
-const mono = JetBrains_Mono({
-  variable: "--font-mono",
   subsets: ["latin"],
   display: "swap",
 });
@@ -54,8 +42,15 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className="scroll-smooth" suppressHydrationWarning>
+      <head>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `(function(){var t=localStorage.getItem('dineeasy-theme');var m=window.matchMedia('(prefers-color-scheme: dark)');var r=(t==='system'||!t)?m.matches:t==='dark';document.documentElement.classList.add(r?'dark':'light');})();`,
+          }}
+        />
+      </head>
       <body
-        className={`${inter.variable} ${playfair.variable} ${mono.variable} font-sans antialiased`}
+        className={`${inter.variable} font-sans antialiased`}
         suppressHydrationWarning
       >
         <ThemeProvider>

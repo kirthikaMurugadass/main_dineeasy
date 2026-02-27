@@ -16,6 +16,8 @@ interface AppLogoProps {
   className?: string;
   /** Show icon only */
   iconOnly?: boolean;
+  /** Accessible label for the logo link (e.g. "DineEasy Home") */
+  ariaLabel?: string;
 }
 
 const sizeMap = {
@@ -35,26 +37,34 @@ export function AppLogo({
   variant = "default",
   className,
   iconOnly = false,
+  ariaLabel,
 }: AppLogoProps) {
   const [mounted, setMounted] = useState(false);
   useEffect(() => setMounted(true), []);
 
   const s = sizeMap[size];
-  const textColor = variant === "light" ? "text-white" : "text-foreground";
-  const accentColor = variant === "light" ? "text-gold" : "text-gold";
+  const textColor =
+    variant === "light"
+      ? "text-slate-900 dark:text-white"
+      : "text-foreground";
+  const accentColor = "text-primary";
 
   // Render logo text only after mount to avoid hydration mismatch from browser
   // extensions (e.g. Google Translate) that inject <font> tags before React hydrates
   const logoText = mounted ? (
-    <div className="flex flex-col">
+    <div
+      className={cn(
+        "flex flex-col transition duration-200 group-data-[collapsible=icon]:w-0 group-data-[collapsible=icon]:overflow-hidden group-data-[collapsible=icon]:opacity-0 group-data-[collapsible=icon]:-translate-x-1 group-data-[collapsible=icon]:scale-95",
+      )}
+    >
       <span
         className={cn(
-          "font-sans font-semibold tracking-tight",
+          "font-sans font-extrabold tracking-tight text-[1.05rem] md:text-[1.2rem]",
           textColor,
           s.text
         )}
       >
-        Dine<span className={accentColor}>Easy</span>
+        Dine<span className={cn(accentColor, "font-extrabold")}>Easy</span>
       </span>
       {subtitle && (
         <span className="text-[10px] text-muted-foreground">{subtitle}</span>
@@ -68,7 +78,7 @@ export function AppLogo({
     <>
       <div
         className={cn(
-          "flex items-center justify-center rounded-xl bg-espresso text-warm font-sans font-semibold shadow-sm",
+          "flex items-center justify-center rounded-xl bg-primary text-primary-foreground font-sans font-semibold shadow-sm",
           s.icon
         )}
       >
@@ -78,13 +88,15 @@ export function AppLogo({
     </>
   );
 
-  const wrapperClass = "flex items-center gap-2.5";
+  const wrapperClass =
+    "flex items-center gap-2.5 transition group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:gap-0";
 
   if (href) {
     return (
       <Link
         href={href}
         className={cn(wrapperClass, className)}
+        aria-label={ariaLabel}
       >
         {content}
       </Link>
@@ -114,7 +126,7 @@ export function BrandText({ className }: { className?: string }) {
         className
       )}
     >
-      Dine<span className="text-gold">Easy</span>
+      Dine<span className="text-primary">Easy</span>
     </span>
   );
 }

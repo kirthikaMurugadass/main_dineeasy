@@ -133,7 +133,7 @@ function SortableItem({
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, x: -20 }}
-      className="group relative rounded-xl border border-border/50 bg-card p-3 sm:p-4 shadow-sm transition-all hover:border-gold/30 hover:shadow-md"
+      className="group relative rounded-xl border border-border/60 bg-card/90 p-3 sm:p-4 shadow-sm transition-all duration-200 hover:border-primary/40 hover:shadow-md"
     >
       <div className="flex flex-col sm:flex-row sm:items-start gap-3 sm:gap-4">
         {/* Top Row: Drag Handle, Image, and Controls (Mobile) */}
@@ -195,13 +195,13 @@ function SortableItem({
               placeholder={t.admin.categories.menuItemNamePlaceholder}
               value={tr?.title ?? ""}
               onChange={(e) => updateTranslation("title", e.target.value)}
-              className="h-10 sm:h-11 text-sm font-medium border-border/50 focus:border-gold/50 focus:ring-gold/20"
+              className="h-10 sm:h-11 text-sm font-medium border-border/60 focus-visible:ring-2 focus-visible:ring-primary/30 focus-visible:border-primary/60"
             />
             <Textarea
               placeholder={t.admin.categories.menuItemDescriptionPlaceholder}
               value={tr?.description ?? ""}
               onChange={(e) => updateTranslation("description", e.target.value)}
-              className="min-h-[60px] text-xs resize-none border-border/50 focus:border-gold/50 focus:ring-gold/20"
+              className="min-h-[60px] text-xs resize-none border-border/60 focus-visible:ring-2 focus-visible:ring-primary/30 focus-visible:border-primary/60"
               maxLength={200}
             />
           </div>
@@ -222,7 +222,7 @@ function SortableItem({
                 placeholder="0.00"
                 value={item.price_chf}
                 onChange={(e) => onUpdate(itemIndex, { price_chf: e.target.value })}
-                className="h-10 sm:h-11 pl-12 text-right font-mono text-sm font-semibold border-border/50 focus:border-gold/50 focus:ring-gold/20"
+                className="h-10 sm:h-11 pl-12 text-right font-mono text-sm font-semibold border-border/60 focus-visible:ring-2 focus-visible:ring-primary/30 focus-visible:border-primary/60"
               />
             </div>
           </div>
@@ -896,7 +896,7 @@ export default function CategoryDetailPage() {
   if (loading) {
     return (
       <div className="flex items-center justify-center p-20">
-        <Loader2 className="h-8 w-8 animate-spin text-gold" />
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
       </div>
     );
   }
@@ -928,22 +928,29 @@ export default function CategoryDetailPage() {
 
       {/* Header */}
       <FadeIn>
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4">
-          <div className="flex items-center gap-2 sm:gap-4 min-w-0 flex-1">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between rounded-2xl border border-border/50 bg-card/80 px-3 py-3 sm:px-4 sm:py-4 lg:px-5 lg:py-4 shadow-sm">
+          <div className="flex min-w-0 flex-1 items-center gap-2 sm:gap-4">
             <Link href="/admin/categories">
-              <Button variant="ghost" size="icon" className="h-9 w-9 flex-shrink-0">
+              <Button variant="ghost" size="icon" className="h-9 w-9 flex-shrink-0 rounded-full border border-border/60">
                 <ArrowLeft size={18} />
               </Button>
             </Link>
-            <PageTitle className="truncate">
-              {isNew
-                ? t.admin.categories.newCategory
-                : categoryTranslations.find((t) => t.language === language)?.title ||
-                  categoryTranslations.find((t) => t.title)?.title ||
-                  t.admin.categories.editCategory}
-            </PageTitle>
+            <div className="min-w-0 space-y-1">
+              <PageTitle className="truncate">
+                {isNew
+                  ? t.admin.categories.newCategory
+                  : categoryTranslations.find((t) => t.language === language)?.title ||
+                    categoryTranslations.find((t) => t.title)?.title ||
+                    t.admin.categories.editCategory}
+              </PageTitle>
+              <p className="text-xs text-muted-foreground">
+                {isNew
+                  ? t.admin.categories.newCategorySubtitle
+                  : t.admin.categories.editCategorySubtitle}
+              </p>
+            </div>
           </div>
-          <div className="flex items-center gap-2 sm:gap-3 flex-shrink-0">
+          <div className="flex flex-shrink-0 items-center gap-2 sm:gap-3">
             {autoSaveStatus === "saving" && (
               <motion.div
                 initial={{ opacity: 0 }}
@@ -958,7 +965,7 @@ export default function CategoryDetailPage() {
               <motion.div
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
-                className="flex items-center gap-1.5 sm:gap-2 text-xs sm:text-sm text-green-600"
+                className="flex items-center gap-1.5 sm:gap-2 text-xs sm:text-sm text-emerald-500"
               >
                 <CheckCircle2 className="h-3.5 w-3.5 sm:h-4 sm:w-4 flex-shrink-0" />
                 <span className="hidden sm:inline">{t.admin.categories.draftSaved}</span>
@@ -968,7 +975,7 @@ export default function CategoryDetailPage() {
             <Button
               onClick={handleSave}
               disabled={saving}
-              className="gap-1.5 sm:gap-2 bg-espresso text-warm hover:bg-espresso/90 text-xs sm:text-sm h-9 sm:h-10 px-3 sm:px-4 flex-shrink-0"
+              className="flex-shrink-0 gap-1.5 px-3 text-xs sm:h-10 sm:gap-2 sm:px-4 sm:text-sm"
               size="sm"
             >
               {saving ? (
@@ -985,15 +992,21 @@ export default function CategoryDetailPage() {
 
       {/* Category Settings */}
       <FadeIn delay={0.1}>
-        <Card className="border-border/50">
-          <CardContent className="p-6">
-            <div className="space-y-4">
-              <div className="flex items-center gap-2">
-                <Switch checked={categoryActive} onCheckedChange={setCategoryActive} />
-                <Label className="text-sm">
-                  {categoryActive ? t.admin.categories.active : t.admin.categories.inactive}
-                </Label>
-              </div>
+        <Card className="rounded-2xl border border-border/60 bg-card/80 shadow-sm">
+          <CardContent className="flex flex-col gap-3 p-4 sm:flex-row sm:items-center sm:justify-between sm:p-5 lg:p-6">
+            <div className="space-y-1">
+              <h2 className="text-sm font-semibold tracking-tight text-foreground">
+                {t.admin.categories.statusTitle}
+              </h2>
+              <p className="text-xs text-muted-foreground max-w-md">
+                {t.admin.categories.statusDescription}
+              </p>
+            </div>
+            <div className="flex items-center gap-2 rounded-full border border-border/60 bg-background/60 px-3 py-1.5">
+              <Switch checked={categoryActive} onCheckedChange={setCategoryActive} />
+              <Label className="text-sm">
+                {categoryActive ? t.admin.categories.active : t.admin.categories.inactive}
+              </Label>
             </div>
           </CardContent>
         </Card>
@@ -1018,17 +1031,22 @@ export default function CategoryDetailPage() {
               <TabsContent key={lang.code} value={lang.code}>
                 <div className="space-y-6 pt-2">
                   {/* Modern Two-Column Category Form */}
-                  <div className="grid gap-6 lg:grid-cols-[1fr_400px]">
+                  <div className="grid gap-6 lg:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)]">
                     {/* Left Column: Main Form */}
                     <div className="space-y-6">
                       {/* Category Details Card */}
                       <FadeIn delay={0.1}>
-                        <Card className="border-border/50 shadow-sm">
-                          <CardHeader>
-                            <CardTitle className="text-lg">{t.admin.categories.detailsTitle}</CardTitle>
+                        <Card className="rounded-2xl border border-border/60 bg-card/80 shadow-sm">
+                          <CardHeader className="pb-3">
+                            <CardTitle className="text-base font-semibold tracking-tight">
+                              {t.admin.categories.detailsTitle}
+                            </CardTitle>
+                            <p className="text-xs text-muted-foreground">
+                              {t.admin.categories.detailsSubtitle}
+                            </p>
                           </CardHeader>
                           <CardContent className="space-y-5">
-                            {/* Category Name with Floating Label */}
+                            {/* Category Name */}
                             <div className="space-y-2">
                               <div className="flex items-center justify-between">
                                 <Label className="text-sm font-medium">
@@ -1061,7 +1079,7 @@ export default function CategoryDetailPage() {
                                     validateField("title", value);
                                   }}
                                   placeholder={t.admin.categories.namePlaceholder}
-                                  className={`h-12 pr-10 ${
+                                  className={`h-11 pr-10 text-sm ${
                                     validationErrors.title
                                       ? "border-destructive focus-visible:ring-destructive"
                                       : ""
@@ -1096,15 +1114,15 @@ export default function CategoryDetailPage() {
 
                             {/* Auto-generated Slug */}
                             <div className="space-y-2">
-                              <div className="flex items-center justify-between">
+                              <div className="flex items-center justify-between gap-2">
                                 <Label className="text-sm font-medium">
                                   {t.admin.categories.urlSlugLabel}
                                 </Label>
                                 <Button
-                                  variant="ghost"
+                                  variant="outline"
                                   size="sm"
                                   onClick={() => setSlugEditable(!slugEditable)}
-                                  className="h-6 px-2 text-xs"
+                                  className="h-7 px-2 text-[11px]"
                                 >
                                   {slugEditable ? (
                                     <>
@@ -1193,8 +1211,8 @@ export default function CategoryDetailPage() {
                               }}
                               className={`relative border-2 border-dashed rounded-lg p-8 transition-all ${
                                 isDragging
-                                  ? "border-gold bg-gold/5"
-                                  : "border-border hover:border-gold/30"
+                                  ? "border-primary bg-primary/5"
+                                  : "border-border hover:border-primary/40"
                               }`}
                             >
                               {categoryImagePreview ? (
@@ -1327,7 +1345,7 @@ export default function CategoryDetailPage() {
                         <Card className="border-border/50 shadow-sm sticky top-6">
                           <CardHeader>
                             <CardTitle className="text-lg flex items-center gap-2">
-                              <Eye className="h-5 w-5 text-gold" />
+                              <Eye className="h-5 w-5 text-primary" />
                               {t.admin.categories.livePreviewTitle}
                             </CardTitle>
                           </CardHeader>
@@ -1387,7 +1405,7 @@ export default function CategoryDetailPage() {
                         <Card className="border-border/50 shadow-sm">
                           <CardHeader>
                             <CardTitle className="text-lg flex items-center gap-2">
-                              <Lightbulb className="h-5 w-5 text-gold" />
+                              <Lightbulb className="h-5 w-5 text-primary" />
                               {t.admin.categories.tipsTitle}
                             </CardTitle>
                           </CardHeader>
@@ -1495,7 +1513,7 @@ export default function CategoryDetailPage() {
                           <Button
                             variant="outline"
                             onClick={addItem}
-                            className="gap-2 border-dashed border-2 border-border/50 hover:border-gold/50 hover:bg-gold/5 transition-all w-full sm:w-auto"
+                            className="gap-2 border-dashed border-2 border-border/60 hover:border-primary/40 hover:bg-primary/5 transition-all w-full sm:w-auto"
                             size="lg"
                           >
                             <Plus size={18} />

@@ -1,163 +1,88 @@
 "use client";
 
-import { motion, type Variants, useScroll, useTransform } from "framer-motion";
-import { ArrowRight } from "lucide-react";
 import Link from "next/link";
+import { ArrowRight } from "lucide-react";
+import { FadeContent, AnimatedContent } from "@appletosolutions/reactbits";
 import { Button } from "@/components/ui/button";
 import { useI18n } from "@/lib/i18n/context";
-import { PhoneMockup } from "./phone-mockup";
-import { useRef } from "react";
-
-const slideFromLeft: Variants = {
-  hidden: { x: -60, opacity: 0 },
-  visible: (i: number) => ({
-    x: 0,
-    opacity: 1,
-    transition: { duration: 0.7, ease: "easeOut", delay: i * 0.1 },
-  }),
-};
-
-const slideFromRight: Variants = {
-  hidden: { x: 60, opacity: 0 },
-  visible: {
-    x: 0,
-    opacity: 1,
-    transition: { duration: 0.7, ease: "easeOut", delay: 0.2 },
-  },
-};
+import ParticlesBackground from "@/components/ui/particles-background";
+import { useTheme } from "@/components/providers/theme-provider";
 
 export function Hero() {
   const { t } = useI18n();
-  const sectionRef = useRef<HTMLElement>(null);
-
-  // Parallax effect for phone mockup
-  const { scrollYProgress } = useScroll({
-    target: sectionRef,
-    offset: ["start end", "end start"],
-  });
-  const parallaxY = useTransform(scrollYProgress, [0, 1], [0, -50]);
+  const { resolvedTheme } = useTheme();
+  const particleColor = resolvedTheme === "dark" ? "#ffffff" : "#000000";
 
   return (
-    <section ref={sectionRef} className="relative flex min-h-screen items-center overflow-hidden">
-      {/* Background */}
-      <div className="absolute inset-0 -z-20">
-        <div className="absolute inset-0 bg-[url('/images/image2.jpg')] bg-cover bg-center bg-no-repeat" />
-        {/* Black overlay for contrast, lighter in center */}
-        <div className="absolute inset-0 bg-gradient-to-r from-black/70 via-black/50 to-black/60" />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-black/40" />
-      </div>
+    <section className="relative min-h-[100dvh] overflow-hidden bg-background lg:min-h-screen">
+      <ParticlesBackground
+        className="absolute inset-0 z-0"
+        particleCount={300}
+        particleSpread={10}
+        speed={0.1}
+        particleColors={[particleColor]}
+        alphaParticles
+        moveParticlesOnHover={false}
+        particleBaseSize={100}
+        sizeRandomness={0.4}
+      />
 
-      <div className="noise absolute inset-0 -z-10" />
-
-      {/* Content */}
-      <div className="mx-auto grid max-w-7xl grid-cols-1 items-center gap-12 px-6 pt-32 pb-24 lg:grid-cols-2 lg:gap-16 lg:pt-32">
-        {/* Left: Text — slides in from the left, children staggered by 0.1s */}
-        <div className="w-full max-w-2xl lg:max-w-none lg:pr-8">
-          <motion.div
-            variants={slideFromLeft}
-            initial="hidden"
-            animate="visible"
-            custom={0}
-          >
-            <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-gold/40 bg-gold/10 px-4 py-1.5">
-              <div className="h-1.5 w-1.5 rounded-full bg-gold animate-pulse" />
-              <span className="text-xs font-medium text-gold">{t.landing.hero.badge}</span>
-            </div>
-          </motion.div>
-
-          <motion.div
-            variants={slideFromLeft}
-            initial="hidden"
-            animate="visible"
-            custom={1}
-          >
-            <h1 className="font-sans text-3xl font-semibold leading-[1.15] tracking-tight text-white sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl">
-              <span className="block">{t.landing.hero.title}</span>
-              <br />
-              <span className="block text-gradient-gold">{t.landing.hero.titleAccent}</span>
-            </h1>
-          </motion.div>
-
-          <motion.div
-            variants={slideFromLeft}
-            initial="hidden"
-            animate="visible"
-            custom={2}
-          >
-            <p className="mt-6 text-lg leading-relaxed text-white/85 lg:max-w-xl">
-              {t.landing.hero.subtitle}
-            </p>
-          </motion.div>
-
-          <motion.div
-            variants={slideFromLeft}
-            initial="hidden"
-            animate="visible"
-            custom={3}
-          >
-            <div className="mt-10 flex flex-wrap items-center gap-4">
-              <Link href="/login">
-                <Button
-                  size="lg"
-                  className="group bg-espresso text-warm hover:bg-espresso/90 glow-gold h-13 px-8 text-base"
-                >
-                  {t.landing.hero.cta}
-                  <ArrowRight
-                    size={16}
-                    className="ml-2 transition-transform group-hover:translate-x-1"
-                  />
-                </Button>
-              </Link>
-              <a href="#demo">
-                <Button
-                  size="lg"
-                  variant="outline"
-                  className="h-13 px-8 text-base border-white/50 bg-transparent text-white shadow-none hover:bg-white/15 hover:text-white hover:border-white/60 focus-visible:ring-white/30"
-                >
-                  {t.landing.hero.ctaSecondary}
-                </Button>
-              </a>
-            </div>
-          </motion.div>
-
-          <motion.div
-            variants={slideFromLeft}
-            initial="hidden"
-            animate="visible"
-            custom={4}
-          >
-            {/* <div className="mt-12 flex items-center gap-6 text-sm text-muted-foreground">
-              <div className="flex items-center gap-2">
-                <div className="h-1.5 w-1.5 rounded-full bg-green-500" />
-                Free to start
-              </div>
-              <div className="flex items-center gap-2">
-                <div className="h-1.5 w-1.5 rounded-full bg-green-500" />
-                No credit card
-              </div>
-              <div className="flex items-center gap-2">
-                <div className="h-1.5 w-1.5 rounded-full bg-green-500" />
-                4 languages
-              </div>
-            </div> */}
-          </motion.div>
-        </div>
-
-        {/* Right: Phone Mockup — slides in from the right */}
-        <motion.div
-          variants={slideFromRight}
-          initial="hidden"
-          animate="visible"
-          className="flex justify-center lg:justify-end relative z-10"
-          style={parallaxY ? { y: parallaxY } : undefined}
+      <div className="relative z-10 mx-auto flex min-h-[100dvh] max-w-4xl items-center justify-center px-6 pb-24 pt-28 text-center lg:min-h-screen lg:px-8">
+        <FadeContent
+          duration={1.1}
+          delay={0.1}
+          threshold={0.2}
+          initialOpacity={0}
+          className="w-full"
         >
-          <div className="relative w-full max-w-sm shrink-0">
-            <PhoneMockup withFloating={true} />
-            {/* Decorative glow effects */}
-            <div className="absolute -left-16 top-1/2 -translate-y-1/2 h-64 w-32 rounded-full bg-gold/10 blur-3xl -z-10" />
-            <div className="absolute -right-16 top-1/3 h-48 w-32 rounded-full bg-olive/10 blur-3xl -z-10" />
+          <div className="flex flex-col items-center gap-6">
+            <AnimatedContent direction="vertical" distance={24} delay={0.1}>
+              <p className="inline-flex items-center rounded-full border border-border/60 bg-background/60 px-3 py-1 text-xs font-medium uppercase tracking-[0.2em] text-primary shadow-soft backdrop-blur-md">
+                {t.landing.hero.badge}
+              </p>
+            </AnimatedContent>
+
+            <AnimatedContent direction="vertical" distance={32} delay={0.18}>
+              <h1 className="text-balance text-[clamp(2.25rem,4vw+1rem,3.75rem)] font-semibold leading-[1.08] tracking-tight text-foreground">
+                {t.landing.hero.title}
+                {t.landing.hero.titleAccent && (
+                  <span className="mt-2 block bg-gradient-to-r from-primary via-foreground to-primary bg-clip-text text-transparent">
+                    {t.landing.hero.titleAccent}
+                  </span>
+                )}
+              </h1>
+            </AnimatedContent>
+
+            <AnimatedContent direction="vertical" distance={24} delay={0.26}>
+              <p className="mx-auto max-w-2xl text-lg leading-relaxed text-muted-foreground text-balance">
+                {t.landing.hero.subtitle}
+              </p>
+            </AnimatedContent>
+
+            <AnimatedContent direction="vertical" distance={24} delay={0.34}>
+              <div className="mt-4 flex flex-wrap items-center justify-center gap-4">
+                <Link href="/signup">
+                  <Button
+                    size="lg"
+                    className="group h-12 min-w-[180px] rounded-xl bg-foreground px-7 text-sm font-semibold text-background shadow-floating transition-transform duration-200 ease-out hover:-translate-y-0.5 hover:shadow-premium"
+                  >
+                    {t.landing.hero.cta}
+                    <ArrowRight className="ml-2 h-4 w-4 transition-transform duration-200 group-hover:translate-x-0.5" />
+                  </Button>
+                </Link>
+                <Link href="#workflow">
+                  <Button
+                    size="lg"
+                    variant="outline"
+                    className="h-12 min-w-[180px] rounded-xl border-2 border-border/70 bg-background/70 px-7 text-sm font-medium text-foreground/90 shadow-soft backdrop-blur-md hover:bg-background/90"
+                  >
+                    {t.landing.hero.ctaSecondary}
+                  </Button>
+                </Link>
+              </div>
+            </AnimatedContent>
           </div>
-        </motion.div>
+        </FadeContent>
       </div>
     </section>
   );

@@ -8,6 +8,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Loader2, Mail, Lock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { PasswordInput } from "@/components/ui/password-input";
 import { Label } from "@/components/ui/label";
 import { createClient } from "@/lib/supabase/client";
 import { toast } from "sonner";
@@ -27,29 +28,22 @@ export default function LoginPage() {
       toast.error(t.auth.login.errors.emptyFields);
       return;
     }
-
     setLoading(true);
-
     try {
       const supabase = createClient();
-      const { data, error } = await supabase.auth.signInWithPassword({
-        email,
-        password,
-      });
-
+      const { data, error } = await supabase.auth.signInWithPassword({ email, password });
       if (error) throw error;
-
       if (data.user) {
         toast.success(t.auth.login.success);
         router.push("/admin");
         router.refresh();
       }
-    } catch (err: any) {
-      console.error("Login error:", err);
+    } catch (err: unknown) {
+      const message = err && typeof err === "object" && "message" in err ? (err as { message: string }).message : "";
       const errorMessage =
-        err.message === "Invalid login credentials"
+        message === "Invalid login credentials"
           ? t.auth.login.errors.invalidCredentials
-          : err.message || t.auth.login.errors.genericError;
+          : message || t.auth.login.errors.genericError;
       toast.error(errorMessage);
     } finally {
       setLoading(false);
@@ -57,50 +51,39 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="flex min-h-[calc(100vh-5rem)] items-center justify-center p-4 lg:p-8">
-      {/* Centered Card with Split Layout */}
+    <div className="flex min-h-[calc(100vh-5rem)] items-center justify-center p-6 lg:p-10">
       <motion.div
-        initial={{ opacity: 0, scale: 0.95 }}
-        animate={{ opacity: 1, scale: 1 }}
-        transition={{ duration: 0.5, ease: [0.4, 0, 0.2, 1] }}
-        className="w-full max-w-5xl overflow-hidden rounded-2xl border border-border/50 bg-card shadow-xl dark:shadow-2xl"
+        initial={{ opacity: 0, y: 24 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+        className="w-full max-w-5xl overflow-hidden rounded-3xl border border-border/60 bg-card/80 shadow-floating backdrop-blur-xl"
       >
-        <div className="flex min-h-[600px] flex-col lg:flex-row">
-          {/* Left Side - Form Section (50%) */}
-          <div className="flex w-full flex-col justify-center bg-card p-8 lg:w-[50%] lg:p-12">
+        <div className="flex min-h-[580px] flex-col lg:flex-row">
+          {/* Form side */}
+          <div className="flex w-full flex-col justify-center p-8 lg:w-[50%] lg:p-12">
             <motion.div
-              initial={{ opacity: 0, x: -20 }}
+              initial={{ opacity: 0, x: -16 }}
               animate={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.5, delay: 0.2 }}
-              className="mx-auto w-full max-w-md space-y-6"
+              transition={{ duration: 0.45, delay: 0.1 }}
+              className="mx-auto w-full max-w-sm space-y-8"
             >
-              {/* Title */}
-              <div className="space-y-2">
-                <h1 className="text-3xl font-bold text-foreground font-serif">
+              <div>
+                <h1 className="text-2xl font-semibold tracking-tight text-foreground lg:text-3xl">
                   {t.auth.login.title}
                 </h1>
-                <p className="text-sm text-muted-foreground">
-                  {t.auth.login.subtitle}
-                </p>
+                <p className="mt-2 text-sm text-muted-foreground">{t.auth.login.subtitle}</p>
               </div>
 
-              {/* Form */}
               <form onSubmit={handleLogin} className="space-y-5">
-                {/* Email Field */}
                 <div className="space-y-2">
-                  <Label
-                    htmlFor="email"
-                    className="text-sm font-medium text-foreground"
-                  >
+                  <Label htmlFor="email" className="text-sm font-medium">
                     {t.auth.login.emailLabel}
                   </Label>
                   <div className="relative">
                     <Mail
-                      size={16}
-                      className={`absolute left-3 top-1/2 -translate-y-1/2 transition-colors ${
-                        focusedField === "email"
-                          ? "text-primary"
-                          : "text-muted-foreground"
+                      size={18}
+                      className={`absolute left-3.5 top-1/2 -translate-y-1/2 transition-colors ${
+                        focusedField === "email" ? "text-primary" : "text-muted-foreground"
                       }`}
                     />
                     <Input
@@ -111,11 +94,7 @@ export default function LoginPage() {
                       onChange={(e) => setEmail(e.target.value)}
                       onFocus={() => setFocusedField("email")}
                       onBlur={() => setFocusedField(null)}
-                      className={`h-12 rounded-xl border bg-background pl-10 pr-4 text-foreground placeholder:text-muted-foreground transition-all ${
-                        focusedField === "email"
-                          ? "border-primary ring-2 ring-primary/20"
-                          : "border-border focus:border-primary focus:ring-2 focus:ring-primary/20"
-                      }`}
+                      className="h-12 rounded-xl border-border/80 bg-background/80 pl-11 pr-4"
                       required
                       disabled={loading}
                       autoComplete="email"
@@ -123,45 +102,34 @@ export default function LoginPage() {
                   </div>
                 </div>
 
-                {/* Password Field */}
                 <div className="space-y-2">
                   <div className="flex items-center justify-between">
-                    <Label
-                      htmlFor="password"
-                      className="text-sm font-medium text-foreground"
-                    >
+                    <Label htmlFor="password" className="text-sm font-medium">
                       {t.auth.login.passwordLabel}
                     </Label>
                     <button
                       type="button"
                       onClick={() => toast.info("Password reset coming soon")}
-                      className="text-xs font-medium text-primary transition-colors hover:text-primary/80"
+                      className="text-xs font-medium text-primary hover:underline"
                     >
                       {t.auth.login.forgotPassword}
                     </button>
                   </div>
                   <div className="relative">
                     <Lock
-                      size={16}
-                      className={`absolute left-3 top-1/2 -translate-y-1/2 transition-colors ${
-                        focusedField === "password"
-                          ? "text-primary"
-                          : "text-muted-foreground"
+                      size={18}
+                      className={`absolute left-3.5 top-1/2 -translate-y-1/2 transition-colors ${
+                        focusedField === "password" ? "text-primary" : "text-muted-foreground"
                       }`}
                     />
-                    <Input
+                    <PasswordInput
                       id="password"
-                      type="password"
                       placeholder={t.auth.login.passwordPlaceholder}
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
                       onFocus={() => setFocusedField("password")}
                       onBlur={() => setFocusedField(null)}
-                      className={`h-12 rounded-xl border bg-background pl-10 pr-4 text-foreground placeholder:text-muted-foreground transition-all ${
-                        focusedField === "password"
-                          ? "border-primary ring-2 ring-primary/20"
-                          : "border-border focus:border-primary focus:ring-2 focus:ring-primary/20"
-                      }`}
+                      className="h-12 rounded-xl border-border/80 bg-background/80 pl-11"
                       required
                       disabled={loading}
                       autoComplete="current-password"
@@ -169,15 +137,14 @@ export default function LoginPage() {
                   </div>
                 </div>
 
-                {/* Submit Button */}
                 <Button
                   type="submit"
                   disabled={loading || !email || !password}
-                  className="h-12 w-full rounded-xl bg-gradient-to-r from-[#C6A75E] to-[#B8964A] font-semibold text-white shadow-lg transition-all hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed dark:from-[#D4AF37] dark:to-[#C6A75E]"
+                  className="h-12 w-full rounded-xl bg-primary text-primary-foreground shadow-soft hover:bg-primary/90"
                 >
                   <AnimatePresence mode="wait">
                     {loading ? (
-                      <motion.div
+                      <motion.span
                         key="loading"
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
@@ -185,28 +152,19 @@ export default function LoginPage() {
                         className="flex items-center justify-center gap-2"
                       >
                         <Loader2 size={18} className="animate-spin" />
-                        <span>{t.auth.login.submitButton}...</span>
-                      </motion.div>
+                        {t.auth.login.submitButton}...
+                      </motion.span>
                     ) : (
-                      <motion.span
-                        key="default"
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        exit={{ opacity: 0 }}
-                      >
+                      <motion.span key="default" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
                         {t.auth.login.submitButton}
                       </motion.span>
                     )}
                   </AnimatePresence>
                 </Button>
 
-                {/* Sign Up Link */}
                 <p className="text-center text-sm text-muted-foreground">
                   {t.auth.login.noAccount}{" "}
-                  <Link
-                    href="/signup"
-                    className="font-medium text-primary transition-colors hover:text-primary/80"
-                  >
+                  <Link href="/signup" className="font-medium text-primary hover:underline">
                     {t.auth.login.signUpLink}
                   </Link>
                 </p>
@@ -214,46 +172,30 @@ export default function LoginPage() {
             </motion.div>
           </div>
 
-          {/* Right Side - Image Panel (50%) */}
-          <div className="relative hidden w-full overflow-hidden lg:block lg:w-[50%]">
+          {/* Image panel */}
+          <div className="relative hidden min-h-[320px] w-full overflow-hidden lg:block lg:min-h-0 lg:w-[50%]">
             <motion.div
-              animate={{
-                scale: [1, 1.03, 1],
-              }}
-              transition={{
-                duration: 20,
-                repeat: Infinity,
-                ease: "linear",
-              }}
-              className="absolute inset-0"
-            >
-              <Image
-                src="/images/image1.jpg"
-                alt="Restaurant ambiance"
-                fill
-                className="object-cover"
-                priority
-                unoptimized
-              />
-            </motion.div>
-            <div className="absolute inset-0 bg-black/60 dark:bg-black/60" />
+              className="absolute inset-0 bg-cover bg-center"
+              style={{ backgroundImage: "url('/images/image1.jpg')" }}
+              animate={{ scale: [1, 1.04, 1] }}
+              transition={{ duration: 18, repeat: Infinity, ease: "easeInOut" }}
+            />
+            <div className="absolute inset-0 bg-primary/60" />
             <div className="relative z-10 flex h-full flex-col items-center justify-center px-8 text-center">
               <motion.div
-                initial={{ opacity: 0, y: 20 }}
+                initial={{ opacity: 0, y: 16 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6, delay: 0.4 }}
+                transition={{ duration: 0.5, delay: 0.3 }}
                 className="space-y-6"
               >
-                <h2 className="text-4xl font-bold text-white font-serif">
+                <h2 className="text-2xl font-semibold tracking-tight text-white lg:text-3xl">
                   {t.auth.login.panelGreeting}
                 </h2>
-                <p className="text-lg text-white/90 max-w-sm">
-                  {t.auth.login.panelDescription}
-                </p>
+                <p className="max-w-sm text-base text-white/90">{t.auth.login.panelDescription}</p>
                 <Link href="/signup">
                   <Button
                     variant="outline"
-                    className="border-2 border-white/50 bg-transparent px-8 py-6 text-base font-semibold text-white transition-all hover:bg-white/10 hover:border-white/70"
+                    className="rounded-xl border-2 border-white/50 bg-transparent px-6 py-3 text-white hover:bg-white/15 hover:border-white/70"
                   >
                     {t.auth.login.panelButton}
                   </Button>

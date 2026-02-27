@@ -2,26 +2,28 @@
 
 import { useEffect, useState, useMemo } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
-import { 
-  Folder, 
-  Eye, 
-  QrCode, 
-  Plus, 
-  FileText, 
-  BarChart3, 
-  Clock, 
+import {
+  Folder,
+  Eye,
+  QrCode,
+  Plus,
+  FileText,
+  BarChart3,
+  Clock,
   TrendingUp,
   Activity,
-  Sparkles
+  Sparkles,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { PageTitle } from "@/components/ui/page-title";
 import { FadeIn, StaggerContainer, StaggerItem, HoverScale } from "@/components/motion";
 import { useI18n } from "@/lib/i18n/context";
+import { useTheme } from "@/components/providers/theme-provider";
 import { createClient } from "@/lib/supabase/client";
+import { getGreeting } from "@/lib/utils/greeting";
 
 interface DashboardStats {
   hasMenu: boolean;
@@ -49,6 +51,8 @@ interface ChartData {
 export default function AdminDashboard() {
   const { t } = useI18n();
   const router = useRouter();
+  const { resolvedTheme } = useTheme();
+  const chartColor = resolvedTheme === "dark" ? "rgb(250, 250, 250)" : "rgb(15, 15, 15)";
   const [stats, setStats] = useState<DashboardStats>({
     hasMenu: false,
     menuActive: false,
@@ -63,6 +67,8 @@ export default function AdminDashboard() {
   const [qrChartData, setQrChartData] = useState<ChartData>({ labels: [], values: [] });
   const [menuId, setMenuId] = useState<string | null>(null);
   const [restaurantId, setRestaurantId] = useState<string | null>(null);
+  const [userName, setUserName] = useState<string>("");
+  const [restaurantLogo, setRestaurantLogo] = useState<string | null>(null);
 
   useEffect(() => {
     async function load() {
@@ -74,7 +80,7 @@ export default function AdminDashboard() {
 
       const { data: restaurant } = await supabase
         .from("restaurants")
-        .select("id, name, slug")
+        .select("id, name, slug, logo_url")
         .eq("owner_id", user.id)
         .single();
 
@@ -83,7 +89,17 @@ export default function AdminDashboard() {
         return;
       }
 
+      const displayName =
+        (user.user_metadata as any)?.full_name ||
+        user.email?.split("@")[0] ||
+        "Admin";
+      setUserName(displayName);
+
       setRestaurantId(restaurant.id);
+
+      if (restaurant.logo_url) {
+        setRestaurantLogo(`${restaurant.logo_url}?t=${Date.now()}`);
+      }
 
       const { data: menu } = await supabase
         .from("menus")
@@ -151,9 +167,9 @@ export default function AdminDashboard() {
         id: "qr-1",
         type: "qr",
         title: t.admin.dashboard.activity.qrGenerated,
-        timestamp: new Date(Date.now() - 2 * 60 * 60 * 1000), // 2 hours ago
+        timestamp: new Date(Date.now() - 2 * 60 * 60 * 1000),
         icon: QrCode,
-        color: "text-gold",
+        color: "text-primary",
       });
 
       // Sort activities by timestamp
@@ -190,64 +206,95 @@ export default function AdminDashboard() {
     load();
   }, []);
 
+  const rawGreeting = useMemo(
+    () =>
+      getGreeting(
+        {
+          goodMorning: t.admin.topbar.goodMorning,
+          goodAfternoon: t.admin.topbar.goodAfternoon,
+          goodEvening: t.admin.topbar.goodEvening,
+        },
+        "__NAME__"
+      ),
+    [t]
+  );
+
+  const [greetingPrefix, greetingSuffix] = useMemo(() => {
+    const parts = rawGreeting.split("__NAME__");
+    return [parts[0] ?? "", parts[1] ?? ""];
+  }, [rawGreeting]);
+
   const statCards = [
     {
       title: t.admin.dashboard.totalCategories,
       value: stats.totalCategories,
       icon: Folder,
-      color: "text-gold",
-      bg: "bg-gold/10",
+      color: "text-primary",
+      bg: "bg-primary/10",
     },
     {
       title: t.admin.dashboard.activeCategories,
       value: stats.activeCategories,
       icon: Eye,
-      color: "text-green-500",
-      bg: "bg-green-500/10",
+      color: "text-emerald-600 dark:text-emerald-400",
+      bg: "bg-emerald-500/10",
     },
   ];
 
   return (
-    <div className="space-y-8">
-      {/* Header */}
+    <div className="space-y-10">
       <FadeIn>
-        <div className="flex items-center justify-between">
-          <PageTitle
-            description={
-              <>
-                {t.admin.dashboard.welcome}
-                {stats.restaurantName ? `, ${stats.restaurantName}` : ""}
-              </>
-            }
-          >
+        <div className="mt-2 space-y-4">
+          <h1 className="text-2xl font-semibold tracking-tight">
+            {greetingPrefix}
+            <span className="text-primary">
+              {userName || "Admin"}
+            </span>
+            {greetingSuffix}
+          </h1>
+
+          {/* Cafe section: logo + name, visually distinct */}
+          <div className="inline-flex items-center gap-3 rounded-2xl border border-border/70 bg-background/90 px-3 py-2 shadow-sm">
+            {restaurantLogo && (
+              <div className="relative h-9 w-9 overflow-hidden rounded-full border border-border/70 bg-muted/40">
+                <Image
+                  src={restaurantLogo}
+                  alt={stats.restaurantName || t.admin.settings.restaurantProfile}
+                  fill
+                  className="object-cover"
+                  sizes="36px"
+                />
+              </div>
+            )}
+            <p className="text-base sm:text-xl font-extrabold text-foreground">
+              {stats.restaurantName || t.admin.settings.restaurantProfile}
+            </p>
+          </div>
+
+          {/* Dashboard label below cafe section */}
+          <p className="text-[11px] font-semibold uppercase tracking-[0.25em] text-muted-foreground/80">
             {t.admin.dashboard.title}
-          </PageTitle>
-          <Link href="/admin/categories">
-            <Button variant="outline" className="gap-2">
-              {t.admin.menus.title}
-            </Button>
-          </Link>
+          </p>
         </div>
       </FadeIn>
-
-      {/* Stats */}
-      <StaggerContainer className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+      <StaggerContainer className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
         {statCards.map((stat, i) => (
           <StaggerItem key={i}>
             <HoverScale lift={-4}>
-              <Card className="border-border/50">
+              <Card className="relative overflow-hidden rounded-2xl border border-border/70 bg-gradient-to-br from-background/80 via-background/90 to-background/80 shadow-sm transition-transform duration-200 hover:-translate-y-1 hover:shadow-lg">
+                <div className="pointer-events-none absolute inset-px rounded-2xl bg-[radial-gradient(circle_at_top,_rgba(59,130,246,0.18),transparent_55%)] opacity-60" />
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium text-muted-foreground">
+                  <CardTitle className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
                     {stat.title}
                   </CardTitle>
-                  <div className={`rounded-lg p-2 ${stat.bg}`}>
-                    <stat.icon size={16} className={stat.color} />
+                  <div className={`relative rounded-xl p-2 ${stat.bg}`}>
+                    <stat.icon size={18} className={stat.color} />
                   </div>
                 </CardHeader>
                 <CardContent>
-                  <div className="text-3xl font-bold">
+                  <div className="text-3xl font-semibold tracking-tight">
                     {loading ? (
-                      <div className="h-9 w-12 animate-pulse rounded bg-muted" />
+                      <div className="h-9 w-14 animate-pulse rounded-lg bg-muted" />
                     ) : (
                       <motion.span
                         initial={{ opacity: 0, y: 10 }}
@@ -268,13 +315,13 @@ export default function AdminDashboard() {
         <StaggerItem>
           <HoverScale lift={-4}>
             <Link href="/admin/qr">
-              <Card className="border-border/50 cursor-pointer transition-colors hover:border-gold/20">
+              <Card className="group relative cursor-pointer overflow-hidden rounded-2xl border border-border/70 bg-gradient-to-br from-background via-background/95 to-background/80 shadow-sm transition-all hover:-translate-y-1 hover:border-primary/40 hover:shadow-lg">
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium text-muted-foreground">
+                  <CardTitle className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
                     {t.admin.qr.title}
                   </CardTitle>
-                  <div className="rounded-lg bg-gold/10 p-2">
-                    <QrCode size={16} className="text-gold" />
+                  <div className="rounded-xl bg-primary/10 p-2">
+                    <QrCode size={16} className="text-primary" />
                   </div>
                 </CardHeader>
                 <CardContent>
@@ -290,19 +337,19 @@ export default function AdminDashboard() {
 
       {/* Smart Dashboard Insights */}
       <FadeIn delay={0.3}>
-        <div className="space-y-6">
-          <div className="flex items-center gap-2">
-            <Sparkles className="h-5 w-5 text-gold" />
-            <h2 className="text-xl font-semibold">{t.admin.dashboard.smartInsights}</h2>
+        <div className="space-y-8">
+          <div className="flex items-center gap-3">
+            <Sparkles className="h-5 w-5 text-primary" />
+            <h2 className="text-xl font-semibold tracking-tight">
+              {t.admin.dashboard.smartInsights}
+            </h2>
           </div>
 
-          {/* Top Section: Activity Timeline + Quick Actions */}
           <div className="grid gap-6 lg:grid-cols-2">
-            {/* Left: Recent Activity Timeline */}
-            <Card className="border-border/50">
+            <Card className="rounded-2xl border border-border/70 bg-background/80 shadow-sm">
               <CardHeader>
-                <CardTitle className="flex items-center gap-2 text-lg">
-                  <Activity className="h-5 w-5 text-gold" />
+                <CardTitle className="flex items-center gap-2 text-lg font-semibold tracking-tight">
+                  <Activity className="h-5 w-5 text-primary" />
                   {t.admin.dashboard.recentActivity}
                 </CardTitle>
               </CardHeader>
@@ -320,7 +367,8 @@ export default function AdminDashboard() {
                     ))}
                   </div>
                 ) : recentActivities.length > 0 ? (
-                  <div className="space-y-4">
+                  <div className="relative max-h-72 space-y-4 overflow-y-auto pr-1">
+                    <div className="pointer-events-none absolute left-[18px] top-1 bottom-4 w-px bg-border/60" />
                     <AnimatePresence>
                       {recentActivities.slice(0, 5).map((activity, index) => (
                         <motion.div
@@ -329,16 +377,23 @@ export default function AdminDashboard() {
                           animate={{ opacity: 1, x: 0 }}
                           exit={{ opacity: 0, x: 20 }}
                           transition={{ delay: index * 0.1 }}
-                          className="flex items-center gap-3 rounded-lg border border-border/50 p-3 transition-all hover:border-gold/30 hover:bg-gold/5"
+                          className="relative flex gap-3 pl-10"
                         >
-                          <div className={`rounded-lg bg-gold/10 p-2 ${activity.color}`}>
-                            <activity.icon size={18} />
+                          <div className="absolute left-[10px] top-4 flex h-3 w-3 items-center justify-center">
+                            <span className="h-3 w-3 rounded-full border-2 border-background bg-primary shadow-[0_0_0_3px_rgba(59,130,246,0.35)]" />
                           </div>
-                          <div className="flex-1">
-                            <p className="text-sm font-medium">{activity.title}</p>
-                            <p className="text-xs text-muted-foreground">
-                              {formatTimestamp(activity.timestamp)}
-                            </p>
+                          <div className="flex-1 rounded-xl border border-border/70 bg-background/60 p-3 transition-colors hover:bg-muted/60">
+                            <div className="flex items-center gap-3">
+                              <div className={`flex h-8 w-8 items-center justify-center rounded-full bg-primary/10 ${activity.color}`}>
+                                <activity.icon size={16} />
+                              </div>
+                              <div className="flex-1">
+                                <p className="text-sm font-medium leading-tight">{activity.title}</p>
+                                <p className="text-xs text-muted-foreground">
+                                  {formatTimestamp(activity.timestamp)}
+                                </p>
+                              </div>
+                            </div>
                           </div>
                         </motion.div>
                       ))}
@@ -352,26 +407,27 @@ export default function AdminDashboard() {
               </CardContent>
             </Card>
 
-            {/* Right: Quick Actions Panel */}
-            <Card className="border-border/50">
+            <Card className="rounded-2xl border border-border/70 bg-background/80 shadow-sm">
               <CardHeader>
-                <CardTitle className="flex items-center gap-2 text-lg">
-                  <Sparkles className="h-5 w-5 text-gold" />
+                <CardTitle className="flex items-center gap-2 text-lg font-semibold tracking-tight">
+                  <Sparkles className="h-5 w-5 text-primary" />
                   {t.admin.dashboard.quickActions}
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="grid grid-cols-2 gap-3">
+                <div className="grid grid-cols-2 gap-4">
                   <HoverScale>
                     <Link href="/admin/categories">
                       <Button
                         variant="outline"
-                        className="h-24 w-full flex-col gap-2 border-border/50 transition-all hover:border-gold/30 hover:bg-gold/5"
+                        className="flex h-24 w-full flex-col items-center justify-center gap-2 rounded-2xl border border-border/70 bg-background/80 text-xs font-medium transition-all hover:-translate-y-1 hover:border-primary/40 hover:bg-accent/40 hover:shadow-md"
                       >
-                        <div className="rounded-lg bg-blue-500/10 p-2">
-                          <Plus className="h-5 w-5 text-blue-500" />
+                        <div className="flex h-9 w-9 items-center justify-center rounded-full bg-primary/10">
+                          <Plus className="h-5 w-5 text-primary" />
                         </div>
-                        <span className="text-xs font-medium">{t.admin.dashboard.addCategory}</span>
+                        <span className="text-xs font-medium">
+                          {t.admin.dashboard.addCategory}
+                        </span>
                       </Button>
                     </Link>
                   </HoverScale>
@@ -380,12 +436,14 @@ export default function AdminDashboard() {
                     <Link href="/admin/qr">
                       <Button
                         variant="outline"
-                        className="h-24 w-full flex-col gap-2 border-border/50 transition-all hover:border-gold/30 hover:bg-gold/5"
+                        className="flex h-24 w-full flex-col items-center justify-center gap-2 rounded-2xl border border-border/70 bg-background/80 text-xs font-medium transition-all hover:-translate-y-1 hover:border-primary/40 hover:bg-accent/40 hover:shadow-md"
                       >
-                        <div className="rounded-lg bg-gold/10 p-2">
-                          <QrCode className="h-5 w-5 text-gold" />
+                        <div className="flex h-9 w-9 items-center justify-center rounded-full bg-primary/10">
+                          <QrCode className="h-5 w-5 text-primary" />
                         </div>
-                        <span className="text-xs font-medium">{t.admin.dashboard.generateQr}</span>
+                        <span className="text-xs font-medium">
+                          {t.admin.dashboard.generateQr}
+                        </span>
                       </Button>
                     </Link>
                   </HoverScale>
@@ -394,12 +452,14 @@ export default function AdminDashboard() {
                     <Link href="/admin/categories">
                       <Button
                         variant="outline"
-                        className="h-24 w-full flex-col gap-2 border-border/50 transition-all hover:border-gold/30 hover:bg-gold/5"
+                        className="flex h-24 w-full flex-col items-center justify-center gap-2 rounded-2xl border border-border/70 bg-background/80 text-xs font-medium transition-all hover:-translate-y-1 hover:border-primary/40 hover:bg-accent/40 hover:shadow-md"
                       >
-                        <div className="rounded-lg bg-purple-500/10 p-2">
-                          <FileText className="h-5 w-5 text-purple-500" />
+                        <div className="flex h-9 w-9 items-center justify-center rounded-full bg-primary/10">
+                          <FileText className="h-5 w-5 text-primary" />
                         </div>
-                        <span className="text-xs font-medium">{t.admin.menus.title}</span>
+                        <span className="text-xs font-medium">
+                          {t.admin.menus.title}
+                        </span>
                       </Button>
                     </Link>
                   </HoverScale>
@@ -407,10 +467,10 @@ export default function AdminDashboard() {
                   <HoverScale>
                     <Button
                       variant="outline"
-                      className="h-24 w-full flex-col gap-2 border-border/50 transition-all hover:border-gold/30 hover:bg-gold/5"
+                      className="flex h-24 w-full flex-col items-center justify-center gap-2 rounded-2xl border border-border/70 bg-background/70 text-xs font-medium transition-all hover:-translate-y-1 hover:bg-accent/40 hover:shadow-md"
                       disabled
                     >
-                      <div className="rounded-lg bg-green-500/10 p-2">
+                      <div className="flex h-9 w-9 items-center justify-center rounded-full bg-green-500/10">
                         <BarChart3 className="h-5 w-5 text-green-500" />
                       </div>
                       <span className="text-xs font-medium">{t.admin.dashboard.viewAnalytics}</span>
@@ -421,13 +481,11 @@ export default function AdminDashboard() {
             </Card>
           </div>
 
-          {/* Bottom Section: Mini Analytics Charts */}
           <div className="grid gap-6 lg:grid-cols-2">
-            {/* Category Growth Chart */}
-            <Card className="border-border/50">
+            <Card className="rounded-2xl border border-border/70 bg-background/80 shadow-sm">
               <CardHeader>
-                <CardTitle className="flex items-center gap-2 text-lg">
-                  <TrendingUp className="h-5 w-5 text-blue-500" />
+                <CardTitle className="flex items-center gap-2 text-lg font-semibold tracking-tight">
+                  <TrendingUp className="h-5 w-5 text-primary" />
                   {t.admin.dashboard.categoryGrowth}
                 </CardTitle>
               </CardHeader>
@@ -442,11 +500,10 @@ export default function AdminDashboard() {
               </CardContent>
             </Card>
 
-            {/* QR Code Scan Trend Chart */}
-            <Card className="border-border/50">
+            <Card className="rounded-2xl border border-border/70 bg-background/80 shadow-sm">
               <CardHeader>
-                <CardTitle className="flex items-center gap-2 text-lg">
-                  <QrCode className="h-5 w-5 text-gold" />
+                <CardTitle className="flex items-center gap-2 text-lg font-semibold tracking-tight">
+                  <QrCode className="h-5 w-5 text-primary" />
                   {t.admin.dashboard.qrActivity}
                 </CardTitle>
               </CardHeader>
@@ -455,7 +512,7 @@ export default function AdminDashboard() {
                   <div className="h-32 animate-pulse rounded bg-muted" />
                 ) : (
                   <div className="h-32">
-                    <MiniChart data={qrChartData} color="rgb(196, 167, 94)" />
+                    <MiniChart data={qrChartData} color={chartColor} />
                   </div>
                 )}
               </CardContent>

@@ -5,21 +5,28 @@ interface FeatureEntry { title: string; description: string }
 interface StepEntry { title: string; description: string }
 
 interface Dictionary {
+  common: { close: string };
   landing: {
-    nav: { features: string; demo: string; pricing: string; login: string; cta: string };
+    nav: { home: string; features: string; demo: string; pricing: string; contact: string; login: string; cta: string; language: string; theme: string; selectLanguage: string };
     hero: { badge: string; title: string; titleAccent: string; subtitle: string; cta: string; ctaSecondary: string };
     features: {
+      label: string;
       title: string; subtitle: string;
       qr: FeatureEntry; multilang: FeatureEntry; themes: FeatureEntry;
       publish: FeatureEntry; mobile: FeatureEntry; analytics: FeatureEntry;
     };
-    demo: { title: string; subtitle: string };
-    howItWorks: { title: string; subtitle: string; step1: StepEntry; step2: StepEntry; step3: StepEntry };
+    demo: { label: string; title: string; subtitle: string };
+    howItWorks: { label: string; title: string; subtitle: string; step1: StepEntry; step2: StepEntry; step3: StepEntry };
     about: {
       badge: string; title: string; description: string; readMore: string;
       features: { chefs: FeatureEntry; premium: FeatureEntry; fresh: FeatureEntry; cozy: FeatureEntry };
     };
     cta: { title: string; subtitle: string; button: string };
+    story: { eyebrow: string; headline: string; body: string; cta: string };
+    workflow: { eyebrow: string; headline: string; steps: StepEntry[] };
+    ecosystem: { eyebrow: string; headline: string; items: FeatureEntry[] };
+    trust: { eyebrow: string; headline: string; tagline: string };
+    finalCta: { headline: string; subhead: string; button: string };
     footer: {
       tagline: string; product: string; company: string; legal: string;
       links: {
@@ -60,6 +67,8 @@ interface Dictionary {
     };
     topbar: {
       light: string; dark: string; system: string;
+      theme?: string;
+      goodMorning: string; goodAfternoon: string; goodEvening: string;
     };
     dashboard: {
       title: string; welcome: string; totalCategories: string; activeCategories: string; quickCreate: string;
@@ -163,24 +172,31 @@ interface Dictionary {
 }
 
 const en: Dictionary = {
+  common: { close: "Close" },
   landing: {
     nav: {
+      home: "Home",
       features: "Features",
       demo: "Demo",
       pricing: "Pricing",
+      contact: "Contact",
       login: "Sign In",
-      cta: "Create Free Menu",
+      cta: "Get Started",
+      language: "Language",
+      theme: "Theme",
+      selectLanguage: "Select language",
     },
     hero: {
-      badge: "Made for Cafés & Restaurants",
-      title: "Where Dining Meets",
-      titleAccent: "Digital Elegance.",
+      badge: "For modern restaurants",
+      title: "Next-Gen Digital Menu Platform",
+      titleAccent: "for Modern Restaurants.",
       subtitle:
-        "Transform your café or restaurant with seamless QR menu. Because great food deserves a great presentation.",
-      cta: "Create Free Menu",
-      ctaSecondary: "See Demo",
+        "Create beautiful QR menus, manage categories, track performance, and deliver a premium dining experience — all in one powerful dashboard.",
+      cta: "Get Started",
+      ctaSecondary: "Live Demo",
     },
     features: {
+      label: "Features",
       title: "Everything your café & restaurant needs",
       subtitle: "Powerful features, beautifully simple",
       qr: {
@@ -209,10 +225,12 @@ const en: Dictionary = {
       },
     },
     demo: {
+      label: "Live Preview",
       title: "See it in action",
       subtitle: "A real preview of your digital menu experience",
     },
     howItWorks: {
+      label: "Simple Setup",
       title: "How it works",
       subtitle: "Three simple steps to your digital menu",
       step1: { title: "Create Menu", description: "Add your dishes, prices, and descriptions in multiple languages" },
@@ -235,6 +253,41 @@ const en: Dictionary = {
       title: "Ready to go digital?",
       subtitle: "Join Swiss cafés and restaurants already using DineEasy to delight their guests.",
       button: "Get Started",
+    },
+    story: {
+      eyebrow: "Why we built this",
+      headline: "Great food deserves a great first impression.",
+      body: "We saw restaurants struggling with printed menus—costly reprints, no flexibility for daily specials, and a disconnect with how guests actually browse. So we built a product that puts your menu where your guests already are: on their phones. No app to download. No friction. Just a link, a scan, and your full menu—always up to date.",
+      cta: "See the product",
+    },
+    workflow: {
+      eyebrow: "How it works",
+      headline: "From zero to live in minutes.",
+      steps: [
+        { title: "Create your menu", description: "Add categories and items. Support multiple languages. Set prices and descriptions." },
+        { title: "Design your experience", description: "Choose colors, fonts, and layout. Add your logo. Preview on any device." },
+        { title: "Go live", description: "Publish instantly. Generate QR codes. Share the link. Your menu is live." },
+      ],
+    },
+    ecosystem: {
+      eyebrow: "Product",
+      headline: "Everything you need. Nothing you don’t.",
+      items: [
+        { title: "Digital menus", description: "Rich, responsive menus that look perfect on every screen. Update anytime." },
+        { title: "QR & share", description: "One link. One QR. Table cards, windows, or direct share. Zero friction for guests." },
+        { title: "Design control", description: "Theme, typography, and branding. Your identity, your way." },
+        { title: "Multi-language", description: "One menu, many languages. Automatic detection for a global audience." },
+      ],
+    },
+    trust: {
+      eyebrow: "Trusted by",
+      headline: "Restaurants and cafés who care about experience.",
+      tagline: "Built for the industry. Used every day.",
+    },
+    finalCta: {
+      headline: "Ready to simplify your menu?",
+      subhead: "Join teams who’ve already made the switch. No credit card required.",
+      button: "Create your menu",
     },
     footer: {
       tagline: "Digital menus for cafés & restaurants",
@@ -326,6 +379,10 @@ const en: Dictionary = {
       light: "Light",
       dark: "Dark",
       system: "System",
+      theme: "Theme",
+      goodMorning: "Good Morning, {name}",
+      goodAfternoon: "Good Afternoon, {name}",
+      goodEvening: "Good Evening, {name}",
     },
     dashboard: {
       title: "Dashboard",
@@ -622,24 +679,31 @@ const en: Dictionary = {
 };
 
 const de: Dictionary = {
+  common: { close: "Schließen" },
   landing: {
     nav: {
+      home: "Start",
       features: "Funktionen",
       demo: "Demo",
       pricing: "Preise",
+      contact: "Kontakt",
       login: "Anmelden",
-      cta: "Menü erstellen",
+      cta: "Jetzt starten",
+      language: "Sprache",
+      theme: "Design",
+      selectLanguage: "Sprache wählen",
     },
     hero: {
-      badge: "Für Cafés & Restaurants",
-      title: "Köstliche Gerichte geniessen.",
-      titleAccent: "Jederzeit, überall.",
+      badge: "Für moderne Restaurants",
+      title: "Digitale Menü-Plattform der nächsten Generation",
+      titleAccent: "für moderne Restaurants.",
       subtitle:
-        "Geniessen Sie köstliche Gerichte mit frischen Zutaten und intensiven Aromen. Bestellen Sie einfach und geniessen Sie Restaurantqualität jederzeit und überall.",
-      cta: "Jetzt bestellen",
-      ctaSecondary: "Menü ansehen",
+        "Erstellen Sie QR-Menüs, verwalten Sie Kategorien, verfolgen Sie die Performance und bieten Sie ein Premium-Erlebnis — alles in einem Dashboard.",
+      cta: "Jetzt starten",
+      ctaSecondary: "Live-Demo",
     },
     features: {
+      label: "Funktionen",
       title: "Alles was Ihr Café & Restaurant braucht",
       subtitle: "Leistungsstarke Funktionen, wunderschön einfach",
       qr: {
@@ -668,10 +732,12 @@ const de: Dictionary = {
       },
     },
     demo: {
+      label: "Live-Vorschau",
       title: "In Aktion sehen",
       subtitle: "Eine echte Vorschau Ihres digitalen Menüerlebnisses",
     },
     howItWorks: {
+      label: "Einfache Einrichtung",
       title: "So funktioniert's",
       subtitle: "Drei einfache Schritte zu Ihrem digitalen Menü",
       step1: { title: "Menü erstellen", description: "Fügen Sie Gerichte, Preise und Beschreibungen in mehreren Sprachen hinzu" },
@@ -694,6 +760,41 @@ const de: Dictionary = {
       title: "Bereit für digital?",
       subtitle: "Schliessen Sie sich Schweizer Cafés und Restaurants an, die DineEasy bereits nutzen.",
       button: "Kostenlos starten — Keine Karte nötig",
+    },
+    story: {
+      eyebrow: "Warum wir das gebaut haben",
+      headline: "Gutes Essen verdient einen starken ersten Eindruck.",
+      body: "Wir haben gesehen, wie Restaurants mit gedruckten Menüs kämpfen—teure Nachdrucke, keine Flexibilität für Tagesangebote. Also haben wir eine Lösung gebaut: Ihr Menü dort, wo Ihre Gäste schon sind—auf dem Smartphone. Keine App, keine Hürden. Ein Link, ein Scan, Ihr Menü—immer aktuell.",
+      cta: "Produkt ansehen",
+    },
+    workflow: {
+      eyebrow: "So funktioniert's",
+      headline: "In Minuten von null auf live.",
+      steps: [
+        { title: "Menü anlegen", description: "Kategorien und Gerichte hinzufügen. Mehrsprachig. Preise und Beschreibungen festlegen." },
+        { title: "Design anpassen", description: "Farben, Schriften, Layout. Logo hinzufügen. Vorschau auf jedem Gerät." },
+        { title: "Veröffentlichen", description: "Sofort live. QR-Codes erstellen. Link teilen. Ihr Menü ist online." },
+      ],
+    },
+    ecosystem: {
+      eyebrow: "Produkt",
+      headline: "Alles, was Sie brauchen. Nichts Überflüssiges.",
+      items: [
+        { title: "Digitale Menüs", description: "Responsive Menüs für jedes Gerät. Jederzeit aktualisierbar." },
+        { title: "QR & Teilen", description: "Ein Link. Ein QR. Tischkarten, Fenster oder Direktlink. Keine Hürden für Gäste." },
+        { title: "Design-Kontrolle", description: "Theme, Typografie, Markenauftritt. Ihre Identität, Ihre Regeln." },
+        { title: "Mehrsprachig", description: "Ein Menü, viele Sprachen. Automatische Erkennung für Gäste weltweit." },
+      ],
+    },
+    trust: {
+      eyebrow: "Vertraut von",
+      headline: "Restaurants und Cafés, denen Erfahrung wichtig ist.",
+      tagline: "Gebaut für die Branche. Täglich im Einsatz.",
+    },
+    finalCta: {
+      headline: "Bereit, Ihr Menü zu vereinfachen?",
+      subhead: "Schliessen Sie sich Teams an, die bereits umgestellt haben. Keine Kreditkarte nötig.",
+      button: "Menü erstellen",
     },
     footer: {
       tagline: "Digitale Menüs für Cafés & Restaurants",
@@ -785,6 +886,10 @@ const de: Dictionary = {
       light: "Hell",
       dark: "Dunkel",
       system: "System",
+      theme: "Design",
+      goodMorning: "Guten Morgen, {name}",
+      goodAfternoon: "Guten Tag, {name}",
+      goodEvening: "Guten Abend, {name}",
     },
     dashboard: {
       title: "Dashboard",
@@ -1081,24 +1186,31 @@ const de: Dictionary = {
 };
 
 const fr: Dictionary = {
+  common: { close: "Fermer" },
   landing: {
     nav: {
+      home: "Accueil",
       features: "Fonctionnalités",
       demo: "Démo",
       pricing: "Tarifs",
+      contact: "Contact",
       login: "Connexion",
-      cta: "Créer un menu",
+      cta: "Commencer",
+      language: "Langue",
+      theme: "Thème",
+      selectLanguage: "Choisir la langue",
     },
     hero: {
-      badge: "Pour cafés et restaurants",
-      title: "Savourez des plats délicieux.",
-      titleAccent: "Partout, à tout moment.",
+      badge: "Pour les restaurants modernes",
+      title: "Plateforme de menus digitaux nouvelle génération",
+      titleAccent: "pour les restaurants modernes.",
       subtitle:
-        "Savourez des plats délicieux préparés avec des ingrédients frais et des saveurs riches. Commandez facilement et dégustez une cuisine de qualité restaurant, où que vous soyez.",
-      cta: "Commander maintenant",
-      ctaSecondary: "Voir le menu",
+        "Créez des QR menus, gérez les catégories, suivez les performances et offrez une expérience premium — le tout dans un seul tableau de bord.",
+      cta: "Commencer",
+      ctaSecondary: "Démo live",
     },
     features: {
+      label: "Fonctionnalités",
       title: "Tout ce dont votre café et restaurant ont besoin",
       subtitle: "Des fonctionnalités puissantes, magnifiquement simples",
       qr: { title: "Générateur QR", description: "Codes QR prêts à imprimer liés à votre menu digital" },
@@ -1108,8 +1220,9 @@ const fr: Dictionary = {
       mobile: { title: "Optimisé mobile", description: "Menus ultra-rapides pour chaque écran" },
       analytics: { title: "Gestion facile", description: "Éditeur glisser-déposer avec organisation par catégorie" },
     },
-    demo: { title: "Voyez en action", subtitle: "Un aperçu réel de votre menu digital" },
+    demo: { label: "Aperçu en direct", title: "Voyez en action", subtitle: "Un aperçu réel de votre menu digital" },
     howItWorks: {
+      label: "Configuration simple",
       title: "Comment ça marche",
       subtitle: "Trois étapes simples vers votre menu digital",
       step1: { title: "Créer le menu", description: "Ajoutez vos plats, prix et descriptions en plusieurs langues" },
@@ -1132,6 +1245,41 @@ const fr: Dictionary = {
       title: "Prêt à passer au digital?",
       subtitle: "Rejoignez les cafés et restaurants suisses qui utilisent déjà DineEasy.",
       button: "Commencer gratuitement",
+    },
+    story: {
+      eyebrow: "Pourquoi nous l'avons construit",
+      headline: "Une bonne cuisine mérite une première impression soignée.",
+      body: "Nous avons vu des restaurants lutter avec les menus imprimés—réimpressions coûteuses, pas de flexibilité pour les plats du jour. Nous avons donc créé un outil qui met votre menu là où sont vos clients : sur leur téléphone. Pas d'app à télécharger. Un lien, un scan, votre menu—toujours à jour.",
+      cta: "Voir le produit",
+    },
+    workflow: {
+      eyebrow: "Comment ça marche",
+      headline: "De zéro à en ligne en quelques minutes.",
+      steps: [
+        { title: "Créez votre menu", description: "Ajoutez catégories et plats. Plusieurs langues. Prix et descriptions." },
+        { title: "Designez l'expérience", description: "Couleurs, polices, mise en page. Ajoutez votre logo. Aperçu sur tout appareil." },
+        { title: "Publiez", description: "Publication instantanée. Générez des QR. Partagez le lien. Votre menu est en ligne." },
+      ],
+    },
+    ecosystem: {
+      eyebrow: "Produit",
+      headline: "Tout ce dont vous avez besoin. Rien de plus.",
+      items: [
+        { title: "Menus digitaux", description: "Menus riches et responsives, parfaits sur tous les écrans. Mise à jour à tout moment." },
+        { title: "QR et partage", description: "Un lien. Un QR. Cartes de table, vitrine ou partage direct. Zéro friction pour les clients." },
+        { title: "Contrôle design", description: "Thème, typographie, identité. Votre image, votre façon." },
+        { title: "Multilingue", description: "Un menu, plusieurs langues. Détection automatique pour une audience mondiale." },
+      ],
+    },
+    trust: {
+      eyebrow: "Utilisé par",
+      headline: "Restaurants et cafés pour qui l'expérience compte.",
+      tagline: "Conçu pour le métier. Utilisé au quotidien.",
+    },
+    finalCta: {
+      headline: "Prêt à simplifier votre menu?",
+      subhead: "Rejoignez ceux qui ont déjà fait le pas. Aucune carte bancaire requise.",
+      button: "Créer votre menu",
     },
     footer: {
       tagline: "Menus digitaux pour cafés et restaurants",
@@ -1223,6 +1371,10 @@ const fr: Dictionary = {
       light: "Clair",
       dark: "Sombre",
       system: "Système",
+      theme: "Thème",
+      goodMorning: "Bonjour, {name}",
+      goodAfternoon: "Bon après-midi, {name}",
+      goodEvening: "Bonsoir, {name}",
     },
     dashboard: {
       title: "Tableau de bord",
@@ -1519,24 +1671,31 @@ const fr: Dictionary = {
 };
 
 const it: Dictionary = {
+  common: { close: "Chiudi" },
   landing: {
     nav: {
+      home: "Home",
       features: "Funzionalità",
       demo: "Demo",
       pricing: "Prezzi",
+      contact: "Contatti",
       login: "Accedi",
-      cta: "Crea menu",
+      cta: "Inizia",
+      language: "Lingua",
+      theme: "Tema",
+      selectLanguage: "Seleziona lingua",
     },
     hero: {
-      badge: "Per bar e ristoranti",
-      title: "Gusta piatti deliziosi.",
-      titleAccent: "Ovunque, in qualsiasi momento.",
+      badge: "Per ristoranti moderni",
+      title: "Piattaforma menu digitali di nuova generazione",
+      titleAccent: "per ristoranti moderni.",
       subtitle:
-        "Gusta piatti deliziosi preparati con ingredienti freschi e sapori intensi. Ordina facilmente e assapora cibo di qualità ristorante ovunque tu sia.",
-      cta: "Ordina ora",
-      ctaSecondary: "Vedi il menu",
+        "Crea QR menu, gestisci categorie, monitora le performance e offri un'esperienza premium — tutto in una dashboard.",
+      cta: "Inizia",
+      ctaSecondary: "Demo live",
     },
     features: {
+      label: "Funzionalità",
       title: "Tutto ciò di cui il tuo bar e ristorante hanno bisogno",
       subtitle: "Funzionalità potenti, splendidamente semplici",
       qr: { title: "Generatore QR", description: "Codici QR pronti per la stampa collegati al tuo menu digitale" },
@@ -1546,8 +1705,9 @@ const it: Dictionary = {
       mobile: { title: "Ottimizzato mobile", description: "Menu velocissimi per ogni schermo" },
       analytics: { title: "Gestione facile", description: "Editor drag & drop con organizzazione per categorie" },
     },
-    demo: { title: "Guardalo in azione", subtitle: "Un'anteprima reale del tuo menu digitale" },
+    demo: { label: "Anteprima live", title: "Guardalo in azione", subtitle: "Un'anteprima reale del tuo menu digitale" },
     howItWorks: {
+      label: "Configurazione semplice",
       title: "Come funziona",
       subtitle: "Tre semplici passaggi per il tuo menu digitale",
       step1: { title: "Crea il menu", description: "Aggiungi piatti, prezzi e descrizioni in più lingue" },
@@ -1570,6 +1730,41 @@ const it: Dictionary = {
       title: "Pronto per il digitale?",
       subtitle: "Unisciti a bar e ristoranti svizzeri che usano già DineEasy.",
       button: "Inizia gratis",
+    },
+    story: {
+      eyebrow: "Perché l'abbiamo creato",
+      headline: "Il buon cibo merita una prima impressione eccellente.",
+      body: "Abbiamo visto ristoranti in difficoltà con i menu stampati—ristampe costose, niente flessibilità per i piatti del giorno. Così abbiamo costruito uno strumento che mette il tuo menu dove sono già i tuoi clienti: sul telefono. Nessuna app da scaricare. Un link, una scansione, il tuo menu—sempre aggiornato.",
+      cta: "Scopri il prodotto",
+    },
+    workflow: {
+      eyebrow: "Come funziona",
+      headline: "Da zero a online in pochi minuti.",
+      steps: [
+        { title: "Crea il tuo menu", description: "Aggiungi categorie e piatti. Più lingue. Prezzi e descrizioni." },
+        { title: "Progetta l'esperienza", description: "Colori, font, layout. Aggiungi il logo. Anteprima su qualsiasi dispositivo." },
+        { title: "Pubblica", description: "Pubblicazione istantanea. Genera QR. Condividi il link. Il tuo menu è online." },
+      ],
+    },
+    ecosystem: {
+      eyebrow: "Prodotto",
+      headline: "Tutto ciò che ti serve. Niente di più.",
+      items: [
+        { title: "Menu digitali", description: "Menu ricchi e responsive, perfetti su ogni schermo. Aggiornali quando vuoi." },
+        { title: "QR e condivisione", description: "Un link. Un QR. Cartelli tavolo, vetrine o condivisione diretta. Zero attrito per i clienti." },
+        { title: "Controllo design", description: "Tema, tipografia, branding. La tua identità, a modo tuo." },
+        { title: "Multilingue", description: "Un menu, tante lingue. Rilevamento automatico per un pubblico globale." },
+      ],
+    },
+    trust: {
+      eyebrow: "Scelto da",
+      headline: "Ristoranti e bar a cui sta a cuore l'esperienza.",
+      tagline: "Costruito per il settore. Usato ogni giorno.",
+    },
+    finalCta: {
+      headline: "Pronto a semplificare il tuo menu?",
+      subhead: "Unisciti a chi ha già fatto il passo. Nessuna carta di credito richiesta.",
+      button: "Crea il tuo menu",
     },
     footer: {
       tagline: "Menu digitali per bar e ristoranti",
@@ -1661,6 +1856,10 @@ const it: Dictionary = {
       light: "Chiaro",
       dark: "Scuro",
       system: "Sistema",
+      theme: "Tema",
+      goodMorning: "Buongiorno, {name}",
+      goodAfternoon: "Buon pomeriggio, {name}",
+      goodEvening: "Buonasera, {name}",
     },
     dashboard: {
       title: "Dashboard",

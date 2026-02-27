@@ -15,51 +15,46 @@ export function HowItWorks() {
   ];
 
   return (
-    <section className="relative py-32 overflow-hidden">
-      <div className="mx-auto max-w-7xl px-6">
-        {/* Header */}
+    <section className="relative py-32 lg:py-40">
+      <div className="mx-auto max-w-6xl px-6 lg:px-10">
         <div className="mx-auto max-w-2xl text-center">
           <FadeIn>
-            <p className="mb-3 text-sm font-semibold uppercase tracking-wider text-gold">
-              Simple Setup
+            <p className="mb-4 text-xs font-semibold uppercase tracking-widest text-muted-foreground">
+              {t.landing.howItWorks.label}
             </p>
           </FadeIn>
-          <FadeIn delay={0.1}>
-            <h2 className="font-sans text-4xl font-semibold tracking-tight sm:text-5xl">
+          <FadeIn delay={0.08}>
+            <h2 className="font-sans text-[clamp(2rem,4vw,3rem)] font-semibold tracking-tight text-foreground">
               {t.landing.howItWorks.title}
             </h2>
           </FadeIn>
-          <FadeIn delay={0.2}>
-            <p className="mt-4 text-lg text-muted-foreground">
+          <FadeIn delay={0.16}>
+            <p className="mt-5 text-lg text-muted-foreground">
               {t.landing.howItWorks.subtitle}
             </p>
           </FadeIn>
         </div>
 
-        {/* Steps */}
-        <StaggerContainer className="mt-20 grid grid-cols-1 gap-12 md:grid-cols-3 md:gap-8" staggerDelay={0.15}>
+        <StaggerContainer
+          className="mt-20 grid grid-cols-1 gap-16 md:grid-cols-3 md:gap-12"
+          staggerDelay={0.12}
+        >
           {steps.map((step, i) => {
             const Icon = stepIcons[i];
             return (
               <StaggerItem key={i}>
                 <div className="relative text-center">
-                  {/* Step number background */}
-                  <div className="absolute -top-4 left-1/2 -translate-x-1/2 font-sans text-[120px] font-semibold leading-none text-foreground/[0.03] select-none">
+                  <div className="pointer-events-none absolute -top-2 left-1/2 -translate-x-1/2 font-sans text-[100px] font-bold leading-none text-foreground/[0.04]">
                     {i + 1}
                   </div>
-
-                  {/* Connecting line */}
                   {i < 2 && (
-                    <div className="absolute top-10 left-[calc(50%+48px)] hidden h-px w-[calc(100%-96px)] bg-gradient-to-r from-border to-border/0 md:block" />
+                    <div className="absolute top-12 left-[calc(50%+56px)] hidden h-px w-[calc(100%-112px)] bg-gradient-to-r from-border to-transparent md:block" />
                   )}
-
-                  {/* Icon */}
-                  <div className="relative z-10 mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-2xl bg-gradient-to-br from-gold/10 to-gold/5 text-gold shadow-sm ring-1 ring-gold/10">
+                  <div className="relative z-10 mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-2xl bg-primary/10 text-primary shadow-soft">
                     <Icon size={28} />
                   </div>
-
-                  <h3 className="mb-3 text-xl font-semibold">{step.title}</h3>
-                  <p className="mx-auto max-w-xs text-sm leading-relaxed text-muted-foreground">
+                  <h3 className="mb-3 text-xl font-semibold text-foreground">{step.title}</h3>
+                  <p className="mx-auto max-w-[260px] text-sm leading-relaxed text-muted-foreground">
                     {step.description}
                   </p>
                 </div>

@@ -4,9 +4,10 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
-import { Menu, X, Moon, Sun, Monitor, Globe } from "lucide-react";
+import { Menu, X, Moon, Sun, Monitor, Globe, ArrowUp } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { AppLogo } from "@/components/ui/app-logo";
+import { LanguageFlag } from "@/components/ui/language-flag";
 import { useI18n } from "@/lib/i18n/context";
 import { useTheme } from "@/components/providers/theme-provider";
 import {
@@ -15,24 +16,49 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { cn } from "@/lib/utils";
+
+const navLinks = [
+  { key: "home" as const, href: "/" },
+  { key: "features" as const, href: "#features" },
+ 
+  { key: "contact" as const, href: "#contact" },
+] as const;
 
 export function Navbar() {
   const [scrolled, setScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [visible, setVisible] = useState(true);
+  const [showScrollTop, setShowScrollTop] = useState(false);
   const router = useRouter();
   const { t, language, setLanguage, languages } = useI18n();
   const { theme, setTheme } = useTheme();
-
   const ThemeIcon = theme === "light" ? Sun : theme === "dark" ? Moon : Monitor;
 
   const handleLanguageChange = (langCode: string) => {
     setLanguage(langCode as typeof language);
-    // Trigger a router refresh to update all translated content across the app
     router.refresh();
   };
 
   useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 20);
+    let lastY = typeof window !== "undefined" ? window.scrollY : 0;
+
+    const onScroll = () => {
+      const y = window.scrollY;
+      const delta = y - lastY;
+
+      setScrolled(y > 16);
+      setShowScrollTop(y > 300);
+
+      const isScrollingDownFast = delta > 24 && y > 80;
+      const isScrollingUp = delta < -12;
+
+      // Navbar stays visible except when user scrolls down quickly
+      setVisible(!isScrollingDownFast || isScrollingUp || y <= 80);
+
+      lastY = y;
+    };
+
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
@@ -40,192 +66,247 @@ export function Navbar() {
   return (
     <>
       <motion.header
-        initial={{ y: -20, opacity: 0 }}
-        animate={{ y: 0, opacity: 1 }}
-        transition={{ duration: 0.6, ease: [0.25, 0.4, 0.25, 1] }}
-        className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${
+        initial={{ y: 0, opacity: 1 }}
+        animate={{
+          y: visible ? 0 : -100,
+          opacity: 1,
+        }}
+        transition={{ duration: 0.3, ease: [0.25, 0.46, 0.45, 0.94] }}
+        className={cn(
+          "fixed inset-x-0 top-0 z-[9999] border-b transition-all duration-300 ease-out",
           scrolled
-            ? "glass shadow-premium py-3"
-            : "bg-transparent py-5"
-        }`}
+            ? "bg-background/80 shadow-sm backdrop-blur-md"
+            : "bg-transparent shadow-none backdrop-blur-0"
+        )}
       >
-        <div className="mx-auto flex max-w-7xl items-center justify-between px-6">
-          {/* Logo */}
-          <AppLogo href="/" variant={!scrolled ? "light" : "default"} size="md" />
+        <div className="mx-auto flex h-16 max-w-6xl items-center justify-between gap-8 px-6 lg:h-[72px] lg:px-10">
+          {/* Left: Logo — always high contrast (AppLogo renders the link to avoid nested <a>) */}
+          <AppLogo href="/" variant="default" size="md" className="shrink-0" ariaLabel="DineEasy Home" />
 
-          {/* Desktop CTA */}
-          <div className="hidden items-center gap-3 md:flex">
-            {/* Language Switcher */}
+          {/* Center: Nav links — desktop only */}
+          <nav className="hidden items-center gap-1 md:flex md:gap-0.5" aria-label="Main">
+            {navLinks.map(({ key, href }) => (
+              <Link
+                key={key}
+                href={href}
+                className="group relative px-4 py-2 text-sm font-medium text-foreground transition-colors hover:text-primary"
+              >
+                <span className="relative z-10">{t.landing.nav[key]}</span>
+                <span className="absolute bottom-1 left-4 right-4 h-px scale-x-0 bg-primary transition-transform duration-200 group-hover:scale-x-100" />
+              </Link>
+            ))}
+          </nav>
+
+          {/* Right: Language, Theme, Sign In, Get Started */}
+          <div className="flex shrink-0 items-center gap-1">
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button 
-                  variant="ghost" 
-                  size="icon" 
-                  className={`h-9 w-9 ${!scrolled ? "text-white hover:bg-white/10 hover:text-white" : ""}`}
-                  title="Select Language"
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-9 w-9 rounded-lg text-foreground hover:bg-muted hover:text-foreground"
+                  title={t.landing.nav.selectLanguage}
+                  aria-label={t.landing.nav.selectLanguage}
                 >
-                  <Globe size={18} />
+                  <Globe className="h-[18px] w-[18px]" />
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-auto min-w-[140px] px-1.5 py-1.5">
+              <DropdownMenuContent
+                align="end"
+                className="min-w-[180px] rounded-xl border border-border/70 bg-background/80 p-1 shadow-lg backdrop-blur-md"
+              >
                 {languages.map((lang) => (
                   <DropdownMenuItem
                     key={lang.code}
                     onClick={() => handleLanguageChange(lang.code)}
-                    className={`flex items-center gap-2.5 cursor-pointer px-3 py-2 w-full ${
-                      language === lang.code ? "bg-accent font-medium" : ""
-                    }`}
-                  >
-                    <span className="text-lg shrink-0">{lang.flag}</span>
-                    <span className="whitespace-nowrap">{lang.label}</span>
-                    <span className="text-xs text-muted-foreground shrink-0 ml-auto">
-                      {lang.code.toUpperCase()}
-                    </span>
-                    {language === lang.code && (
-                      <span className="ml-1.5 text-primary shrink-0">✓</span>
+                    className={cn(
+                      "flex items-center gap-2 rounded-lg px-3 py-2.5 text-sm text-foreground transition-colors",
+                      language === lang.code
+                        ? "bg-accent/90 text-accent-foreground shadow-sm"
+                        : "hover:bg-muted/70"
                     )}
+                  >
+                    <LanguageFlag code={lang.code} />
+                    <span className="flex-1 text-left">{lang.label}</span>
+                    {language === lang.code && <span className="text-primary">✓</span>}
                   </DropdownMenuItem>
                 ))}
               </DropdownMenuContent>
             </DropdownMenu>
-
-            {/* Theme Switcher */}
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button 
-                  variant="ghost" 
-                  size="icon" 
-                  className={`h-9 w-9 ${!scrolled ? "text-white hover:bg-white/10 hover:text-white" : ""}`}
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-9 w-9 rounded-lg text-foreground hover:bg-muted hover:text-foreground"
+                  aria-label={t.landing.nav.theme}
                 >
-                  <ThemeIcon size={18} />
+                  <ThemeIcon className="h-[18px] w-[18px]" />
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
-                <DropdownMenuItem onClick={() => setTheme("light")}>
-                  <Sun size={14} className="mr-2" /> Light
+              <DropdownMenuContent align="end" className="min-w-[140px] rounded-xl border border-border bg-popover p-1 shadow-lg">
+                <DropdownMenuItem onClick={() => setTheme("light")} className="rounded-lg py-2.5 text-foreground">
+                  <Sun className="mr-3 h-[18px] w-[18px]" /> {t.admin.topbar.light}
                 </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => setTheme("dark")}>
-                  <Moon size={14} className="mr-2" /> Dark
+                <DropdownMenuItem onClick={() => setTheme("dark")} className="rounded-lg py-2.5 text-foreground">
+                  <Moon className="mr-3 h-[18px] w-[18px]" /> {t.admin.topbar.dark}
                 </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => setTheme("system")}>
-                  <Monitor size={14} className="mr-2" /> System
+                <DropdownMenuItem onClick={() => setTheme("system")} className="rounded-lg py-2.5 text-foreground">
+                  <Monitor className="mr-3 h-[18px] w-[18px]" /> {t.admin.topbar.system}
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
-
-            <Link href="/login">
-              <Button variant="ghost" size="sm" className={`text-sm ${!scrolled ? "text-white hover:bg-white/10 hover:text-white" : ""}`}>
+            <Link href="/login" className="hidden sm:block">
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-9 rounded-lg px-4 text-sm font-medium text-foreground hover:bg-muted hover:text-foreground"
+              >
                 {t.landing.nav.login}
               </Button>
             </Link>
-            <Link href="/login">
+            <Link href="/signup" className="hidden sm:block">
               <Button
                 size="sm"
-                className="bg-espresso text-warm hover:bg-espresso/90 glow-gold text-sm"
+                className="h-9 rounded-lg px-4 text-sm font-medium shadow-sm transition-shadow hover:shadow-md"
               >
                 {t.landing.nav.cta}
               </Button>
             </Link>
-          </div>
 
-          {/* Mobile Toggle */}
-          <button
-            onClick={() => setMobileOpen(!mobileOpen)}
-            className={`flex h-10 w-10 items-center justify-center rounded-xl md:hidden ${!scrolled ? "text-white" : ""}`}
-          >
-            {mobileOpen ? <X size={20} /> : <Menu size={20} />}
-          </button>
+            {/* Mobile: hamburger */}
+            <button
+              type="button"
+              onClick={() => setMobileOpen(!mobileOpen)}
+              className="flex h-10 w-10 items-center justify-center rounded-lg text-foreground hover:bg-muted md:hidden"
+              aria-label={mobileOpen ? "Close menu" : "Open menu"}
+              aria-expanded={mobileOpen}
+            >
+              {mobileOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+            </button>
+          </div>
         </div>
       </motion.header>
 
-          {/* Mobile Menu */}
+      {/* Mobile: full-screen slide menu */}
       <AnimatePresence>
         {mobileOpen && (
-          <motion.div
-            initial={{ opacity: 0, y: -10 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -10 }}
-            className="fixed inset-0 top-16 z-40 glass-strong p-6 md:hidden"
-          >
-            <nav className="flex flex-col gap-6 pt-4">
-              {/* Language Switcher in Mobile Menu */}
-              <div className="flex flex-col gap-3 pt-4 border-t">
-                <div className="px-2 py-2 text-sm font-medium text-muted-foreground">Language</div>
-                <div className="flex flex-col gap-2">
+          <>
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.2 }}
+              className="fixed inset-0 z-40 bg-background/80 backdrop-blur-sm md:hidden"
+              aria-hidden
+              onClick={() => setMobileOpen(false)}
+            />
+            <motion.div
+              initial={{ x: "100%" }}
+              animate={{ x: 0 }}
+              exit={{ x: "100%" }}
+              transition={{ type: "spring", damping: 30, stiffness: 300 }}
+              className="fixed right-0 top-0 z-50 flex h-full w-full max-w-sm flex-col border-l border-border bg-background shadow-xl md:hidden"
+            >
+              <div className="flex h-16 items-center justify-between border-b border-border px-6">
+                <AppLogo href="/" variant="default" size="sm" />
+                <button
+                  type="button"
+                  onClick={() => setMobileOpen(false)}
+                  className="flex h-10 w-10 items-center justify-center rounded-lg text-foreground hover:bg-muted"
+                  aria-label="Close menu"
+                >
+                  <X className="h-5 w-5" />
+                </button>
+              </div>
+              <nav className="flex flex-1 flex-col gap-1 overflow-y-auto p-6" aria-label="Mobile menu">
+                {navLinks.map(({ key, href }) => (
+                  <Link
+                    key={key}
+                    href={href}
+                    onClick={() => setMobileOpen(false)}
+                    className="rounded-lg px-4 py-3.5 text-base font-medium text-foreground hover:bg-muted"
+                  >
+                    {t.landing.nav[key]}
+                  </Link>
+                ))}
+                <div className="my-4 h-px bg-border" />
+                <p className="px-4 pb-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                  {t.landing.nav.language}
+                </p>
+                <div className="flex flex-col gap-1">
                   {languages.map((lang) => (
                     <Button
                       key={lang.code}
-                      variant={language === lang.code ? "default" : "ghost"}
-                      className="w-full justify-start px-3 py-2.5"
+                      variant={language === lang.code ? "secondary" : "ghost"}
+                      className="justify-start rounded-lg py-3 text-foreground transition-colors hover:bg-muted/70"
                       onClick={() => {
                         handleLanguageChange(lang.code);
-                        setMobileOpen(false);
                       }}
                     >
-                      <span className="text-lg mr-2.5 shrink-0">{lang.flag}</span>
-                      <span className="flex-1 text-left whitespace-nowrap">{lang.label}</span>
-                      <span className="text-xs text-muted-foreground shrink-0 ml-2">
-                        {lang.code.toUpperCase()}
+                      <span className="mr-2 inline-flex h-5 w-5 items-center justify-center overflow-hidden rounded-sm">
+                        <LanguageFlag code={lang.code} />
                       </span>
-                      {language === lang.code && (
-                        <span className="ml-2 text-primary shrink-0">✓</span>
-                      )}
+                      <span>{lang.label}</span>
                     </Button>
                   ))}
                 </div>
-              </div>
-
-              {/* Theme Switcher in Mobile Menu */}
-              <div className="flex flex-col gap-3 pt-4 border-t">
-                <div className="px-2 py-2 text-sm font-medium text-muted-foreground">Theme</div>
-                <div className="flex flex-col gap-2">
-                  <Button
-                    variant={theme === "light" ? "default" : "ghost"}
-                    className="w-full justify-start"
-                    onClick={() => {
-                      setTheme("light");
-                      setMobileOpen(false);
-                    }}
-                  >
-                    <Sun size={16} className="mr-2" /> Light
-                  </Button>
-                  <Button
-                    variant={theme === "dark" ? "default" : "ghost"}
-                    className="w-full justify-start"
-                    onClick={() => {
-                      setTheme("dark");
-                      setMobileOpen(false);
-                    }}
-                  >
-                    <Moon size={16} className="mr-2" /> Dark
-                  </Button>
-                  <Button
-                    variant={theme === "system" ? "default" : "ghost"}
-                    className="w-full justify-start"
-                    onClick={() => {
-                      setTheme("system");
-                      setMobileOpen(false);
-                    }}
-                  >
-                    <Monitor size={16} className="mr-2" /> System
-                  </Button>
+                <p className="mt-4 px-4 pb-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                  {t.landing.nav.theme}
+                </p>
+                <div className="flex flex-col gap-1">
+                  {(["light", "dark", "system"] as const).map((mode) => (
+                    <Button
+                      key={mode}
+                      variant={theme === mode ? "secondary" : "ghost"}
+                      className="justify-start rounded-lg py-3 text-foreground"
+                      onClick={() => setTheme(mode)}
+                    >
+                      {mode === "light" && <Sun className="mr-3 h-[18px] w-[18px]" />}
+                      {mode === "dark" && <Moon className="mr-3 h-[18px] w-[18px]" />}
+                      {mode === "system" && <Monitor className="mr-3 h-[18px] w-[18px]" />}
+                      {t.admin.topbar[mode]}
+                    </Button>
+                  ))}
                 </div>
-              </div>
+                <div className="mt-8 flex flex-col gap-3">
+                  <Link href="/login" onClick={() => setMobileOpen(false)}>
+                    <Button variant="outline" className="h-12 w-full rounded-xl font-medium">
+                      {t.landing.nav.login}
+                    </Button>
+                  </Link>
+                  <Link href="/signup" onClick={() => setMobileOpen(false)}>
+                    <Button className="h-12 w-full rounded-xl font-medium">
+                      {t.landing.nav.cta}
+                    </Button>
+                  </Link>
+                </div>
+              </nav>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
 
-              <div className="flex flex-col gap-3 pt-4 border-t">
-                <Link href="/login" onClick={() => setMobileOpen(false)}>
-                  <Button variant="outline" className="w-full">
-                    {t.landing.nav.login}
-                  </Button>
-                </Link>
-                <Link href="/login" onClick={() => setMobileOpen(false)}>
-                  <Button className="w-full bg-espresso text-warm hover:bg-espresso/90">
-                    {t.landing.nav.cta}
-                  </Button>
-                </Link>
-              </div>
-            </nav>
-          </motion.div>
+      {/* Scroll to top floating button */}
+      <AnimatePresence>
+        {showScrollTop && (
+          <motion.button
+            key="scroll-to-top"
+            type="button"
+            initial={{ opacity: 0, scale: 0.8, y: 16 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.8, y: 16 }}
+            transition={{ duration: 0.2, ease: [0.25, 0.46, 0.45, 0.94] }}
+            onClick={() => {
+              if (typeof window !== "undefined") {
+                window.scrollTo({ top: 0, behavior: "smooth" });
+              }
+            }}
+            className="fixed bottom-20 right-4 z-[9999] flex h-11 w-11 items-center justify-center rounded-full border border-border/60 bg-background/80 text-foreground shadow-lg shadow-black/15 backdrop-blur-xl transition-colors transition-shadow hover:bg-background/95 hover:shadow-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary md:bottom-8 md:right-8 md:h-12 md:w-12"
+            aria-label="Back to top"
+          >
+            <ArrowUp className="h-4 w-4" />
+          </motion.button>
         )}
       </AnimatePresence>
     </>
