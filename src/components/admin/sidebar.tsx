@@ -2,7 +2,8 @@
 
 import { useEffect } from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
+import { motion } from "framer-motion";
 import {
   LayoutDashboard,
   UtensilsCrossed,
@@ -27,7 +28,6 @@ import {
 import { AppLogo } from "@/components/ui/app-logo";
 import { useI18n } from "@/lib/i18n/context";
 import { createClient } from "@/lib/supabase/client";
-import { useRouter } from "next/navigation";
 
 const navItems = [
   { key: "dashboard", href: "/admin", icon: LayoutDashboard },
@@ -64,35 +64,78 @@ export function AdminSidebar() {
   }
 
   return (
-    <Sidebar className="border-r border-sidebar-border">
-      <SidebarHeader className="p-4">
-        <AppLogo href="/admin" subtitle={t.admin.sidebar.adminPanel} />
+    <Sidebar
+      variant="floating"
+      collapsible="icon"
+      className="text-sidebar-foreground shadow-lg shadow-black/20 ring-1 ring-border/40 backdrop-blur-2xl bg-gradient-to-b from-background via-background/95 to-background/90 md:[&_[data-slot=sidebar-inner]]:rounded-r-3xl md:[&_[data-slot=sidebar-inner]]:border md:[&_[data-slot=sidebar-inner]]:border-border/50"
+    >
+      <SidebarHeader className="border-b border-border/50 px-3 pb-4 pt-4">
+        <motion.div
+          initial={{ opacity: 0, y: -8 }}
+          animate={{ opacity: 1, y: 0 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: false, amount: 0.7 }}
+          transition={{ duration: 0.4, ease: "easeOut" }}
+          className="will-change-transform"
+        >
+          <AppLogo
+            href="/admin"
+            subtitle={t.admin.sidebar.adminPanel}
+            variant="light"
+            className="w-full justify-start md:group-data-[collapsible=icon]:justify-center [&>div:first-child]:h-11 [&>div:first-child]:w-11 [&>div:first-child]:rounded-full"
+          />
+        </motion.div>
       </SidebarHeader>
 
-      <SidebarContent>
+      <SidebarContent className="px-2 py-4">
         <SidebarGroup>
-          <SidebarGroupLabel>
+          <SidebarGroupLabel className="px-2 text-[10px] font-medium uppercase tracking-[0.2em] text-muted-foreground/70">
             <span suppressHydrationWarning translate="no">
               {t.admin.sidebar.navigation}
             </span>
           </SidebarGroupLabel>
           <SidebarGroupContent>
-            <SidebarMenu>
-              {navItems.map((item) => {
+            <SidebarMenu className="mt-4 space-y-2">
+              {navItems.map((item, index) => {
                 const isActive =
                   item.href === "/admin"
                     ? pathname === "/admin"
                     : item.href === "/admin/categories"
-                    ? pathname.startsWith("/admin/categories") || pathname.startsWith("/admin/menu/category")
+                    ? pathname.startsWith("/admin/categories") ||
+                      pathname.startsWith("/admin/menu/category")
                     : pathname.startsWith(item.href);
+
+                const Icon = item.icon;
+
                 return (
                   <SidebarMenuItem key={item.key}>
-                    <SidebarMenuButton asChild isActive={isActive}>
-                      <Link href={item.href} className="gap-3">
-                        <item.icon size={18} />
-                        <span suppressHydrationWarning translate="no">{labels[item.key]}</span>
-                      </Link>
-                    </SidebarMenuButton>
+                    <motion.div
+                      initial={{ opacity: 0, y: 6 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: 0.03 * index, duration: 0.25 }}
+                    >
+                      <SidebarMenuButton
+                        asChild
+                        isActive={isActive}
+                        className="group relative flex items-center justify-center rounded-full px-2.5 py-2 text-sm font-medium text-muted-foreground transition duration-200 hover:bg-muted/60 hover:text-foreground data-[active=true]:bg-primary/10 data-[active=true]:text-primary"
+                      >
+                        <Link
+                          href={item.href}
+                          className="flex w-full items-center justify-start gap-3 md:group-data-[collapsible=icon]:justify-center md:group-data-[collapsible=icon]:gap-0"
+                        >
+                          <div className="relative flex h-11 w-11 items-center justify-center text-muted-foreground transition-transform duration-200 group-hover:scale-105 group-data-[active=true]:text-primary">
+                            <Icon size={20} />
+                          </div>
+                          <span
+                            suppressHydrationWarning
+                            translate="no"
+                            className="relative truncate transition duration-200 md:group-data-[collapsible=icon]:w-0 md:group-data-[collapsible=icon]:overflow-hidden md:group-data-[collapsible=icon]:opacity-0 md:group-data-[collapsible=icon]:translate-x-1"
+                          >
+                            {labels[item.key]}
+                          </span>
+                        </Link>
+                      </SidebarMenuButton>
+                    </motion.div>
                   </SidebarMenuItem>
                 );
               })}
@@ -101,20 +144,41 @@ export function AdminSidebar() {
         </SidebarGroup>
       </SidebarContent>
 
-      <SidebarFooter className="p-4">
-        <SidebarMenu>
+      <SidebarFooter className="border-t border-border/50 px-2 pb-4 pt-3">
+        <SidebarMenu className="space-y-1.5">
           <SidebarMenuItem>
-            <SidebarMenuButton asChild>
-              <Link href="/admin/settings" className="gap-3">
-                <Settings size={18} />
-                <span suppressHydrationWarning translate="no">{t.admin.sidebar.settings}</span>
+            <SidebarMenuButton
+              asChild
+              className="group flex items-center justify-center rounded-full px-2.5 py-2 text-sm text-muted-foreground transition-colors hover:bg-muted/60 hover:text-foreground"
+            >
+              <Link
+                href="/admin/settings"
+                className="flex w-full items-center justify-start gap-3 md:group-data-[collapsible=icon]:justify-center md:group-data-[collapsible=icon]:gap-0"
+              >
+                <div className="flex h-11 w-11 items-center justify-center text-muted-foreground">
+                  <Settings size={20} />
+                </div>
+                <span suppressHydrationWarning translate="no" className="truncate md:group-data-[collapsible=icon]:w-0 md:group-data-[collapsible=icon]:overflow-hidden md:group-data-[collapsible=icon]:opacity-0 md:group-data-[collapsible=icon]:translate-x-1">
+                  {t.admin.sidebar.settings}
+                </span>
               </Link>
             </SidebarMenuButton>
           </SidebarMenuItem>
           <SidebarMenuItem>
-            <SidebarMenuButton onClick={handleLogout} className="gap-3 text-destructive hover:text-destructive">
-              <LogOut size={18} />
-              <span suppressHydrationWarning translate="no">{t.admin.sidebar.signOut}</span>
+            <SidebarMenuButton
+              onClick={handleLogout}
+              className="group flex items-center justify-center rounded-full px-2.5 py-2 text-sm text-rose-500 transition-colors hover:bg-rose-500/10 hover:text-rose-600 dark:hover:text-rose-50"
+            >
+              <div className="flex h-11 w-11 items-center justify-center text-rose-500">
+                <LogOut size={20} />
+              </div>
+              <span
+                suppressHydrationWarning
+                translate="no"
+                className="ml-2 truncate md:group-data-[collapsible=icon]:w-0 md:group-data-[collapsible=icon]:overflow-hidden md:group-data-[collapsible=icon]:opacity-0 md:group-data-[collapsible=icon]:translate-x-1"
+              >
+                {t.admin.sidebar.signOut}
+              </span>
             </SidebarMenuButton>
           </SidebarMenuItem>
         </SidebarMenu>

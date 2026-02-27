@@ -2,8 +2,8 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { ArrowRight } from "lucide-react";
 import { motion } from "framer-motion";
+import { ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { FadeIn, MagneticButton } from "@/components/motion";
 import { useI18n } from "@/lib/i18n/context";
@@ -12,8 +12,7 @@ export function CTASection() {
   const { t } = useI18n();
 
   return (
-    <section className="relative overflow-hidden py-32">
-      {/* Background image */}
+    <section className="relative overflow-hidden py-32 lg:py-40">
       <div className="absolute inset-0 -z-20">
         <Image
           src="/images/image1.jpg"
@@ -23,52 +22,44 @@ export function CTASection() {
           priority={false}
           sizes="100vw"
         />
-        <div className="absolute inset-0 bg-espresso/60 dark:bg-card/70" />
+        <div className="absolute inset-0 bg-primary/75 dark:bg-primary/85" />
       </div>
-
-      {/* Animated gradient orbs */}
       <motion.div
-        className="absolute -left-32 -top-32 h-96 w-96 rounded-full bg-gold/10 blur-3xl -z-10"
-        animate={{ x: [0, 20, 0], y: [0, -20, 0] }}
-        transition={{ duration: 10, repeat: Infinity, ease: "easeInOut" }}
-      />
-      <motion.div
-        className="absolute -right-32 -bottom-32 h-96 w-96 rounded-full bg-olive/10 blur-3xl -z-10"
-        animate={{ x: [0, -20, 0], y: [0, 20, 0] }}
+        className="absolute -left-24 -top-24 h-80 w-80 rounded-full bg-white/10 blur-3xl"
+        animate={{ x: [0, 24, 0], y: [0, -24, 0] }}
         transition={{ duration: 12, repeat: Infinity, ease: "easeInOut" }}
       />
+      <motion.div
+        className="absolute -right-24 -bottom-24 h-72 w-72 rounded-full bg-white/5 blur-3xl"
+        animate={{ x: [0, -20, 0], y: [0, 20, 0] }}
+        transition={{ duration: 14, repeat: Infinity, ease: "easeInOut" }}
+      />
+      <div className="noise absolute inset-0 -z-10" />
 
-      {/* Noise */}
-      <div className="noise absolute inset-0 -z-[5]" />
-
-      <div className="relative mx-auto max-w-4xl px-6 text-center">
+      <div className="relative mx-auto max-w-3xl px-6 text-center">
         <FadeIn>
-          <h2 className="font-sans text-4xl font-semibold tracking-tight text-warm sm:text-5xl lg:text-6xl">
+          <h2 className="font-sans text-[clamp(2.25rem,5vw,3.5rem)] font-semibold tracking-tight text-primary-foreground">
             {t.landing.cta.title}
           </h2>
         </FadeIn>
-
-        <FadeIn delay={0.2}>
-          <p className="mx-auto mt-6 max-w-lg text-lg text-warm/70">
+        <FadeIn delay={0.12}>
+          <p className="mx-auto mt-6 max-w-lg text-lg text-primary-foreground/85">
             {t.landing.cta.subtitle}
           </p>
         </FadeIn>
-
-        <FadeIn delay={0.4}>
+        <FadeIn delay={0.24}>
           <div className="mt-12">
             <MagneticButton>
-              <Link href="/login">
-                <Button
-                  size="lg"
-                  className="group h-14 rounded-full bg-gold px-10 text-base font-semibold text-espresso hover:bg-gold/90 animate-pulse-glow"
-                >
+              <Button
+                size="lg"
+                className="h-14 rounded-xl bg-primary-foreground px-10 text-base font-semibold text-primary shadow-floating hover:bg-primary-foreground/95"
+                asChild
+              >
+                <Link href="/login">
                   {t.landing.cta.button}
-                  <ArrowRight
-                    size={18}
-                    className="ml-2 transition-transform group-hover:translate-x-1"
-                  />
-                </Button>
-              </Link>
+                  <ArrowRight size={20} className="ml-2" />
+                </Link>
+              </Button>
             </MagneticButton>
           </div>
         </FadeIn>

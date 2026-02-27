@@ -23,6 +23,7 @@ const nextConfig: NextConfig = {
   experimental: {
     optimizePackageImports: ["lucide-react", "framer-motion"],
   },
+  transpilePackages: ["@appletosolutions/reactbits"],
   // Enable strict mode for better error detection
   reactStrictMode: true,
   // Optimize for production

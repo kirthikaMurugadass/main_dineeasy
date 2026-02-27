@@ -7,6 +7,7 @@ import { motion } from "framer-motion";
 import { Loader2, Mail, Lock, CheckCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { PasswordInput } from "@/components/ui/password-input";
 import { Label } from "@/components/ui/label";
 import { createClient } from "@/lib/supabase/client";
 import { toast } from "sonner";
@@ -163,15 +164,14 @@ function LoginForm() {
                 focusedField === "password" ? "text-gold" : "text-gray-500"
               }`}
             />
-            <Input
+            <PasswordInput
               id="password"
-              type="password"
               placeholder="Enter your password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               onFocus={() => setFocusedField("password")}
               onBlur={() => setFocusedField(null)}
-              className={`h-12 rounded-[14px] border bg-white/5 pl-10 pr-4 text-white placeholder:text-gray-500 transition-all duration-300 ${
+              className={`h-12 rounded-[14px] border bg-white/5 pl-10 text-white placeholder:text-gray-500 transition-all duration-300 ${
                 focusedField === "password"
                   ? "border-gold/50 ring-2 ring-gold/20"
                   : "border-white/10 focus-visible:border-gold/50 focus-visible:ring-2 focus-visible:ring-gold/20"

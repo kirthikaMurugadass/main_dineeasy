@@ -1,11 +1,12 @@
 "use client";
 
-import { Moon, Sun, Monitor } from "lucide-react";
+import { useEffect, useState } from "react";
+import { motion } from "framer-motion";
+import { Moon, Sun, Monitor, User, Bell, Globe } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useTheme } from "@/components/providers/theme-provider";
 import { Button } from "@/components/ui/button";
 import { SidebarTrigger } from "@/components/ui/sidebar";
-import { Separator } from "@/components/ui/separator";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -13,67 +14,203 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useI18n } from "@/lib/i18n/context";
-import { SUPPORTED_LANGUAGES } from "@/lib/i18n/dictionaries";
-import type { Language } from "@/types/database";
+import { LanguageFlag } from "@/components/ui/language-flag";
+import { cn } from "@/lib/utils";
+import { createClient } from "@/lib/supabase/client";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 
 export function AdminTopbar() {
   const router = useRouter();
   const { theme, setTheme } = useTheme();
-  const { language, setLanguage, t } = useI18n();
+  const { language, setLanguage, t, languages } = useI18n();
+
+  const [userName, setUserName] = useState<string>("");
+  const [hasNotifications] = useState<boolean>(false);
+
+  useEffect(() => {
+    const supabase = createClient();
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      if (!user) return;
+      const name =
+        (user.user_metadata as any)?.full_name ||
+        user.email?.split("@")[0] ||
+        "Admin";
+      setUserName(name);
+    });
+  }, []);
 
   const themeIcon = theme === "dark" ? Moon : theme === "light" ? Sun : Monitor;
   const ThemeIcon = themeIcon;
 
+  const initials =
+    userName
+      .split(" ")
+      .filter(Boolean)
+      .map((part) => part[0])
+      .slice(0, 2)
+      .join("")
+      .toUpperCase() || "AD";
+
   return (
-    <header className="flex h-14 items-center gap-3 border-b border-border/50 bg-background/80 px-4 backdrop-blur-lg">
-      <SidebarTrigger />
-      <Separator orientation="vertical" className="h-5" />
+    <header className="sticky top-0 z-30 border-b border-border/60 bg-white/70 dark:bg-black/60 backdrop-blur-xl shadow-sm">
+      <motion.div
+        initial={{ opacity: 0, y: -8 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.25, ease: "easeOut" }}
+        className="mx-auto flex h-16 w-full max-w-6xl items-center justify-between px-4 lg:px-6"
+      >
+        {/* Left: Sidebar trigger */}
+        <div className="flex flex-1 items-center gap-3">
+          <SidebarTrigger className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-border/60 bg-background/70 shadow-sm transition duration-200 hover:opacity-80" />
+        </div>
 
-      <div className="flex-1" />
+        {/* Center: empty for balance */}
+        <div className="hidden flex-1 justify-center md:flex" />
 
-      {/* Language switcher */}
-      <DropdownMenu>
-        <DropdownMenuTrigger asChild>
-          <Button variant="ghost" size="sm" className="gap-1.5 text-xs">
-            {SUPPORTED_LANGUAGES.find((l) => l.code === language)?.flag}
-            {language.toUpperCase()}
-          </Button>
-        </DropdownMenuTrigger>
-        <DropdownMenuContent align="end">
-          {SUPPORTED_LANGUAGES.map((lang) => (
-            <DropdownMenuItem
-              key={lang.code}
-              onClick={() => {
-                setLanguage(lang.code as Language);
-                router.refresh(); // Refresh to update all translated content
-              }}
+        {/* Right: actions */}
+        <div className="flex flex-1 items-center justify-end gap-2">
+          {/* Language / globe */}
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-border/60 bg-background/70 text-muted-foreground shadow-sm backdrop-blur-md transition duration-200 hover:opacity-80"
+              >
+                <Globe className="h-4 w-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent
+              align="end"
+              className="min-w-[190px] rounded-xl border border-border/70 bg-background/95 p-1 shadow-xl backdrop-blur-xl"
             >
-              <span className="mr-2">{lang.flag}</span>
-              {lang.label}
-            </DropdownMenuItem>
-          ))}
-        </DropdownMenuContent>
-      </DropdownMenu>
+              {languages?.map((lang) => (
+                <DropdownMenuItem
+                  key={lang.code}
+                  onClick={() => {
+                    setLanguage(lang.code);
+                    router.refresh();
+                  }}
+                  className={cn(
+                    "flex items-center gap-2 rounded-lg px-3 py-2.5 text-sm transition-colors",
+                    language === lang.code
+                      ? "bg-accent text-accent-foreground shadow-sm"
+                      : "text-foreground hover:bg-muted/60"
+                  )}
+                >
+                  <LanguageFlag code={lang.code} className="h-4 w-4" />
+                  <span className="flex-1 text-left">{lang.label}</span>
+                  {language === lang.code && (
+                    <span className="text-primary text-xs">★</span>
+                  )}
+                </DropdownMenuItem>
+              ))}
+            </DropdownMenuContent>
+          </DropdownMenu>
 
-      {/* Theme switcher */}
-      <DropdownMenu>
-        <DropdownMenuTrigger asChild>
-          <Button variant="ghost" size="icon" className="h-8 w-8">
-            <ThemeIcon size={16} />
+          {/* Theme switcher */}
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-9 w-9 rounded-full border border-border/60 bg-background/75 shadow-sm transition duration-200 hover:opacity-80"
+                aria-label={t.admin.topbar.theme}
+              >
+                <ThemeIcon size={16} />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent
+              align="end"
+              className="min-w-[170px] rounded-xl border border-border bg-background/95 p-1 shadow-xl backdrop-blur-xl"
+            >
+              <DropdownMenuItem
+                onClick={() => setTheme("light")}
+                className="rounded-lg py-2.5 text-sm"
+              >
+                <Sun size={16} className="mr-2" /> {t.admin.topbar.light}
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                onClick={() => setTheme("dark")}
+                className="rounded-lg py-2.5 text-sm"
+              >
+                <Moon size={16} className="mr-2" /> {t.admin.topbar.dark}
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                onClick={() => setTheme("system")}
+                className="rounded-lg py-2.5 text-sm"
+              >
+                <Monitor size={16} className="mr-2" /> {t.admin.topbar.system}
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+
+          {/* Notifications */}
+          <Button
+            variant="ghost"
+            size="icon"
+            className="relative h-9 w-9 rounded-full border border-border/60 bg-background/70 text-muted-foreground shadow-sm transition duration-200 hover:opacity-80"
+            aria-label="Notifications"
+          >
+            <Bell className="h-4 w-4" />
+            {hasNotifications && (
+              <span className="absolute right-1 top-1 h-1.5 w-1.5 rounded-full bg-primary shadow-[0_0_0_4px_rgba(59,130,246,0.35)]" />
+            )}
           </Button>
-        </DropdownMenuTrigger>
-        <DropdownMenuContent align="end">
-          <DropdownMenuItem onClick={() => setTheme("light")}>
-            <Sun size={14} className="mr-2" /> {t.admin.topbar.light}
-          </DropdownMenuItem>
-          <DropdownMenuItem onClick={() => setTheme("dark")}>
-            <Moon size={14} className="mr-2" /> {t.admin.topbar.dark}
-          </DropdownMenuItem>
-          <DropdownMenuItem onClick={() => setTheme("system")}>
-            <Monitor size={14} className="mr-2" /> {t.admin.topbar.system}
-          </DropdownMenuItem>
-        </DropdownMenuContent>
-      </DropdownMenu>
+
+          {/* Profile menu with avatar */}
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-9 w-9 rounded-full border border-border/60 bg-gradient-to-br from-primary/90 via-primary to-primary/70 text-primary-foreground shadow-md transition duration-200 hover:opacity-90"
+                aria-label="Open profile menu"
+              >
+                <Avatar size="sm" className="border border-white/20 bg-transparent">
+                  <AvatarFallback className="bg-transparent text-[11px] font-semibold tracking-wide">
+                    {initials || <User className="h-4 w-4" />}
+                  </AvatarFallback>
+                </Avatar>
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent
+              align="end"
+              className="min-w-[220px] rounded-xl border border-border/70 bg-background/98 p-1.5 shadow-2xl backdrop-blur-xl"
+            >
+              <DropdownMenuItem
+                disabled
+                className="flex flex-col items-start gap-0.5 rounded-lg py-2.5 text-xs cursor-default"
+              >
+                <span className="text-[11px] font-medium uppercase tracking-[0.18em] text-muted-foreground/80">
+                  {t.admin.sidebar.adminPanel}
+                </span>
+                <span className="text-sm font-semibold text-foreground">
+                  {userName || "Admin"}
+                </span>
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                onClick={() => router.push("/admin/settings")}
+                className="mt-0.5 rounded-lg py-2.5 text-sm"
+              >
+                Profile / Edit Profile
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                onClick={() => router.push("/admin/settings")}
+                className="rounded-lg py-2.5 text-sm"
+              >
+                {t.admin.sidebar.settings}
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                onClick={() => router.push("/")}
+                className="rounded-lg py-2.5 text-sm"
+              >
+                {t.landing.nav.home}
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
+      </motion.div>
     </header>
   );
 }

@@ -43,6 +43,7 @@ export function ThemeProvider({
       root.classList.remove("light", "dark");
       root.classList.add(resolved);
       setResolvedTheme(resolved);
+      requestAnimationFrame(() => root.classList.add("dark-transition"));
     }
 
     apply();
