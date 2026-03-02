@@ -31,7 +31,6 @@ function rateLimit(ip: string | null | undefined) {
 export async function POST(req: NextRequest) {
   const ip =
     req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ||
-    req.ip ||
     req.headers.get("x-real-ip") ||
     undefined;
 
