@@ -3,7 +3,7 @@ import { updateSession } from "@/lib/supabase/middleware";
 import { extractSubdomain } from "@/lib/subdomain";
 
 /**
- * Production-ready middleware for subdomain-based multi-tenant routing
+ * Production-ready proxy for subdomain-based multi-tenant routing
  * 
  * Handles:
  * - Subdomain detection and extraction
@@ -11,7 +11,7 @@ import { extractSubdomain } from "@/lib/subdomain";
  * - Admin/API route exclusion
  * - Session management
  */
-export async function middleware(request: NextRequest) {
+export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
   const host = request.headers.get("host") || "";
 

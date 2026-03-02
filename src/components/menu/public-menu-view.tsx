@@ -4,7 +4,7 @@ import { useState, useRef, useEffect, useCallback, useMemo } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
-import { Plus, Minus, ShoppingCart } from "lucide-react";
+import { Plus, Minus, ShoppingCart, ShoppingBag } from "lucide-react";
 import type { PublicMenu, PublicRestaurantData, Language, ThemeConfig } from "@/types/database";
 import { defaultThemeConfig } from "@/types/database";
 import { GoogleFontsLoader } from "./google-fonts-loader";
@@ -117,6 +117,7 @@ export function PublicMenuView({ data, restaurantId, menuId, initialLang }: Prop
   const [lang, setLang] = useState<Language>(initialLang ?? "de");
   const [activeCategory, setActiveCategory] = useState(data.categories[0]?.id ?? "");
   const categoryRefs = useRef<Map<string, HTMLElement>>(new Map());
+  const [mounted, setMounted] = useState(false);
   
   // Cart store
   const {
@@ -127,6 +128,11 @@ export function PublicMenuView({ data, restaurantId, menuId, initialLang }: Prop
     setRestaurant,
     getItemCount,
   } = useCartStore();
+
+  // Set mounted state to prevent hydration errors
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   // Set restaurant info in cart store when component mounts
   useEffect(() => {
@@ -438,7 +444,7 @@ export function PublicMenuView({ data, restaurantId, menuId, initialLang }: Prop
             >
               <ShoppingCart size={20} />
               <span className="hidden sm:inline text-sm font-medium">Cart</span>
-              {getItemCount() > 0 && (
+              {mounted && getItemCount() > 0 && (
                 <span
                   className="absolute -right-1 -top-1 flex h-5 w-5 items-center justify-center rounded-full text-xs font-bold text-white"
                   style={{
@@ -675,19 +681,22 @@ export function PublicMenuView({ data, restaurantId, menuId, initialLang }: Prop
                           return quantity > 0 ? (
                             <div className="flex items-center gap-2">
                               <button
-                                onClick={() => {
+                                onClick={(e) => {
+                                  e.preventDefault();
+                                  e.stopPropagation();
                                   if (quantity === 1) {
                                     removeItem(item.id);
                                   } else {
                                     updateQuantity(item.id, quantity - 1);
                                   }
                                 }}
-                                className="flex h-8 w-8 items-center justify-center rounded-full transition-all hover:scale-110"
+                                className="flex h-8 w-8 items-center justify-center rounded-full transition-all hover:scale-110 cursor-pointer"
                                 style={{
                                   backgroundColor: accentColor,
                                   color: "#1a1714",
                                 }}
                                 aria-label="Decrease quantity"
+                                type="button"
                               >
                                 <Minus size={16} />
                               </button>
@@ -698,20 +707,27 @@ export function PublicMenuView({ data, restaurantId, menuId, initialLang }: Prop
                                 {quantity}
                               </span>
                               <button
-                                onClick={() => updateQuantity(item.id, quantity + 1)}
-                                className="flex h-8 w-8 items-center justify-center rounded-full transition-all hover:scale-110"
+                                onClick={(e) => {
+                                  e.preventDefault();
+                                  e.stopPropagation();
+                                  updateQuantity(item.id, quantity + 1);
+                                }}
+                                className="flex h-8 w-8 items-center justify-center rounded-full transition-all hover:scale-110 cursor-pointer"
                                 style={{
                                   backgroundColor: accentColor,
                                   color: "#1a1714",
                                 }}
                                 aria-label="Increase quantity"
+                                type="button"
                               >
                                 <Plus size={16} />
                               </button>
                             </div>
                           ) : (
                             <button
-                              onClick={() => {
+                              onClick={(e) => {
+                                e.preventDefault();
+                                e.stopPropagation();
                                 addItem({
                                   id: item.id,
                                   title: item.title,
@@ -720,11 +736,12 @@ export function PublicMenuView({ data, restaurantId, menuId, initialLang }: Prop
                                   image_url: item.image_url,
                                 });
                               }}
-                              className="flex items-center gap-2 rounded-full px-4 py-2 text-sm font-medium transition-all hover:scale-105"
+                              className="flex items-center gap-2 rounded-full px-4 py-2 text-sm font-medium transition-all hover:scale-105 cursor-pointer"
                               style={{
                                 backgroundColor: accentColor,
                                 color: "#1a1714",
                               }}
+                              type="button"
                             >
                               <Plus size={16} />
                               <span>Add</span>
@@ -759,6 +776,42 @@ export function PublicMenuView({ data, restaurantId, menuId, initialLang }: Prop
           </a>
         </footer>
       </main>
+
+      {/* ─── Floating Cart Button ─── */}
+      {mounted && restaurantId && menuId && getItemCount() > 0 && (
+        <Link
+          href={`/public-menu/${data.restaurant.slug}/${menuId}/cart`}
+          className="fixed bottom-6 right-6 z-50"
+        >
+          <motion.button
+            initial={{ scale: 0, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            className="relative flex h-14 w-14 items-center justify-center rounded-full shadow-lg transition-all"
+            style={{
+              backgroundColor: accentColor,
+              color: "#1a1714",
+            }}
+            aria-label="View cart"
+          >
+            <ShoppingBag size={24} />
+            {getItemCount() > 0 && (
+              <motion.span
+                initial={{ scale: 0 }}
+                animate={{ scale: 1 }}
+                className="absolute -right-1 -top-1 flex h-6 w-6 items-center justify-center rounded-full text-xs font-bold"
+                style={{
+                  backgroundColor: isDark ? "#1a1714" : "#ffffff",
+                  color: accentColor,
+                }}
+              >
+                {getItemCount()}
+              </motion.span>
+            )}
+          </motion.button>
+        </Link>
+      )}
     </div>
     </>
   );

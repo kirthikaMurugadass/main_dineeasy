@@ -202,11 +202,35 @@ export default async function RestaurantPublicPage({
 
   if (!data) notFound();
 
+  // Get restaurant ID and first active menu ID for cart functionality
+  const supabase = await createClient();
+  const { data: restaurant } = await supabase
+    .from("restaurants")
+    .select("id")
+    .eq("slug", slug)
+    .single();
+
+  // Get the first active menu ID for cart/checkout
+  const { data: menus } = await supabase
+    .from("menus")
+    .select("id")
+    .eq("restaurant_id", restaurant?.id ?? "")
+    .eq("is_active", true)
+    .limit(1);
+
+  const menuId = menus?.[0]?.id ?? null;
+
   // Adapt PublicRestaurantData to PublicMenu format for the shared view
   const viewData = {
     ...data,
-    menu: { id: "combined", slug },
+    menu: { id: menuId ?? "combined", slug },
   };
 
-  return <PublicMenuView data={viewData} />;
+  return (
+    <PublicMenuView
+      data={viewData}
+      restaurantId={restaurant?.id}
+      menuId={menuId}
+    />
+  );
 }

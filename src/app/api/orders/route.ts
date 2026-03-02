@@ -114,6 +114,18 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    // Send email notification asynchronously (don't wait for it)
+    fetch(`${process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"}/api/orders/notify`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        orderId: order.id,
+        restaurantId,
+      }),
+    }).catch((err) => {
+      console.error("Failed to send order notification email:", err);
+    });
+
     return NextResponse.json(
       {
         success: true,

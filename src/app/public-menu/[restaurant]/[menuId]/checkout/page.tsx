@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { motion } from "framer-motion";
-import { ArrowLeft, Loader2 } from "lucide-react";
+import { ArrowLeft, Loader2, CheckCircle2 } from "lucide-react";
 import { useCartStore } from "@/lib/stores/cart-store";
 import { useI18n } from "@/lib/i18n/context";
 import { Button } from "@/components/ui/button";
@@ -42,6 +42,7 @@ export default function CheckoutPage({
   const [tableNumber, setTableNumber] = useState("");
   const [loading, setLoading] = useState(false);
   const [mounted, setMounted] = useState(false);
+  const [orderSuccess, setOrderSuccess] = useState(false);
   const { items, getTotal, clearCart, restaurantId } = useCartStore();
   const { language } = useI18n();
 
@@ -108,11 +109,15 @@ export default function CheckoutPage({
 
       toast.success("Order placed successfully!");
       clearCart();
+      setOrderSuccess(true);
       
+      // Redirect after 3 seconds
       if (resolvedParams) {
-        router.push(
-          `/public-menu/${resolvedParams.restaurant}/${resolvedParams.menuId}`
-        );
+        setTimeout(() => {
+          router.push(
+            `/public-menu/${resolvedParams.restaurant}/${resolvedParams.menuId}`
+          );
+        }, 3000);
       }
     } catch (error) {
       console.error("Order error:", error);
@@ -128,6 +133,32 @@ export default function CheckoutPage({
     return (
       <div className="flex min-h-screen items-center justify-center">
         <Loader2 className="h-6 w-6 animate-spin" />
+      </div>
+    );
+  }
+
+  // Success state
+  if (orderSuccess) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-background">
+        <motion.div
+          initial={{ opacity: 0, scale: 0.9 }}
+          animate={{ opacity: 1, scale: 1 }}
+          className="text-center"
+        >
+          <CheckCircle2 className="mx-auto mb-4 h-16 w-16 text-green-500" />
+          <h1 className="mb-2 text-3xl font-bold">Order placed successfully!</h1>
+          <p className="mb-6 text-muted-foreground">
+            Redirecting to menu in a few seconds...
+          </p>
+          {resolvedParams && (
+            <Link
+              href={`/public-menu/${resolvedParams.restaurant}/${resolvedParams.menuId}`}
+            >
+              <Button variant="outline">Return to Menu</Button>
+            </Link>
+          )}
+        </motion.div>
       </div>
     );
   }
