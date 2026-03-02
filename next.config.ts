@@ -1,6 +1,10 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  // Reduce bundle size
+  swcMinify: true,
+  // Optimize serverless functions - exclude heavy 3D libraries from bundling
+  serverExternalPackages: ["three", "@react-three/fiber", "@react-three/drei", "postprocessing"],
   images: {
     remotePatterns: [
       { protocol: "https", hostname: "images.unsplash.com" },
