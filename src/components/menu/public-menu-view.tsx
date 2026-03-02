@@ -2,16 +2,21 @@
 
 import { useState, useRef, useEffect, useCallback, useMemo } from "react";
 import Image from "next/image";
+import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
+import { Plus, Minus, ShoppingCart } from "lucide-react";
 import type { PublicMenu, PublicRestaurantData, Language, ThemeConfig } from "@/types/database";
 import { defaultThemeConfig } from "@/types/database";
 import { GoogleFontsLoader } from "./google-fonts-loader";
 import { useI18n } from "@/lib/i18n/context";
+import { useCartStore } from "@/lib/stores/cart-store";
 
 type ViewData = PublicMenu | (PublicRestaurantData & { menu?: { id: string; slug: string } });
 
 interface Props {
   data: ViewData;
+  restaurantId?: string;
+  menuId?: string;
   /** When provided (e.g. from preview iframe), use this language and sync with I18n context */
   initialLang?: Language;
 }
@@ -107,11 +112,28 @@ function OrnamentalDivider({ accentColor, isDark }: { accentColor: string; isDar
   );
 }
 
-export function PublicMenuView({ data, initialLang }: Props) {
+export function PublicMenuView({ data, restaurantId, menuId, initialLang }: Props) {
   const { t, setLanguage } = useI18n();
   const [lang, setLang] = useState<Language>(initialLang ?? "de");
   const [activeCategory, setActiveCategory] = useState(data.categories[0]?.id ?? "");
   const categoryRefs = useRef<Map<string, HTMLElement>>(new Map());
+  
+  // Cart store
+  const {
+    items: cartItems,
+    addItem,
+    updateQuantity,
+    removeItem,
+    setRestaurant,
+    getItemCount,
+  } = useCartStore();
+
+  // Set restaurant info in cart store when component mounts
+  useEffect(() => {
+    if (restaurantId && menuId && data.restaurant.slug) {
+      setRestaurant(restaurantId, data.restaurant.slug, menuId);
+    }
+  }, [restaurantId, menuId, data.restaurant.slug, setRestaurant]);
 
   // When initialLang is provided (preview mode), sync with I18n context so UI strings translate
   useEffect(() => {
@@ -372,7 +394,7 @@ export function PublicMenuView({ data, initialLang }: Props) {
           <div className="absolute inset-0" style={overlayStyle} />
         </div>
 
-        {/* Top bar: Logo + Name (left), Language (right) */}
+        {/* Top bar: Logo + Name (left), Cart (right) */}
         <div className="relative z-10 flex items-center justify-between px-4 pt-6 sm:px-8 sm:pt-8">
           <div className="flex items-center gap-3">
             {data.restaurant.logo_url && theme.showLogo ? (
@@ -406,6 +428,29 @@ export function PublicMenuView({ data, initialLang }: Props) {
               {data.restaurant.name}
             </h1>
           </div>
+          
+          {/* Cart Button */}
+          {restaurantId && menuId && (
+            <Link
+              href={`/public-menu/${data.restaurant.slug}/${menuId}/cart`}
+              className="relative flex items-center gap-2 rounded-full bg-white/10 backdrop-blur-sm px-4 py-2.5 text-white transition-all hover:bg-white/20"
+              style={{ textShadow: "0 2px 8px rgba(0,0,0,0.5)" }}
+            >
+              <ShoppingCart size={20} />
+              <span className="hidden sm:inline text-sm font-medium">Cart</span>
+              {getItemCount() > 0 && (
+                <span
+                  className="absolute -right-1 -top-1 flex h-5 w-5 items-center justify-center rounded-full text-xs font-bold text-white"
+                  style={{
+                    backgroundColor: accentColor,
+                    color: "#1a1714",
+                  }}
+                >
+                  {getItemCount()}
+                </span>
+              )}
+            </Link>
+          )}
         </div>
 
         {/* Center: Customizable hero content */}
@@ -618,6 +663,75 @@ export function PublicMenuView({ data, initialLang }: Props) {
                       >
                         {getDisplayDescription(item.description, lang)}
                       </p>
+                    )}
+                    
+                    {/* Cart Controls */}
+                    {restaurantId && menuId && (
+                      <div className="mt-4 flex items-center gap-3">
+                        {(() => {
+                          const cartItem = cartItems.find((ci) => ci.id === item.id);
+                          const quantity = cartItem?.quantity ?? 0;
+                          
+                          return quantity > 0 ? (
+                            <div className="flex items-center gap-2">
+                              <button
+                                onClick={() => {
+                                  if (quantity === 1) {
+                                    removeItem(item.id);
+                                  } else {
+                                    updateQuantity(item.id, quantity - 1);
+                                  }
+                                }}
+                                className="flex h-8 w-8 items-center justify-center rounded-full transition-all hover:scale-110"
+                                style={{
+                                  backgroundColor: accentColor,
+                                  color: "#1a1714",
+                                }}
+                                aria-label="Decrease quantity"
+                              >
+                                <Minus size={16} />
+                              </button>
+                              <span
+                                className="min-w-[2rem] text-center text-sm font-semibold"
+                                style={{ color: textPrimary }}
+                              >
+                                {quantity}
+                              </span>
+                              <button
+                                onClick={() => updateQuantity(item.id, quantity + 1)}
+                                className="flex h-8 w-8 items-center justify-center rounded-full transition-all hover:scale-110"
+                                style={{
+                                  backgroundColor: accentColor,
+                                  color: "#1a1714",
+                                }}
+                                aria-label="Increase quantity"
+                              >
+                                <Plus size={16} />
+                              </button>
+                            </div>
+                          ) : (
+                            <button
+                              onClick={() => {
+                                addItem({
+                                  id: item.id,
+                                  title: item.title,
+                                  description: item.description,
+                                  price: item.price_chf,
+                                  image_url: item.image_url,
+                                });
+                              }}
+                              className="flex items-center gap-2 rounded-full px-4 py-2 text-sm font-medium transition-all hover:scale-105"
+                              style={{
+                                backgroundColor: accentColor,
+                                color: "#1a1714",
+                              }}
+                            >
+                              <Plus size={16} />
+                              <span>Add</span>
+                            </button>
+                          );
+                        })()}
+                      </div>
                     )}
                   </div>
                 </motion.article>

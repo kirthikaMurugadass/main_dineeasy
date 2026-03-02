@@ -25,6 +25,11 @@ export function AdminTopbar() {
   const { language, setLanguage, t, languages } = useI18n();
 
   const [userName, setUserName] = useState<string>("");
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   useEffect(() => {
     const supabase = createClient();
@@ -51,7 +56,7 @@ export function AdminTopbar() {
       .toUpperCase() || "AD";
 
   return (
-    <header className="sticky top-0 z-30 border-b border-border/60 bg-white/70 dark:bg-black/60 backdrop-blur-xl shadow-sm">
+    <header className="sticky top-0 z-30 border-b border-border/60 bg-background dark:bg-background backdrop-blur-xl shadow-sm">
       <motion.div
         initial={{ opacity: 0, y: -8 }}
         animate={{ opacity: 1, y: 0 }}
@@ -60,7 +65,7 @@ export function AdminTopbar() {
       >
         {/* Left: Sidebar trigger */}
         <div className="flex flex-1 items-center gap-3">
-          <SidebarTrigger className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-border/60 bg-background/70 shadow-sm transition duration-200 hover:opacity-80" />
+          <SidebarTrigger className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-border/60 bg-card shadow-sm transition duration-200 hover:opacity-80" />
         </div>
 
         {/* Center: empty for balance */}
@@ -69,19 +74,20 @@ export function AdminTopbar() {
         {/* Right: actions */}
         <div className="flex flex-1 items-center justify-end gap-2">
           {/* Language / globe */}
+          {mounted && (
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button
                 variant="ghost"
                 size="icon"
-                className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-border/60 bg-background/70 text-muted-foreground shadow-sm backdrop-blur-md transition duration-200 hover:opacity-80"
+                className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-border/60 bg-card text-muted-foreground shadow-sm backdrop-blur-md transition duration-200 hover:opacity-80"
               >
                 <Globe className="h-4 w-4" />
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent
               align="end"
-              className="min-w-[190px] rounded-xl border border-border/70 bg-background/95 p-1 shadow-xl backdrop-blur-xl"
+              className="min-w-[190px] rounded-xl border border-border/70 bg-card p-1 shadow-xl backdrop-blur-xl"
             >
               {languages?.map((lang) => (
                 <DropdownMenuItem
@@ -106,14 +112,16 @@ export function AdminTopbar() {
               ))}
             </DropdownMenuContent>
           </DropdownMenu>
+          )}
 
           {/* Theme switcher */}
+          {mounted && (
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button
                 variant="ghost"
                 size="icon"
-                className="h-9 w-9 rounded-full border border-border/60 bg-background/75 shadow-sm transition duration-200 hover:opacity-80"
+                className="h-9 w-9 rounded-full border border-border/60 bg-card shadow-sm transition duration-200 hover:opacity-80"
                 aria-label={t.admin.topbar.theme}
               >
                 <ThemeIcon size={16} />
@@ -121,7 +129,7 @@ export function AdminTopbar() {
             </DropdownMenuTrigger>
             <DropdownMenuContent
               align="end"
-              className="min-w-[170px] rounded-xl border border-border bg-background/95 p-1 shadow-xl backdrop-blur-xl"
+              className="min-w-[170px] rounded-xl border border-border bg-card p-1 shadow-xl backdrop-blur-xl"
             >
               <DropdownMenuItem
                 onClick={() => setTheme("light")}
@@ -143,14 +151,16 @@ export function AdminTopbar() {
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
+          )}
 
           {/* Profile menu with avatar */}
+          {mounted && (
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button
                 variant="ghost"
                 size="icon"
-                className="h-9 w-9 rounded-full border border-border/60 bg-gradient-to-br from-primary/90 via-primary to-primary/70 text-primary-foreground shadow-md transition duration-200 hover:opacity-90"
+                className="h-9 w-9 rounded-full border border-border/60 bg-card text-foreground shadow-md transition duration-200 hover:opacity-90"
                 aria-label="Open profile menu"
               >
                 <Avatar size="sm" className="border border-white/20 bg-transparent">
@@ -162,7 +172,7 @@ export function AdminTopbar() {
             </DropdownMenuTrigger>
             <DropdownMenuContent
               align="end"
-              className="min-w-[220px] rounded-xl border border-border/70 bg-background/98 p-1.5 shadow-2xl backdrop-blur-xl"
+              className="min-w-[220px] rounded-xl border border-border/70 bg-card p-1.5 shadow-2xl backdrop-blur-xl"
             >
               <DropdownMenuItem
                 disabled
@@ -195,6 +205,7 @@ export function AdminTopbar() {
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
+          )}
         </div>
       </motion.div>
     </header>

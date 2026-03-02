@@ -227,6 +227,29 @@ html.dark-transition *::after {
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
   }
+  /* Ensure buttons always have readable text in dark mode - Safety fallback */
+  /* Button variants handle most cases, this is a safety net */
+  .dark button[data-slot="button"][data-variant="outline"] {
+    color: white;
+  }
+  .dark button[data-slot="button"][data-variant="secondary"] {
+    color: white;
+  }
+  .dark button[data-slot="button"][data-variant="ghost"] {
+    color: white;
+  }
+  .dark button[data-slot="button"][data-variant="destructive"] {
+    color: white;
+  }
+  /* Ensure text content and icons in buttons are visible */
+  .dark button[data-slot="button"][data-variant="outline"] *,
+  .dark button[data-slot="button"][data-variant="secondary"] *,
+  .dark button[data-slot="button"][data-variant="ghost"] * {
+    color: inherit;
+  }
+  .dark button[data-slot="button"] svg {
+    color: inherit;
+  }
 }
 
 @layer utilities {

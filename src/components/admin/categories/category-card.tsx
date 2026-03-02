@@ -247,7 +247,7 @@ export function CategoryCard({
               <Button
                 size="sm"
                 className={cn(
-                  "h-9 w-full gap-1.5 bg-espresso text-warm hover:bg-espresso/90",
+                  "h-9 w-full gap-1.5 bg-espresso text-warm hover:bg-espresso/90 dark:bg-espresso dark:text-slate-900 dark:hover:bg-espresso/90",
                   needsCompactButtons ? "text-xs justify-center" : "text-xs sm:text-sm"
                 )}
               >

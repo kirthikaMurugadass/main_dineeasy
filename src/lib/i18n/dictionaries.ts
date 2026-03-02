@@ -159,6 +159,14 @@ interface Dictionary {
       regenerate: string; loading: string; urlDescription: string; urlDescriptionMenu: string;
       preview: string; downloadQr: string; printQr: string; copied: string;
     };
+    orders: {
+      title: string; description: string; noOrders: string; customerName: string;
+      orderType: string; dineIn: string; takeaway: string; tableNumber: string;
+      status: string; pending: string; preparing: string; completed: string;
+      total: string; items: string; placedAt: string; markAsPending: string;
+      markAsPreparing: string; markAsCompleted: string; statusUpdated: string;
+      statusUpdateError: string; filterByStatus: string; allOrders: string;
+    };
     onboarding: {
       title: string; description: string; restaurantName: string; restaurantNamePlaceholder: string;
       yourUrl: string; create: string; creating: string; error: string;
@@ -654,6 +662,30 @@ const en: Dictionary = {
       downloadQr: "Download QR Code",
       printQr: "Print QR Code",
       copied: "Copied!",
+    },
+    orders: {
+      title: "Orders",
+      description: "View and manage customer orders",
+      noOrders: "No orders found",
+      customerName: "Customer",
+      orderType: "Order Type",
+      dineIn: "Dine-in",
+      takeaway: "Takeaway",
+      tableNumber: "Table",
+      status: "Status",
+      pending: "Pending",
+      preparing: "Preparing",
+      completed: "Completed",
+      total: "Total",
+      items: "Items",
+      placedAt: "Placed at",
+      markAsPending: "Mark as Pending",
+      markAsPreparing: "Mark as Preparing",
+      markAsCompleted: "Mark as Completed",
+      statusUpdated: "Order status updated",
+      statusUpdateError: "Failed to update order status",
+      filterByStatus: "Filter by status",
+      allOrders: "All Orders",
     },
     onboarding: {
       title: "Set up your restaurant",
@@ -1167,6 +1199,30 @@ const de: Dictionary = {
       printQr: "QR-Code drucken",
       copied: "Kopiert!",
     },
+    orders: {
+      title: "Bestellungen",
+      description: "Bestellungen anzeigen und verwalten",
+      noOrders: "Keine Bestellungen gefunden",
+      customerName: "Kunde",
+      orderType: "Bestelltyp",
+      dineIn: "Vor Ort",
+      takeaway: "Zum Mitnehmen",
+      tableNumber: "Tisch",
+      status: "Status",
+      pending: "Ausstehend",
+      preparing: "In Vorbereitung",
+      completed: "Abgeschlossen",
+      total: "Gesamt",
+      items: "Artikel",
+      placedAt: "Aufgegeben um",
+      markAsPending: "Als ausstehend markieren",
+      markAsPreparing: "Als in Vorbereitung markieren",
+      markAsCompleted: "Als abgeschlossen markieren",
+      statusUpdated: "Bestellstatus aktualisiert",
+      statusUpdateError: "Bestellstatus konnte nicht aktualisiert werden",
+      filterByStatus: "Nach Status filtern",
+      allOrders: "Alle Bestellungen",
+    },
     onboarding: {
       title: "Richten Sie Ihr Restaurant ein",
       description: "Lassen Sie uns Ihr digitales Menü in wenigen Minuten bereitstellen",
@@ -1667,6 +1723,30 @@ const fr: Dictionary = {
       creating: "Création...",
       error: "Échec de la création du restaurant",
     },
+    orders: {
+      title: "Commandes",
+      description: "Afficher et gérer les commandes des clients",
+      noOrders: "Aucune commande trouvée",
+      customerName: "Client",
+      orderType: "Type de commande",
+      dineIn: "Sur place",
+      takeaway: "À emporter",
+      tableNumber: "Table",
+      status: "Statut",
+      pending: "En attente",
+      preparing: "En préparation",
+      completed: "Terminé",
+      total: "Total",
+      items: "Articles",
+      placedAt: "Passée à",
+      markAsPending: "Marquer comme en attente",
+      markAsPreparing: "Marquer comme en préparation",
+      markAsCompleted: "Marquer comme terminé",
+      statusUpdated: "Statut de la commande mis à jour",
+      statusUpdateError: "Échec de la mise à jour du statut de la commande",
+      filterByStatus: "Filtrer par statut",
+      allOrders: "Toutes les commandes",
+    },
     settings: {
       title: "Paramètres",
       description: "Gérez le profil de votre restaurant et votre compte",
@@ -2146,6 +2226,30 @@ const it: Dictionary = {
       downloadQr: "Scarica codice QR",
       printQr: "Stampa codice QR",
       copied: "Copiato!",
+    },
+    orders: {
+      title: "Ordini",
+      description: "Visualizza e gestisci gli ordini dei clienti",
+      noOrders: "Nessun ordine trovato",
+      customerName: "Cliente",
+      orderType: "Tipo di ordine",
+      dineIn: "Sul posto",
+      takeaway: "Da asporto",
+      tableNumber: "Tavolo",
+      status: "Stato",
+      pending: "In attesa",
+      preparing: "In preparazione",
+      completed: "Completato",
+      total: "Totale",
+      items: "Articoli",
+      placedAt: "Ordinato alle",
+      markAsPending: "Segna come in attesa",
+      markAsPreparing: "Segna come in preparazione",
+      markAsCompleted: "Segna come completato",
+      statusUpdated: "Stato dell'ordine aggiornato",
+      statusUpdateError: "Impossibile aggiornare lo stato dell'ordine",
+      filterByStatus: "Filtra per stato",
+      allOrders: "Tutti gli ordini",
     },
     onboarding: {
       title: "Configura il tuo ristorante",

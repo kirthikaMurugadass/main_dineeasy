@@ -534,7 +534,7 @@ export default function AppearancePage() {
           <Button
             onClick={handleSave}
             disabled={saving}
-            className="gap-2 bg-espresso text-warm hover:bg-espresso/90 w-full sm:w-auto justify-center"
+            className="gap-2 bg-espresso text-warm hover:bg-espresso/90 dark:bg-espresso dark:text-slate-900 dark:hover:bg-espresso/90 w-full sm:w-auto justify-center"
           >
             {saving ? <Loader2 size={16} className="animate-spin" /> : <Save size={16} />}
             {t.admin.appearance.save}
@@ -567,8 +567,8 @@ export default function AppearancePage() {
                         : "border-border/50 hover:border-border"
                     }`}
                   >
-                    <Icon size={20} className={config.mode === value ? "text-gold" : "text-muted-foreground"} />
-                    <span className="text-xs font-medium">{t.admin.appearance[labelKey]}</span>
+                    <Icon size={20} className={config.mode === value ? "text-gold" : "text-muted-foreground dark:text-muted-foreground"} />
+                    <span className="text-xs font-medium text-foreground dark:text-foreground">{t.admin.appearance[labelKey]}</span>
                   </button>
                 ))}
               </div>
@@ -611,7 +611,7 @@ export default function AppearancePage() {
                         style={{ backgroundColor: preset.accent }}
                       />
                     </div>
-                    <span className="text-xs">{preset.name}</span>
+                    <span className="text-xs text-foreground dark:text-foreground">{preset.name}</span>
                   </button>
                 ))}
               </div>
@@ -779,8 +779,8 @@ export default function AppearancePage() {
                           : "border-border/50 hover:border-border"
                       }`}
                     >
-                      <Icon size={18} className={config.heroBanner?.backgroundType === value ? "text-gold" : "text-muted-foreground"} />
-                      <span className="text-xs font-medium">{t.admin.appearance[labelKey]}</span>
+                      <Icon size={18} className={config.heroBanner?.backgroundType === value ? "text-gold" : "text-muted-foreground dark:text-muted-foreground"} />
+                      <span className="text-xs font-medium text-foreground dark:text-foreground">{t.admin.appearance[labelKey]}</span>
                     </button>
                   ))}
                 </div>

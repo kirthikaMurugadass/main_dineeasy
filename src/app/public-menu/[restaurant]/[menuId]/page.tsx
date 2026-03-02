@@ -182,16 +182,30 @@ export async function generateMetadata({
 // Public menu pages are dynamic by default
 
 export default async function SubdomainMenuWithIdPage({ params }: PageProps) {
-  const { restaurant, menuId } = await params;
-  const data = await getRestaurantDataBySlugAndMenu(restaurant, menuId);
+  const { restaurant: restaurantSlug, menuId } = await params;
+  const data = await getRestaurantDataBySlugAndMenu(restaurantSlug, menuId);
 
   if (!data) notFound();
+
+  // Get restaurant ID from Supabase
+  const supabase = await createClient();
+  const { data: restaurant } = await supabase
+    .from("restaurants")
+    .select("id")
+    .eq("slug", restaurantSlug)
+    .single();
 
   // Adapt PublicRestaurantData to PublicMenu format for the shared view
   const viewData = {
     ...data,
-    menu: { id: menuId, slug: restaurant },
+    menu: { id: menuId, slug: restaurantSlug },
   };
 
-  return <PublicMenuView data={viewData} />;
+  return (
+    <PublicMenuView
+      data={viewData}
+      restaurantId={restaurant?.id}
+      menuId={menuId}
+    />
+  );
 }

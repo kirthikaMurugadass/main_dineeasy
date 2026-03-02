@@ -143,35 +143,37 @@ export function PhoneMockup({ className = "", withFloating = false, withParallax
 
         {/* Menu items */}
         <div className="max-h-64 overflow-y-auto px-4 pb-4">
-          <AnimatePresence mode="wait">
-            <motion.div
-              key={activeCategory + demoLang}
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -10 }}
-              transition={{ duration: 0.3 }}
-              className="space-y-2"
-            >
-              {demoItems[activeCategory]?.map((item, i) => (
-                <motion.div
-                  key={i}
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: i * 0.05 }}
-                  className="flex items-start justify-between rounded-xl border border-border/30 p-3 transition-colors hover:bg-muted/30"
-                >
-                  <div className="flex-1 pr-3">
-                    <h4 className="text-xs font-semibold">{item.name[demoLang]}</h4>
-                    <p className="mt-0.5 text-[10px] leading-snug text-muted-foreground">
-                      {item.desc[demoLang]}
-                    </p>
-                  </div>
-                  <span className="shrink-0 font-mono text-xs font-semibold text-gold">
-                    CHF {item.price}
-                  </span>
-                </motion.div>
-              ))}
-            </motion.div>
+          <AnimatePresence mode="wait" initial={false}>
+            {demoItems[activeCategory] && (
+              <motion.div
+                key={activeCategory + demoLang}
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+                transition={{ duration: 0.3 }}
+                className="space-y-2"
+              >
+                {demoItems[activeCategory].map((item, i) => (
+                  <motion.div
+                    key={i}
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: i * 0.05 }}
+                    className="flex items-start justify-between rounded-xl border border-border/30 p-3 transition-colors hover:bg-muted/30"
+                  >
+                    <div className="flex-1 pr-3">
+                      <h4 className="text-xs font-semibold">{item.name[demoLang]}</h4>
+                      <p className="mt-0.5 text-[10px] leading-snug text-muted-foreground">
+                        {item.desc[demoLang]}
+                      </p>
+                    </div>
+                    <span className="shrink-0 font-mono text-xs font-semibold text-gold">
+                      CHF {item.price}
+                    </span>
+                  </motion.div>
+                ))}
+              </motion.div>
+            )}
           </AnimatePresence>
         </div>
 
