@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
-import { Moon, Sun, Monitor, User, Bell, Globe } from "lucide-react";
+import { Moon, Sun, Monitor, User, Globe } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useTheme } from "@/components/providers/theme-provider";
 import { Button } from "@/components/ui/button";
@@ -25,7 +25,6 @@ export function AdminTopbar() {
   const { language, setLanguage, t, languages } = useI18n();
 
   const [userName, setUserName] = useState<string>("");
-  const [hasNotifications] = useState<boolean>(false);
 
   useEffect(() => {
     const supabase = createClient();
@@ -144,19 +143,6 @@ export function AdminTopbar() {
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
-
-          {/* Notifications */}
-          <Button
-            variant="ghost"
-            size="icon"
-            className="relative h-9 w-9 rounded-full border border-border/60 bg-background/70 text-muted-foreground shadow-sm transition duration-200 hover:opacity-80"
-            aria-label="Notifications"
-          >
-            <Bell className="h-4 w-4" />
-            {hasNotifications && (
-              <span className="absolute right-1 top-1 h-1.5 w-1.5 rounded-full bg-primary shadow-[0_0_0_4px_rgba(59,130,246,0.35)]" />
-            )}
-          </Button>
 
           {/* Profile menu with avatar */}
           <DropdownMenu>

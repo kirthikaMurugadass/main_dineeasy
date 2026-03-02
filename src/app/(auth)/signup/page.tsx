@@ -69,54 +69,19 @@ export default function SignupPage() {
   }
 
   return (
-    <div className="flex min-h-[calc(100vh-5rem)] items-center justify-center p-6 lg:p-10">
+    <div className="flex min-h-screen items-center justify-center px-4 py-10 sm:px-6 lg:px-8">
       <motion.div
         initial={{ opacity: 0, y: 24 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
-        className="w-full max-w-5xl overflow-hidden rounded-3xl border border-border/60 bg-card/80 shadow-floating backdrop-blur-xl"
+        className="w-full max-w-md rounded-3xl border border-border/60 bg-card/80 p-6 shadow-floating backdrop-blur-xl sm:p-8"
       >
-        <div className="flex min-h-[600px] flex-col lg:flex-row">
-          {/* Image panel (left on desktop) */}
-          <div className="relative order-first hidden min-h-[280px] w-full overflow-hidden lg:order-none lg:block lg:min-h-0 lg:w-[50%]">
-            <motion.div
-              className="absolute inset-0 bg-cover bg-center"
-              style={{ backgroundImage: "url('/images/image2.jpg')" }}
-              animate={{ scale: [1, 1.04, 1] }}
-              transition={{ duration: 18, repeat: Infinity, ease: "easeInOut" }}
-            />
-            <div className="absolute inset-0 bg-primary/60" />
-            <div className="relative z-10 flex h-full flex-col items-center justify-center px-8 text-center">
-              <motion.div
-                initial={{ opacity: 0, y: 16 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, delay: 0.3 }}
-                className="space-y-6"
-              >
-                <h2 className="text-2xl font-semibold tracking-tight text-white lg:text-3xl">
-                  {t.auth.signup.panelGreeting}
-                </h2>
-                <p className="max-w-sm text-base text-white/90">{t.auth.signup.panelDescription}</p>
-                <Link href="/login">
-                  <Button
-                    variant="outline"
-                    className="rounded-xl border-2 border-white/50 bg-transparent px-6 py-3 text-white hover:bg-white/15 hover:border-white/70"
-                  >
-                    {t.auth.signup.panelButton}
-                  </Button>
-                </Link>
-              </motion.div>
-            </div>
-          </div>
-
-          {/* Form side */}
-          <div className="flex w-full flex-col justify-center p-8 lg:w-[50%] lg:p-12">
-            <motion.div
-              initial={{ opacity: 0, x: 16 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.45, delay: 0.1 }}
-              className="mx-auto w-full max-w-sm space-y-8"
-            >
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4, delay: 0.1 }}
+          className="space-y-8"
+        >
               <div>
                 <h1 className="text-2xl font-semibold tracking-tight text-foreground lg:text-3xl">
                   {t.auth.signup.title}
@@ -239,8 +204,6 @@ export default function SignupPage() {
                 </p>
               </form>
             </motion.div>
-          </div>
-        </div>
       </motion.div>
     </div>
   );

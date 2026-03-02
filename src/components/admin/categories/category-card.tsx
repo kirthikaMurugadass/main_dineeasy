@@ -79,7 +79,7 @@ export function CategoryCard({
       whileHover={{ scale: 1.02 }}
       className="h-full"
     >
-      <Card className="group relative h-full overflow-hidden border-border/50 bg-card/50 backdrop-blur-sm transition-all duration-300 hover:border-gold/30 hover:shadow-lg hover:shadow-gold/10 p-0">
+      <Card className="group relative h-full overflow-hidden border-border/60 bg-card shadow-soft transition-all duration-300 hover:border-primary/40 hover:shadow-floating p-0">
         {/* Banner Image / Gradient - prefer category image, fallback to first item image */}
         <div
           className={cn(
@@ -97,7 +97,7 @@ export function CategoryCard({
                 sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                 unoptimized
               />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent" />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/35 via-black/10 to-transparent dark:from-background/95 dark:via-background/50 dark:to-transparent" />
             </div>
           ) : (
             <div className="absolute inset-0 flex items-center justify-center">
@@ -130,7 +130,7 @@ export function CategoryCard({
                 <Button
                   variant="ghost"
                   size="icon"
-                  className="h-8 w-8 bg-black/40 backdrop-blur-sm text-white hover:bg-black/60"
+                  className="h-8 w-8 bg-background/80 backdrop-blur-sm text-foreground hover:bg-muted"
                 >
                   <MoreVertical size={14} />
                 </Button>
@@ -186,7 +186,7 @@ export function CategoryCard({
                       </div>
                     )}
                   </div>
-                  <div className="absolute -bottom-1 -right-1 rounded-full bg-background px-1.5 text-[10px] font-semibold text-foreground shadow-sm">
+                  <div className="absolute -bottom-1 -right-1 rounded-full border border-border/70 bg-card px-2 text-[11px] font-semibold text-foreground shadow-soft">
                     CHF {item.price.toFixed(2)}
                   </div>
                 </div>
@@ -216,10 +216,10 @@ export function CategoryCard({
           </div>
 
           {avgPrice > 0 && (
-            <div className="mb-4 flex items-center gap-2 rounded-lg bg-gold/10 p-2">
-              <TrendingUp size={14} className="text-gold" />
+            <div className="mb-4 flex items-center gap-2 rounded-lg bg-muted/20 p-2">
+              <TrendingUp size={14} className="text-muted-foreground" />
               <span className="text-xs text-muted-foreground">{t.admin.categories.avgPrice}:</span>
-              <span className="font-semibold text-gold">CHF {avgPrice.toFixed(2)}</span>
+              <span className="font-semibold text-foreground">CHF {avgPrice.toFixed(2)}</span>
             </div>
           )}
 

@@ -84,7 +84,7 @@ export function AboutSection() {
           </motion.div>
 
           <FadeIn direction="right" delay={0.15}>
-            <div className="relative aspect-[4/3] max-w-lg overflow-hidden rounded-3xl border border-border/80 bg-muted/50 shadow-card">
+            <div className="relative aspect-[4/3] max-w-lg overflow-hidden rounded-3xl border border-border/80 bg-muted/40 shadow-card">
               <div
                 className="absolute inset-0 bg-cover bg-center bg-no-repeat"
                 style={{
@@ -92,7 +92,7 @@ export function AboutSection() {
                     'url("https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=800&q=80")',
                 }}
               />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent" />
+              <div className="absolute inset-0 bg-gradient-to-t from-background/90 via-background/40 to-transparent" />
             </div>
           </FadeIn>
         </div>

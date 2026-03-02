@@ -10,17 +10,22 @@ export function FinalCtaSection() {
   const { t } = useI18n();
 
   return (
-    <section id="pricing" className="relative overflow-hidden border-t border-border/60 py-24 md:py-32">
-      <div className="absolute inset-0 bg-gradient-to-b from-primary/8 via-background to-background" />
-      <div className="absolute left-1/2 top-1/4 h-[400px] w-[400px] -translate-x-1/2 rounded-full bg-primary/10 blur-3xl" />
-      <div className="relative mx-auto max-w-2xl px-6 text-center">
+    <section
+      id="pricing"
+      className="relative overflow-hidden border-t border-border/60 py-20 md:py-28"
+    >
+      <div className="pointer-events-none absolute inset-0 -z-10">
+        <div className="h-full w-full bg-[radial-gradient(circle_at_top,_rgba(148,163,184,0.08),transparent_60%),radial-gradient(circle_at_bottom,_rgba(148,163,184,0.04),transparent_55%)] dark:bg-[radial-gradient(circle_at_top,_rgba(15,23,42,0.45),transparent_60%),radial-gradient(circle_at_bottom,_rgba(15,23,42,0.6),transparent_60%)]" />
+        <div className="absolute inset-0 bg-gradient-to-b from-background/92 via-background/96 to-background" />
+      </div>
+      <div className="mx-auto flex max-w-3xl flex-col items-center px-6 text-center">
         <FadeIn>
-          <h2 className="font-sans text-[clamp(1.75rem,3vw+0.5rem,2.5rem)] font-semibold leading-tight tracking-tight text-foreground">
+          <h2 className="font-sans text-[clamp(1.9rem,3.1vw+0.5rem,2.6rem)] font-semibold leading-tight tracking-tight text-foreground">
             {t.landing.finalCta.headline}
           </h2>
         </FadeIn>
         <FadeIn delay={0.08}>
-          <p className="mt-4 text-lg text-muted-foreground">
+          <p className="mt-5 max-w-2xl text-balance text-base leading-relaxed text-muted-foreground sm:text-lg">
             {t.landing.finalCta.subhead}
           </p>
         </FadeIn>
@@ -31,7 +36,10 @@ export function FinalCtaSection() {
               whileTap={{ scale: 0.98 }}
               transition={{ type: "spring", stiffness: 400, damping: 25 }}
             >
-              <Button size="lg" className="h-12 rounded-xl px-8 text-base">
+              <Button
+                size="lg"
+                className="h-11 rounded-xl px-7 text-sm font-semibold shadow-soft hover:shadow-md"
+              >
                 {t.landing.finalCta.button}
               </Button>
             </motion.div>
