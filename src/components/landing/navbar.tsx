@@ -28,8 +28,8 @@ const navLinks = [
 export function Navbar() {
   const [scrolled, setScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
-  const [visible, setVisible] = useState(true);
   const [showScrollTop, setShowScrollTop] = useState(false);
+  const [mounted, setMounted] = useState(false);
   const router = useRouter();
   const { t, language, setLanguage, languages } = useI18n();
   const { theme, setTheme } = useTheme();
@@ -41,22 +41,12 @@ export function Navbar() {
   };
 
   useEffect(() => {
-    let lastY = typeof window !== "undefined" ? window.scrollY : 0;
+    setMounted(true);
 
     const onScroll = () => {
       const y = window.scrollY;
-      const delta = y - lastY;
-
       setScrolled(y > 16);
       setShowScrollTop(y > 300);
-
-      const isScrollingDownFast = delta > 24 && y > 80;
-      const isScrollingUp = delta < -12;
-
-      // Navbar stays visible except when user scrolls down quickly
-      setVisible(!isScrollingDownFast || isScrollingUp || y <= 80);
-
-      lastY = y;
     };
 
     window.addEventListener("scroll", onScroll, { passive: true });
@@ -67,10 +57,7 @@ export function Navbar() {
     <>
       <motion.header
         initial={{ y: 0, opacity: 1 }}
-        animate={{
-          y: visible ? 0 : -100,
-          opacity: 1,
-        }}
+        animate={{ y: 0, opacity: 1 }}
         transition={{ duration: 0.3, ease: [0.25, 0.46, 0.45, 0.94] }}
         className={cn(
           "fixed inset-x-0 top-0 z-[9999] border-b transition-all duration-300 ease-out",
@@ -99,63 +86,91 @@ export function Navbar() {
 
           {/* Right: Language, Theme, Sign In, Get Started */}
           <div className="flex shrink-0 items-center gap-1">
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="h-9 w-9 rounded-lg text-foreground hover:bg-muted hover:text-foreground"
-                  title={t.landing.nav.selectLanguage}
-                  aria-label={t.landing.nav.selectLanguage}
-                >
-                  <Globe className="h-[18px] w-[18px]" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent
-                align="end"
-                className="min-w-[180px] rounded-xl border border-border/70 bg-background/80 p-1 shadow-lg backdrop-blur-md"
-              >
-                {languages.map((lang) => (
-                  <DropdownMenuItem
-                    key={lang.code}
-                    onClick={() => handleLanguageChange(lang.code)}
-                    className={cn(
-                      "flex items-center gap-2 rounded-lg px-3 py-2.5 text-sm text-foreground transition-colors",
-                      language === lang.code
-                        ? "bg-accent/90 text-accent-foreground shadow-sm"
-                        : "hover:bg-muted/70"
-                    )}
+            {mounted ? (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-9 w-9 rounded-lg text-foreground hover:bg-muted hover:text-foreground"
+                    title={t.landing.nav.selectLanguage}
+                    aria-label={t.landing.nav.selectLanguage}
                   >
-                    <LanguageFlag code={lang.code} />
-                    <span className="flex-1 text-left">{lang.label}</span>
-                    {language === lang.code && <span className="text-primary">✓</span>}
-                  </DropdownMenuItem>
-                ))}
-              </DropdownMenuContent>
-            </DropdownMenu>
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="h-9 w-9 rounded-lg text-foreground hover:bg-muted hover:text-foreground"
-                  aria-label={t.landing.nav.theme}
+                    <Globe className="h-[18px] w-[18px]" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent
+                  align="end"
+                  className="z-[10000] min-w-[180px] rounded-xl border border-border/70 bg-background/80 p-1 shadow-lg backdrop-blur-md"
                 >
-                  <ThemeIcon className="h-[18px] w-[18px]" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="min-w-[140px] rounded-xl border border-border bg-popover p-1 shadow-lg">
-                <DropdownMenuItem onClick={() => setTheme("light")} className="rounded-lg py-2.5 text-foreground">
-                  <Sun className="mr-3 h-[18px] w-[18px]" /> {t.admin.topbar.light}
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => setTheme("dark")} className="rounded-lg py-2.5 text-foreground">
-                  <Moon className="mr-3 h-[18px] w-[18px]" /> {t.admin.topbar.dark}
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => setTheme("system")} className="rounded-lg py-2.5 text-foreground">
-                  <Monitor className="mr-3 h-[18px] w-[18px]" /> {t.admin.topbar.system}
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
+                  {languages.map((lang) => (
+                    <DropdownMenuItem
+                      key={lang.code}
+                      onClick={() => handleLanguageChange(lang.code)}
+                      className={cn(
+                        "flex items-center gap-2 rounded-lg px-3 py-2.5 text-sm text-foreground transition-colors",
+                        language === lang.code
+                          ? "bg-accent/90 text-accent-foreground shadow-sm"
+                          : "hover:bg-muted/70"
+                      )}
+                    >
+                      <LanguageFlag code={lang.code} />
+                      <span className="flex-1 text-left">{lang.label}</span>
+                      {language === lang.code && <span className="text-primary">✓</span>}
+                    </DropdownMenuItem>
+                  ))}
+                </DropdownMenuContent>
+              </DropdownMenu>
+            ) : (
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-9 w-9 rounded-lg text-foreground/70"
+                title={t.landing.nav.selectLanguage}
+                aria-label={t.landing.nav.selectLanguage}
+                disabled
+              >
+                <Globe className="h-[18px] w-[18px]" />
+              </Button>
+            )}
+            {mounted ? (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-9 w-9 rounded-lg text-foreground hover:bg-muted hover:text-foreground"
+                    aria-label={t.landing.nav.theme}
+                  >
+                    <ThemeIcon className="h-[18px] w-[18px]" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent
+                  align="end"
+                  className="z-[10000] min-w-[140px] rounded-xl border border-border bg-popover p-1 shadow-lg"
+                >
+                  <DropdownMenuItem onClick={() => setTheme("light")} className="rounded-lg py-2.5 text-foreground">
+                    <Sun className="mr-3 h-[18px] w-[18px]" /> {t.admin.topbar.light}
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => setTheme("dark")} className="rounded-lg py-2.5 text-foreground">
+                    <Moon className="mr-3 h-[18px] w-[18px]" /> {t.admin.topbar.dark}
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => setTheme("system")} className="rounded-lg py-2.5 text-foreground">
+                    <Monitor className="mr-3 h-[18px] w-[18px]" /> {t.admin.topbar.system}
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            ) : (
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-9 w-9 rounded-lg text-foreground/70"
+                aria-label={t.landing.nav.theme}
+                disabled
+              >
+                <ThemeIcon className="h-[18px] w-[18px]" />
+              </Button>
+            )}
             <Link href="/login" className="hidden sm:block">
               <Button
                 variant="ghost"

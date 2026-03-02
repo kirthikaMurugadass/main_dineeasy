@@ -12,6 +12,7 @@ import {
   Plus,
   FileText,
   BarChart3,
+  Palette,
   Clock,
   TrendingUp,
   Activity,
@@ -73,10 +74,29 @@ export default function AdminDashboard() {
   useEffect(() => {
     async function load() {
       const supabase = createClient();
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
-      if (!user) return;
+
+      let user: any | null = null;
+      try {
+        const {
+          data,
+          error: userError,
+        } = await supabase.auth.getUser();
+        if (userError) {
+          console.error("Admin dashboard getUser error:", userError);
+          router.push("/login");
+          return;
+        }
+        user = data.user;
+      } catch (err) {
+        console.error("Admin dashboard getUser lock error:", err);
+        router.push("/login");
+        return;
+      }
+
+      if (!user) {
+        router.push("/login");
+        return;
+      }
 
       const { data: restaurant } = await supabase
         .from("restaurants")
@@ -465,16 +485,17 @@ export default function AdminDashboard() {
                   </HoverScale>
 
                   <HoverScale>
-                    <Button
-                      variant="outline"
-                      className="flex h-24 w-full flex-col items-center justify-center gap-2 rounded-2xl border border-border/70 bg-background/70 text-xs font-medium transition-all hover:-translate-y-1 hover:bg-accent/40 hover:shadow-md"
-                      disabled
-                    >
-                      <div className="flex h-9 w-9 items-center justify-center rounded-full bg-green-500/10">
-                        <BarChart3 className="h-5 w-5 text-green-500" />
-                      </div>
-                      <span className="text-xs font-medium">{t.admin.dashboard.viewAnalytics}</span>
-                    </Button>
+                    <Link href="/admin/appearance">
+                      <Button
+                        variant="outline"
+                        className="flex h-24 w-full flex-col items-center justify-center gap-2 rounded-2xl border border-border/70 bg-background/80 text-xs font-medium transition-all hover:-translate-y-1 hover:border-primary/40 hover:bg-accent/40 hover:shadow-md"
+                      >
+                        <div className="flex h-9 w-9 items-center justify-center rounded-full bg-primary/10">
+                          <Palette className="h-5 w-5 text-primary" />
+                        </div>
+                        <span className="text-xs font-medium">{t.admin.appearance.title}</span>
+                      </Button>
+                    </Link>
                   </HoverScale>
                 </div>
               </CardContent>

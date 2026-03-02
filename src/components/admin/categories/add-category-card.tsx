@@ -18,17 +18,17 @@ export function AddCategoryCard() {
       className="h-full"
     >
       <Link href="/admin/menu/category/new">
-        <Card className="group relative h-full cursor-pointer overflow-hidden border-2 border-dashed border-border/50 bg-card/30 backdrop-blur-sm transition-all duration-300 hover:border-gold/50 hover:bg-card/50 hover:shadow-lg hover:shadow-gold/10">
+        <Card className="group relative h-full cursor-pointer overflow-hidden border-2 border-dashed border-border/60 bg-card shadow-soft transition-all duration-300 hover:border-primary/40 hover:bg-card/95 hover:shadow-floating">
           <CardContent className="flex h-full min-h-[300px] flex-col items-center justify-center p-6 text-center">
             <motion.div
-              className="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-gold/10 transition-all duration-300 group-hover:bg-gold/20 group-hover:scale-110"
+              className="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-muted/40 transition-all duration-300 group-hover:bg-muted/70 group-hover:scale-110"
               whileHover={{ rotate: 90 }}
               transition={{ duration: 0.3 }}
             >
-              <Plus size={32} className="text-gold" />
+              <Plus size={32} className="text-neutral-800 dark:text-neutral-100" />
             </motion.div>
             <h3 className="mb-2 text-lg font-semibold">{t.admin.categories.addCategory}</h3>
-            <p className="max-w-xs text-sm text-muted-foreground">
+            <p className="max-w-xs text-sm text-neutral-700 dark:text-muted-foreground">
               {t.admin.categories.description}
             </p>
           </CardContent>

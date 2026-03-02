@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
-import { FadeContent, AnimatedContent } from "@appletosolutions/reactbits";
+import { FadeContent, AnimatedContent } from "@/lib/reactbits";
 import { Button } from "@/components/ui/button";
 import { useI18n } from "@/lib/i18n/context";
 import ParticlesBackground from "@/components/ui/particles-background";

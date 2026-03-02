@@ -65,11 +65,11 @@ export function AdminSidebar() {
 
   return (
     <Sidebar
-      variant="floating"
+      variant="sidebar"
       collapsible="icon"
-      className="text-sidebar-foreground shadow-lg shadow-black/20 ring-1 ring-border/40 backdrop-blur-2xl bg-gradient-to-b from-background via-background/95 to-background/90 md:[&_[data-slot=sidebar-inner]]:rounded-r-3xl md:[&_[data-slot=sidebar-inner]]:border md:[&_[data-slot=sidebar-inner]]:border-border/50"
+      className="bg-sidebar text-sidebar-foreground border-r border-sidebar-border shadow-none md:[&_[data-slot=sidebar-inner]]:rounded-none md:[&_[data-slot=sidebar-inner]]:border-none md:[&_[data-slot=sidebar-inner]]:shadow-none"
     >
-      <SidebarHeader className="border-b border-border/50 px-3 pb-4 pt-4">
+      <SidebarHeader className="px-3 pb-4 pt-4">
         <motion.div
           initial={{ opacity: 0, y: -8 }}
           animate={{ opacity: 1, y: 0 }}
@@ -117,13 +117,13 @@ export function AdminSidebar() {
                       <SidebarMenuButton
                         asChild
                         isActive={isActive}
-                        className="group relative flex items-center justify-center rounded-full px-2.5 py-2 text-sm font-medium text-muted-foreground transition duration-200 hover:bg-muted/60 hover:text-foreground data-[active=true]:bg-primary/10 data-[active=true]:text-primary"
+                        className="group relative flex items-center justify-center rounded-full px-2.5 py-2 text-sm font-semibold text-sidebar-foreground/85 transition duration-200 hover:bg-muted/70 hover:text-sidebar-foreground data-[active=true]:bg-primary/10 data-[active=true]:text-primary"
                       >
                         <Link
                           href={item.href}
                           className="flex w-full items-center justify-start gap-3 md:group-data-[collapsible=icon]:justify-center md:group-data-[collapsible=icon]:gap-0"
                         >
-                          <div className="relative flex h-11 w-11 items-center justify-center text-muted-foreground transition-transform duration-200 group-hover:scale-105 group-data-[active=true]:text-primary">
+                          <div className="relative flex h-11 w-11 items-center justify-center text-sidebar-foreground/80 transition-transform duration-200 group-hover:scale-105 group-data-[active=true]:text-primary">
                             <Icon size={20} />
                           </div>
                           <span
@@ -167,7 +167,7 @@ export function AdminSidebar() {
           <SidebarMenuItem>
             <SidebarMenuButton
               onClick={handleLogout}
-              className="group flex items-center justify-center rounded-full px-2.5 py-2 text-sm text-rose-500 transition-colors hover:bg-rose-500/10 hover:text-rose-600 dark:hover:text-rose-50"
+              className="group flex items-center justify-start rounded-full px-2.5 py-2 text-sm text-rose-500 transition-colors hover:bg-rose-500/10 hover:text-rose-600 dark:hover:text-rose-50"
             >
               <div className="flex h-11 w-11 items-center justify-center text-rose-500">
                 <LogOut size={20} />
@@ -175,7 +175,7 @@ export function AdminSidebar() {
               <span
                 suppressHydrationWarning
                 translate="no"
-                className="ml-2 truncate md:group-data-[collapsible=icon]:w-0 md:group-data-[collapsible=icon]:overflow-hidden md:group-data-[collapsible=icon]:opacity-0 md:group-data-[collapsible=icon]:translate-x-1"
+                className="truncate md:group-data-[collapsible=icon]:w-0 md:group-data-[collapsible=icon]:overflow-hidden md:group-data-[collapsible=icon]:opacity-0 md:group-data-[collapsible=icon]:translate-x-1"
               >
                 {t.admin.sidebar.signOut}
               </span>
