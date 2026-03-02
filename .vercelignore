@@ -5,9 +5,12 @@ node_modules
 .DS_Store
 *.log
 *.pem
-# Ignore large files that might cause deployment issues
+# Ignore documentation and scripts (but NOT source code)
 *.md
 scripts/
-supabase/
+/supabase/
 DEPLOYMENT_FIX.md
+VERCEL_DEPLOYMENT_FIX.md
 build-output.txt
+.git
+.gitignore
