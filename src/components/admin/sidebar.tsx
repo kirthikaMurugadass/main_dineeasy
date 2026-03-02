@@ -12,6 +12,7 @@ import {
   LogOut,
   Settings,
   ShoppingCart,
+  BarChart3,
 } from "lucide-react";
 import {
   Sidebar,
@@ -34,6 +35,7 @@ const navItems = [
   { key: "dashboard", href: "/admin", icon: LayoutDashboard },
   { key: "menus", href: "/admin/categories", icon: UtensilsCrossed },
   { key: "orders", href: "/admin/orders", icon: ShoppingCart },
+  { key: "analytics", href: "/admin/analytics", icon: BarChart3 },
   { key: "appearance", href: "/admin/appearance", icon: Palette },
   { key: "qr", href: "/admin/qr", icon: QrCode },
 ] as const;
@@ -55,6 +57,7 @@ export function AdminSidebar() {
     dashboard: t.admin.dashboard.title,
     menus: t.admin.menus.title,
     orders: t.admin.orders.title,
+    analytics: t.admin.analytics?.title || "Analytics",
     appearance: t.admin.appearance.title,
     qr: t.admin.qr.title,
   };

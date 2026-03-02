@@ -1,9 +1,9 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
-import { Loader2, Clock, ChefHat, CheckCircle, MoreVertical } from "lucide-react";
+import { Loader2, Clock, ChefHat, CheckCircle, MoreVertical, Eye } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { PageTitle } from "@/components/ui/page-title";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -26,6 +26,7 @@ import { useI18n } from "@/lib/i18n/context";
 import { createClient } from "@/lib/supabase/client";
 import { toast } from "sonner";
 import type { Language } from "@/types/database";
+import Link from "next/link";
 
 interface OrderItem {
   id: string;
@@ -64,46 +65,27 @@ export default function OrdersPage() {
   const { t, language } = useI18n();
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
-  const [statusFilter, setStatusFilter] = useState<string>("all");
+  const [statusFilter, setStatusFilter] = useState<string>("active"); // Default to active orders
   const [updatingStatus, setUpdatingStatus] = useState<string | null>(null);
+  const [restaurantId, setRestaurantId] = useState<string | null>(null);
+  const [mounted, setMounted] = useState(false);
 
-  useEffect(() => {
-    loadOrders();
-  }, [statusFilter]);
-
-  async function loadOrders() {
+  const loadOrders = useCallback(async (currentRestaurantId: string) => {
     setLoading(true);
     try {
       const supabase = createClient();
-
-      // Get current user's restaurant
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
-      if (!user) {
-        router.push("/login");
-        return;
-      }
-
-      const { data: restaurant } = await supabase
-        .from("restaurants")
-        .select("id")
-        .eq("owner_id", user.id)
-        .single();
-
-      if (!restaurant) {
-        setLoading(false);
-        return;
-      }
 
       // Fetch orders
       let query = supabase
         .from("orders")
         .select("*")
-        .eq("restaurant_id", restaurant.id)
+        .eq("restaurant_id", currentRestaurantId)
         .order("created_at", { ascending: false });
 
-      if (statusFilter !== "all") {
+      // Default filter: show pending + preparing first
+      if (statusFilter === "active") {
+        query = query.in("status", ["pending", "preparing"]);
+      } else if (statusFilter !== "all") {
         query = query.eq("status", statusFilter);
       }
 
@@ -132,26 +114,29 @@ export default function OrdersPage() {
 
       // Fetch translations for menu items
       const itemIds = [
-        ...new Set(orderItemsData?.map((oi) => oi.item_id) ?? []),
+        ...new Set(orderItemsData?.map((oi) => oi.item_id).filter(Boolean) ?? []),
       ];
-      const { data: translations } = await supabase
-        .from("translations")
-        .select("entity_id, language, title")
-        .eq("entity_type", "menu_item")
-        .in("entity_id", itemIds);
+      const translationMap = new Map<string, Record<Language, string>>();
+      
+      if (itemIds.length > 0) {
+        const { data: translations, error: translationsError } = await supabase
+          .from("translations")
+          .select("entity_id, language, title")
+          .eq("entity_type", "menu_item")
+          .in("entity_id", itemIds);
 
-      // Build translation map
-      const translationMap = new Map<
-        string,
-        Record<Language, string>
-      >();
-      translations?.forEach((tr) => {
-        if (!translationMap.has(tr.entity_id)) {
-          translationMap.set(tr.entity_id, {} as Record<Language, string>);
+        if (translationsError) {
+          console.warn("Error fetching translations:", translationsError);
+        } else {
+          translations?.forEach((tr) => {
+            if (!translationMap.has(tr.entity_id)) {
+              translationMap.set(tr.entity_id, {} as Record<Language, string>);
+            }
+            const record = translationMap.get(tr.entity_id)!;
+            record[tr.language as Language] = tr.title;
+          });
         }
-        const record = translationMap.get(tr.entity_id)!;
-        record[tr.language as Language] = tr.title;
-      });
+      }
 
       // Combine orders with items
       const ordersWithItems: Order[] = ordersData.map((order) => {
@@ -174,13 +159,82 @@ export default function OrdersPage() {
       });
 
       setOrders(ordersWithItems);
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error loading orders:", error);
-      toast.error("Failed to load orders");
+      const errorMessage = error?.message || "Failed to load orders";
+      toast.error(errorMessage);
+      setOrders([]);
     } finally {
       setLoading(false);
     }
-  }
+  }, [statusFilter]);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  useEffect(() => {
+    async function init() {
+      if (!mounted) return;
+      
+      const supabase = createClient();
+
+      // Get current user's restaurant
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+      if (!user) {
+        router.push("/login");
+        return;
+      }
+
+      const { data: restaurant } = await supabase
+        .from("restaurants")
+        .select("id")
+        .eq("owner_id", user.id)
+        .single();
+
+      if (!restaurant) {
+        setLoading(false);
+        return;
+      }
+
+      setRestaurantId(restaurant.id);
+      await loadOrders(restaurant.id);
+
+      // Set up realtime subscription
+      const channel = supabase
+        .channel("orders-changes")
+        .on(
+          "postgres_changes",
+          {
+            event: "*",
+            schema: "public",
+            table: "orders",
+            filter: `restaurant_id=eq.${restaurant.id}`,
+          },
+          () => {
+            // Reload orders when changes occur
+            loadOrders(restaurant.id);
+          }
+        )
+        .subscribe();
+
+      return () => {
+        supabase.removeChannel(channel);
+      };
+    }
+
+    if (mounted) {
+      init();
+    }
+  }, [mounted, loadOrders, router]);
+
+  useEffect(() => {
+    if (restaurantId) {
+      loadOrders(restaurantId);
+    }
+  }, [statusFilter, restaurantId, loadOrders]);
 
   async function updateOrderStatus(orderId: string, newStatus: string) {
     setUpdatingStatus(orderId);
@@ -194,7 +248,7 @@ export default function OrdersPage() {
       if (error) throw error;
 
       toast.success("Order status updated");
-      loadOrders();
+      // Orders will auto-update via realtime subscription
     } catch (error) {
       console.error("Error updating order status:", error);
       toast.error("Failed to update order status");
@@ -239,17 +293,20 @@ export default function OrdersPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <PageTitle>{t.admin.orders.title}</PageTitle>
-        <Select value={statusFilter} onValueChange={setStatusFilter}>
-          <SelectTrigger className="w-[180px]">
-            <SelectValue placeholder="Filter by status" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">All Orders</SelectItem>
-            <SelectItem value="pending">Pending</SelectItem>
-            <SelectItem value="preparing">Preparing</SelectItem>
-            <SelectItem value="completed">Completed</SelectItem>
-          </SelectContent>
-        </Select>
+        {mounted && (
+          <Select value={statusFilter} onValueChange={setStatusFilter}>
+            <SelectTrigger className="w-[180px]">
+              <SelectValue placeholder="Filter by status" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="active">Active Orders</SelectItem>
+              <SelectItem value="all">All Orders</SelectItem>
+              <SelectItem value="pending">Pending</SelectItem>
+              <SelectItem value="preparing">Preparing</SelectItem>
+              <SelectItem value="completed">Completed</SelectItem>
+            </SelectContent>
+          </Select>
+        )}
       </div>
 
       {loading ? (
@@ -260,7 +317,7 @@ export default function OrdersPage() {
         <FadeIn>
           <Card>
             <CardContent className="flex flex-col items-center justify-center py-12">
-              <p className="text-muted-foreground">No orders found</p>
+              <p className="text-muted-foreground">{t.admin.orders.noOrders}</p>
             </CardContent>
           </Card>
         </FadeIn>
@@ -297,56 +354,64 @@ export default function OrdersPage() {
                         <span>{formatDate(order.created_at)}</span>
                       </div>
                     </div>
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          disabled={updatingStatus === order.id}
-                        >
-                          {updatingStatus === order.id ? (
-                            <Loader2 className="h-4 w-4 animate-spin" />
-                          ) : (
-                            <MoreVertical className="h-4 w-4" />
-                          )}
+                    <div className="flex items-center gap-2">
+                      <Link href={`/admin/orders/${order.id}`}>
+                        <Button variant="outline" size="sm">
+                          <Eye className="h-4 w-4 mr-2" />
+                          View
                         </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end">
-                        {order.status !== "pending" && (
-                          <DropdownMenuItem
-                            onClick={() =>
-                              updateOrderStatus(order.id, "pending")
-                            }
+                      </Link>
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            disabled={updatingStatus === order.id}
                           >
-                            Mark as Pending
-                          </DropdownMenuItem>
-                        )}
-                        {order.status !== "preparing" && (
-                          <DropdownMenuItem
-                            onClick={() =>
-                              updateOrderStatus(order.id, "preparing")
-                            }
-                          >
-                            Mark as Preparing
-                          </DropdownMenuItem>
-                        )}
-                        {order.status !== "completed" && (
-                          <DropdownMenuItem
-                            onClick={() =>
-                              updateOrderStatus(order.id, "completed")
-                            }
-                          >
-                            Mark as Completed
-                          </DropdownMenuItem>
-                        )}
-                      </DropdownMenuContent>
-                    </DropdownMenu>
+                            {updatingStatus === order.id ? (
+                              <Loader2 className="h-4 w-4 animate-spin" />
+                            ) : (
+                              <MoreVertical className="h-4 w-4" />
+                            )}
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                          {order.status !== "pending" && (
+                            <DropdownMenuItem
+                              onClick={() =>
+                                updateOrderStatus(order.id, "pending")
+                              }
+                            >
+                              {t.admin.orders.markAsPending}
+                            </DropdownMenuItem>
+                          )}
+                          {order.status !== "preparing" && (
+                            <DropdownMenuItem
+                              onClick={() =>
+                                updateOrderStatus(order.id, "preparing")
+                              }
+                            >
+                              {t.admin.orders.markAsPreparing}
+                            </DropdownMenuItem>
+                          )}
+                          {order.status !== "completed" && (
+                            <DropdownMenuItem
+                              onClick={() =>
+                                updateOrderStatus(order.id, "completed")
+                              }
+                            >
+                              {t.admin.orders.markAsCompleted}
+                            </DropdownMenuItem>
+                          )}
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    </div>
                   </div>
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-3">
                     <div className="space-y-2">
-                      {order.items.map((item) => (
+                      {order.items.slice(0, 3).map((item) => (
                         <div
                           key={item.id}
                           className="flex items-center justify-between text-sm"
@@ -360,9 +425,14 @@ export default function OrdersPage() {
                           </span>
                         </div>
                       ))}
+                      {order.items.length > 3 && (
+                        <p className="text-xs text-muted-foreground">
+                          +{order.items.length - 3} more items
+                        </p>
+                      )}
                     </div>
                     <div className="flex items-center justify-between border-t border-border pt-3">
-                      <span className="font-semibold">Total</span>
+                      <span className="font-semibold">{t.admin.orders.total}</span>
                       <span className="text-lg font-bold">
                         CHF {order.total.toFixed(2)}
                       </span>

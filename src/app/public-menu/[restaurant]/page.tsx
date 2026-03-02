@@ -218,11 +218,37 @@ export default async function SubdomainMenuPage({ params }: PageProps) {
 
   if (!data) notFound();
 
+  // Get restaurant ID and menu ID for cart functionality
+  const supabase = await createClient();
+  const { data: restaurantData } = await supabase
+    .from("restaurants")
+    .select("id")
+    .eq("slug", restaurant)
+    .single();
+
+  // Get the active menu ID
+  const { data: menuData } = await supabase
+    .from("menus")
+    .select("id")
+    .eq("restaurant_id", restaurantData?.id ?? "")
+    .eq("is_active", true)
+    .order("created_at", { ascending: true })
+    .limit(1)
+    .single();
+
+  const menuId = menuData?.id ?? null;
+
   // Adapt PublicRestaurantData to PublicMenu format for the shared view
   const viewData = {
     ...data,
-    menu: { id: "subdomain-menu", slug: restaurant },
+    menu: { id: menuId ?? "subdomain-menu", slug: restaurant },
   };
 
-  return <PublicMenuView data={viewData} />;
+  return (
+    <PublicMenuView
+      data={viewData}
+      restaurantId={restaurantData?.id}
+      menuId={menuId}
+    />
+  );
 }

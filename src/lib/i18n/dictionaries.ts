@@ -167,6 +167,10 @@ interface Dictionary {
       markAsPreparing: string; markAsCompleted: string; statusUpdated: string;
       statusUpdateError: string; filterByStatus: string; allOrders: string;
     };
+    analytics: {
+      title: string; description: string; totalOrders: string; todayOrders: string;
+      mostOrderedItems: string; noItemsYet: string; orders: string; order: string;
+    };
     onboarding: {
       title: string; description: string; restaurantName: string; restaurantNamePlaceholder: string;
       yourUrl: string; create: string; creating: string; error: string;
@@ -686,6 +690,16 @@ const en: Dictionary = {
       statusUpdateError: "Failed to update order status",
       filterByStatus: "Filter by status",
       allOrders: "All Orders",
+    },
+    analytics: {
+      title: "Analytics",
+      description: "View business insights and performance metrics",
+      totalOrders: "Total Orders",
+      todayOrders: "Today's Orders",
+      mostOrderedItems: "Most Ordered Items",
+      noItemsYet: "No items ordered yet",
+      orders: "orders",
+      order: "order",
     },
     onboarding: {
       title: "Set up your restaurant",
@@ -1223,6 +1237,16 @@ const de: Dictionary = {
       filterByStatus: "Nach Status filtern",
       allOrders: "Alle Bestellungen",
     },
+    analytics: {
+      title: "Analysen",
+      description: "Geschäftseinblicke und Leistungskennzahlen anzeigen",
+      totalOrders: "Gesamtbestellungen",
+      todayOrders: "Heutige Bestellungen",
+      mostOrderedItems: "Meistbestellte Artikel",
+      noItemsYet: "Noch keine Artikel bestellt",
+      orders: "Bestellungen",
+      order: "Bestellung",
+    },
     onboarding: {
       title: "Richten Sie Ihr Restaurant ein",
       description: "Lassen Sie uns Ihr digitales Menü in wenigen Minuten bereitstellen",
@@ -1747,6 +1771,16 @@ const fr: Dictionary = {
       filterByStatus: "Filtrer par statut",
       allOrders: "Toutes les commandes",
     },
+    analytics: {
+      title: "Analyses",
+      description: "Afficher les informations commerciales et les métriques de performance",
+      totalOrders: "Total des commandes",
+      todayOrders: "Commandes d'aujourd'hui",
+      mostOrderedItems: "Articles les plus commandés",
+      noItemsYet: "Aucun article commandé pour le moment",
+      orders: "commandes",
+      order: "commande",
+    },
     settings: {
       title: "Paramètres",
       description: "Gérez le profil de votre restaurant et votre compte",
@@ -2250,6 +2284,16 @@ const it: Dictionary = {
       statusUpdateError: "Impossibile aggiornare lo stato dell'ordine",
       filterByStatus: "Filtra per stato",
       allOrders: "Tutti gli ordini",
+    },
+    analytics: {
+      title: "Analisi",
+      description: "Visualizza informazioni commerciali e metriche di performance",
+      totalOrders: "Ordini totali",
+      todayOrders: "Ordini di oggi",
+      mostOrderedItems: "Articoli più ordinati",
+      noItemsYet: "Nessun articolo ordinato ancora",
+      orders: "ordini",
+      order: "ordine",
     },
     onboarding: {
       title: "Configura il tuo ristorante",
