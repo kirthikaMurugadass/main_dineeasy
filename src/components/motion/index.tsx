@@ -5,7 +5,7 @@ import { useRef, type ReactNode } from "react";
 
 const spring = { type: "spring" as const, stiffness: 400, damping: 30 };
 const springSoft = { type: "spring" as const, stiffness: 300, damping: 30 };
-const easeOutExpo = [0.16, 1, 0.3, 1];
+const easeOutExpo: [number, number, number, number] = [0.16, 1, 0.3, 1];
 
 export function FadeIn({
   children,

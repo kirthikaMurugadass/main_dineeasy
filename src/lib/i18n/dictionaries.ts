@@ -94,16 +94,17 @@ interface Dictionary {
       delete: string; deleting: string; loadError: string; initError: string;
       // Add Category page
       newCategory: string; editCategory: string;
+      newCategorySubtitle: string; editCategorySubtitle: string;
       draftSaved: string; saving: string; save: string; saveCategory: string;
       active: string; inactive: string;
-      detailsTitle: string;
+      detailsTitle: string; detailsSubtitle: string;
       nameLabel: string; namePlaceholder: string;
       urlSlugLabel: string; urlSlugPlaceholder: string; urlSlugHelper: string;
       descriptionLabel: string; descriptionPlaceholder: string;
       validationNameRequired: string; validationNameTooShort: string;
       imageTitle: string; // Category Image card
       imageUploadCta: string; imageUploadHint: string;
-      statusLabel: string; statusActiveHint: string; statusInactiveHint: string;
+      statusLabel: string; statusTitle: string; statusDescription: string; statusActiveHint: string; statusInactiveHint: string;
       visibilityLabel: string; visibilityPublic: string; visibilityPrivate: string;
       displayOrderLabel: string; displayOrderHint: string;
       livePreviewTitle: string; livePreviewFallbackName: string;
@@ -448,6 +449,8 @@ const en: Dictionary = {
       // Add Category page
       newCategory: "New Category",
       editCategory: "Edit Category",
+      newCategorySubtitle: "Create a new category to organize your menu items",
+      editCategorySubtitle: "Update category details and settings",
       draftSaved: "Draft saved",
       saving: "Saving...",
       save: "Save",
@@ -455,6 +458,7 @@ const en: Dictionary = {
       active: "Active",
       inactive: "Inactive",
       detailsTitle: "Category Details",
+      detailsSubtitle: "Enter the basic information for this category",
       nameLabel: "Category Name",
       namePlaceholder: "e.g. Coffee, Appetizers, Main Courses",
       urlSlugLabel: "URL Slug",
@@ -468,6 +472,8 @@ const en: Dictionary = {
       imageUploadCta: "Drag & drop an image here or click to browse",
       imageUploadHint: "Recommended: 1200x600px, JPG/PNG/WEBP",
       statusLabel: "Status",
+      statusTitle: "Category Status",
+      statusDescription: "Control whether this category is visible to customers on your menu",
       statusActiveHint: "Visible to customers",
       statusInactiveHint: "Hidden from menu",
       visibilityLabel: "Visibility",
@@ -955,6 +961,8 @@ const de: Dictionary = {
       // Add Category page
       newCategory: "Neue Kategorie",
       editCategory: "Kategorie bearbeiten",
+      newCategorySubtitle: "Erstellen Sie eine neue Kategorie, um Ihre Menüpunkte zu organisieren",
+      editCategorySubtitle: "Kategoriedetails und Einstellungen aktualisieren",
       draftSaved: "Entwurf gespeichert",
       saving: "Wird gespeichert...",
       save: "Speichern",
@@ -962,6 +970,7 @@ const de: Dictionary = {
       active: "Aktiv",
       inactive: "Inaktiv",
       detailsTitle: "Kategoriendetails",
+      detailsSubtitle: "Geben Sie die grundlegenden Informationen für diese Kategorie ein",
       nameLabel: "Kategoriename",
       namePlaceholder: "z.B. Kaffee, Vorspeisen, Hauptgerichte",
       urlSlugLabel: "URL-Slug",
@@ -975,6 +984,8 @@ const de: Dictionary = {
       imageUploadCta: "Bild hierher ziehen oder klicken, um zu wählen",
       imageUploadHint: "Empfohlen: 1200x600px, JPG/PNG/WEBP",
       statusLabel: "Status",
+      statusTitle: "Kategorie-Status",
+      statusDescription: "Steuern Sie, ob diese Kategorie für Kunden in Ihrem Menü sichtbar ist",
       statusActiveHint: "Für Kunden sichtbar",
       statusInactiveHint: "Im Menü ausgeblendet",
       visibilityLabel: "Sichtbarkeit",
@@ -1440,6 +1451,8 @@ const fr: Dictionary = {
       // Page Ajouter une catégorie
       newCategory: "Nouvelle catégorie",
       editCategory: "Modifier la catégorie",
+      newCategorySubtitle: "Créez une nouvelle catégorie pour organiser vos articles de menu",
+      editCategorySubtitle: "Mettre à jour les détails et paramètres de la catégorie",
       draftSaved: "Brouillon enregistré",
       saving: "Enregistrement...",
       save: "Enregistrer",
@@ -1447,6 +1460,7 @@ const fr: Dictionary = {
       active: "Actif",
       inactive: "Inactif",
       detailsTitle: "Détails de la catégorie",
+      detailsSubtitle: "Entrez les informations de base pour cette catégorie",
       nameLabel: "Nom de la catégorie",
       namePlaceholder: "ex. Café, Entrées, Plats principaux",
       urlSlugLabel: "Slug d'URL",
@@ -1460,6 +1474,8 @@ const fr: Dictionary = {
       imageUploadCta: "Glissez-déposez une image ici ou cliquez pour parcourir",
       imageUploadHint: "Recommandé : 1200x600px, JPG/PNG/WEBP",
       statusLabel: "Statut",
+      statusTitle: "Statut de la catégorie",
+      statusDescription: "Contrôlez si cette catégorie est visible pour les clients dans votre menu",
       statusActiveHint: "Visible pour les clients",
       statusInactiveHint: "Masqué du menu",
       visibilityLabel: "Visibilité",
@@ -1925,6 +1941,8 @@ const it: Dictionary = {
       // Pagina Aggiungi categoria
       newCategory: "Nuova categoria",
       editCategory: "Modifica categoria",
+      newCategorySubtitle: "Crea una nuova categoria per organizzare i tuoi articoli del menu",
+      editCategorySubtitle: "Aggiorna i dettagli e le impostazioni della categoria",
       draftSaved: "Bozza salvata",
       saving: "Salvataggio...",
       save: "Salva",
@@ -1932,6 +1950,7 @@ const it: Dictionary = {
       active: "Attiva",
       inactive: "Inattiva",
       detailsTitle: "Dettagli categoria",
+      detailsSubtitle: "Inserisci le informazioni di base per questa categoria",
       nameLabel: "Nome categoria",
       namePlaceholder: "es. Caffè, Antipasti, Piatti principali",
       urlSlugLabel: "Slug URL",
@@ -1945,6 +1964,8 @@ const it: Dictionary = {
       imageUploadCta: "Trascina qui un'immagine o fai clic per sfogliare",
       imageUploadHint: "Consigliato: 1200x600px, JPG/PNG/WEBP",
       statusLabel: "Stato",
+      statusTitle: "Stato della categoria",
+      statusDescription: "Controlla se questa categoria è visibile ai clienti nel tuo menu",
       statusActiveHint: "Visibile ai clienti",
       statusInactiveHint: "Nascosta dal menu",
       visibilityLabel: "Visibilità",
