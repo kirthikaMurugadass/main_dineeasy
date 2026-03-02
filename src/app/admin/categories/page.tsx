@@ -312,12 +312,12 @@ export default function CategoriesPage() {
               >
                 <Button variant="outline" className="gap-2 w-full sm:w-auto">
                   <ExternalLink size={14} />
-                  {t.admin.categories.viewPublic}
+                  <span>{t.admin.categories.viewPublic}</span>
                 </Button>
               </a>
             )}
             <Link href="/admin/menu/category/new" className="w-full sm:w-auto">
-              <Button className="gap-2 bg-espresso text-warm hover:bg-espresso/90 w-full sm:w-auto">
+              <Button className="gap-2 bg-espresso text-warm hover:bg-espresso/90 dark:bg-espresso dark:text-slate-900 dark:hover:bg-espresso/90 w-full sm:w-auto">
                 <Plus size={16} />
                 {t.admin.categories.addCategory}
               </Button>

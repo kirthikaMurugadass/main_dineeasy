@@ -181,7 +181,7 @@ function SortableItem({
               variant="ghost"
               size="icon"
               onClick={() => onRemove(itemIndex)}
-              className="h-8 w-8 text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors"
+              className="h-8 w-8 text-muted-foreground dark:text-muted-foreground hover:text-destructive dark:hover:text-destructive hover:bg-destructive/10 dark:hover:bg-destructive/20 transition-colors"
             >
               <Trash2 size={14} />
             </Button>
@@ -242,7 +242,7 @@ function SortableItem({
                 variant="ghost"
                 size="icon"
                 onClick={() => onRemove(itemIndex)}
-                className="h-9 w-9 text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors"
+                className="h-9 w-9 text-muted-foreground dark:text-muted-foreground hover:text-destructive dark:hover:text-destructive hover:bg-destructive/10 dark:hover:bg-destructive/20 transition-colors"
               >
                 <Trash2 size={16} />
               </Button>

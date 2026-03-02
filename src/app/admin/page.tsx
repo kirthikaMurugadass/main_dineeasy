@@ -301,8 +301,7 @@ export default function AdminDashboard() {
         {statCards.map((stat, i) => (
           <StaggerItem key={i}>
             <HoverScale lift={-4}>
-              <Card className="relative overflow-hidden rounded-2xl border border-border/70 bg-gradient-to-br from-background/80 via-background/90 to-background/80 shadow-sm transition-transform duration-200 hover:-translate-y-1 hover:shadow-lg">
-                <div className="pointer-events-none absolute inset-px rounded-2xl bg-[radial-gradient(circle_at_top,_rgba(59,130,246,0.18),transparent_55%)] opacity-60" />
+              <Card className="relative overflow-hidden rounded-2xl border border-border/70 bg-card shadow-sm transition-transform duration-200 hover:-translate-y-1 hover:shadow-lg">
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                   <CardTitle className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
                     {stat.title}
@@ -440,7 +439,7 @@ export default function AdminDashboard() {
                     <Link href="/admin/categories">
                       <Button
                         variant="outline"
-                        className="flex h-24 w-full flex-col items-center justify-center gap-2 rounded-2xl border border-border/70 bg-background/80 text-xs font-medium transition-all hover:-translate-y-1 hover:border-primary/40 hover:bg-accent/40 hover:shadow-md"
+                        className="flex h-24 w-full flex-col items-center justify-center gap-2 rounded-2xl border border-border/70 bg-card text-xs font-medium transition-all hover:-translate-y-1 hover:border-primary/40 hover:bg-accent/40 hover:text-accent-foreground hover:shadow-md"
                       >
                         <div className="flex h-9 w-9 items-center justify-center rounded-full bg-primary/10">
                           <Plus className="h-5 w-5 text-primary" />
@@ -456,7 +455,7 @@ export default function AdminDashboard() {
                     <Link href="/admin/qr">
                       <Button
                         variant="outline"
-                        className="flex h-24 w-full flex-col items-center justify-center gap-2 rounded-2xl border border-border/70 bg-background/80 text-xs font-medium transition-all hover:-translate-y-1 hover:border-primary/40 hover:bg-accent/40 hover:shadow-md"
+                        className="flex h-24 w-full flex-col items-center justify-center gap-2 rounded-2xl border border-border/70 bg-card text-xs font-medium transition-all hover:-translate-y-1 hover:border-primary/40 hover:bg-accent/40 hover:text-accent-foreground hover:shadow-md"
                       >
                         <div className="flex h-9 w-9 items-center justify-center rounded-full bg-primary/10">
                           <QrCode className="h-5 w-5 text-primary" />
@@ -472,7 +471,7 @@ export default function AdminDashboard() {
                     <Link href="/admin/categories">
                       <Button
                         variant="outline"
-                        className="flex h-24 w-full flex-col items-center justify-center gap-2 rounded-2xl border border-border/70 bg-background/80 text-xs font-medium transition-all hover:-translate-y-1 hover:border-primary/40 hover:bg-accent/40 hover:shadow-md"
+                        className="flex h-24 w-full flex-col items-center justify-center gap-2 rounded-2xl border border-border/70 bg-card text-xs font-medium transition-all hover:-translate-y-1 hover:border-primary/40 hover:bg-accent/40 hover:text-accent-foreground hover:shadow-md"
                       >
                         <div className="flex h-9 w-9 items-center justify-center rounded-full bg-primary/10">
                           <FileText className="h-5 w-5 text-primary" />
@@ -488,7 +487,7 @@ export default function AdminDashboard() {
                     <Link href="/admin/appearance">
                       <Button
                         variant="outline"
-                        className="flex h-24 w-full flex-col items-center justify-center gap-2 rounded-2xl border border-border/70 bg-background/80 text-xs font-medium transition-all hover:-translate-y-1 hover:border-primary/40 hover:bg-accent/40 hover:shadow-md"
+                        className="flex h-24 w-full flex-col items-center justify-center gap-2 rounded-2xl border border-border/70 bg-card text-xs font-medium transition-all hover:-translate-y-1 hover:border-primary/40 hover:bg-accent/40 hover:text-accent-foreground hover:shadow-md"
                       >
                         <div className="flex h-9 w-9 items-center justify-center rounded-full bg-primary/10">
                           <Palette className="h-5 w-5 text-primary" />

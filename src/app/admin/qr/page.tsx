@@ -314,7 +314,7 @@ export default function QRPage() {
               <div className="flex gap-3">
                 <Button
                   onClick={downloadPNG}
-                  className="gap-2 bg-espresso text-warm hover:bg-espresso/90"
+                  className="gap-2 bg-espresso text-warm hover:bg-espresso/90 dark:bg-espresso dark:text-slate-900 dark:hover:bg-espresso/90"
                 >
                   <Download size={14} />
                   PNG
@@ -325,7 +325,7 @@ export default function QRPage() {
                   className="gap-2"
                 >
                   <Download size={14} />
-                  SVG
+                  <span>SVG</span>
                 </Button>
                 <Button
                   variant="outline"
@@ -333,7 +333,7 @@ export default function QRPage() {
                   className="gap-2"
                 >
                   <Printer size={14} />
-                  Print
+                  <span>Print</span>
                 </Button>
               </div>
             </CardContent>

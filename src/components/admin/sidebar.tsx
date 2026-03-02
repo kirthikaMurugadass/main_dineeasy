@@ -11,6 +11,7 @@ import {
   QrCode,
   LogOut,
   Settings,
+  ShoppingCart,
 } from "lucide-react";
 import {
   Sidebar,
@@ -32,6 +33,7 @@ import { createClient } from "@/lib/supabase/client";
 const navItems = [
   { key: "dashboard", href: "/admin", icon: LayoutDashboard },
   { key: "menus", href: "/admin/categories", icon: UtensilsCrossed },
+  { key: "orders", href: "/admin/orders", icon: ShoppingCart },
   { key: "appearance", href: "/admin/appearance", icon: Palette },
   { key: "qr", href: "/admin/qr", icon: QrCode },
 ] as const;
@@ -52,6 +54,7 @@ export function AdminSidebar() {
   const labels: Record<string, string> = {
     dashboard: t.admin.dashboard.title,
     menus: t.admin.menus.title,
+    orders: t.admin.orders.title,
     appearance: t.admin.appearance.title,
     qr: t.admin.qr.title,
   };
@@ -117,13 +120,13 @@ export function AdminSidebar() {
                       <SidebarMenuButton
                         asChild
                         isActive={isActive}
-                        className="group relative flex items-center justify-center rounded-full px-2.5 py-2 text-sm font-semibold text-sidebar-foreground/85 transition duration-200 hover:bg-muted/70 hover:text-sidebar-foreground data-[active=true]:bg-primary/10 data-[active=true]:text-primary"
+                        className="group relative flex items-center justify-center rounded-full px-2.5 py-2 text-sm font-semibold text-sidebar-foreground dark:text-sidebar-foreground transition duration-200 hover:bg-muted/70 hover:text-sidebar-foreground dark:hover:text-sidebar-foreground data-[active=true]:bg-primary/10 data-[active=true]:text-primary dark:data-[active=true]:text-primary"
                       >
                         <Link
                           href={item.href}
                           className="flex w-full items-center justify-start gap-3 md:group-data-[collapsible=icon]:justify-center md:group-data-[collapsible=icon]:gap-0"
                         >
-                          <div className="relative flex h-11 w-11 items-center justify-center text-sidebar-foreground/80 transition-transform duration-200 group-hover:scale-105 group-data-[active=true]:text-primary">
+                          <div className="relative flex h-11 w-11 items-center justify-center text-sidebar-foreground dark:text-sidebar-foreground transition-transform duration-200 group-hover:scale-105 group-data-[active=true]:text-primary dark:group-data-[active=true]:text-primary">
                             <Icon size={20} />
                           </div>
                           <span
@@ -149,13 +152,13 @@ export function AdminSidebar() {
           <SidebarMenuItem>
             <SidebarMenuButton
               asChild
-              className="group flex items-center justify-center rounded-full px-2.5 py-2 text-sm text-muted-foreground transition-colors hover:bg-muted/60 hover:text-foreground"
+              className="group flex items-center justify-center rounded-full px-2.5 py-2 text-sm text-muted-foreground dark:text-muted-foreground transition-colors hover:bg-muted/60 hover:text-foreground dark:hover:text-foreground"
             >
               <Link
                 href="/admin/settings"
                 className="flex w-full items-center justify-start gap-3 md:group-data-[collapsible=icon]:justify-center md:group-data-[collapsible=icon]:gap-0"
               >
-                <div className="flex h-11 w-11 items-center justify-center text-muted-foreground">
+                <div className="flex h-11 w-11 items-center justify-center text-muted-foreground dark:text-muted-foreground">
                   <Settings size={20} />
                 </div>
                 <span suppressHydrationWarning translate="no" className="truncate md:group-data-[collapsible=icon]:w-0 md:group-data-[collapsible=icon]:overflow-hidden md:group-data-[collapsible=icon]:opacity-0 md:group-data-[collapsible=icon]:translate-x-1">
@@ -167,9 +170,9 @@ export function AdminSidebar() {
           <SidebarMenuItem>
             <SidebarMenuButton
               onClick={handleLogout}
-              className="group flex items-center justify-start rounded-full px-2.5 py-2 text-sm text-rose-500 transition-colors hover:bg-rose-500/10 hover:text-rose-600 dark:hover:text-rose-50"
+              className="group flex items-center justify-start rounded-full px-2.5 py-2 text-sm text-rose-500 dark:text-rose-400 transition-colors hover:bg-rose-500/10 hover:text-rose-600 dark:hover:bg-rose-500/20 dark:hover:text-rose-300"
             >
-              <div className="flex h-11 w-11 items-center justify-center text-rose-500">
+              <div className="flex h-11 w-11 items-center justify-center text-rose-500 dark:text-rose-400">
                 <LogOut size={20} />
               </div>
               <span
