@@ -6,10 +6,7 @@
   "framework": "nextjs",
   "regions": ["iad1"],
   "functions": {
-    "app/**": {
-      "maxDuration": 30
-    },
-    "api/**": {
+    "app/api/**": {
       "maxDuration": 30
     }
   }
