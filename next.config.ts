@@ -23,9 +23,6 @@ const nextConfig: NextConfig = {
     // Disable image optimization for localhost to avoid private IP errors
     unoptimized: process.env.NODE_ENV === "development",
   },
-  experimental: {
-    optimizePackageImports: ["lucide-react", "framer-motion"],
-  },
   transpilePackages: ["@appletosolutions/reactbits"],
   // Enable strict mode for better error detection
   reactStrictMode: true,
