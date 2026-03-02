@@ -9,8 +9,6 @@
     "lint": "eslint"
   },
   "dependencies": {
-    "@appletosolutions/reactbits": "^1.0.3",
-    "@reactbits/backgrounds": "^1.0.3",
     "@chakra-ui/react": "^3.33.0",
     "@dnd-kit/core": "^6.3.1",
     "@dnd-kit/sortable": "^10.0.0",
@@ -39,14 +37,15 @@
     "react": "19.2.3",
     "react-dom": "19.2.3",
     "react-qrcode-logo": "^4.0.0",
+    "resend": "^6.9.3",
     "sonner": "^2.0.7",
     "tailwind-merge": "^3.4.1",
-    "three": "^0.183.1",
+    "three": "0.150.0",
     "zustand": "^5.0.11"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
-    "@types/node": "^20",
+    "@types/node": "^20.19.35",
     "@types/qrcode": "^1.5.6",
     "@types/react": "^19",
     "@types/react-dom": "^19",
