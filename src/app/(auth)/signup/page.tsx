@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
@@ -21,9 +21,20 @@ export default function SignupPage() {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [focusedField, setFocusedField] = useState<string | null>(null);
+  const lastSubmitRef = useRef<number | null>(null);
 
   async function handleSignup(e: React.FormEvent) {
     e.preventDefault();
+    // Guard against concurrent or rapid duplicate submissions
+    if (loading) return;
+
+    const now = Date.now();
+    if (lastSubmitRef.current && now - lastSubmitRef.current < 800) {
+      // Simple debounce window to prevent rapid double submits
+      return;
+    }
+    lastSubmitRef.current = now;
+
     if (!email || !password || !confirmPassword) {
       toast.error(t.auth.signup.errors.emptyFields);
       return;
@@ -58,10 +69,17 @@ export default function SignupPage() {
       }
     } catch (err: unknown) {
       const message = err && typeof err === "object" && "message" in err ? (err as { message: string }).message : "";
-      const errorMessage =
-        message === "User already registered"
-          ? t.auth.signup.errors.userExists
-          : message || t.auth.signup.errors.genericError;
+      let errorMessage: string;
+
+      if (message.toLowerCase().includes("rate limit")) {
+        errorMessage =
+          "Too many signup attempts. Please wait a few minutes and try again.";
+      } else if (message === "User already registered") {
+        errorMessage = t.auth.signup.errors.userExists;
+      } else {
+        errorMessage = message || t.auth.signup.errors.genericError;
+      }
+
       toast.error(errorMessage);
     } finally {
       setLoading(false);

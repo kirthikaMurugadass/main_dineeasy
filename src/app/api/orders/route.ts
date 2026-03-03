@@ -66,10 +66,10 @@ export async function POST(req: NextRequest) {
 
     const admin = createAdminClient();
 
-    // Verify restaurant exists
+    // Verify restaurant exists and ensure orders are allowed for current plan
     const { data: restaurant, error: restaurantError } = await admin
       .from("restaurants")
-      .select("id")
+      .select("id, plan_type, plan_status")
       .eq("id", restaurantId)
       .single();
 
@@ -77,6 +77,17 @@ export async function POST(req: NextRequest) {
       return NextResponse.json(
         { error: "Restaurant not found" },
         { status: 404 }
+      );
+    }
+
+    const planType = (restaurant as { plan_type?: string | null }).plan_type ?? "free";
+    const planStatus =
+      (restaurant as { plan_status?: string | null }).plan_status ?? "active";
+
+    if (planType !== "pro" || planStatus !== "active") {
+      return NextResponse.json(
+        { error: "Ordering is available only in Pro plan." },
+        { status: 403 }
       );
     }
 

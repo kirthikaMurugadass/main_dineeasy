@@ -24,6 +24,7 @@ import { useI18n } from "@/lib/i18n/context";
 import { createClient } from "@/lib/supabase/client";
 import { toast } from "sonner";
 import Link from "next/link";
+import { useSubscription } from "@/contexts/subscription-context";
 
 interface Booking {
   id: string;
@@ -47,9 +48,18 @@ export default function BookingDetailsPage() {
   const [booking, setBooking] = useState<Booking | null>(null);
   const [loading, setLoading] = useState(true);
   const [updatingStatus, setUpdatingStatus] = useState(false);
+  const { isPro, loading: subscriptionLoading } = useSubscription();
+
+  useEffect(() => {
+    if (!subscriptionLoading && !isPro) {
+      toast.error("Bookings are available on the Pro plan.");
+      router.replace("/admin");
+    }
+  }, [isPro, subscriptionLoading, router]);
 
   useEffect(() => {
     async function loadBooking() {
+      if (!isPro) return;
       if (!bookingId) return;
 
       setLoading(true);
@@ -98,7 +108,7 @@ export default function BookingDetailsPage() {
     }
 
     loadBooking();
-  }, [bookingId, router]);
+  }, [bookingId, router, isPro]);
 
   async function updateBookingStatus(newStatus: Booking["status"]) {
     if (!booking) return;
@@ -192,6 +202,7 @@ export default function BookingDetailsPage() {
   }
 
   if (loading) {
+    if (!isPro) return null;
     return (
       <div className="flex items-center justify-center py-12">
         <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
@@ -200,6 +211,7 @@ export default function BookingDetailsPage() {
   }
 
   if (!booking) {
+    if (!isPro) return null;
     return (
       <div className="space-y-6">
         <Link href="/admin/bookings">

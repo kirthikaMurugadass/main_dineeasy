@@ -10,6 +10,9 @@ export interface Restaurant {
   qr_url: string | null;
   qr_svg: string | null;
   qr_png: string | null;
+  plan_type?: string;
+  billing_cycle?: string | null;
+  plan_status?: string;
   created_at: string;
   updated_at: string;
 }
@@ -190,6 +193,8 @@ export interface PublicMenu {
     slug: string;
     logo_url: string | null;
     theme_config: ThemeConfig;
+    plan_type?: string;
+    plan_status?: string | null;
   };
   menu: {
     id: string;
@@ -224,6 +229,8 @@ export interface PublicRestaurantData {
     slug: string;
     logo_url: string | null;
     theme_config: ThemeConfig;
+    plan_type?: string;
+    plan_status?: string | null;
   };
   categories: PublicCategory[];
   availableLanguages: Language[];

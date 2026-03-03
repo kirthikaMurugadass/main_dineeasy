@@ -7,6 +7,7 @@ import { StorySection } from "@/components/landing/story-section";
 import { SpotlightSection } from "@/components/landing/spotlight-section";
 import { WorkflowSection } from "@/components/landing/workflow-section";
 import { EcosystemSection } from "@/components/landing/ecosystem-section";
+import { PricingSection } from "@/components/landing/pricing-section";
 import { TrustSection } from "@/components/landing/trust-section";
 import { FinalCtaSection } from "@/components/landing/final-cta-section";
 import { Footer } from "@/components/landing/footer";
@@ -17,10 +18,10 @@ export default function LandingPage() {
       <Navbar />
       <main>
         <Hero />
-      
         <StorySection />
         <WorkflowSection />
         {/* <EcosystemSection /> */}
+        <PricingSection />
         <SpotlightSection />
         <TrustSection />
         <FinalCtaSection />
