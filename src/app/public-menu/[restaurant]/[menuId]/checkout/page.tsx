@@ -40,6 +40,8 @@ export default function CheckoutPage({
   const [customerName, setCustomerName] = useState("");
   const [orderType, setOrderType] = useState<"dine_in" | "takeaway">("dine_in");
   const [tableNumber, setTableNumber] = useState("");
+  const [deliveryAddress, setDeliveryAddress] = useState("");
+  const [phoneNumber, setPhoneNumber] = useState("");
   const [loading, setLoading] = useState(false);
   const [mounted, setMounted] = useState(false);
   const [orderSuccess, setOrderSuccess] = useState(false);
@@ -77,6 +79,11 @@ export default function CheckoutPage({
       return;
     }
 
+    if (orderType === "takeaway" && !deliveryAddress.trim()) {
+      toast.error("Please enter a delivery address");
+      return;
+    }
+
     if (!restaurantId) {
       toast.error("Restaurant information is missing");
       return;
@@ -93,6 +100,8 @@ export default function CheckoutPage({
           customerName: customerName.trim(),
           orderType,
           tableNumber: orderType === "dine_in" ? parseInt(tableNumber) : null,
+          deliveryAddress: orderType === "takeaway" ? deliveryAddress.trim() : null,
+          phoneNumber: orderType === "takeaway" ? (phoneNumber.trim() || null) : null,
           items: items.map((item) => ({
             itemId: item.id,
             quantity: item.quantity,
@@ -241,9 +250,17 @@ export default function CheckoutPage({
             </Label>
             <RadioGroup
               value={orderType}
-              onValueChange={(value) =>
-                setOrderType(value as "dine_in" | "takeaway")
-              }
+              onValueChange={(value) => {
+                const newOrderType = value as "dine_in" | "takeaway";
+                setOrderType(newOrderType);
+                // Clear fields when switching order types
+                if (newOrderType === "dine_in") {
+                  setDeliveryAddress("");
+                  setPhoneNumber("");
+                } else {
+                  setTableNumber("");
+                }
+              }}
               disabled={loading}
             >
               <div className="flex items-center space-x-2">
@@ -267,7 +284,7 @@ export default function CheckoutPage({
             </RadioGroup>
           </div>
 
-          {/* Table Number (conditional) */}
+          {/* Table Number (conditional for dine-in) */}
           {orderType === "dine_in" && (
             <div className="space-y-2 animate-in fade-in duration-200">
               <Label htmlFor="tableNumber">
@@ -281,6 +298,40 @@ export default function CheckoutPage({
                 onChange={(e) => setTableNumber(e.target.value)}
                 placeholder="Enter table number"
                 required={orderType === "dine_in"}
+                disabled={loading}
+              />
+            </div>
+          )}
+
+          {/* Delivery Address (conditional for takeaway) */}
+          {orderType === "takeaway" && (
+            <div className="space-y-2 animate-in fade-in duration-200">
+              <Label htmlFor="deliveryAddress">
+                Delivery Address <span className="text-destructive">*</span>
+              </Label>
+              <Input
+                id="deliveryAddress"
+                value={deliveryAddress}
+                onChange={(e) => setDeliveryAddress(e.target.value)}
+                placeholder="Enter your delivery address"
+                required={orderType === "takeaway"}
+                disabled={loading}
+              />
+            </div>
+          )}
+
+          {/* Phone Number (conditional for takeaway) */}
+          {orderType === "takeaway" && (
+            <div className="space-y-2 animate-in fade-in duration-200">
+              <Label htmlFor="phoneNumber">
+                Phone Number <span className="text-muted-foreground">(Optional)</span>
+              </Label>
+              <Input
+                id="phoneNumber"
+                type="tel"
+                value={phoneNumber}
+                onChange={(e) => setPhoneNumber(e.target.value)}
+                placeholder="Enter your phone number"
                 disabled={loading}
               />
             </div>

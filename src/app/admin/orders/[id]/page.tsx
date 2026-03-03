@@ -37,6 +37,8 @@ interface Order {
   customer_name: string;
   order_type: "dine_in" | "takeaway";
   table_number: number | null;
+  delivery_address: string | null;
+  phone_number: string | null;
   status: "pending" | "preparing" | "completed";
   created_at: string;
   items: OrderItem[];
@@ -307,10 +309,22 @@ export default function OrderDetailsPage() {
                   {order.order_type === "dine_in" ? "Dine-in" : "Takeaway"}
                 </p>
               </div>
-              {order.table_number && (
+              {order.order_type === "dine_in" && order.table_number && (
                 <div>
                   <p className="text-sm text-muted-foreground">Table Number</p>
                   <p className="text-lg font-semibold">{order.table_number}</p>
+                </div>
+              )}
+              {order.order_type === "takeaway" && order.delivery_address && (
+                <div>
+                  <p className="text-sm text-muted-foreground">Delivery Address</p>
+                  <p className="text-lg font-semibold">{order.delivery_address}</p>
+                </div>
+              )}
+              {order.order_type === "takeaway" && order.phone_number && (
+                <div>
+                  <p className="text-sm text-muted-foreground">Phone Number</p>
+                  <p className="text-lg font-semibold">{order.phone_number}</p>
                 </div>
               )}
               <div>

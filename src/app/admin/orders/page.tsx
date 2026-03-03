@@ -27,6 +27,7 @@ import { createClient } from "@/lib/supabase/client";
 import { toast } from "sonner";
 import type { Language } from "@/types/database";
 import Link from "next/link";
+import { useOrderNotification } from "@/contexts/order-notification-context";
 
 interface OrderItem {
   id: string;
@@ -41,6 +42,8 @@ interface Order {
   customer_name: string;
   order_type: "dine_in" | "takeaway";
   table_number: number | null;
+  delivery_address: string | null;
+  phone_number: string | null;
   status: "pending" | "preparing" | "completed";
   created_at: string;
   items: OrderItem[];
@@ -63,6 +66,7 @@ function getDisplayTitle(
 export default function OrdersPage() {
   const router = useRouter();
   const { t, language } = useI18n();
+  const { resetNotification } = useOrderNotification();
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
   const [statusFilter, setStatusFilter] = useState<string>("active"); // Default to active orders
@@ -171,7 +175,9 @@ export default function OrdersPage() {
 
   useEffect(() => {
     setMounted(true);
-  }, []);
+    // Reset notification count when orders page is opened
+    resetNotification();
+  }, [resetNotification]);
 
   useEffect(() => {
     async function init() {
@@ -348,8 +354,13 @@ export default function OrdersPage() {
                             ? "Dine-in"
                             : "Takeaway"}
                         </span>
-                        {order.table_number && (
+                        {order.order_type === "dine_in" && order.table_number && (
                           <span>Table {order.table_number}</span>
+                        )}
+                        {order.order_type === "takeaway" && order.delivery_address && (
+                          <span className="max-w-xs truncate" title={order.delivery_address}>
+                            📍 {order.delivery_address}
+                          </span>
                         )}
                         <span>{formatDate(order.created_at)}</span>
                       </div>

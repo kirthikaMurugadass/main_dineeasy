@@ -13,6 +13,8 @@ export async function POST(req: NextRequest) {
       customerName,
       orderType,
       tableNumber,
+      deliveryAddress,
+      phoneNumber,
       items,
     } = body;
 
@@ -34,6 +36,13 @@ export async function POST(req: NextRequest) {
     if (orderType === "dine_in" && (!tableNumber || tableNumber < 1)) {
       return NextResponse.json(
         { error: "Table number is required for dine-in orders" },
+        { status: 400 }
+      );
+    }
+
+    if (orderType === "takeaway" && (!deliveryAddress || !deliveryAddress.trim())) {
+      return NextResponse.json(
+        { error: "Delivery address is required for takeaway orders" },
         { status: 400 }
       );
     }
@@ -79,6 +88,8 @@ export async function POST(req: NextRequest) {
         customer_name: customerName.trim(),
         order_type: orderType,
         table_number: orderType === "dine_in" ? tableNumber : null,
+        delivery_address: orderType === "takeaway" ? deliveryAddress.trim() : null,
+        phone_number: orderType === "takeaway" ? (phoneNumber?.trim() || null) : null,
         status: "pending",
       })
       .select("id")
