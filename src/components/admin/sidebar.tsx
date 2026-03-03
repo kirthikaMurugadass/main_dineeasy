@@ -30,6 +30,7 @@ import {
 import { AppLogo } from "@/components/ui/app-logo";
 import { useI18n } from "@/lib/i18n/context";
 import { createClient } from "@/lib/supabase/client";
+import { useOrderNotification } from "@/contexts/order-notification-context";
 
 const navItems = [
   { key: "dashboard", href: "/admin", icon: LayoutDashboard },
@@ -45,6 +46,12 @@ export function AdminSidebar() {
   const { t } = useI18n();
   const router = useRouter();
   const { setOpenMobile, isMobile } = useSidebar();
+  const { notificationCount } = useOrderNotification();
+
+  // Debug: Log notification count changes
+  useEffect(() => {
+    console.log("[Sidebar] Notification count:", notificationCount);
+  }, [notificationCount]);
 
   // Close sidebar on mobile when pathname changes
   useEffect(() => {
@@ -123,14 +130,23 @@ export function AdminSidebar() {
                       <SidebarMenuButton
                         asChild
                         isActive={isActive}
-                        className="group relative flex items-center justify-center rounded-full px-2.5 py-2 text-sm font-semibold text-sidebar-foreground dark:text-sidebar-foreground transition duration-200 hover:bg-muted/70 hover:text-sidebar-foreground dark:hover:text-sidebar-foreground data-[active=true]:bg-primary/10 data-[active=true]:text-primary dark:data-[active=true]:text-primary"
+                        className="group relative flex items-center justify-center rounded-full px-2.5 py-2 text-sm font-semibold text-sidebar-foreground dark:text-sidebar-foreground transition duration-200 hover:bg-muted/70 hover:text-sidebar-foreground dark:hover:text-sidebar-foreground data-[active=true]:bg-primary/10 data-[active=true]:text-primary dark:data-[active=true]:text-primary overflow-visible"
                       >
                         <Link
                           href={item.href}
-                          className="flex w-full items-center justify-start gap-3 md:group-data-[collapsible=icon]:justify-center md:group-data-[collapsible=icon]:gap-0"
+                          className="relative flex w-full items-center justify-start gap-3 md:group-data-[collapsible=icon]:justify-center md:group-data-[collapsible=icon]:gap-0 overflow-visible"
                         >
-                          <div className="relative flex h-11 w-11 items-center justify-center text-sidebar-foreground dark:text-sidebar-foreground transition-transform duration-200 group-hover:scale-105 group-data-[active=true]:text-primary dark:group-data-[active=true]:text-primary">
+                          <div className="relative flex h-11 w-11 items-center justify-center text-sidebar-foreground dark:text-sidebar-foreground transition-transform duration-200 group-hover:scale-105 group-data-[active=true]:text-primary dark:group-data-[active=true]:text-primary overflow-visible">
                             <Icon size={20} />
+                            {/* Notification badge for Orders - positioned on icon */}
+                            {item.key === "orders" && notificationCount > 0 && (
+                              <span 
+                                className="absolute -right-1 -top-1 z-[100] flex h-5 min-w-5 items-center justify-center rounded-full bg-red-500 px-1.5 text-[11px] font-bold leading-none text-white shadow-lg ring-2 ring-sidebar transition-all animate-in fade-in zoom-in duration-200 md:group-data-[collapsible=icon]:right-0 md:group-data-[collapsible=icon]:top-0"
+                                aria-label={`${notificationCount} new orders`}
+                              >
+                                {notificationCount > 99 ? "99+" : notificationCount}
+                              </span>
+                            )}
                           </div>
                           <span
                             suppressHydrationWarning
