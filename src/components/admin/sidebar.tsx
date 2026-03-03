@@ -13,6 +13,8 @@ import {
   Settings,
   ShoppingCart,
   BarChart3,
+  Calendar,
+  LayoutGrid,
 } from "lucide-react";
 import {
   Sidebar,
@@ -31,11 +33,14 @@ import { AppLogo } from "@/components/ui/app-logo";
 import { useI18n } from "@/lib/i18n/context";
 import { createClient } from "@/lib/supabase/client";
 import { useOrderNotification } from "@/contexts/order-notification-context";
+import { useBookingNotification } from "@/contexts/booking-notification-context";
 
 const navItems = [
   { key: "dashboard", href: "/admin", icon: LayoutDashboard },
   { key: "menus", href: "/admin/categories", icon: UtensilsCrossed },
   { key: "orders", href: "/admin/orders", icon: ShoppingCart },
+  { key: "bookings", href: "/admin/bookings", icon: Calendar },
+  { key: "tables", href: "/admin/tables", icon: LayoutGrid },
   { key: "analytics", href: "/admin/analytics", icon: BarChart3 },
   { key: "appearance", href: "/admin/appearance", icon: Palette },
   { key: "qr", href: "/admin/qr", icon: QrCode },
@@ -47,6 +52,7 @@ export function AdminSidebar() {
   const router = useRouter();
   const { setOpenMobile, isMobile } = useSidebar();
   const { notificationCount } = useOrderNotification();
+  const { bookingNotificationCount } = useBookingNotification();
 
   // Debug: Log notification count changes
   useEffect(() => {
@@ -64,6 +70,8 @@ export function AdminSidebar() {
     dashboard: t.admin.dashboard.title,
     menus: t.admin.menus.title,
     orders: t.admin.orders.title,
+    bookings: "Bookings",
+    tables: "Tables",
     analytics: t.admin.analytics?.title || "Analytics",
     appearance: t.admin.appearance.title,
     qr: t.admin.qr.title,
@@ -145,6 +153,15 @@ export function AdminSidebar() {
                                 aria-label={`${notificationCount} new orders`}
                               >
                                 {notificationCount > 99 ? "99+" : notificationCount}
+                              </span>
+                            )}
+                            {/* Notification badge for Bookings - positioned on icon */}
+                            {item.key === "bookings" && bookingNotificationCount > 0 && (
+                              <span 
+                                className="absolute -right-1 -top-1 z-[100] flex h-5 min-w-5 items-center justify-center rounded-full bg-red-500 px-1.5 text-[11px] font-bold leading-none text-white shadow-lg ring-2 ring-sidebar transition-all animate-in fade-in zoom-in duration-200 md:group-data-[collapsible=icon]:right-0 md:group-data-[collapsible=icon]:top-0"
+                                aria-label={`${bookingNotificationCount} new bookings`}
+                              >
+                                {bookingNotificationCount > 99 ? "99+" : bookingNotificationCount}
                               </span>
                             )}
                           </div>

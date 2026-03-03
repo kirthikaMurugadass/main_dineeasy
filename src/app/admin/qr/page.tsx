@@ -24,9 +24,11 @@ export default function QRPage() {
   const [menuId, setMenuId] = useState<string | null>(null);
   const [logoUrl, setLogoUrl] = useState<string | null>(null);
   const [qrDataUrl, setQrDataUrl] = useState("");
+  const [bookTableQrDataUrl, setBookTableQrDataUrl] = useState("");
   const [qrColor, setQrColor] = useState("#3E2723");
   const [bgColor, setBgColor] = useState("#FFFFFF");
   const [copied, setCopied] = useState(false);
+  const [bookTableCopied, setBookTableCopied] = useState(false);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -74,6 +76,14 @@ export default function QRPage() {
     return getSubdomainUrl(restaurantSlug, menuId || undefined);
   }, [restaurantSlug, menuId]);
 
+  const getBookTableQrUrl = useCallback(() => {
+    if (!restaurantSlug) return "";
+    const appUrl = typeof window !== "undefined" 
+      ? `${window.location.protocol}//${window.location.host}`
+      : process.env.NEXT_PUBLIC_SITE_URL || "https://dineeasy.app";
+    return `${appUrl.replace(/\/$/, "")}/r/${restaurantSlug}/book-table`;
+  }, [restaurantSlug]);
+
   const generateQR = useCallback(async () => {
     const url = getQrUrl();
     if (!url) return;
@@ -111,11 +121,47 @@ export default function QRPage() {
     }
   }, [getQrUrl, logoUrl, qrColor, bgColor, restaurantSlug]);
 
+  const generateBookTableQR = useCallback(async () => {
+    const url = getBookTableQrUrl();
+    if (!url) return;
+
+    try {
+      let currentLogoUrl = logoUrl;
+      if (restaurantSlug) {
+        const supabase = createClient();
+        const { data: restaurant } = await supabase
+          .from("restaurants")
+          .select("logo_url")
+          .eq("slug", restaurantSlug)
+          .single();
+        if (restaurant?.logo_url) {
+          currentLogoUrl = `${restaurant.logo_url}?t=${Date.now()}`;
+        }
+      }
+
+      const dataUrl = await generateQRWithLogoPNG({
+        url,
+        logoUrl: currentLogoUrl,
+        width: 1024,
+        margin: 2,
+        qrColor,
+        bgColor,
+        logoSize: 0.22,
+        errorCorrectionLevel: "H",
+      });
+      setBookTableQrDataUrl(dataUrl);
+    } catch (err) {
+      console.error(err);
+      toast.error("Failed to generate Book Table QR code");
+    }
+  }, [getBookTableQrUrl, logoUrl, qrColor, bgColor, restaurantSlug]);
+
   useEffect(() => {
     if (!loading && restaurantSlug) {
       generateQR();
+      generateBookTableQR();
     }
-  }, [generateQR, loading, restaurantSlug, logoUrl]);
+  }, [generateQR, generateBookTableQR, loading, restaurantSlug, logoUrl]);
 
   async function copyUrl() {
     const url = getQrUrl();
@@ -126,13 +172,22 @@ export default function QRPage() {
     setTimeout(() => setCopied(false), 2000);
   }
 
+  async function copyBookTableUrl() {
+    const url = getBookTableQrUrl();
+    if (!url) return;
+    await navigator.clipboard.writeText(url);
+    setBookTableCopied(true);
+    toast.success("Book Table URL copied!");
+    setTimeout(() => setBookTableCopied(false), 2000);
+  }
+
   function downloadPNG() {
     if (!qrDataUrl) return;
     const link = document.createElement("a");
-    link.download = `qr-${restaurantSlug}.png`;
+    link.download = `qr-menu-${restaurantSlug}.png`;
     link.href = qrDataUrl;
     link.click();
-    toast.success("QR code downloaded as PNG!");
+    toast.success("Menu QR code downloaded as PNG!");
   }
 
   async function downloadSVG() {
@@ -153,10 +208,47 @@ export default function QRPage() {
 
       const blob = new Blob([svgString], { type: "image/svg+xml" });
       const link = document.createElement("a");
-      link.download = `qr-${restaurantSlug}.svg`;
+      link.download = `qr-menu-${restaurantSlug}.svg`;
       link.href = URL.createObjectURL(blob);
       link.click();
-      toast.success("QR code downloaded as SVG!");
+      toast.success("Menu QR code downloaded as SVG!");
+    } catch (err) {
+      console.error(err);
+      toast.error("Failed to generate SVG");
+    }
+  }
+
+  function downloadBookTablePNG() {
+    if (!bookTableQrDataUrl) return;
+    const link = document.createElement("a");
+    link.download = `qr-book-table-${restaurantSlug}.png`;
+    link.href = bookTableQrDataUrl;
+    link.click();
+    toast.success("Book Table QR code downloaded as PNG!");
+  }
+
+  async function downloadBookTableSVG() {
+    const url = getBookTableQrUrl();
+    if (!url) return;
+
+    try {
+      const svgString = await generateQRWithLogoSVG({
+        url,
+        logoUrl,
+        width: 1024,
+        margin: 2,
+        qrColor,
+        bgColor,
+        logoSize: 0.22,
+        errorCorrectionLevel: "H",
+      });
+
+      const blob = new Blob([svgString], { type: "image/svg+xml" });
+      const link = document.createElement("a");
+      link.download = `qr-book-table-${restaurantSlug}.svg`;
+      link.href = URL.createObjectURL(blob);
+      link.click();
+      toast.success("Book Table QR code downloaded as SVG!");
     } catch (err) {
       console.error(err);
       toast.error("Failed to generate SVG");
@@ -199,147 +291,222 @@ export default function QRPage() {
         </PageTitle>
       </FadeIn>
 
-      <div className="grid gap-8 lg:grid-cols-2">
-        {/* Settings */}
-        <FadeIn delay={0.1}>
-          <Card className="border-border/50">
-            <CardHeader>
-              <CardTitle className="text-lg">{t.admin.qr.settings}</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-6">
-              {/* Restaurant info */}
-              <div className="flex items-center gap-3 rounded-lg border border-border/50 bg-muted/30 p-4">
-                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-espresso text-warm font-sans font-semibold text-lg">
-                  {restaurantName.charAt(0)}
+      {/* Menu QR Section */}
+      <FadeIn delay={0.1}>
+        <Card className="border-border/50 mb-8">
+          <CardHeader>
+            <CardTitle className="text-lg">Menu QR Code</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid gap-8 lg:grid-cols-2">
+              {/* Settings */}
+              <div className="space-y-6">
+                {/* Restaurant info */}
+                <div className="flex items-center gap-3 rounded-lg border border-border/50 bg-muted/30 p-4">
+                  <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-espresso text-warm font-sans font-semibold text-lg">
+                    {restaurantName.charAt(0)}
+                  </div>
+                  <div>
+                    <p className="font-semibold">{restaurantName}</p>
+                    <p className="text-xs text-muted-foreground font-mono break-all">
+                      {getQrUrl() || t.admin.qr.loading}
+                    </p>
+                  </div>
                 </div>
-                <div>
-                  <p className="font-semibold">{restaurantName}</p>
-                  <p className="text-xs text-muted-foreground font-mono break-all">
-                    {getQrUrl() || t.admin.qr.loading}
+
+                {/* QR URL display */}
+                <div className="space-y-2">
+                  <Label>Menu QR Code URL</Label>
+                  <div className="flex gap-2">
+                    <Input
+                      value={getQrUrl()}
+                      readOnly
+                      className="font-mono text-xs"
+                    />
+                    <Button variant="outline" size="icon" onClick={copyUrl}>
+                      {copied ? <Check size={16} /> : <Copy size={16} />}
+                    </Button>
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    {menuId
+                      ? t.admin.qr.urlDescriptionMenu
+                      : t.admin.qr.urlDescription}
                   </p>
+                </div>
+
+                {/* Color customization */}
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label>{t.admin.qr.qrColor}</Label>
+                    <div className="flex gap-2">
+                      <input
+                        type="color"
+                        value={qrColor}
+                        onChange={(e) => setQrColor(e.target.value)}
+                        className="h-10 w-10 cursor-pointer rounded border border-border"
+                      />
+                      <Input
+                        value={qrColor}
+                        onChange={(e) => setQrColor(e.target.value)}
+                        className="font-mono text-xs uppercase"
+                      />
+                    </div>
+                  </div>
+                  <div className="space-y-2">
+                    <Label>{t.admin.qr.background}</Label>
+                    <div className="flex gap-2">
+                      <input
+                        type="color"
+                        value={bgColor}
+                        onChange={(e) => setBgColor(e.target.value)}
+                        className="h-10 w-10 cursor-pointer rounded border border-border"
+                      />
+                      <Input
+                        value={bgColor}
+                        onChange={(e) => setBgColor(e.target.value)}
+                        className="font-mono text-xs uppercase"
+                      />
+                    </div>
+                  </div>
                 </div>
               </div>
 
-              {/* QR URL display */}
-              <div className="space-y-2">
-                <Label>{t.admin.qr.qrCodeUrl}</Label>
-                <div className="flex gap-2">
-                  <Input
-                    value={getQrUrl()}
-                    readOnly
-                    className="font-mono text-xs"
-                  />
-                  <Button variant="outline" size="icon" onClick={copyUrl}>
-                    {copied ? <Check size={16} /> : <Copy size={16} />}
+              {/* Preview & Download */}
+              <div className="flex flex-col items-center space-y-6">
+                {qrDataUrl ? (
+                  <HoverScale>
+                    <div className="rounded-2xl bg-white p-8 shadow-premium">
+                      <img
+                        src={qrDataUrl}
+                        alt="Menu QR Code"
+                        className="h-64 w-64"
+                      />
+                      <p className="mt-3 text-center text-sm font-semibold text-gray-700">
+                        {restaurantName}
+                      </p>
+                      <p className="text-center text-xs text-gray-400">
+                        Scan to view menu
+                      </p>
+                    </div>
+                  </HoverScale>
+                ) : (
+                  <div className="flex h-64 w-64 flex-col items-center justify-center rounded-2xl bg-muted gap-2">
+                    <Store size={24} className="text-muted-foreground" />
+                    <p className="text-sm text-muted-foreground">
+                      {t.admin.qr.loading}
+                    </p>
+                  </div>
+                )}
+
+                <div className="flex gap-3">
+                  <Button
+                    onClick={downloadPNG}
+                    className="gap-2 bg-espresso text-warm hover:bg-espresso/90 dark:bg-espresso dark:text-slate-900 dark:hover:bg-espresso/90"
+                  >
+                    <Download size={14} />
+                    PNG
+                  </Button>
+                  <Button
+                    onClick={downloadSVG}
+                    variant="outline"
+                    className="gap-2"
+                  >
+                    <Download size={14} />
+                    <span>SVG</span>
+                  </Button>
+                  <Button
+                    variant="outline"
+                    onClick={handlePrint}
+                    className="gap-2"
+                  >
+                    <Printer size={14} />
+                    <span>Print</span>
                   </Button>
                 </div>
-                <p className="text-xs text-muted-foreground">
-                  {menuId
-                    ? t.admin.qr.urlDescriptionMenu
-                    : t.admin.qr.urlDescription}
-                </p>
               </div>
+            </div>
+          </CardContent>
+        </Card>
+      </FadeIn>
 
-              {/* Color customization */}
-              <div className="grid grid-cols-2 gap-4">
+      {/* Book Table QR Section */}
+      <FadeIn delay={0.2}>
+        <Card className="border-border/50">
+          <CardHeader>
+            <CardTitle className="text-lg">Book a Table QR Code</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid gap-8 lg:grid-cols-2">
+              {/* Settings */}
+              <div className="space-y-6">
+                {/* QR URL display */}
                 <div className="space-y-2">
-                  <Label>{t.admin.qr.qrColor}</Label>
+                  <Label>Book Table QR Code URL</Label>
                   <div className="flex gap-2">
-                    <input
-                      type="color"
-                      value={qrColor}
-                      onChange={(e) => setQrColor(e.target.value)}
-                      className="h-10 w-10 cursor-pointer rounded border border-border"
-                    />
                     <Input
-                      value={qrColor}
-                      onChange={(e) => setQrColor(e.target.value)}
-                      className="font-mono text-xs uppercase"
+                      value={getBookTableQrUrl()}
+                      readOnly
+                      className="font-mono text-xs"
                     />
+                    <Button variant="outline" size="icon" onClick={copyBookTableUrl}>
+                      {bookTableCopied ? <Check size={16} /> : <Copy size={16} />}
+                    </Button>
                   </div>
-                </div>
-                <div className="space-y-2">
-                  <Label>{t.admin.qr.background}</Label>
-                  <div className="flex gap-2">
-                    <input
-                      type="color"
-                      value={bgColor}
-                      onChange={(e) => setBgColor(e.target.value)}
-                      className="h-10 w-10 cursor-pointer rounded border border-border"
-                    />
-                    <Input
-                      value={bgColor}
-                      onChange={(e) => setBgColor(e.target.value)}
-                      className="font-mono text-xs uppercase"
-                    />
-                  </div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </FadeIn>
-
-        {/* Preview & Download */}
-        <FadeIn delay={0.2}>
-          <Card className="border-border/50">
-            <CardHeader>
-              <CardTitle className="text-lg">{t.admin.qr.preview}</CardTitle>
-            </CardHeader>
-            <CardContent className="flex flex-col items-center space-y-6">
-              {qrDataUrl ? (
-                <HoverScale>
-                  <div className="rounded-2xl bg-white p-8 shadow-premium">
-                    <img
-                      src={qrDataUrl}
-                      alt="QR Code"
-                      className="h-64 w-64"
-                    />
-                    <p className="mt-3 text-center text-sm font-semibold text-gray-700">
-                      {restaurantName}
-                    </p>
-                    <p className="text-center text-xs text-gray-400">
-                      {t.menu.language}
-                    </p>
-                  </div>
-                </HoverScale>
-              ) : (
-                <div className="flex h-64 w-64 flex-col items-center justify-center rounded-2xl bg-muted gap-2">
-                  <Store size={24} className="text-muted-foreground" />
-                  <p className="text-sm text-muted-foreground">
-                    {t.admin.qr.loading}
+                  <p className="text-xs text-muted-foreground">
+                    Customers scan this QR code to book a table
                   </p>
                 </div>
-              )}
-
-              <div className="flex gap-3">
-                <Button
-                  onClick={downloadPNG}
-                  className="gap-2 bg-espresso text-warm hover:bg-espresso/90 dark:bg-espresso dark:text-slate-900 dark:hover:bg-espresso/90"
-                >
-                  <Download size={14} />
-                  PNG
-                </Button>
-                <Button
-                  onClick={downloadSVG}
-                  variant="outline"
-                  className="gap-2"
-                >
-                  <Download size={14} />
-                  <span>SVG</span>
-                </Button>
-                <Button
-                  variant="outline"
-                  onClick={handlePrint}
-                  className="gap-2"
-                >
-                  <Printer size={14} />
-                  <span>Print</span>
-                </Button>
               </div>
-            </CardContent>
-          </Card>
-        </FadeIn>
-      </div>
+
+              {/* Preview & Download */}
+              <div className="flex flex-col items-center space-y-6">
+                {bookTableQrDataUrl ? (
+                  <HoverScale>
+                    <div className="rounded-2xl bg-white p-8 shadow-premium">
+                      <img
+                        src={bookTableQrDataUrl}
+                        alt="Book Table QR Code"
+                        className="h-64 w-64"
+                      />
+                      <p className="mt-3 text-center text-sm font-semibold text-gray-700">
+                        {restaurantName}
+                      </p>
+                      <p className="text-center text-xs text-gray-400">
+                        Scan to book a table
+                      </p>
+                    </div>
+                  </HoverScale>
+                ) : (
+                  <div className="flex h-64 w-64 flex-col items-center justify-center rounded-2xl bg-muted gap-2">
+                    <Store size={24} className="text-muted-foreground" />
+                    <p className="text-sm text-muted-foreground">
+                      {t.admin.qr.loading}
+                    </p>
+                  </div>
+                )}
+
+                <div className="flex gap-3">
+                  <Button
+                    onClick={downloadBookTablePNG}
+                    className="gap-2 bg-espresso text-warm hover:bg-espresso/90 dark:bg-espresso dark:text-slate-900 dark:hover:bg-espresso/90"
+                  >
+                    <Download size={14} />
+                    PNG
+                  </Button>
+                  <Button
+                    onClick={downloadBookTableSVG}
+                    variant="outline"
+                    className="gap-2"
+                  >
+                    <Download size={14} />
+                    <span>SVG</span>
+                  </Button>
+                </div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </FadeIn>
     </div>
   );
 }
