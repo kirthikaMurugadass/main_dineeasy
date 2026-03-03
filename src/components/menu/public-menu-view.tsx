@@ -4,12 +4,20 @@ import { useState, useRef, useEffect, useCallback, useMemo } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
-import { Plus, Minus, ShoppingCart, ShoppingBag } from "lucide-react";
+import { Plus, Minus, ShoppingCart, ShoppingBag, Lock } from "lucide-react";
 import type { PublicMenu, PublicRestaurantData, Language, ThemeConfig } from "@/types/database";
 import { defaultThemeConfig } from "@/types/database";
 import { GoogleFontsLoader } from "./google-fonts-loader";
 import { useI18n } from "@/lib/i18n/context";
 import { useCartStore } from "@/lib/stores/cart-store";
+import { createClient } from "@/lib/supabase/client";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 
 type ViewData = PublicMenu | (PublicRestaurantData & { menu?: { id: string; slug: string } });
 
@@ -118,6 +126,14 @@ export function PublicMenuView({ data, restaurantId, menuId, initialLang }: Prop
   const [activeCategory, setActiveCategory] = useState(data.categories[0]?.id ?? "");
   const categoryRefs = useRef<Map<string, HTMLElement>>(new Map());
   const [mounted, setMounted] = useState(false);
+  const initialPlanType =
+    (data as any).restaurant.plan_type ?? "free";
+  const initialPlanStatus =
+    (data as any).restaurant.plan_status ?? "active";
+  const [isProPlan, setIsProPlan] = useState(
+    initialPlanType === "pro" && initialPlanStatus === "active",
+  );
+  const [ordersModalOpen, setOrdersModalOpen] = useState(false);
   
   // Cart store
   const {
@@ -140,6 +156,41 @@ export function PublicMenuView({ data, restaurantId, menuId, initialLang }: Prop
       setRestaurant(restaurantId, data.restaurant.slug, menuId);
     }
   }, [restaurantId, menuId, data.restaurant.slug, setRestaurant]);
+
+  // Subscribe to restaurant plan changes for realtime gating
+  useEffect(() => {
+    if (!restaurantId) return;
+    const supabase = createClient();
+
+    const channel = supabase
+      .channel(`public-restaurant-plan-${restaurantId}`)
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "restaurants",
+          filter: `id=eq.${restaurantId}`,
+        },
+        (payload) => {
+          const next = payload.new as {
+            plan_type?: string | null;
+            plan_status?: string | null;
+          };
+          const planType = next?.plan_type ?? initialPlanType;
+          const planStatus = next?.plan_status ?? initialPlanStatus;
+          setIsProPlan(
+            planType === "pro" &&
+              (planStatus ?? "active") === "active",
+          );
+        },
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [restaurantId, initialPlanType, initialPlanStatus]);
 
   // When initialLang is provided (preview mode), sync with I18n context so UI strings translate
   useEffect(() => {
@@ -296,6 +347,9 @@ export function PublicMenuView({ data, restaurantId, menuId, initialLang }: Prop
   const textMuted = typography.textMuted || (isDark ? mutedGray : "#6b6b6b");
   const sectionBackground = isDark ? sectionBg : "#faf8f5";
 
+  const ordersEnabled =
+    !!restaurantId && !!menuId && isProPlan;
+
   // Get hero banner config or use defaults
   const heroBanner = theme.heroBanner || {
     backgroundType: "image" as const,
@@ -424,38 +478,58 @@ export function PublicMenuView({ data, restaurantId, menuId, initialLang }: Prop
                 {data.restaurant.name.charAt(0)}
               </div>
             )}
-            <h1
-              className="font-semibold text-white text-lg sm:text-xl"
-              style={{
-                fontFamily: headingFont,
-                textShadow: "0 2px 12px rgba(0,0,0,0.8)",
-              }}
-            >
-              {data.restaurant.name}
-            </h1>
+            <div className="flex flex-col">
+              <h1
+                className="font-semibold text-white text-lg sm:text-xl"
+                style={{
+                  fontFamily: headingFont,
+                  textShadow: "0 2px 12px rgba(0,0,0,0.8)",
+                }}
+              >
+                {data.restaurant.name}
+              </h1>
+              {!ordersEnabled && (
+                <span className="mt-1 inline-flex items-center rounded-full bg-black/40 px-2.5 py-0.5 text-[11px] font-medium uppercase tracking-[0.16em] text-amber-200">
+                  <Lock className="mr-1 h-3 w-3" />
+                  Menu View Only
+                </span>
+              )}
+            </div>
           </div>
           
           {/* Cart Button */}
           {restaurantId && menuId && (
-            <Link
-              href={`/public-menu/${data.restaurant.slug}/${menuId}/cart`}
-              className="relative flex items-center gap-2 rounded-full bg-white/10 backdrop-blur-sm px-4 py-2.5 text-white transition-all hover:bg-white/20"
-              style={{ textShadow: "0 2px 8px rgba(0,0,0,0.5)" }}
-            >
-              <ShoppingCart size={20} />
-              <span className="hidden sm:inline text-sm font-medium">Cart</span>
-              {mounted && getItemCount() > 0 && (
-                <span
-                  className="absolute -right-1 -top-1 flex h-5 w-5 items-center justify-center rounded-full text-xs font-bold text-white"
-                  style={{
-                    backgroundColor: accentColor,
-                    color: "#1a1714",
-                  }}
-                >
-                  {getItemCount()}
-                </span>
-              )}
-            </Link>
+            ordersEnabled ? (
+              <Link
+                href={`/public-menu/${data.restaurant.slug}/${menuId}/cart`}
+                className="relative flex items-center gap-2 rounded-full bg-white/10 backdrop-blur-sm px-4 py-2.5 text-white transition-all hover:bg-white/20"
+                style={{ textShadow: "0 2px 8px rgba(0,0,0,0.5)" }}
+              >
+                <ShoppingCart size={20} />
+                <span className="hidden sm:inline text-sm font-medium">Cart</span>
+                {mounted && getItemCount() > 0 && (
+                  <span
+                    className="absolute -right-1 -top-1 flex h-5 w-5 items-center justify-center rounded-full text-xs font-bold text-white"
+                    style={{
+                      backgroundColor: accentColor,
+                      color: "#1a1714",
+                    }}
+                  >
+                    {getItemCount()}
+                  </span>
+                )}
+              </Link>
+            ) : (
+              <button
+                type="button"
+                onClick={() => setOrdersModalOpen(true)}
+                className="relative flex items-center gap-2 rounded-full bg-white/5 px-4 py-2.5 text-xs font-medium text-white/60 cursor-not-allowed"
+                style={{ textShadow: "0 2px 8px rgba(0,0,0,0.5)" }}
+              >
+                <ShoppingCart size={18} className="opacity-70" />
+                <span className="hidden sm:inline">Ordering disabled</span>
+              </button>
+            )
           )}
         </div>
 
@@ -678,73 +752,91 @@ export function PublicMenuView({ data, restaurantId, menuId, initialLang }: Prop
                           const cartItem = cartItems.find((ci) => ci.id === item.id);
                           const quantity = cartItem?.quantity ?? 0;
                           
-                          return quantity > 0 ? (
-                            <div className="flex items-center gap-2">
+                          if (ordersEnabled) {
+                            return quantity > 0 ? (
+                              <div className="flex items-center gap-2">
+                                <button
+                                  onClick={(e) => {
+                                    e.preventDefault();
+                                    e.stopPropagation();
+                                    if (quantity === 1) {
+                                      removeItem(item.id);
+                                    } else {
+                                      updateQuantity(item.id, quantity - 1);
+                                    }
+                                  }}
+                                  className="flex h-8 w-8 items-center justify-center rounded-full transition-all hover:scale-110 cursor-pointer"
+                                  style={{
+                                    backgroundColor: accentColor,
+                                    color: "#1a1714",
+                                  }}
+                                  aria-label="Decrease quantity"
+                                  type="button"
+                                >
+                                  <Minus size={16} />
+                                </button>
+                                <span
+                                  className="min-w-[2rem] text-center text-sm font-semibold"
+                                  style={{ color: textPrimary }}
+                                >
+                                  {quantity}
+                                </span>
+                                <button
+                                  onClick={(e) => {
+                                    e.preventDefault();
+                                    e.stopPropagation();
+                                    updateQuantity(item.id, quantity + 1);
+                                  }}
+                                  className="flex h-8 w-8 items-center justify-center rounded-full transition-all hover:scale-110 cursor-pointer"
+                                  style={{
+                                    backgroundColor: accentColor,
+                                    color: "#1a1714",
+                                  }}
+                                  aria-label="Increase quantity"
+                                  type="button"
+                                >
+                                  <Plus size={16} />
+                                </button>
+                              </div>
+                            ) : (
                               <button
                                 onClick={(e) => {
                                   e.preventDefault();
                                   e.stopPropagation();
-                                  if (quantity === 1) {
-                                    removeItem(item.id);
-                                  } else {
-                                    updateQuantity(item.id, quantity - 1);
-                                  }
+                                  addItem({
+                                    id: item.id,
+                                    title: item.title,
+                                    description: item.description,
+                                    price: item.price_chf,
+                                    image_url: item.image_url,
+                                  });
                                 }}
-                                className="flex h-8 w-8 items-center justify-center rounded-full transition-all hover:scale-110 cursor-pointer"
+                                className="flex items-center gap-2 rounded-full px-4 py-2 text-sm font-medium transition-all hover:scale-105 cursor-pointer"
                                 style={{
                                   backgroundColor: accentColor,
                                   color: "#1a1714",
                                 }}
-                                aria-label="Decrease quantity"
-                                type="button"
-                              >
-                                <Minus size={16} />
-                              </button>
-                              <span
-                                className="min-w-[2rem] text-center text-sm font-semibold"
-                                style={{ color: textPrimary }}
-                              >
-                                {quantity}
-                              </span>
-                              <button
-                                onClick={(e) => {
-                                  e.preventDefault();
-                                  e.stopPropagation();
-                                  updateQuantity(item.id, quantity + 1);
-                                }}
-                                className="flex h-8 w-8 items-center justify-center rounded-full transition-all hover:scale-110 cursor-pointer"
-                                style={{
-                                  backgroundColor: accentColor,
-                                  color: "#1a1714",
-                                }}
-                                aria-label="Increase quantity"
                                 type="button"
                               >
                                 <Plus size={16} />
+                                <span>Add</span>
                               </button>
-                            </div>
-                          ) : (
+                            );
+                          }
+
+                          // Free plan: show disabled-style button that opens modal
+                          return (
                             <button
                               onClick={(e) => {
                                 e.preventDefault();
                                 e.stopPropagation();
-                                addItem({
-                                  id: item.id,
-                                  title: item.title,
-                                  description: item.description,
-                                  price: item.price_chf,
-                                  image_url: item.image_url,
-                                });
+                                setOrdersModalOpen(true);
                               }}
-                              className="flex items-center gap-2 rounded-full px-4 py-2 text-sm font-medium transition-all hover:scale-105 cursor-pointer"
-                              style={{
-                                backgroundColor: accentColor,
-                                color: "#1a1714",
-                              }}
+                              className="flex items-center gap-2 rounded-full px-4 py-2 text-sm font-medium cursor-not-allowed border border-dashed border-amber-400/70 bg-amber-500/5 text-amber-700"
                               type="button"
                             >
-                              <Plus size={16} />
-                              <span>Add</span>
+                              <Lock size={14} />
+                              <span>Add (ordering disabled)</span>
                             </button>
                           );
                         })()}
@@ -778,7 +870,7 @@ export function PublicMenuView({ data, restaurantId, menuId, initialLang }: Prop
       </main>
 
       {/* ─── Floating Cart Button ─── */}
-      {mounted && restaurantId && menuId && getItemCount() > 0 && (
+      {mounted && ordersEnabled && getItemCount() > 0 && (
         <Link
           href={`/public-menu/${data.restaurant.slug}/${menuId}/cart`}
           className="fixed bottom-6 right-6 z-50"
@@ -813,6 +905,17 @@ export function PublicMenuView({ data, restaurantId, menuId, initialLang }: Prop
         </Link>
       )}
     </div>
+
+      <Dialog open={ordersModalOpen} onOpenChange={setOrdersModalOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Ordering not available</DialogTitle>
+            <DialogDescription>
+              Online ordering is available only in the Pro plan. You can still view the full menu.
+            </DialogDescription>
+          </DialogHeader>
+        </DialogContent>
+      </Dialog>
     </>
   );
 }

@@ -16,7 +16,7 @@ async function getRestaurantData(
   // Fetch restaurant by slug
   const { data: restaurant } = await supabase
     .from("restaurants")
-    .select("id, name, slug, logo_url, theme_config")
+    .select("id, name, slug, logo_url, theme_config, plan_type, plan_status")
     .eq("slug", slug)
     .single();
 
@@ -36,6 +36,8 @@ async function getRestaurantData(
         slug: restaurant.slug,
         logo_url: restaurant.logo_url,
         theme_config: restaurant.theme_config,
+        plan_type: restaurant.plan_type ?? "free",
+        plan_status: restaurant.plan_status ?? "active",
       },
       categories: [],
       availableLanguages: ["de", "en", "fr", "it"],
@@ -74,6 +76,8 @@ async function getRestaurantData(
         slug: restaurant.slug,
         logo_url: restaurant.logo_url,
         theme_config: restaurant.theme_config,
+        plan_type: restaurant.plan_type ?? "free",
+        plan_status: restaurant.plan_status ?? "active",
       },
       categories: [],
       availableLanguages: ["de", "en", "fr", "it"],
@@ -137,6 +141,8 @@ async function getRestaurantData(
       slug: restaurant.slug,
       logo_url: restaurant.logo_url,
       theme_config: restaurant.theme_config,
+      plan_type: restaurant.plan_type ?? "free",
+      plan_status: restaurant.plan_status ?? "active",
     },
     categories: categories.map((cat) => ({
       id: cat.id,

@@ -13,6 +13,8 @@ interface Restaurant {
   id: string;
   name: string;
   slug: string;
+  plan_type?: string | null;
+  plan_status?: string | null;
 }
 
 interface RestaurantTable {
@@ -56,6 +58,7 @@ export default function SelectTablePage() {
   const [lockedTableIds, setLockedTableIds] = useState<Set<string>>(new Set());
   const [selectedTableId, setSelectedTableId] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
+  const [bookingDisabled, setBookingDisabled] = useState(false);
 
   const slug = params.slug as string;
 
@@ -102,16 +105,26 @@ export default function SelectTablePage() {
       try {
         setLoading(true);
 
-        // Fetch restaurant
+        // Fetch restaurant and subscription plan
         const { data: restaurantData, error: restaurantError } = await supabase
           .from("restaurants")
-          .select("id, name, slug")
+          .select("id, name, slug, plan_type, plan_status")
           .eq("slug", slug)
           .single();
 
         if (restaurantError || !restaurantData) {
           toast.error("Restaurant not found");
           router.push("/");
+          return;
+        }
+
+        const planType = restaurantData.plan_type ?? "free";
+        const planStatus = restaurantData.plan_status ?? "active";
+
+        if (planType !== "pro" || planStatus !== "active") {
+          setBookingDisabled(true);
+          setRestaurant(restaurantData);
+          setLoading(false);
           return;
         }
 
@@ -407,6 +420,31 @@ export default function SelectTablePage() {
 
   if (!restaurant || !stepData) {
     return null;
+  }
+
+  if (bookingDisabled) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-background px-4">
+        <Card className="max-w-md">
+          <CardHeader>
+            <CardTitle>Online bookings are not available</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <p className="text-sm text-muted-foreground">
+              This restaurant does not currently accept online table bookings.
+              Please contact the restaurant directly to make a reservation.
+            </p>
+            <Button
+              variant="outline"
+              className="w-full"
+              onClick={() => router.push(`/r/${slug}`)}
+            >
+              Back to menu
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
+    );
   }
 
   if (success) {

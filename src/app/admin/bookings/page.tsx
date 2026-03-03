@@ -28,6 +28,7 @@ import { createClient } from "@/lib/supabase/client";
 import { toast } from "sonner";
 import Link from "next/link";
 import { useBookingNotification } from "@/contexts/booking-notification-context";
+import { useSubscription } from "@/contexts/subscription-context";
 
 interface Booking {
   id: string;
@@ -46,6 +47,7 @@ export default function BookingsPage() {
   const router = useRouter();
   const { t } = useI18n();
   const { resetBookingNotification } = useBookingNotification();
+  const { isPro, loading: subscriptionLoading } = useSubscription();
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [loading, setLoading] = useState(true);
   const [statusFilter, setStatusFilter] = useState<string>("today");
@@ -102,12 +104,20 @@ export default function BookingsPage() {
 
   useEffect(() => {
     setMounted(true);
-    // Reset booking notification count when page is opened
     resetBookingNotification();
   }, [resetBookingNotification]);
 
   useEffect(() => {
+    if (!subscriptionLoading && !isPro) {
+      // Route-level protection: redirect Free plan users away from bookings
+      toast.error("Bookings are available on the Pro plan.");
+      router.replace("/admin");
+    }
+  }, [isPro, subscriptionLoading, router]);
+
+  useEffect(() => {
     async function init() {
+      if (!isPro) return;
       if (!mounted) return;
       
       const supabase = createClient();
@@ -156,16 +166,16 @@ export default function BookingsPage() {
       };
     }
 
-    if (mounted) {
+    if (mounted && isPro) {
       init();
     }
-  }, [mounted, loadBookings, router]);
+  }, [mounted, isPro, loadBookings, router]);
 
   useEffect(() => {
-    if (restaurantId) {
+    if (restaurantId && isPro) {
       loadBookings(restaurantId);
     }
-  }, [statusFilter, dateFilter, restaurantId, loadBookings]);
+  }, [statusFilter, dateFilter, restaurantId, isPro, loadBookings]);
 
   async function updateBookingStatus(bookingId: string, newStatus: Booking["status"]) {
     const current = bookings.find((b) => b.id === bookingId);
@@ -248,6 +258,10 @@ export default function BookingsPage() {
 
   function formatTime(timeString: string) {
     return timeString;
+  }
+
+  if (!isPro) {
+    return null;
   }
 
   return (

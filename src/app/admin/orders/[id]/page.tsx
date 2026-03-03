@@ -22,6 +22,7 @@ import { toast } from "sonner";
 import type { Language } from "@/types/database";
 import Link from "next/link";
 import Image from "next/image";
+import { useSubscription } from "@/contexts/subscription-context";
 
 interface OrderItem {
   id: string;
@@ -66,9 +67,18 @@ export default function OrderDetailsPage() {
   const [order, setOrder] = useState<Order | null>(null);
   const [loading, setLoading] = useState(true);
   const [updatingStatus, setUpdatingStatus] = useState(false);
+  const { isPro, loading: subscriptionLoading } = useSubscription();
+
+  useEffect(() => {
+    if (!subscriptionLoading && !isPro) {
+      toast.error("Orders feature is available only in Pro plan.");
+      router.replace("/admin");
+    }
+  }, [isPro, subscriptionLoading, router]);
 
   useEffect(() => {
     async function loadOrder() {
+      if (!isPro) return;
       if (!orderId) return;
 
       setLoading(true);
@@ -187,7 +197,7 @@ export default function OrderDetailsPage() {
     }
 
     loadOrder();
-  }, [orderId, router]);
+  }, [orderId, router, isPro]);
 
   async function updateOrderStatus(newStatus: Order["status"]) {
     if (!order) return;
@@ -243,6 +253,10 @@ export default function OrderDetailsPage() {
       hour: "2-digit",
       minute: "2-digit",
     }).format(date);
+  }
+
+  if (!isPro) {
+    return null;
   }
 
   if (loading) {

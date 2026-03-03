@@ -12,6 +12,7 @@ import { FadeIn } from "@/components/motion";
 import { useI18n } from "@/lib/i18n/context";
 import { createClient } from "@/lib/supabase/client";
 import { toast } from "sonner";
+import { useSubscription } from "@/contexts/subscription-context";
 
 interface RestaurantTable {
   id: string;
@@ -24,6 +25,7 @@ interface RestaurantTable {
 export default function TablesPage() {
   const router = useRouter();
   const { t } = useI18n();
+  const { isPro, loading: subscriptionLoading } = useSubscription();
   const [restaurantId, setRestaurantId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [tables, setTables] = useState<RestaurantTable[]>([]);
@@ -70,6 +72,7 @@ export default function TablesPage() {
 
   useEffect(() => {
     async function init() {
+      if (!isPro) return;
       const supabase = createClient();
 
       const {
@@ -96,7 +99,14 @@ export default function TablesPage() {
     }
 
     init();
-  }, [loadTables, router]);
+  }, [loadTables, router, isPro]);
+
+  useEffect(() => {
+    if (!subscriptionLoading && !isPro) {
+      toast.error("Table management is available on the Pro plan.");
+      router.replace("/admin");
+    }
+  }, [isPro, subscriptionLoading, router]);
 
   async function handleAddTable(e: React.FormEvent) {
     e.preventDefault();
@@ -216,6 +226,10 @@ export default function TablesPage() {
     } finally {
       setDeletingId(null);
     }
+  }
+
+  if (!isPro) {
+    return null;
   }
 
   return (

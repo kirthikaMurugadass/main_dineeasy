@@ -18,6 +18,8 @@ interface Restaurant {
   name: string;
   slug: string;
   logo_url: string | null;
+  plan_type?: string | null;
+  plan_status?: string | null;
 }
 
 export default function BookTablePage() {
@@ -25,6 +27,7 @@ export default function BookTablePage() {
   const router = useRouter();
   const [restaurant, setRestaurant] = useState<Restaurant | null>(null);
   const [loading, setLoading] = useState(true);
+  const [bookingDisabled, setBookingDisabled] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [success, setSuccess] = useState(false);
   
@@ -53,7 +56,7 @@ export default function BookTablePage() {
       const supabase = createClient();
       const { data: restaurantData, error } = await supabase
         .from("restaurants")
-        .select("id, name, slug, logo_url")
+        .select("id, name, slug, logo_url, plan_type, plan_status")
         .eq("slug", slug)
         .single();
 
@@ -61,6 +64,13 @@ export default function BookTablePage() {
         toast.error("Restaurant not found");
         router.push("/");
         return;
+      }
+
+      const planType = restaurantData.plan_type ?? "free";
+      const planStatus = restaurantData.plan_status ?? "active";
+
+      if (planType !== "pro" || planStatus !== "active") {
+        setBookingDisabled(true);
       }
 
       setRestaurant(restaurantData);
@@ -168,6 +178,31 @@ export default function BookTablePage() {
 
   if (!restaurant) {
     return null;
+  }
+
+  if (bookingDisabled) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-background px-4">
+        <Card className="max-w-md">
+          <CardHeader>
+            <CardTitle>Online bookings are not available</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <p className="text-sm text-muted-foreground">
+              This restaurant does not currently accept online table bookings.
+              Please contact the restaurant directly to make a reservation.
+            </p>
+            <Button
+              variant="outline"
+              className="w-full"
+              onClick={() => router.push(`/r/${restaurant.slug}`)}
+            >
+              Back to menu
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
+    );
   }
 
   // Success screen is now handled after table selection / final confirmation

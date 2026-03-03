@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { motion } from "framer-motion";
@@ -34,6 +34,15 @@ import { useI18n } from "@/lib/i18n/context";
 import { createClient } from "@/lib/supabase/client";
 import { useOrderNotification } from "@/contexts/order-notification-context";
 import { useBookingNotification } from "@/contexts/booking-notification-context";
+import { useSubscription } from "@/contexts/subscription-context";
+import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 
 const navItems = [
   { key: "dashboard", href: "/admin", icon: LayoutDashboard },
@@ -53,6 +62,8 @@ export function AdminSidebar() {
   const { setOpenMobile, isMobile } = useSidebar();
   const { notificationCount } = useOrderNotification();
   const { bookingNotificationCount } = useBookingNotification();
+   const { isPro, loading } = useSubscription();
+   const [upgradeOpen, setUpgradeOpen] = useState(false);
 
   // Debug: Log notification count changes
   useEffect(() => {
@@ -118,6 +129,13 @@ export function AdminSidebar() {
           <SidebarGroupContent>
             <SidebarMenu className="mt-4 space-y-2">
               {navItems.map((item, index) => {
+                const isProFeature =
+                  item.key === "orders" ||
+                  item.key === "bookings" ||
+                  item.key === "tables";
+                const isDisabled =
+                  !loading && isProFeature && !isPro;
+
                 const isActive =
                   item.href === "/admin"
                     ? pathname === "/admin"
@@ -137,11 +155,17 @@ export function AdminSidebar() {
                     >
                       <SidebarMenuButton
                         asChild
-                        isActive={isActive}
+                        isActive={isActive && !isDisabled}
                         className="group relative flex items-center justify-center rounded-full px-2.5 py-2 text-sm font-semibold text-sidebar-foreground dark:text-sidebar-foreground transition duration-200 hover:bg-muted/70 hover:text-sidebar-foreground dark:hover:text-sidebar-foreground data-[active=true]:bg-primary/10 data-[active=true]:text-primary dark:data-[active=true]:text-primary overflow-visible"
                       >
                         <Link
-                          href={item.href}
+                          href={isDisabled ? "#" : item.href}
+                          onClick={(e) => {
+                            if (isDisabled) {
+                              e.preventDefault();
+                              setUpgradeOpen(true);
+                            }
+                          }}
                           className="relative flex w-full items-center justify-start gap-3 md:group-data-[collapsible=icon]:justify-center md:group-data-[collapsible=icon]:gap-0 overflow-visible"
                         >
                           <div className="relative flex h-11 w-11 items-center justify-center text-sidebar-foreground dark:text-sidebar-foreground transition-transform duration-200 group-hover:scale-105 group-data-[active=true]:text-primary dark:group-data-[active=true]:text-primary overflow-visible">
@@ -156,7 +180,8 @@ export function AdminSidebar() {
                               </span>
                             )}
                             {/* Notification badge for Bookings - positioned on icon */}
-                            {item.key === "bookings" && bookingNotificationCount > 0 && (
+                            {item.key === "bookings" &&
+                              bookingNotificationCount > 0 && (
                               <span 
                                 className="absolute -right-1 -top-1 z-[100] flex h-5 min-w-5 items-center justify-center rounded-full bg-red-500 px-1.5 text-[11px] font-bold leading-none text-white shadow-lg ring-2 ring-sidebar transition-all animate-in fade-in zoom-in duration-200 md:group-data-[collapsible=icon]:right-0 md:group-data-[collapsible=icon]:top-0"
                                 aria-label={`${bookingNotificationCount} new bookings`}
@@ -170,7 +195,20 @@ export function AdminSidebar() {
                             translate="no"
                             className="relative truncate transition duration-200 md:group-data-[collapsible=icon]:w-0 md:group-data-[collapsible=icon]:overflow-hidden md:group-data-[collapsible=icon]:opacity-0 md:group-data-[collapsible=icon]:translate-x-1"
                           >
-                            {labels[item.key]}
+                            <span
+                              className={
+                                isDisabled
+                                  ? "opacity-60"
+                                  : undefined
+                              }
+                            >
+                              {labels[item.key]}
+                            </span>
+                            {isDisabled && (
+                              <span className="ml-2 inline-flex items-center rounded-full bg-primary/10 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.18em] text-primary">
+                                PRO
+                              </span>
+                            )}
                           </span>
                         </Link>
                       </SidebarMenuButton>
@@ -222,6 +260,35 @@ export function AdminSidebar() {
           </SidebarMenuItem>
         </SidebarMenu>
       </SidebarFooter>
+
+      <Dialog open={upgradeOpen} onOpenChange={setUpgradeOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Upgrade to Pro</DialogTitle>
+            <DialogDescription>
+              Table bookings, realtime table selection, and booking
+              notifications are available on the Pro plan. Upgrade to unlock
+              the full booking system.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="mt-4 flex flex-col gap-3 sm:flex-row sm:justify-end">
+            <Button
+              variant="outline"
+              onClick={() => setUpgradeOpen(false)}
+            >
+              Maybe later
+            </Button>
+            <Button
+              onClick={() => {
+                setUpgradeOpen(false);
+                router.push("/#pricing");
+              }}
+            >
+              View Pro pricing
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </Sidebar>
   );
 }

@@ -28,6 +28,7 @@ import { toast } from "sonner";
 import type { Language } from "@/types/database";
 import Link from "next/link";
 import { useOrderNotification } from "@/contexts/order-notification-context";
+import { useSubscription } from "@/contexts/subscription-context";
 
 interface OrderItem {
   id: string;
@@ -73,6 +74,7 @@ export default function OrdersPage() {
   const [updatingStatus, setUpdatingStatus] = useState<string | null>(null);
   const [restaurantId, setRestaurantId] = useState<string | null>(null);
   const [mounted, setMounted] = useState(false);
+  const { isPro, loading: subscriptionLoading } = useSubscription();
 
   const loadOrders = useCallback(async (currentRestaurantId: string) => {
     setLoading(true);
@@ -181,7 +183,7 @@ export default function OrdersPage() {
 
   useEffect(() => {
     async function init() {
-      if (!mounted) return;
+      if (!mounted || !isPro) return;
       
       const supabase = createClient();
 
@@ -231,16 +233,16 @@ export default function OrdersPage() {
       };
     }
 
-    if (mounted) {
+    if (mounted && isPro) {
       init();
     }
-  }, [mounted, loadOrders, router]);
+  }, [mounted, isPro, loadOrders, router]);
 
   useEffect(() => {
-    if (restaurantId) {
+    if (restaurantId && isPro) {
       loadOrders(restaurantId);
     }
-  }, [statusFilter, restaurantId, loadOrders]);
+  }, [statusFilter, restaurantId, isPro, loadOrders]);
 
   async function updateOrderStatus(orderId: string, newStatus: string) {
     setUpdatingStatus(orderId);
@@ -293,6 +295,17 @@ export default function OrdersPage() {
       hour: "2-digit",
       minute: "2-digit",
     }).format(date);
+  }
+
+  useEffect(() => {
+    if (!subscriptionLoading && !isPro) {
+      toast.error("Orders feature is available only in Pro plan.");
+      router.replace("/admin");
+    }
+  }, [isPro, subscriptionLoading, router]);
+
+  if (!isPro) {
+    return null;
   }
 
   return (
