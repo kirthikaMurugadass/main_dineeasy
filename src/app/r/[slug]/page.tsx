@@ -13,12 +13,51 @@ async function getRestaurantData(
 ): Promise<PublicRestaurantData | null> {
   const supabase = await createClient();
 
-  // Fetch restaurant by slug
-  const { data: restaurant } = await supabase
+  // Fetch restaurant by slug.
+  // Try selecting plan fields first; if the migration hasn't been run yet
+  // (columns don't exist), fall back to the older shape without them.
+  let restaurant:
+    | {
+        id: string;
+        name: string;
+        slug: string;
+        logo_url: string | null;
+        theme_config: any;
+        plan_type?: string | null;
+        plan_status?: string | null;
+      }
+    | null = null;
+
+  const {
+    data: restaurantWithPlan,
+    error: restaurantError,
+  } = await supabase
     .from("restaurants")
     .select("id, name, slug, logo_url, theme_config, plan_type, plan_status")
     .eq("slug", slug)
-    .single();
+    .maybeSingle();
+
+  if (restaurantError) {
+    // Fallback for environments where plan_type/plan_status columns
+    // have not been added yet. This ensures public menus never 404
+    // solely because of missing migrations.
+    const { data: restaurantFallback, error: fallbackError } = await supabase
+      .from("restaurants")
+      .select("id, name, slug, logo_url, theme_config")
+      .eq("slug", slug)
+      .maybeSingle();
+
+    if (fallbackError || !restaurantFallback) {
+      return null;
+    }
+    restaurant = {
+      ...restaurantFallback,
+      plan_type: null,
+      plan_status: null,
+    };
+  } else {
+    restaurant = restaurantWithPlan;
+  }
 
   if (!restaurant) return null;
 
