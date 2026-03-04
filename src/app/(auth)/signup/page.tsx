@@ -1,7 +1,7 @@
 "use client";
 
 import { useRef, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 import { Loader2, Mail, Lock } from "lucide-react";
@@ -15,7 +15,12 @@ import { useI18n } from "@/lib/i18n/context";
 
 export default function SignupPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { t } = useI18n();
+  const plan = searchParams.get("plan");
+  const billing = searchParams.get("billing");
+  const isProIntent = plan === "pro";
+  const billingCycle = billing === "annual" ? "annual" : "monthly";
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -64,7 +69,11 @@ export default function SignupPage() {
           router.push("/login");
           return;
         }
-        router.push("/admin");
+        if (isProIntent) {
+          router.push(`/admin/onboarding?plan=pro&billing=${billingCycle}`);
+        } else {
+          router.push("/admin");
+        }
         router.refresh();
       }
     } catch (err: unknown) {

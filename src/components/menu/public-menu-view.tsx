@@ -127,9 +127,9 @@ export function PublicMenuView({ data, restaurantId, menuId, initialLang }: Prop
   const categoryRefs = useRef<Map<string, HTMLElement>>(new Map());
   const [mounted, setMounted] = useState(false);
   const initialPlanType =
-    (data as any).restaurant.plan_type ?? "free";
+    (data as any)?.restaurant?.plan_type ?? "free";
   const initialPlanStatus =
-    (data as any).restaurant.plan_status ?? "active";
+    (data as any)?.restaurant?.plan_status ?? "active";
   const [isProPlan, setIsProPlan] = useState(
     initialPlanType === "pro" && initialPlanStatus === "active",
   );
@@ -162,6 +162,22 @@ export function PublicMenuView({ data, restaurantId, menuId, initialLang }: Prop
     if (!restaurantId) return;
     const supabase = createClient();
 
+    // Also fetch latest plan on mount, so remounts don't rely on an update event.
+    // (Realtime only fires on changes; if you navigate back after upgrading, plan may already be pro.)
+    let cancelled = false;
+    supabase
+      .from("restaurants")
+      .select("plan_type, plan_status")
+      .eq("id", restaurantId)
+      .single()
+      .then(({ data: latest, error }) => {
+        if (cancelled) return;
+        if (error || !latest) return;
+        const planType = (latest as any).plan_type ?? initialPlanType;
+        const planStatus = (latest as any).plan_status ?? initialPlanStatus;
+        setIsProPlan(planType === "pro" && (planStatus ?? "active") === "active");
+      });
+
     const channel = supabase
       .channel(`public-restaurant-plan-${restaurantId}`)
       .on(
@@ -177,6 +193,7 @@ export function PublicMenuView({ data, restaurantId, menuId, initialLang }: Prop
             plan_type?: string | null;
             plan_status?: string | null;
           };
+          // If a payload comes without plan fields, keep the current state.
           const planType = next?.plan_type ?? initialPlanType;
           const planStatus = next?.plan_status ?? initialPlanStatus;
           setIsProPlan(
@@ -188,6 +205,7 @@ export function PublicMenuView({ data, restaurantId, menuId, initialLang }: Prop
       .subscribe();
 
     return () => {
+      cancelled = true;
       supabase.removeChannel(channel);
     };
   }, [restaurantId, initialPlanType, initialPlanStatus]);

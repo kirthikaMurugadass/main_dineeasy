@@ -17,6 +17,7 @@ import {
   TrendingUp,
   Activity,
   Sparkles,
+  Crown,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -25,6 +26,14 @@ import { useI18n } from "@/lib/i18n/context";
 import { useTheme } from "@/components/providers/theme-provider";
 import { createClient } from "@/lib/supabase/client";
 import { getGreeting } from "@/lib/utils/greeting";
+import { useSubscription } from "@/contexts/subscription-context";
+import { ProCheckoutForm } from "@/components/subscription/pro-checkout-form";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 
 interface DashboardStats {
   hasMenu: boolean;
@@ -70,6 +79,8 @@ export default function AdminDashboard() {
   const [restaurantId, setRestaurantId] = useState<string | null>(null);
   const [userName, setUserName] = useState<string>("");
   const [restaurantLogo, setRestaurantLogo] = useState<string | null>(null);
+  const { isPro, loading: planLoading } = useSubscription();
+  const [upgradeModalOpen, setUpgradeModalOpen] = useState(false);
 
   useEffect(() => {
     async function load() {
@@ -291,12 +302,54 @@ export default function AdminDashboard() {
             </p>
           </div>
 
+          {/* Upgrade card for Free plan */}
+          {!planLoading && !isPro && (
+            <FadeIn delay={0.15}>
+              <div className="rounded-2xl border border-primary/40 bg-gradient-to-br from-primary/10 via-primary/5 to-transparent p-5 shadow-sm">
+                <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className="rounded-xl bg-primary/15 p-2.5">
+                      <Crown className="h-5 w-5 text-primary" />
+                    </div>
+                    <div>
+                      <p className="font-semibold text-foreground">
+                        Unlock Orders, Tables & Bookings
+                      </p>
+                      <p className="text-sm text-muted-foreground">
+                        Get real-time orders, table management, and booking notifications with Pro.
+                      </p>
+                    </div>
+                  </div>
+                  <Button
+                    className="shrink-0 rounded-xl bg-primary text-primary-foreground hover:bg-primary/90"
+                    onClick={() => setUpgradeModalOpen(true)}
+                  >
+                    Upgrade to Pro
+                  </Button>
+                </div>
+              </div>
+            </FadeIn>
+          )}
+
           {/* Dashboard label below cafe section */}
           <p className="text-[11px] font-semibold uppercase tracking-[0.25em] text-muted-foreground/80">
             {t.admin.dashboard.title}
           </p>
         </div>
       </FadeIn>
+      <Dialog open={upgradeModalOpen} onOpenChange={setUpgradeModalOpen}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Upgrade to Pro</DialogTitle>
+          </DialogHeader>
+          <ProCheckoutForm
+            compact
+            onSuccess={() => {
+              setUpgradeModalOpen(false);
+            }}
+          />
+        </DialogContent>
+      </Dialog>
       <StaggerContainer className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
         {statCards.map((stat, i) => (
           <StaggerItem key={i}>

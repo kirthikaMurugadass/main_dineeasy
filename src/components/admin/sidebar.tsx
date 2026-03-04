@@ -39,10 +39,10 @@ import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
-  DialogDescription,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { ProCheckoutForm } from "@/components/subscription/pro-checkout-form";
 
 const navItems = [
   { key: "dashboard", href: "/admin", icon: LayoutDashboard },
@@ -262,31 +262,14 @@ export function AdminSidebar() {
       </SidebarFooter>
 
       <Dialog open={upgradeOpen} onOpenChange={setUpgradeOpen}>
-        <DialogContent>
+        <DialogContent className="max-w-md">
           <DialogHeader>
             <DialogTitle>Upgrade to Pro</DialogTitle>
-            <DialogDescription>
-              Table bookings, realtime table selection, and booking
-              notifications are available on the Pro plan. Upgrade to unlock
-              the full booking system.
-            </DialogDescription>
           </DialogHeader>
-          <div className="mt-4 flex flex-col gap-3 sm:flex-row sm:justify-end">
-            <Button
-              variant="outline"
-              onClick={() => setUpgradeOpen(false)}
-            >
-              Maybe later
-            </Button>
-            <Button
-              onClick={() => {
-                setUpgradeOpen(false);
-                router.push("/#pricing");
-              }}
-            >
-              View Pro pricing
-            </Button>
-          </div>
+          <ProCheckoutForm
+            compact
+            onSuccess={() => setUpgradeOpen(false)}
+          />
         </DialogContent>
       </Dialog>
     </Sidebar>
