@@ -29,13 +29,50 @@ export default function LoginPage() {
     }
     setLoading(true);
     try {
+      // Step 1: Verify credentials with our custom API (bcrypt)
+      const loginResponse = await fetch("/api/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password }),
+      });
+
+      const loginData = await loginResponse.json();
+
+      if (!loginResponse.ok) {
+        throw new Error(loginData.error || "Login failed");
+      }
+
+      // Step 2: Create Supabase Auth session for compatibility
       const supabase = createClient();
-      const { data, error } = await supabase.auth.signInWithPassword({ email, password });
-      if (error) throw error;
-      if (data.user) {
+      const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
+        email: email.toLowerCase().trim(),
+        password, // Password is synced in Supabase Auth by our API
+      });
+
+      if (authError) {
+        console.error("Supabase Auth session creation failed:", authError);
+        // Even though our API verified credentials, we need Supabase Auth session
+        // Try one more time after a short delay
+        await new Promise((resolve) => setTimeout(resolve, 500));
+        const { error: retryError } = await supabase.auth.signInWithPassword({
+          email: email.toLowerCase().trim(),
+          password,
+        });
+        
+        if (retryError) {
+          throw new Error("Failed to create session. Please try again.");
+        }
+      }
+
+      if (loginData.success && authData?.session) {
         toast.success(t.auth.login.success);
         router.push("/admin");
         router.refresh();
+      } else if (loginData.success) {
+        // Credentials verified but no session - wait a bit and refresh
+        await new Promise((resolve) => setTimeout(resolve, 1000));
+        router.refresh();
+        router.push("/admin");
       }
     } catch (err: unknown) {
       const message =
@@ -43,13 +80,13 @@ export default function LoginPage() {
           ? (err as { message: string }).message
           : "";
 
-      if (message === "Failed to fetch") {
+      if (message === "Failed to fetch" || message.includes("fetch")) {
         toast.error(
-          "Cannot reach Supabase. Check .env.local (URL + anon key), restart dev server, and add your app URL to Supabase CORS (Project Settings → API)."
+          "Cannot reach server. Please check your connection and try again."
         );
       } else {
         const errorMessage =
-          message === "Invalid login credentials"
+          message.includes("Invalid") || message.includes("password")
             ? t.auth.login.errors.invalidCredentials
             : message || t.auth.login.errors.genericError;
         toast.error(errorMessage);
