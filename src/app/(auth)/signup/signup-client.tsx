@@ -55,27 +55,37 @@ export function SignupClient({
 
     setLoading(true);
     try {
-      const supabase = createClient();
-      const { data, error } = await supabase.auth.signUp({
-        email,
-        password,
-        options: {
-          emailRedirectTo: `${
-            typeof window !== "undefined" ? window.location.origin : ""
-          }/admin`,
-        },
+      // Step 1: Register user with our custom API (bcrypt hashing)
+      const registerResponse = await fetch("/api/auth/register", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password }),
       });
-      if (error) throw error;
 
-      if (data.user) {
+      const registerData = await registerResponse.json();
+
+      if (!registerResponse.ok) {
+        throw new Error(registerData.error || "Registration failed");
+      }
+
+      // Step 2: Create Supabase Auth session for compatibility
+      const supabase = createClient();
+      const { error: signInError } = await supabase.auth.signInWithPassword({
+        email: email.toLowerCase().trim(),
+        password,
+      });
+
+      if (signInError) {
+        // If Supabase Auth sign-in fails, user is still registered
+        // Redirect to login page
         toast.success(t.auth.signup.success);
-        const { error: signInError } =
-          await supabase.auth.signInWithPassword({ email, password });
-        if (signInError) {
-          toast.error(t.auth.signup.signInAfterSignup);
-          router.push("/login");
-          return;
-        }
+        toast.error(t.auth.signup.signInAfterSignup);
+        router.push("/login");
+        return;
+      }
+
+      if (registerData.success) {
+        toast.success(t.auth.signup.success);
         if (isProIntent) {
           router.push(`/admin/onboarding?plan=pro&billing=${billingCycle}`);
         } else {
@@ -93,7 +103,10 @@ export function SignupClient({
       if (message.toLowerCase().includes("rate limit")) {
         errorMessage =
           "Too many signup attempts. Please wait a few minutes and try again.";
-      } else if (message === "User already registered") {
+      } else if (
+        message.includes("already exists") ||
+        message.includes("User already")
+      ) {
         errorMessage = t.auth.signup.errors.userExists;
       } else {
         errorMessage = message || t.auth.signup.errors.genericError;

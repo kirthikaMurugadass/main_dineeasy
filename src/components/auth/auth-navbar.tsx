@@ -27,6 +27,7 @@ export function AuthNavbar() {
             onChange={(e) => setLanguage(e.target.value as Language)}
             title={t.landing.nav.selectLanguage}
             aria-label={t.landing.nav.selectLanguage}
+            suppressHydrationWarning
             className="appearance-none rounded-lg border border-border bg-background/80 px-3 py-1.5 pl-8 pr-8 text-sm font-medium text-foreground backdrop-blur-sm transition-all hover:border-border focus:border-ring focus:outline-none focus:ring-2 focus:ring-ring/20 dark:bg-background/90"
           >
             {SUPPORTED_LANGUAGES.map((lang) => (

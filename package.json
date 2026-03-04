@@ -23,6 +23,8 @@
     "@react-three/postprocessing": "^3.0.4",
     "@supabase/ssr": "^0.8.0",
     "@supabase/supabase-js": "^2.96.0",
+    "@types/bcrypt": "^6.0.0",
+    "bcrypt": "^6.0.0",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "framer-motion": "^12.34.1",
