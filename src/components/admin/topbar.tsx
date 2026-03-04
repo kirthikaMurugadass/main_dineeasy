@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
-import { Moon, Sun, Monitor, User, Globe } from "lucide-react";
+import { Moon, Sun, Monitor, User, Globe, Crown } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useTheme } from "@/components/providers/theme-provider";
 import { Button } from "@/components/ui/button";
@@ -18,11 +18,13 @@ import { LanguageFlag } from "@/components/ui/language-flag";
 import { cn } from "@/lib/utils";
 import { createClient } from "@/lib/supabase/client";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { useSubscription } from "@/contexts/subscription-context";
 
 export function AdminTopbar() {
   const router = useRouter();
   const { theme, setTheme } = useTheme();
   const { language, setLanguage, t, languages } = useI18n();
+  const { isPro, loading: planLoading } = useSubscription();
 
   const [userName, setUserName] = useState<string>("");
   const [mounted, setMounted] = useState(false);
@@ -63,9 +65,28 @@ export function AdminTopbar() {
         transition={{ duration: 0.25, ease: "easeOut" }}
         className="mx-auto flex h-16 w-full max-w-6xl items-center justify-between px-4 lg:px-6"
       >
-        {/* Left: Sidebar trigger */}
+        {/* Left: Sidebar trigger + Plan badge */}
         <div className="flex flex-1 items-center gap-3">
           <SidebarTrigger className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-border/60 bg-card shadow-sm transition duration-200 hover:opacity-80" />
+          {!planLoading && (
+            <span
+              className={cn(
+                "inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs font-semibold",
+                isPro
+                  ? "border-primary/40 bg-primary/10 text-primary"
+                  : "border-border/60 bg-muted/50 text-muted-foreground"
+              )}
+            >
+              {isPro ? (
+                <>
+                  <Crown className="h-3.5 w-3.5" />
+                  Pro Plan
+                </>
+              ) : (
+                "Free Plan"
+              )}
+            </span>
+          )}
         </div>
 
         {/* Center: empty for balance */}
@@ -73,6 +94,15 @@ export function AdminTopbar() {
 
         {/* Right: actions */}
         <div className="flex flex-1 items-center justify-end gap-2">
+          {!planLoading && !isPro && (
+            <Button
+              size="sm"
+              className="rounded-full bg-primary text-primary-foreground hover:bg-primary/90"
+              onClick={() => router.push("/admin/checkout")}
+            >
+              Upgrade to Pro
+            </Button>
+          )}
           {/* Language / globe */}
           {mounted && (
           <DropdownMenu>

@@ -14,12 +14,36 @@ async function getRestaurantDataBySlugAndMenu(
 ): Promise<PublicRestaurantData | null> {
   const supabase = await createClient();
 
-  // Fetch restaurant by slug (subdomain)
-  const { data: restaurant } = await supabase
+  // Fetch restaurant by slug (include plan fields when available)
+  type RestaurantRow = {
+    id: string;
+    name: string;
+    slug: string;
+    logo_url: string | null;
+    theme_config: any;
+    plan_type?: string | null;
+    plan_status?: string | null;
+  };
+
+  let restaurant: RestaurantRow | null = null;
+
+  const resWithPlan = await supabase
     .from("restaurants")
-    .select("id, name, slug, logo_url, theme_config")
+    .select("id, name, slug, logo_url, theme_config, plan_type, plan_status")
     .eq("slug", restaurantSlug)
     .single();
+
+  if (resWithPlan.error) {
+    // Fallback for environments where plan_type/plan_status columns aren't present yet
+    const resFallback = await supabase
+      .from("restaurants")
+      .select("id, name, slug, logo_url, theme_config")
+      .eq("slug", restaurantSlug)
+      .single();
+    restaurant = (resFallback.data as RestaurantRow | null) ?? null;
+  } else {
+    restaurant = (resWithPlan.data as RestaurantRow | null) ?? null;
+  }
 
   if (!restaurant) return null;
 
@@ -63,6 +87,8 @@ async function getRestaurantDataBySlugAndMenu(
         slug: restaurant.slug,
         logo_url: restaurant.logo_url,
         theme_config: restaurant.theme_config,
+        plan_type: restaurant.plan_type ?? undefined,
+        plan_status: restaurant.plan_status ?? undefined,
       },
       categories: [],
       availableLanguages: ["de", "en", "fr", "it"],
@@ -126,6 +152,8 @@ async function getRestaurantDataBySlugAndMenu(
       slug: restaurant.slug,
       logo_url: restaurant.logo_url,
       theme_config: restaurant.theme_config,
+      plan_type: restaurant.plan_type ?? undefined,
+      plan_status: restaurant.plan_status ?? undefined,
     },
     categories: categories.map((cat) => ({
       id: cat.id,

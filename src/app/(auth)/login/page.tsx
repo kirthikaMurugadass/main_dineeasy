@@ -45,7 +45,7 @@ export default function LoginPage() {
 
       if (message === "Failed to fetch") {
         toast.error(
-          "Unable to reach the authentication server. Please check your internet connection and Supabase configuration."
+          "Cannot reach Supabase. Check .env.local (URL + anon key), restart dev server, and add your app URL to Supabase CORS (Project Settings → API)."
         );
       } else {
         const errorMessage =

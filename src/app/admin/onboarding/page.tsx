@@ -1,7 +1,7 @@
 "use client";
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useState, useEffect } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { motion } from "framer-motion";
 import { ArrowRight, Loader2, Store } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -10,12 +10,49 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import { useI18n } from "@/lib/i18n/context";
+import { createClient } from "@/lib/supabase/client";
 
 export default function OnboardingPage() {
   const { t } = useI18n();
+  const searchParams = useSearchParams();
   const [name, setName] = useState("");
   const [loading, setLoading] = useState(false);
+  const [checkingExisting, setCheckingExisting] = useState(true);
   const router = useRouter();
+  const plan = searchParams.get("plan");
+  const billing = searchParams.get("billing");
+  const isProIntent = plan === "pro";
+  const billingCycle = billing === "annual" ? "annual" : "monthly";
+
+  // Prevent duplicate restaurants: if user already has one, go to dashboard (or checkout).
+  useEffect(() => {
+    let cancelled = false;
+    async function checkExisting() {
+      const supabase = createClient();
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user || cancelled) {
+        if (!cancelled) setCheckingExisting(false);
+        return;
+      }
+      const { data: restaurant } = await supabase
+        .from("restaurants")
+        .select("id")
+        .eq("owner_id", user.id)
+        .maybeSingle();
+      if (cancelled) return;
+      if (restaurant) {
+        if (isProIntent) {
+          router.replace(`/admin/checkout?billing=${billingCycle}`);
+        } else {
+          router.replace("/admin");
+        }
+        return;
+      }
+      setCheckingExisting(false);
+    }
+    checkExisting();
+    return () => { cancelled = true; };
+  }, [router, isProIntent, billingCycle]);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -35,12 +72,24 @@ export default function OnboardingPage() {
       }
 
       toast.success("Restaurant created! Welcome to DineEasy.");
-      router.push("/admin");
+      if (isProIntent) {
+        router.push(`/admin/checkout?billing=${billingCycle}`);
+      } else {
+        router.push("/admin");
+      }
     } catch (err) {
       toast.error(err instanceof Error ? err.message : t.admin.onboarding.error);
     } finally {
       setLoading(false);
     }
+  }
+
+  if (checkingExisting) {
+    return (
+      <div className="flex min-h-[calc(100vh-3.5rem)] items-center justify-center p-6">
+        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+      </div>
+    );
   }
 
   return (
