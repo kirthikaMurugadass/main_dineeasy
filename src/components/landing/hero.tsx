@@ -1,88 +1,105 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
-import { FadeContent, AnimatedContent } from "@/lib/reactbits";
 import { Button } from "@/components/ui/button";
 import { useI18n } from "@/lib/i18n/context";
-import ParticlesBackground from "@/components/ui/particles-background";
-import { useTheme } from "@/components/providers/theme-provider";
+import { cn } from "@/lib/utils";
 
 export function Hero() {
   const { t } = useI18n();
-  const { resolvedTheme } = useTheme();
-  const particleColor = resolvedTheme === "dark" ? "#ffffff" : "#000000";
+  const [visible, setVisible] = useState(false);
+
+  useEffect(() => {
+    // Trigger entrance animation once on mount
+    setVisible(true);
+  }, []);
 
   return (
-    <section className="relative min-h-[100dvh] overflow-hidden bg-background lg:min-h-screen">
-      <ParticlesBackground
-        className="absolute inset-0 z-0"
-        particleCount={300}
-        particleSpread={10}
-        speed={0.1}
-        particleColors={[particleColor]}
-        alphaParticles
-        moveParticlesOnHover={false}
-        particleBaseSize={100}
-        sizeRandomness={0.4}
-      />
+    <section
+      className="relative overflow-hidden text-white"
+      style={{
+        backgroundImage: "url('/images/hero.jpg')",
+        backgroundSize: "cover",
+        backgroundPosition: "center",
+      }}
+    >
+      {/* Dark overlay to keep text readable */}
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(0,0,0,0.55),transparent_55%),linear-gradient(to_right,rgba(0,0,0,0.65),rgba(0,0,0,0.45),rgba(0,0,0,0.35))]" />
 
-      <div className="relative z-10 mx-auto flex min-h-[100dvh] max-w-4xl items-center justify-center px-6 pb-24 pt-28 text-center lg:min-h-screen lg:px-8">
-        <FadeContent
-          duration={1.1}
-          delay={0.1}
-          threshold={0.2}
-          initialOpacity={0}
-          className="w-full"
-        >
-          <div className="flex flex-col items-center gap-6">
-            <AnimatedContent direction="vertical" distance={24} delay={0.1}>
-              <p className="inline-flex items-center rounded-full border border-border/60 bg-background/60 px-3 py-1 text-xs font-medium uppercase tracking-[0.2em] text-primary shadow-soft backdrop-blur-md">
-                {t.landing.hero.badge}
-              </p>
-            </AnimatedContent>
+      <div className="relative mx-auto flex min-h-[70vh] max-w-6xl items-center px-6 py-20 md:py-24 lg:py-32 lg:px-10">
+        <div className="flex w-full flex-col items-center text-center lg:w-1/2 lg:items-start lg:text-left">
+          {/* Badge */}
+          <p
+            className={cn(
+              "inline-flex items-center rounded-full bg-black/30 px-4 py-1.5 text-xs font-medium uppercase tracking-[0.2em] text-[var(--sage-light)] shadow-soft",
+              "slide-in-left",
+              visible && "is-visible",
+              "delay-100"
+            )}
+          >
+            For Modern Restaurants
+          </p>
 
-            <AnimatedContent direction="vertical" distance={32} delay={0.18}>
-              <h1 className="text-balance text-[clamp(2.25rem,4vw+1rem,3.75rem)] font-semibold leading-[1.08] tracking-tight text-foreground">
-                {t.landing.hero.title}
-                {t.landing.hero.titleAccent && (
-                  <span className="mt-2 block bg-gradient-to-r from-primary via-foreground to-primary bg-clip-text text-transparent">
-                    {t.landing.hero.titleAccent}
-                  </span>
-                )}
-              </h1>
-            </AnimatedContent>
+          {/* Heading */}
+          <h1
+            className={cn(
+              "mt-5 text-balance text-[clamp(2.4rem,4.4vw+1rem,3.9rem)] font-semibold leading-[1.05] tracking-tight",
+              "slide-in-left",
+              visible && "is-visible",
+              "delay-200"
+            )}
+          >
+            {t.landing.hero.title}
+            {t.landing.hero.titleAccent && (
+              <span className="mt-2 block bg-gradient-to-r from-[var(--sage-medium)] via-white to-[var(--sage-medium)] bg-clip-text text-transparent">
+                {t.landing.hero.titleAccent}
+              </span>
+            )}
+          </h1>
 
-            <AnimatedContent direction="vertical" distance={24} delay={0.26}>
-              <p className="mx-auto max-w-2xl text-lg leading-relaxed text-muted-foreground text-balance">
-                {t.landing.hero.subtitle}
-              </p>
-            </AnimatedContent>
+          {/* Description */}
+          <p
+            className={cn(
+              "mt-4 max-w-xl text-lg leading-relaxed text-white/85 text-balance",
+              "slide-in-left",
+              visible && "is-visible",
+              "delay-300"
+            )}
+          >
+            {t.landing.hero.subtitle}
+          </p>
 
-            <AnimatedContent direction="vertical" distance={24} delay={0.34}>
-              <div className="mt-4 flex flex-wrap items-center justify-center gap-4">
-                <Link href="/signup">
-                  <Button
-                    size="lg"
-                    className="group h-12 min-w-[180px] rounded-xl bg-foreground px-7 text-sm font-semibold text-background shadow-floating transition-transform duration-200 ease-out hover:-translate-y-0.5 hover:shadow-premium"
-                  >
-                    {t.landing.hero.cta}
-                    <ArrowRight className="ml-2 h-4 w-4 transition-transform duration-200 group-hover:translate-x-0.5" />
-                  </Button>
-                </Link>
-                <Link href="#workflow">
-                  <Button
-                    size="lg"
-                    variant="outline"
-                    className="h-12 min-w-[180px] rounded-xl border-2 border-border/70 bg-background/70 px-7 text-sm font-medium text-foreground/90 shadow-soft backdrop-blur-md hover:bg-background/90"
-                  >
-                    {t.landing.hero.ctaSecondary}
-                  </Button>
-                </Link>
-              </div>
-            </AnimatedContent>
+          {/* Buttons */}
+          <div
+            className={cn(
+              "mt-6 flex flex-wrap items-center gap-4 justify-center lg:justify-start",
+              "slide-in-left",
+              visible && "is-visible",
+              "delay-400"
+            )}
+          >
+            <Link href="/signup">
+              <Button
+                size="lg"
+                className="group h-12 rounded-full bg-primary px-8 text-sm font-semibold text-primary-foreground shadow-lg shadow-black/25 transition-all duration-300 hover:-translate-y-0.5 hover:bg-primary/90 hover:shadow-xl hover:shadow-black/35"
+              >
+                {t.landing.hero.cta}
+                <ArrowRight className="ml-2 h-4 w-4 transition-transform duration-300 group-hover:translate-x-1" />
+              </Button>
+            </Link>
+            <Link href="#workflow">
+              <Button
+                size="lg"
+                variant="ghost"
+                className="h-12 rounded-full border border-white/50 bg-white/10 px-7 text-sm font-medium text-white shadow-soft transition-all duration-300 hover:bg-white/15"
+              >
+                {t.landing.hero.ctaSecondary}
+              </Button>
+            </Link>
           </div>
-        </FadeContent>
+        </div>
       </div>
     </section>
   );

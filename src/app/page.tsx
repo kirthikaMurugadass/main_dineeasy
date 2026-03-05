@@ -3,6 +3,8 @@
 import { PageTransition } from "@/components/motion";
 import { Navbar } from "@/components/landing/navbar";
 import { Hero } from "@/components/landing/hero";
+import { HeroFeatureBar } from "@/components/landing/hero-feature-bar";
+import { MenuCardsSection } from "@/components/landing/menu-cards-section";
 import { StorySection } from "@/components/landing/story-section";
 import { SpotlightSection } from "@/components/landing/spotlight-section";
 import { WorkflowSection } from "@/components/landing/workflow-section";
@@ -18,6 +20,8 @@ export default function LandingPage() {
       <Navbar />
       <main>
         <Hero />
+        <HeroFeatureBar />
+        <MenuCardsSection />
         <StorySection />
         <WorkflowSection />
         {/* <EcosystemSection /> */}

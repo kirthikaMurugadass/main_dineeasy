@@ -46,7 +46,7 @@ export function AppLogo({
   const textColor =
     variant === "light"
       ? "text-slate-900 dark:text-white"
-      : "text-foreground";
+      : "text-primary";
   const accentColor = "text-primary";
 
   // Render logo text only after mount to avoid hydration mismatch from browser
@@ -121,12 +121,9 @@ export function BrandText({ className }: { className?: string }) {
 
   return (
     <span
-      className={cn(
-        "font-sans font-semibold tracking-tight text-foreground",
-        className
-      )}
+      className={cn("font-sans font-semibold tracking-tight text-primary", className)}
     >
-      Dine<span className="text-primary">Easy</span>
+      DineEasy
     </span>
   );
 }
