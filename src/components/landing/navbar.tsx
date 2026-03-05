@@ -67,7 +67,7 @@ export function Navbar() {
             : "border-transparent bg-black/30 shadow-none backdrop-blur-md"
         )}
       >
-        <div className="mx-auto flex h-16 max-w-6xl items-center justify-between gap-8 px-6 lg:h-[72px] lg:px-10">
+        <div className="mx-auto flex h-16 w-full max-w-7xl items-center justify-between gap-3 px-4 sm:px-6 lg:h-[72px] lg:gap-8 lg:px-10 2xl:max-w-[90rem]">
           {/* Left: Logo — always high contrast (AppLogo renders the link to avoid nested <a>) */}
           <AppLogo
             href="/"
@@ -78,7 +78,7 @@ export function Navbar() {
           />
 
           {/* Center: Nav links — desktop only */}
-          <nav className="hidden items-center gap-2 md:flex" aria-label="Main">
+          <nav className="hidden items-center gap-1 lg:gap-2 md:flex" aria-label="Main">
             {navLinks.map(({ key, href }) => (
               <Link
                 key={key}

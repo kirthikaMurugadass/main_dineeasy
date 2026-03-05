@@ -28,7 +28,7 @@ export function Hero() {
       {/* Dark overlay to keep text readable */}
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(0,0,0,0.55),transparent_55%),linear-gradient(to_right,rgba(0,0,0,0.65),rgba(0,0,0,0.45),rgba(0,0,0,0.35))]" />
 
-      <div className="relative mx-auto flex min-h-[70vh] max-w-6xl items-center px-6 py-20 md:py-24 lg:py-32 lg:px-10">
+      <div className="relative mx-auto flex min-h-[70vh] w-full max-w-7xl items-center px-4 py-16 sm:px-6 sm:py-20 md:py-24 lg:py-28 lg:px-10 2xl:max-w-[90rem] 2xl:py-32">
         <div className="flex w-full flex-col items-center text-center lg:w-1/2 lg:items-start lg:text-left">
           {/* Badge */}
           <p
@@ -62,7 +62,7 @@ export function Hero() {
           {/* Description */}
           <p
             className={cn(
-              "mt-4 max-w-xl text-lg leading-relaxed text-white/85 text-balance",
+              "mt-4 max-w-xl text-base leading-relaxed text-white/85 text-balance sm:text-lg",
               "slide-in-left",
               visible && "is-visible",
               "delay-300"
@@ -74,7 +74,7 @@ export function Hero() {
           {/* Buttons */}
           <div
             className={cn(
-              "mt-6 flex flex-wrap items-center gap-4 justify-center lg:justify-start",
+              "mt-6 flex flex-wrap items-center justify-center gap-3 sm:gap-4 lg:justify-start",
               "slide-in-left",
               visible && "is-visible",
               "delay-400"

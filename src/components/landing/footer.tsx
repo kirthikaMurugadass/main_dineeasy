@@ -17,19 +17,19 @@ export function Footer() {
       {/* Full-width footer base (no curved corners) */}
       <div className="w-full bg-white shadow-[0_24px_70px_rgba(15,23,42,0.10)] ring-1 ring-black/5">
         {/* Centered content container (balanced left/right spacing) */}
-        <div className="mx-auto max-w-7xl px-6 lg:px-10">
-          <div className="grid grid-cols-2 gap-y-12 gap-x-10 pt-12 pb-12 md:grid-cols-12 md:gap-y-0 md:pt-14">
+        <div className="mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-10 2xl:max-w-[90rem]">
+          <div className="grid grid-cols-1 gap-y-10 pt-10 pb-10 sm:grid-cols-2 sm:gap-x-8 sm:gap-y-12 sm:pt-12 sm:pb-12 md:grid-cols-12 md:gap-x-10 md:gap-y-0 md:pt-14">
             <div className="col-span-2 md:col-span-4">
               <AppLogo href="/" size="sm" />
               <p className="mt-4 text-sm text-muted-foreground">{t.landing.footer.tagline}</p>
               {/* Deterministic 2-column layout so Français appears below English */}
-              <div className="mt-4 inline-grid w-fit grid-cols-2 gap-x-3 gap-y-2">
+              <div className="mt-4 inline-grid w-fit grid-cols-2 gap-x-2 gap-y-1.5 sm:gap-x-3 sm:gap-y-2">
                 {SUPPORTED_LANGUAGES.map((lang) => (
                   <button
                     key={lang.code}
                     type="button"
                     onClick={() => setLanguage(lang.code as Language)}
-                    className={`inline-flex w-fit items-center gap-2 rounded-lg border border-border/70 bg-[#EEF3FB] px-3 py-2 text-xs text-muted-foreground shadow-sm backdrop-blur-md transition-colors hover:bg-[var(--sage-light)]/40 hover:text-foreground sm:text-sm ${
+                    className={`inline-flex w-fit items-center gap-2 rounded-lg border border-border/70 bg-[#EEF3FB] px-2.5 py-1.5 text-xs text-muted-foreground shadow-sm backdrop-blur-md transition-colors hover:bg-[var(--sage-light)]/40 hover:text-foreground sm:px-3 sm:py-2 sm:text-sm ${
                       language === lang.code ? "border-transparent bg-primary/90 text-primary-foreground shadow-md" : ""
                     }`}
                   >
@@ -95,7 +95,7 @@ export function Footer() {
             </div>
           </div>
 
-          <div className="mt-2 flex flex-col items-center justify-between gap-4 border-t border-black/10 pt-8 pb-10 sm:flex-row">
+          <div className="mt-2 flex flex-col items-center justify-between gap-3 border-t border-black/10 pt-6 pb-8 sm:gap-4 sm:pt-8 sm:pb-10 sm:flex-row">
             <p className="text-sm text-muted-foreground">
               {t.landing.footer.copyright.replace("{year}", new Date().getFullYear().toString())}
             </p>

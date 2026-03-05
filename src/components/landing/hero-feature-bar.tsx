@@ -28,17 +28,17 @@ export function HeroFeatureBar() {
   return (
     <section
       aria-label="DineEasy highlights"
-      className="relative z-20 -mt-14 mb-10 px-4 sm:-mt-16 sm:px-6 lg:-mt-20"
+      className="relative z-20 -mt-12 mb-8 px-4 sm:-mt-14 sm:mb-10 sm:px-6 lg:-mt-20 lg:mb-12"
     >
       <div
         ref={ref}
         className={cn(
-          "mx-auto max-w-5xl rounded-[2.5rem] border border-border/70 bg-[var(--feature-bar)]/95 shadow-lg shadow-black/5 backdrop-blur-md",
+          "mx-auto w-full max-w-7xl rounded-[2rem] border border-border/70 bg-[var(--feature-bar)]/95 shadow-lg shadow-black/5 backdrop-blur-md sm:rounded-[2.5rem] 2xl:max-w-[90rem]",
           "fade-up",
           isVisible && "is-visible"
         )}
       >
-        <div className="grid gap-4 px-6 py-5 sm:grid-cols-3 sm:gap-6 sm:px-8 sm:py-6 lg:px-10 lg:py-7">
+        <div className="grid gap-4 px-4 py-5 sm:grid-cols-3 sm:gap-6 sm:px-6 sm:py-6 lg:px-8 lg:py-7 xl:px-10">
           {items.map(({ icon: Icon, title, body }, index) => (
             <div
               key={title}

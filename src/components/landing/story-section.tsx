@@ -30,14 +30,14 @@ const benefits = [
 
 export function StorySection() {
   return (
-    <section className="relative border-t border-border/60 bg-gradient-to-b from-[var(--hero-bg)] via-[var(--section-alt)] to-background py-24 md:py-28 lg:py-32">
+    <section className="relative border-t border-border/60 bg-gradient-to-b from-[var(--hero-bg)] via-[var(--section-alt)] to-background py-16 sm:py-20 md:py-24 lg:py-28 2xl:py-32">
       {/* soft radial accent */}
       <div className="pointer-events-none absolute inset-0 -z-10">
         <div className="absolute left-1/4 top-0 h-64 w-64 rounded-full bg-primary/10 blur-3xl" />
         <div className="absolute right-[15%] bottom-[-4rem] h-72 w-72 rounded-full bg-[var(--sage-light)]/30 blur-3xl" />
       </div>
 
-      <div className="relative mx-auto max-w-6xl px-6 lg:px-10">
+      <div className="relative mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-10 2xl:max-w-[90rem]">
         <div className="mx-auto max-w-3xl text-center">
           <FadeIn delay={0.1}>
             <p className="inline-flex items-center justify-center rounded-full bg-card/70 px-4 py-1 text-[11px] font-semibold uppercase tracking-[0.25em] text-primary shadow-soft backdrop-blur">
@@ -57,7 +57,7 @@ export function StorySection() {
           </ScrollReveal>
         </div>
 
-        <div className="mt-14 grid gap-7 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="mt-10 grid gap-5 sm:mt-12 sm:gap-6 sm:grid-cols-2 lg:mt-14 lg:gap-7 lg:grid-cols-4">
           {benefits.map((item, index) => (
             <FadeIn key={item.title} delay={0.15 + index * 0.06}>
               <article className="group relative flex h-full flex-col rounded-3xl bg-card/80 px-6 py-7 text-left shadow-card backdrop-blur-xl transition-transform transition-shadow duration-300 ease-out hover:-translate-y-1.5 hover:shadow-[0_22px_45px_rgba(15,23,42,0.18)]">
