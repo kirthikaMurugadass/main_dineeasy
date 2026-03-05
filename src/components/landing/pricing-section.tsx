@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { motion } from "framer-motion";
-import { Check, Crown, Sparkles } from "lucide-react";
+import { Check, Crown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
@@ -44,8 +44,7 @@ export function PricingSection() {
       <div className="mx-auto max-w-6xl px-6 lg:px-10">
         {/* 1️⃣ Top Area (Centered) */}
         <div className="mx-auto max-w-3xl text-center">
-          <p className="inline-flex items-center justify-center rounded-full border border-border/60 bg-card/80 px-3 py-1 text-xs font-medium uppercase tracking-[0.22em] text-primary shadow-soft backdrop-blur">
-            <Sparkles className="mr-1.5 h-3.5 w-3.5" />
+          <p className="text-xs font-semibold uppercase tracking-[0.25em] text-primary">
             Pricing
           </p>
           <h2 className="mt-5 text-balance text-[clamp(2.2rem,3.4vw+0.6rem,3.1rem)] font-semibold leading-tight tracking-tight text-foreground">
@@ -58,9 +57,9 @@ export function PricingSection() {
           </p>
 
           <div className="mt-8 flex items-center justify-center">
-            <div className="relative inline-flex items-center gap-1 rounded-full bg-card/80 p-1 ring-1 ring-border/60 backdrop-blur-xl shadow-soft">
+            <div className="relative inline-flex items-center gap-1 rounded-full bg-white/55 p-1 ring-1 ring-primary/15 backdrop-blur-xl shadow-soft">
               <motion.div
-                className="absolute inset-y-1 w-[92px] rounded-full bg-foreground shadow-soft"
+                className="absolute inset-y-1 w-[92px] rounded-full bg-primary shadow-soft"
                 animate={{ x: isAnnual ? 98 : 0 }}
                 transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
               />
@@ -69,7 +68,7 @@ export function PricingSection() {
                 onClick={() => setBillingCycle("monthly")}
                 className={cn(
                   "relative z-10 rounded-full px-4 py-1.5 text-xs font-semibold transition",
-                  !isAnnual ? "text-background" : "text-muted-foreground"
+                  !isAnnual ? "text-primary-foreground" : "text-muted-foreground"
                 )}
               >
                 Monthly
@@ -79,13 +78,10 @@ export function PricingSection() {
                 onClick={() => setBillingCycle("annual")}
                 className={cn(
                   "relative z-10 inline-flex items-center gap-2 rounded-full px-4 py-1.5 text-xs font-semibold transition",
-                  isAnnual ? "text-background" : "text-muted-foreground"
+                  isAnnual ? "text-primary-foreground" : "text-muted-foreground"
                 )}
               >
                 Annual
-                <span className="rounded-full bg-emerald-500/12 px-2 py-0.5 text-[10px] font-semibold text-emerald-600">
-                  Save 17%
-                </span>
               </button>
             </div>
           </div>
@@ -99,16 +95,19 @@ export function PricingSection() {
         </div>
 
         {/* 2️⃣ Bottom Area (Cards Section) */}
-        <div className="mt-14 grid grid-cols-1 items-stretch gap-6 md:grid-cols-2 lg:gap-8">
+        <div className="mt-14 mx-auto grid max-w-5xl grid-cols-1 items-stretch justify-items-center gap-6 md:grid-cols-2 md:gap-7 lg:gap-8">
           {/* Free Plan */}
           <motion.div
             initial={{ opacity: 0, y: 16 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, amount: 0.35 }}
             transition={{ duration: 0.35, ease: "easeOut" }}
-            className="h-full"
+            whileHover={{ y: -5 }}
+            transition={{ type: "spring", stiffness: 260, damping: 22 }}
+            className="h-full w-full max-w-[460px]"
           >
-            <div className="flex h-full flex-col rounded-2xl border border-border/70 bg-card/85 p-6 shadow-soft backdrop-blur">
+            <div className="group relative flex h-full flex-col rounded-2xl border border-primary/18 bg-white/55 p-6 shadow-soft backdrop-blur-xl transition-all duration-300 hover:shadow-card">
+              <div className="pointer-events-none absolute inset-0 rounded-2xl bg-[radial-gradient(circle_at_20%_0%,rgba(232,228,217,0.75),transparent_60%)] opacity-80" />
               <div className="mb-3">
                 <h3 className="text-base font-semibold text-foreground">Free</h3>
                 <p className="mt-1 text-xs text-muted-foreground">
@@ -122,7 +121,7 @@ export function PricingSection() {
               <ul className="mt-5 flex-1 space-y-2 text-sm">
                 {featuresFree.map((feature) => (
                   <li key={feature} className="flex items-start gap-2">
-                    <Check className="mt-0.5 h-4 w-4 text-emerald-500" />
+                    <Check className="mt-0.5 h-4 w-4 text-primary/70" />
                     <span className="text-muted-foreground">{feature}</span>
                   </li>
                 ))}
@@ -130,7 +129,7 @@ export function PricingSection() {
               <div className="mt-auto pt-6">
                 <Button
                   asChild
-                  className="h-11 w-full rounded-xl bg-foreground text-sm font-semibold text-background shadow-soft hover:bg-foreground/90"
+                  className="h-11 w-full rounded-xl border border-primary/20 bg-white/55 text-sm font-semibold text-foreground shadow-soft backdrop-blur transition-all duration-300 hover:bg-white/70 hover:shadow-md"
                 >
                   <Link href="/signup?plan=free">Start Free</Link>
                 </Button>
@@ -144,42 +143,45 @@ export function PricingSection() {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, amount: 0.35 }}
             transition={{ duration: 0.4, ease: "easeOut" }}
-            className="h-full"
+            whileHover={{ y: -5 }}
+            transition={{ type: "spring", stiffness: 260, damping: 22 }}
+            className="h-full w-full max-w-[460px]"
           >
-            <div className="relative flex h-full flex-col rounded-2xl border border-primary/60 bg-gradient-to-b from-primary/90 via-primary to-primary/90 p-6 text-primary-foreground shadow-glow">
-              <div className="absolute right-4 top-4 inline-flex items-center gap-1 rounded-full bg-primary-foreground/15 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.18em] text-primary-foreground">
+            <div className="group relative flex h-full flex-col rounded-2xl border border-primary/26 bg-white/60 p-6 shadow-card backdrop-blur-xl transition-all duration-300 hover:shadow-floating">
+              <div className="pointer-events-none absolute -inset-0.5 rounded-2xl bg-[radial-gradient(circle_at_20%_0%,rgba(91,122,47,0.18),transparent_60%),radial-gradient(circle_at_90%_20%,rgba(232,228,217,0.65),transparent_60%)] opacity-80" />
+              <div className="absolute right-4 top-4 inline-flex items-center gap-1 rounded-full border border-primary/18 bg-white/55 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.18em] text-foreground shadow-soft backdrop-blur">
                 <Crown className="h-3 w-3" />
                 Most popular
               </div>
               <div className="mb-3">
-                <h3 className="text-base font-semibold text-primary-foreground">Pro</h3>
-                <p className="mt-1 text-xs text-primary-foreground/80">
+                <h3 className="text-base font-semibold text-foreground">Pro</h3>
+                <p className="mt-1 text-xs text-muted-foreground">
                   Full booking system with realtime coordination.
                 </p>
               </div>
               <div className="mt-2 flex items-baseline gap-1">
-                <span className="text-3xl font-semibold tracking-tight">
+                <span className="text-3xl font-semibold tracking-tight text-foreground">
                   {isAnnual ? "₹9,999" : "₹999"}
                 </span>
-                <span className="text-xs text-primary-foreground/80">
+                <span className="text-xs text-muted-foreground">
                   / {isAnnual ? "year" : "month"}
                 </span>
               </div>
-              <p className="mt-1 text-[11px] text-primary-foreground/75">
+              <p className="mt-1 text-[11px] text-muted-foreground">
                 Billed {isAnnual ? "once per year" : "monthly"}. Cancel anytime.
               </p>
               <ul className="mt-5 flex-1 space-y-2 text-sm">
                 {featuresPro.map((feature) => (
                   <li key={feature} className="flex items-start gap-2">
-                    <Check className="mt-0.5 h-4 w-4 text-emerald-200" />
-                    <span className="text-primary-foreground/90">{feature}</span>
+                    <Check className="mt-0.5 h-4 w-4 text-primary/70" />
+                    <span className="text-muted-foreground">{feature}</span>
                   </li>
                 ))}
               </ul>
               <div className="mt-auto pt-6">
                 <Button
                   asChild
-                  className="h-11 w-full rounded-xl bg-primary-foreground text-sm font-semibold text-primary shadow-soft hover:bg-primary-foreground/95"
+                  className="h-11 w-full rounded-xl bg-primary text-sm font-semibold text-primary-foreground shadow-lg shadow-primary/20 transition-all duration-300 hover:scale-[1.01] hover:bg-primary/90 hover:shadow-xl hover:shadow-primary/25"
                 >
                   <Link href={`/signup?plan=pro&billing=${billingCycle}`}>
                     Upgrade to Pro
