@@ -3,58 +3,84 @@
 import Link from "next/link";
 import { StaggerContainer, StaggerItem, FadeIn } from "@/components/motion";
 import { Button } from "@/components/ui/button";
-import { PhoneMockup } from "@/components/landing/phone-mockup";
-import { useI18n } from "@/lib/i18n/context";
+import { PhoneDemo } from "@/components/landing/phone-demo";
+
+const steps = [
+  {
+    title: "Scan the QR code",
+    description: "Guests point their camera at the table QR code—no app downloads or logins required.",
+  },
+  {
+    title: "Order instantly from the menu",
+    description: "Guests add items to cart, checkout in seconds, and get a confirmed order state—right on their phone.",
+  },
+  {
+    title: "Book a table in seconds",
+    description: "Guests choose a time slot and confirm a reservation with a clean, modern booking flow.",
+  },
+];
 
 export function WorkflowSection() {
-  const { t } = useI18n();
-  const steps = t.landing.workflow.steps;
-
   return (
     <section
       id="workflow"
-      className="relative overflow-hidden border-t border-border/60 bg-background py-24 md:py-32"
+      className="relative overflow-hidden border-t border-border/60 bg-[radial-gradient(circle_at_15%_0%,rgba(91,122,47,0.12),transparent_48%),radial-gradient(circle_at_95%_10%,rgba(232,228,217,0.85),transparent_55%),linear-gradient(180deg,var(--warm),var(--section-alt))] py-24 md:py-28 lg:py-32"
     >
-      <div className="mx-auto max-w-6xl px-6">
+      {/* Ambient blur shapes */}
+      <div className="pointer-events-none absolute inset-0 -z-10">
+        <div className="absolute left-[10%] top-10 h-72 w-72 rounded-full bg-primary/10 blur-3xl" />
+        <div className="absolute right-[12%] bottom-[-5rem] h-80 w-80 rounded-full bg-[var(--sage-light)]/35 blur-3xl" />
+        <div className="absolute left-1/2 top-[40%] h-56 w-56 -translate-x-1/2 rounded-full bg-primary/8 blur-3xl" />
+      </div>
+
+      <div className="mx-auto max-w-6xl px-6 lg:px-10">
         <div className="grid gap-16 lg:grid-cols-2 lg:gap-20 lg:items-center">
           <div>
             <FadeIn>
-              <p className="text-sm font-medium uppercase tracking-[0.2em] text-primary">
-                {t.landing.workflow.eyebrow}
+              <p className="text-xs font-semibold uppercase tracking-[0.25em] text-primary">
+                How it works
               </p>
             </FadeIn>
             <FadeIn delay={0.08}>
-              <h2 className="mt-4 font-sans text-[clamp(1.75rem,3vw+0.5rem,2.75rem)] font-semibold leading-tight tracking-tight text-foreground">
-                {t.landing.workflow.headline}
+              <h2 className="mt-4 font-sans text-[clamp(1.9rem,3vw+0.5rem,2.7rem)] font-semibold leading-tight tracking-tight text-foreground">
+                A live product demo—right in your browser.
               </h2>
             </FadeIn>
-            <StaggerContainer className="mt-12 space-y-8">
+            <FadeIn delay={0.14}>
+              <p className="mt-4 max-w-xl text-base leading-relaxed text-muted-foreground sm:text-lg">
+                Watch the flow guests experience at the table: scan a QR, add items to cart, confirm an order,
+                then reserve a time slot—all without downloading an app.
+              </p>
+            </FadeIn>
+            <StaggerContainer className="mt-10 space-y-7" staggerDelay={0.06}>
               {steps.map((step, i) => (
-                <StaggerItem key={i} className="flex gap-5">
-                  <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border-2 border-primary bg-primary/10 text-sm font-semibold text-primary">
+                <StaggerItem key={step.title} className="flex gap-4">
+                  <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-primary/40 bg-card/70 text-sm font-semibold text-primary shadow-soft backdrop-blur">
                     {i + 1}
                   </span>
                   <div>
-                    <h3 className="font-sans text-lg font-semibold text-foreground">
+                    <h3 className="font-sans text-base font-semibold text-foreground">
                       {step.title}
                     </h3>
-                    <p className="mt-1 text-muted-foreground">{step.description}</p>
+                    <p className="mt-1 text-sm leading-relaxed text-muted-foreground">
+                      {step.description}
+                    </p>
                   </div>
                 </StaggerItem>
               ))}
             </StaggerContainer>
-            <FadeIn delay={0.2}>
+            <FadeIn delay={0.25}>
               <Link href="/signup" className="mt-10 inline-block">
-                <Button size="lg" className="rounded-xl">
-                  {t.landing.hero.cta}
+                <Button size="lg" className="rounded-full px-8 shadow-lg shadow-primary/20 hover:shadow-xl hover:shadow-primary/30 transition-all duration-300">
+                  Start with DineEasy
                 </Button>
               </Link>
             </FadeIn>
           </div>
           <FadeIn delay={0.15} direction="left">
             <div className="relative flex justify-center lg:justify-end">
-              <div className="w-full max-w-[260px] sm:max-w-[300px]">
-                <PhoneMockup withFloating={false} />
+              <div className="w-full max-w-[300px] lg:max-w-[280px]">
+                <PhoneDemo />
               </div>
             </div>
           </FadeIn>

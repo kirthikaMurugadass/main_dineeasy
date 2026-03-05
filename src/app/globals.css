@@ -126,84 +126,103 @@
   --shadow-floating: 0 10px 30px rgba(15, 23, 42, 0.08);
   --shadow-glow: 0 0 0 1px rgba(148, 163, 184, 0.16);
 
-  /* Light theme */
-  --background: #fafbfc;
-  --foreground: #0f0f0f;
-  --card: #ffffff;
-  --card-foreground: #0f0f0f;
-  --popover: #ffffff;
-  --popover-foreground: #0f0f0f;
-  --primary: #0f0f0f;
-  --primary-foreground: #fafbfc;
-  --secondary: #f1f3f5;
-  --secondary-foreground: #0f0f0f;
-  --muted: #f1f3f5;
-  --muted-foreground: #6b7280;
-  --accent: #eef0f2;
-  --accent-foreground: #0f0f0f;
-  --destructive: #dc2626;
-  --border: #e5e7eb;
-  --input: #e5e7eb;
-  --ring: #0f0f0f;
-  --gold: #e5e7eb;
-  --olive: #6b7280;
-  --espresso: #0f0f0f;
-  --warm: #fafbfc;
-  --chart-1: #0f0f0f;
-  --chart-2: #6b7280;
-  --chart-3: #9ca3af;
-  --chart-4: #d1d5db;
-  --chart-5: #e5e7eb;
-  --sidebar: #f8f9fa;
-  --sidebar-foreground: #0f0f0f;
-  --sidebar-primary: #0f0f0f;
-  --sidebar-primary-foreground: #fafbfc;
-  --sidebar-accent: #eef0f2;
-  --sidebar-accent-foreground: #0f0f0f;
-  --sidebar-border: #e5e7eb;
-  --sidebar-ring: #0f0f0f;
+  /* Light theme – Sage Green Organic */
+  --background: #FAFAF5;
+  --foreground: #2D3A1A;
+  --card: #F0EDE4;
+  --card-foreground: #2D3A1A;
+  --popover: #FAFAF5;
+  --popover-foreground: #2D3A1A;
+  --primary: #5B7A2F;
+  --primary-foreground: #FFFFFF;
+  --secondary: #EAE7DC;
+  --secondary-foreground: #3D4F2A;
+  --muted: #F0EDE4;
+  --muted-foreground: #6B7B5A;
+  --accent: #E8E4D9;
+  --accent-foreground: #3D4F2A;
+  --destructive: #B44133;
+  --border: #D6D2C4;
+  --input: #D6D2C4;
+  --ring: #5B7A2F;
+  --gold: #E8E4D9;
+  --olive: #6B7B5A;
+  --espresso: #2D3A1A;
+  --warm: #F5F2EA;
+  --chart-1: #5B7A2F;
+  --chart-2: #7A9E4A;
+  --chart-3: #A3C068;
+  --chart-4: #E8E4D9;
+  --chart-5: #D6D2C4;
+  --sidebar: #F5F2EA;
+  --sidebar-foreground: #2D3A1A;
+  --sidebar-primary: #5B7A2F;
+  --sidebar-primary-foreground: #FFFFFF;
+  --sidebar-accent: #E8E4D9;
+  --sidebar-accent-foreground: #2D3A1A;
+  --sidebar-border: #D6D2C4;
+  --sidebar-ring: #5B7A2F;
+  /* Landing tokens */
+  --hero-bg: #F5F2EA;
+  --section-alt: #F0EDE4;
+  --feature-bar: #E8E4D9;
+  --dark-section: #2D3A1A;
+  --dark-section-foreground: #F0EDE4;
+  --sage-light: #E8E4D9;
+  --sage-medium: #7A9E4A;
+  --sage-dark: #3D4F2A;
+  --radius: 0.75rem;
 }
 
 .dark {
-  --background: #09090b;
-  --foreground: #fafafa;
-  --card: #18181b;
-  --card-foreground: #fafafa;
-  --popover: #18181b;
-  --popover-foreground: #fafafa;
-  --primary: #fafafa;
-  --primary-foreground: #09090b;
-  --secondary: #27272a;
-  --secondary-foreground: #fafafa;
-  --muted: #27272a;
-  --muted-foreground: #a1a1aa;
-  --accent: #27272a;
-  --accent-foreground: #fafafa;
-  --destructive: #ef4444;
-  --border: rgba(255, 255, 255, 0.08);
-  --input: rgba(255, 255, 255, 0.1);
-  --ring: #fafafa;
-  --gold: #3f3f46;
-  --olive: #a1a1aa;
-  --espresso: #fafafa;
-  --warm: #fafafa;
-  --chart-1: #fafafa;
-  --chart-2: #a1a1aa;
-  --chart-3: #71717a;
-  --chart-4: #52525b;
-  --chart-5: #3f3f46;
-  --sidebar: #09090b;
-  --sidebar-foreground: #fafafa;
-  --sidebar-primary: #fafafa;
-  --sidebar-primary-foreground: #09090b;
-  --sidebar-accent: #27272a;
-  --sidebar-accent-foreground: #fafafa;
-  --sidebar-border: rgba(255, 255, 255, 0.08);
-  --sidebar-ring: #fafafa;
-  --shadow-soft: 0 1px 4px rgba(15, 23, 42, 0.18);
-  --shadow-card: 0 4px 18px rgba(15, 23, 42, 0.18);
-  --shadow-floating: 0 10px 30px rgba(15, 23, 42, 0.22);
-  --shadow-glow: 0 0 0 1px rgba(148, 163, 184, 0.3);
+  --background: #1A2212;
+  --foreground: #E8E4D9;
+  --card: #243019;
+  --card-foreground: #E8E4D9;
+  --popover: #1A2212;
+  --popover-foreground: #E8E4D9;
+  --primary: #7A9E4A;
+  --primary-foreground: #1A2212;
+  --secondary: #2D3A1A;
+  --secondary-foreground: #D6D2C4;
+  --muted: #2D3A1A;
+  --muted-foreground: #9CA88A;
+  --accent: #2D3A1A;
+  --accent-foreground: #E8E4D9;
+  --destructive: #C45B4E;
+  --border: #3D4F2A;
+  --input: #3D4F2A;
+  --ring: #7A9E4A;
+  --gold: #2D3A1A;
+  --olive: #9CA88A;
+  --espresso: #E8E4D9;
+  --warm: #1E2A15;
+  --chart-1: #7A9E4A;
+  --chart-2: #A3C068;
+  --chart-3: #9CA88A;
+  --chart-4: #3D4F2A;
+  --chart-5: #111A0C;
+  --sidebar: #111A0C;
+  --sidebar-foreground: #E8E4D9;
+  --sidebar-primary: #7A9E4A;
+  --sidebar-primary-foreground: #1A2212;
+  --sidebar-accent: #2D3A1A;
+  --sidebar-accent-foreground: #E8E4D9;
+  --sidebar-border: #3D4F2A;
+  --sidebar-ring: #7A9E4A;
+  --shadow-soft: 0 1px 4px rgba(0, 0, 0, 0.35);
+  --shadow-card: 0 4px 18px rgba(0, 0, 0, 0.45);
+  --shadow-floating: 0 10px 30px rgba(0, 0, 0, 0.55);
+  --shadow-glow: 0 0 0 1px rgba(148, 163, 184, 0.35);
+  /* Dark landing tokens */
+  --hero-bg: #1E2A15;
+  --section-alt: #243019;
+  --feature-bar: #2D3A1A;
+  --dark-section: #111A0C;
+  --dark-section-foreground: #E8E4D9;
+  --sage-light: #2D3A1A;
+  --sage-medium: #7A9E4A;
+  --sage-dark: #A3C068;
 }
 
 html {
@@ -297,6 +316,13 @@ html.dark-transition *::after {
   .text-balance {
     text-wrap: balance;
   }
+  /* Scroll reveal animation delays */
+  .delay-100 { animation-delay: 100ms; }
+  .delay-200 { animation-delay: 200ms; }
+  .delay-300 { animation-delay: 300ms; }
+  .delay-400 { animation-delay: 400ms; }
+  .delay-500 { animation-delay: 500ms; }
+  .delay-600 { animation-delay: 600ms; }
 }
 
 ::-webkit-scrollbar {
@@ -324,6 +350,18 @@ html.dark-transition *::after {
   from { opacity: 0; transform: translateY(24px); }
   to { opacity: 1; transform: translateY(0); }
 }
+@keyframes fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+@keyframes slide-in-left {
+  from { opacity: 0; transform: translateX(-40px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+@keyframes slide-in-right {
+  from { opacity: 0; transform: translateX(40px); }
+  to { opacity: 1; transform: translateX(0); }
+}
 @keyframes scale-in {
   from { opacity: 0; transform: scale(0.96); }
   to { opacity: 1; transform: scale(1); }
@@ -340,6 +378,78 @@ html.dark-transition *::after {
 }
 .animate-parallax-bg {
   animation: parallax-bg 20s ease-in-out infinite alternate;
+}
+
+/* ───────────────────────────────────────────────────────────────────────────
+   Cinematic product demo (front-facing phone + subtle studio motion)
+   ─────────────────────────────────────────────────────────────────────────── */
+@keyframes phone-float-subtle {
+  0%, 100% { transform: translate3d(0, 0, 0); }
+  50% { transform: translate3d(0, -3px, 0); }
+}
+
+@keyframes phone-glare-sweep {
+  0% { transform: translateX(-40%) translateY(-25%) rotate(10deg); opacity: 0.12; }
+  55% { transform: translateX(25%) translateY(8%) rotate(12deg); opacity: 0.20; }
+  100% { transform: translateX(85%) translateY(18%) rotate(14deg); opacity: 0.10; }
+}
+
+@keyframes confetti-fall-subtle {
+  0% { transform: translateY(-12px) rotate(0deg); opacity: 0; }
+  12% { opacity: 0.55; }
+  100% { transform: translateY(130px) rotate(120deg); opacity: 0; }
+}
+
+.animate-phone-float {
+  animation: phone-float-subtle 10s ease-in-out infinite;
+  will-change: transform;
+}
+
+.animate-phone-glare {
+  animation: phone-glare-sweep 8s ease-in-out infinite alternate;
+  will-change: transform, opacity;
+}
+
+.confetti {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  overflow: hidden;
+}
+.confetti i {
+  position: absolute;
+  top: 0;
+  width: 6px;
+  height: 10px;
+  border-radius: 9999px;
+  animation: confetti-fall-subtle 900ms ease-out both;
+  filter: blur(0.25px);
+}
+
+/* Scroll-reveal utility classes driven by IntersectionObserver */
+.fade-up,
+.fade-in,
+.slide-in-left,
+.slide-in-right,
+.scale-in {
+  opacity: 0;
+  will-change: transform, opacity;
+}
+
+.fade-up.is-visible {
+  animation: fade-up 0.7s var(--ease-out-expo) forwards;
+}
+.fade-in.is-visible {
+  animation: fade-in 0.6s ease-out forwards;
+}
+.slide-in-left.is-visible {
+  animation: slide-in-left 0.7s var(--ease-out-expo) forwards;
+}
+.slide-in-right.is-visible {
+  animation: slide-in-right 0.7s var(--ease-out-expo) forwards;
+}
+.scale-in.is-visible {
+  animation: scale-in 0.6s var(--ease-out-expo) forwards;
 }
 
 /* Hero: ambient gradient mesh */

@@ -21,6 +21,7 @@ import { cn } from "@/lib/utils";
 const navLinks = [
   { key: "home" as const, href: "/" },
   { key: "features" as const, href: "#features" },
+  { key: "pricing" as const, href: "#pricing" },
  
   { key: "contact" as const, href: "#contact" },
 ] as const;
@@ -60,26 +61,37 @@ export function Navbar() {
         animate={{ y: 0, opacity: 1 }}
         transition={{ duration: 0.3, ease: [0.25, 0.46, 0.45, 0.94] }}
         className={cn(
-          "fixed inset-x-0 top-0 z-[9999] border-b transition-all duration-300 ease-out",
+          "fixed inset-x-0 top-0 z-[9999] border-b border-border/60 transition-all duration-300 ease-out",
           scrolled
-            ? "bg-background/80 shadow-sm backdrop-blur-md"
-            : "bg-transparent shadow-none backdrop-blur-0"
+            ? "bg-background/90 shadow-md backdrop-blur-md"
+            : "border-transparent bg-black/30 shadow-none backdrop-blur-md"
         )}
       >
         <div className="mx-auto flex h-16 max-w-6xl items-center justify-between gap-8 px-6 lg:h-[72px] lg:px-10">
           {/* Left: Logo — always high contrast (AppLogo renders the link to avoid nested <a>) */}
-          <AppLogo href="/" variant="default" size="md" className="shrink-0" ariaLabel="DineEasy Home" />
+          <AppLogo
+            href="/"
+            variant="default"
+            size="md"
+            className="shrink-0 transition-transform duration-300 ease-out hover:rotate-3"
+            ariaLabel="DineEasy Home"
+          />
 
           {/* Center: Nav links — desktop only */}
-          <nav className="hidden items-center gap-1 md:flex md:gap-0.5" aria-label="Main">
+          <nav className="hidden items-center gap-2 md:flex" aria-label="Main">
             {navLinks.map(({ key, href }) => (
               <Link
                 key={key}
                 href={href}
-                className="group relative px-4 py-2 text-sm font-medium text-foreground transition-colors hover:text-primary"
+                className={cn(
+                  "group relative inline-flex items-center rounded-full px-4 py-2 text-sm font-medium transition-colors duration-300",
+                  scrolled
+                    ? "text-muted-foreground hover:text-foreground"
+                    : "text-white hover:text-[var(--sage-light)]"
+                )}
               >
+                <span className="absolute inset-0 rounded-full bg-[var(--accent)]/70 opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
                 <span className="relative z-10">{t.landing.nav[key]}</span>
-                <span className="absolute bottom-1 left-4 right-4 h-px scale-x-0 bg-primary transition-transform duration-200 group-hover:scale-x-100" />
               </Link>
             ))}
           </nav>
@@ -92,7 +104,12 @@ export function Navbar() {
                   <Button
                     variant="ghost"
                     size="icon"
-                    className="h-9 w-9 rounded-lg text-foreground hover:bg-muted hover:text-foreground"
+                    className={cn(
+                      "h-9 w-9 rounded-full transition-colors",
+                      scrolled
+                        ? "text-foreground hover:bg-accent hover:text-foreground"
+                        : "text-white hover:bg-white/10 hover:text-white"
+                    )}
                     title={t.landing.nav.selectLanguage}
                     aria-label={t.landing.nav.selectLanguage}
                   >
@@ -139,7 +156,12 @@ export function Navbar() {
                   <Button
                     variant="ghost"
                     size="icon"
-                    className="h-9 w-9 rounded-lg text-foreground hover:bg-muted hover:text-foreground"
+                    className={cn(
+                      "h-9 w-9 rounded-full transition-colors",
+                      scrolled
+                        ? "text-foreground hover:bg-accent hover:text-foreground"
+                        : "text-white hover:bg-white/10 hover:text-white"
+                    )}
                     aria-label={t.landing.nav.theme}
                   >
                     <ThemeIcon className="h-[18px] w-[18px]" />
@@ -175,7 +197,12 @@ export function Navbar() {
               <Button
                 variant="ghost"
                 size="sm"
-                className="h-9 rounded-lg px-4 text-sm font-medium text-foreground hover:bg-muted hover:text-foreground"
+                className={cn(
+                  "h-9 rounded-full px-4 text-sm font-medium transition-colors",
+                  scrolled
+                    ? "text-foreground hover:bg-accent hover:text-[var(--sage-dark)]"
+                    : "text-white hover:bg-white/10"
+                )}
               >
                 {t.landing.nav.login}
               </Button>
@@ -183,7 +210,7 @@ export function Navbar() {
             <Link href="/signup" className="hidden sm:block">
               <Button
                 size="sm"
-                className="h-9 rounded-lg px-4 text-sm font-medium shadow-sm transition-shadow hover:shadow-md"
+                className="h-9 rounded-full px-5 text-sm font-semibold shadow-lg shadow-primary/40 transition-all duration-300 hover:bg-primary/90 hover:shadow-xl hover:shadow-primary/50"
               >
                 {t.landing.nav.cta}
               </Button>
@@ -193,7 +220,12 @@ export function Navbar() {
             <button
               type="button"
               onClick={() => setMobileOpen(!mobileOpen)}
-              className="flex h-10 w-10 items-center justify-center rounded-lg text-foreground hover:bg-muted md:hidden"
+              className={cn(
+                "flex h-10 w-10 items-center justify-center rounded-lg md:hidden",
+                scrolled
+                  ? "text-foreground hover:bg-muted"
+                  : "text-white hover:bg-white/10"
+              )}
               aria-label={mobileOpen ? "Close menu" : "Open menu"}
               aria-expanded={mobileOpen}
             >

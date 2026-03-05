@@ -6,6 +6,8 @@ import { ChefHat, UtensilsCrossed, Leaf, Home, ArrowRight } from "lucide-react";
 import { FadeIn } from "@/components/motion";
 import { Button } from "@/components/ui/button";
 import { useI18n } from "@/lib/i18n/context";
+import { useScrollReveal } from "@/hooks/useScrollReveal";
+import { cn } from "@/lib/utils";
 
 const featureIcons = [ChefHat, UtensilsCrossed, Leaf, Home];
 
@@ -14,6 +16,7 @@ export function AboutSection() {
   const sectionRef = useRef<HTMLElement>(null);
   const { scrollYProgress } = useScroll({ target: sectionRef, offset: ["start end", "end start"] });
   const y = useTransform(scrollYProgress, [0, 0.4], [40, -20]);
+  const { ref: revealRef, isVisible } = useScrollReveal<HTMLDivElement>();
 
   const features = [
     { icon: ChefHat, ...t.landing.about.features.chefs },
@@ -23,14 +26,25 @@ export function AboutSection() {
   ];
 
   return (
-    <section ref={sectionRef} id="about" className="relative overflow-hidden py-32 lg:py-40">
+    <section
+      ref={sectionRef}
+      id="about"
+      className="relative overflow-hidden bg-background py-32 lg:py-40"
+    >
       <div className="absolute inset-0 -z-10">
-        <div className="absolute right-1/4 top-0 h-[400px] w-[400px] rounded-full bg-primary/5 blur-3xl" />
-        <div className="absolute bottom-0 left-1/4 h-[360px] w-[360px] rounded-full bg-primary/[0.03] blur-3xl" />
+        <div className="absolute right-1/4 top-0 h-[400px] w-[400px] rounded-full bg-[var(--sage-light)]/40 blur-3xl" />
+        <div className="absolute bottom-0 left-1/4 h-[360px] w-[360px] rounded-full bg-[var(--sage-medium)]/20 blur-3xl" />
       </div>
 
       <div className="mx-auto max-w-6xl px-6 lg:px-10">
-        <div className="grid grid-cols-1 gap-16 lg:grid-cols-2 lg:gap-24 lg:items-center">
+        <div
+          ref={revealRef}
+          className={cn(
+            "grid grid-cols-1 gap-16 lg:grid-cols-2 lg:items-center lg:gap-24",
+            "slide-in-left",
+            isVisible && "is-visible"
+          )}
+        >
           <motion.div className="space-y-8" style={{ y }}>
             <FadeIn>
               <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
@@ -53,7 +67,7 @@ export function AboutSection() {
                 const Icon = item.icon;
                 return (
                   <FadeIn key={i} delay={0.25 + i * 0.08}>
-                    <div className="flex gap-4 rounded-2xl border border-border/80 bg-card/50 p-5 shadow-soft">
+                    <div className="flex gap-4 rounded-2xl border border-border/60 bg-card/60 p-5 shadow-soft backdrop-blur-sm transition-all duration-500 hover:-translate-y-1 hover:shadow-card">
                       <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
                         <Icon size={22} />
                       </div>
@@ -84,7 +98,7 @@ export function AboutSection() {
           </motion.div>
 
           <FadeIn direction="right" delay={0.15}>
-            <div className="relative aspect-[4/3] max-w-lg overflow-hidden rounded-3xl border border-border/80 bg-muted/40 shadow-card">
+            <div className="relative aspect-[4/3] max-w-lg overflow-hidden rounded-3xl border border-border/70 bg-card/70 shadow-card">
               <div
                 className="absolute inset-0 bg-cover bg-center bg-no-repeat"
                 style={{
@@ -92,7 +106,7 @@ export function AboutSection() {
                     'url("https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=800&q=80")',
                 }}
               />
-              <div className="absolute inset-0 bg-gradient-to-t from-background/90 via-background/40 to-transparent" />
+              <div className="absolute inset-0 bg-gradient-to-t from-[var(--hero-bg)]/95 via-[var(--hero-bg)]/40 to-transparent" />
             </div>
           </FadeIn>
         </div>

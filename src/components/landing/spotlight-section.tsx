@@ -1,39 +1,46 @@
 "use client";
 
+import { QrCode, Smartphone, Table2, ListTree, Clock3, Phone } from "lucide-react";
 import { SpotlightCard } from "@/components/ui/spotlight-card";
 
 const spotlightItems = [
   {
-    title: "Fast setup",
+    title: "QR menu access",
     description:
-      "Launch your digital menu in minutes, not weeks, with opinionated defaults and smart presets.",
+      "Generate branded QR codes for every table so guests can scan and open your live menu in seconds.",
+    icon: <QrCode className="h-5 w-5" />,
   },
   {
-    title: "Multi-language support",
+    title: "Instant food ordering",
     description:
-      "Serve guests in English, German, French, and Italian with a single, centrally managed menu.",
+      "Let guests send orders directly from their phone to your POS—no more waiting to flag staff.",
+    icon: <Smartphone className="h-5 w-5" />,
   },
   {
-    title: "QR menu system",
+    title: "Table booking via QR",
     description:
-      "Generate beautiful QR codes for tables, windows, and print, all linked to your live menu.",
+      "Allow guests to reserve or join a waitlist by scanning your QR code online or at the door.",
+    icon: <Table2 className="h-5 w-5" />,
   },
   {
-    title: "Real-time updates",
+    title: "Smart menu categories",
     description:
-      "Change prices, availability, or specials instantly—guests always see the latest version.",
+      "Organise dishes into intuitive categories so guests can quickly find exactly what they want.",
+    icon: <ListTree className="h-5 w-5" />,
   },
   {
-    title: "Analytics ready",
+    title: "Real-time order management",
     description:
-      "Get your menu structure ready for insights—what guests view, what converts, and what needs attention.",
+      "Track new, in-progress, and ready orders in a single, real-time view for your team.",
+    icon: <Clock3 className="h-5 w-5" />,
   },
   {
-    title: "Cloud sync",
+    title: "Mobile-first digital menu",
     description:
-      "Your menus stay in sync across all devices and locations, with nothing to install or maintain.",
+      "A beautiful menu designed for phones—no pinching, zooming, or PDF downloads required.",
+    icon: <Phone className="h-5 w-5" />,
   },
-];
+] as const;
 
 export function SpotlightSection() {
   return (
@@ -41,10 +48,10 @@ export function SpotlightSection() {
       <div className="mx-auto max-w-6xl px-6 lg:px-10">
         <div className="mx-auto max-w-3xl text-center">
           <p className="text-xs font-semibold uppercase tracking-[0.22em] text-primary">
-            Product
+            Product Features
           </p>
           <h2 className="mt-3 text-balance text-2xl font-semibold tracking-tight text-foreground sm:text-3xl md:text-4xl">
-            Everything you need. Nothing you don’t.
+            Everything you need to power QR-first dining.
           </h2>
         </div>
 
@@ -54,6 +61,7 @@ export function SpotlightSection() {
               key={item.title}
               title={item.title}
               description={item.description}
+              icon={item.icon}
             />
           ))}
         </div>
