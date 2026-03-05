@@ -26,11 +26,12 @@ export default function LandingPage() {
         <WorkflowSection />
         {/* <EcosystemSection /> */}
         <PricingSection />
-        <SpotlightSection />
+        {/* <SpotlightSection /> */}
         <TrustSection />
         <FinalCtaSection />
+        <Footer />
       </main>
-      <Footer />
+    
     </PageTransition>
   );
 }

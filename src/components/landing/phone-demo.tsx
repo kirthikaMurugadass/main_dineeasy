@@ -2,11 +2,11 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
-import { CheckCircle2, QrCode, ShoppingBag, Calendar, Camera, Sparkles } from "lucide-react";
+import { CheckCircle2, QrCode, ShoppingBag, Calendar, Camera } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { BrandText } from "@/components/ui/app-logo";
 
-type Scene = "scan" | "menu" | "booking";
+type Scene = "scanMenu" | "menu" | "scanBooking" | "booking";
 
 const easeOutExpo: [number, number, number, number] = [0.16, 1, 0.3, 1];
 
@@ -74,7 +74,19 @@ function IPhone15ProFrame({
   );
 }
 
-function SceneScan({ detected }: { detected: boolean }) {
+function SceneScan({
+  detected,
+  mode,
+}: {
+  detected: boolean;
+  mode: "menu" | "booking";
+}) {
+  const isMenuScan = mode === "menu";
+  const title = isMenuScan ? "DineEasy" : "Book a Table";
+  const subtitle = isMenuScan ? "Scan to view menu" : "Scan to reserve";
+  const tag = isMenuScan ? "QR Menu" : "Book a Table";
+  const statusText = isMenuScan ? "Opening app" : "Opening booking";
+
   return (
     <div className="relative">
       <div className="flex items-center justify-between">
@@ -92,34 +104,29 @@ function SceneScan({ detected }: { detected: boolean }) {
         animate={detected ? { x: [0, -1.5, 1.5, -1, 1, 0] } : undefined}
         transition={detected ? { duration: 0.32, ease: "easeOut" } : undefined}
       >
-        {/* table + qr stand */}
         <div className="relative overflow-hidden rounded-2xl bg-[linear-gradient(135deg,rgba(91,122,47,0.14),rgba(232,228,217,0.65))] p-4">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-xs font-semibold tracking-tight text-foreground">
-                Table 12
-              </p>
+              <p className="text-xs font-semibold tracking-tight text-foreground">{title}</p>
               <p className="mt-0.5 text-[11px] text-muted-foreground">
-                Scan to view menu
+                {subtitle}
               </p>
             </div>
-            <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-primary/12 text-primary">
-              <QrCode className="h-5 w-5" />
-            </div>
+            <span className="rounded-full bg-white/55 px-3 py-1 text-[10px] font-semibold text-foreground/75 ring-1 ring-black/5">
+              {tag}
+            </span>
           </div>
 
-          <div className="mt-4 grid grid-cols-[1fr_auto] gap-3 items-end">
-            <div className="h-20 rounded-2xl bg-white/45" />
+          {/* Single centered QR */}
+          <div className="mt-4 flex items-center justify-center py-1">
             <div
               className={cn(
-                "relative h-16 w-14 rounded-2xl bg-white/70 ring-1 ring-white/60",
-                detected && "shadow-[0_0_0_6px_rgba(122,158,74,0.20)]"
+                "relative flex h-24 w-24 items-center justify-center rounded-3xl bg-white/70 ring-1 ring-white/70",
+                detected && "shadow-[0_0_0_8px_rgba(122,158,74,0.18)]"
               )}
             >
-              <div className="absolute inset-2 rounded-xl bg-[linear-gradient(135deg,rgba(45,58,26,0.12),rgba(45,58,26,0.04))]" />
-              {detected && (
-                <div className="pointer-events-none absolute -inset-6 rounded-[26px] bg-primary/10 blur-xl" />
-              )}
+              <div className="pointer-events-none absolute inset-2 rounded-2xl bg-[linear-gradient(135deg,rgba(45,58,26,0.12),rgba(45,58,26,0.04))]" />
+              <QrCode className="relative h-10 w-10 text-primary" />
             </div>
           </div>
 
@@ -131,7 +138,7 @@ function SceneScan({ detected }: { detected: boolean }) {
           <motion.div
             aria-hidden
             className="pointer-events-none absolute left-4 right-4 h-0.5 rounded-full bg-primary/70 blur-[0.3px]"
-            animate={{ top: ["22%", "78%", "22%"] }}
+            animate={{ top: ["36%", "78%", "36%"] }}
             transition={{ duration: 2.2, repeat: Infinity, ease: "easeInOut" }}
             style={{ opacity: 0.75 }}
           />
@@ -148,7 +155,7 @@ function SceneScan({ detected }: { detected: boolean }) {
               : "bg-muted text-muted-foreground"
           )}
         >
-          {detected ? "Opening app" : "Searching"}
+          {detected ? statusText : "Searching"}
         </span>
       </div>
     </div>
@@ -347,6 +354,25 @@ function SceneBooking({ reserved }: { reserved: boolean }) {
 
       <div className="mt-4 rounded-3xl bg-card/80 p-4 ring-1 ring-border/60 backdrop-blur">
         <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-muted-foreground">
+          Select date
+        </p>
+        <div className="mt-3 grid grid-cols-3 gap-2">
+          {["Fri 12", "Sat 13", "Sun 14"].map((d, i) => (
+            <span
+              key={d}
+              className={cn(
+                "flex items-center justify-center rounded-2xl px-2 py-2 text-[11px] font-semibold",
+                i === 1
+                  ? "bg-primary text-primary-foreground shadow-sm"
+                  : "bg-muted text-muted-foreground"
+              )}
+            >
+              {d}
+            </span>
+          ))}
+        </div>
+
+        <p className="mt-4 text-[11px] font-semibold uppercase tracking-[0.22em] text-muted-foreground">
           Select time
         </p>
         <div className="mt-3 grid grid-cols-3 gap-2">
@@ -368,7 +394,7 @@ function SceneBooking({ reserved }: { reserved: boolean }) {
         <div className="mt-4 flex items-center justify-between rounded-2xl bg-[var(--hero-bg)] px-3 py-3">
           <p className="text-xs font-medium text-foreground">2 guests · Indoors</p>
           <span className="rounded-full bg-primary px-3 py-1 text-[11px] font-semibold text-primary-foreground shadow-sm">
-            Reserve
+            Confirm
           </span>
         </div>
       </div>
@@ -402,7 +428,7 @@ function SceneBooking({ reserved }: { reserved: boolean }) {
 
 export function PhoneDemo() {
   const prefersReduced = useReducedMotion();
-  const [scene, setScene] = useState<Scene>("scan");
+  const [scene, setScene] = useState<Scene>("scanMenu");
   const [scanDetected, setScanDetected] = useState(false);
   const [cartCount, setCartCount] = useState(0);
   const [orderConfirmed, setOrderConfirmed] = useState(false);
@@ -413,8 +439,9 @@ export function PhoneDemo() {
 
   const sequence = useMemo(
     () => [
-      { scene: "scan" as const, duration: 3200 },
+      { scene: "scanMenu" as const, duration: 3200 },
       { scene: "menu" as const, duration: 5200 },
+      { scene: "scanBooking" as const, duration: 3200 },
       { scene: "booking" as const, duration: 5000 },
     ],
     []
@@ -438,7 +465,7 @@ export function PhoneDemo() {
       setReserved(false);
 
       // scene micro-timings
-      if (next.scene === "scan") {
+      if (next.scene === "scanMenu" || next.scene === "scanBooking") {
         window.setTimeout(() => setScanDetected(true), 1600);
       }
       if (next.scene === "menu") {
@@ -491,7 +518,7 @@ export function PhoneDemo() {
     };
   }, [prefersReduced]);
 
-  // Reduced motion: show a stable “menu” state.
+  // Reduced motion: show a stable menu state.
   const stableScene: Scene = prefersReduced ? "menu" : scene;
 
   return (
@@ -500,24 +527,20 @@ export function PhoneDemo() {
         className="transform-gpu transition-transform duration-300"
         style={{ transform: `translate3d(${parallax.x}px, ${parallax.y}px, 0)` }}
       >
-        <div className="pointer-events-none absolute -top-6 left-1/2 -translate-x-1/2 rounded-full bg-muted/70 px-3 py-1 text-[10px] font-semibold text-muted-foreground backdrop-blur">
-          <span className="inline-flex items-center gap-1.5">
-            <Sparkles className="h-3.5 w-3.5 text-primary" />
-            Live preview
-          </span>
-        </div>
-
         <IPhone15ProFrame animated={!prefersReduced}>
           <AnimatePresence mode="wait">
-        {stableScene === "scan" && (
+        {(stableScene === "scanMenu" || stableScene === "scanBooking") && (
           <motion.div
-            key="scan"
+            key={stableScene}
             initial={{ opacity: 0, y: 14 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -10 }}
             transition={{ duration: 0.5, ease: easeOutExpo }}
           >
-            <SceneScan detected={scanDetected} />
+            <SceneScan
+              detected={scanDetected}
+              mode={stableScene === "scanBooking" ? "booking" : "menu"}
+            />
           </motion.div>
         )}
 

@@ -24,13 +24,13 @@ export function WorkflowSection() {
   return (
     <section
       id="workflow"
-      className="relative overflow-hidden border-t border-border/60 bg-[radial-gradient(circle_at_15%_0%,rgba(91,122,47,0.12),transparent_48%),radial-gradient(circle_at_95%_10%,rgba(232,228,217,0.85),transparent_55%),linear-gradient(180deg,var(--warm),var(--section-alt))] py-24 md:py-28 lg:py-32"
+      className="relative overflow-hidden border-t border-border/60 bg-background py-24 md:py-28 lg:py-32"
     >
       {/* Ambient blur shapes */}
       <div className="pointer-events-none absolute inset-0 -z-10">
-        <div className="absolute left-[10%] top-10 h-72 w-72 rounded-full bg-primary/10 blur-3xl" />
-        <div className="absolute right-[12%] bottom-[-5rem] h-80 w-80 rounded-full bg-[var(--sage-light)]/35 blur-3xl" />
-        <div className="absolute left-1/2 top-[40%] h-56 w-56 -translate-x-1/2 rounded-full bg-primary/8 blur-3xl" />
+        <div className="absolute left-[10%] top-10 h-72 w-72 rounded-full bg-[var(--sage-light)]/22 blur-3xl" />
+        <div className="absolute right-[12%] bottom-[-5rem] h-80 w-80 rounded-full bg-[var(--sage-light)]/28 blur-3xl" />
+        <div className="absolute left-1/2 top-[40%] h-56 w-56 -translate-x-1/2 rounded-full bg-[var(--sage-light)]/18 blur-3xl" />
       </div>
 
       <div className="mx-auto max-w-6xl px-6 lg:px-10">
