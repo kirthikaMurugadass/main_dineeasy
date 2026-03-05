@@ -10,11 +10,11 @@ export function FinalCtaSection() {
   return (
     <section
       id="pricing"
-      className="relative overflow-hidden bg-[var(--hero-bg)] pt-14 pb-10 md:pt-20 md:pb-12"
+      className="relative overflow-hidden bg-[var(--hero-bg)] pt-12 pb-8 sm:pt-14 sm:pb-10 md:pt-18 md:pb-12 lg:pt-20"
     >
-      <div className="mx-auto max-w-7xl px-6 lg:px-10">
+      <div className="mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-10 2xl:max-w-[90rem]">
         <div className="relative z-10 rounded-[22px] bg-primary/24 shadow-[0_22px_70px_rgba(15,23,42,0.12)] ring-1 ring-black/5">
-          <div className="grid items-center gap-8 px-7 py-10 md:grid-cols-[340px_1fr] md:gap-10 md:px-12 md:py-12">
+          <div className="grid items-center gap-6 px-4 py-6 sm:gap-8 sm:px-6 sm:py-8 md:grid-cols-[300px_1fr] md:gap-8 md:px-8 md:py-10 lg:grid-cols-[340px_1fr] lg:gap-10 lg:px-12 lg:py-12">
             {/* Illustration */}
             <div className="relative mx-auto w-full max-w-[360px] md:max-w-none">
               <div className="relative aspect-[5/4] overflow-hidden rounded-[22px] bg-white/55 ring-1 ring-black/10 backdrop-blur-sm">
@@ -44,7 +44,7 @@ export function FinalCtaSection() {
                 </h2>
               </FadeIn>
               <FadeIn delay={0.12}>
-                <p className="mt-4 max-w-2xl text-balance text-sm leading-relaxed text-muted-foreground sm:text-base">
+                <p className="mx-auto mt-4 max-w-2xl text-balance text-sm leading-relaxed text-muted-foreground sm:text-base md:mx-0">
                   Launch your digital menu with DineEasy in minutes. Start free, connect your tables, and
                   let guests scan, browse, and order from anywhere in your space.
                 </p>

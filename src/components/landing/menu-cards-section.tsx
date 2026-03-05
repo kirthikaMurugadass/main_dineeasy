@@ -36,14 +36,14 @@ export function MenuCardsSection() {
     <section
       ref={sectionRef}
       className={cn(
-        "relative overflow-hidden bg-background py-24 md:py-28 lg:py-32",
+        "relative overflow-hidden bg-background py-16 sm:py-20 md:py-24 lg:py-28 2xl:py-32",
         "fade-up",
         sectionVisible && "is-visible"
       )}
     >
-      <div className="mx-auto max-w-5xl px-6 lg:px-10">
+      <div className="mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-10 2xl:max-w-[90rem]">
         {/* Heading + image row */}
-        <div className="grid gap-10 lg:grid-cols-[minmax(0,1.1fr)_minmax(0,0.9fr)] lg:items-center">
+        <div className="grid gap-8 sm:gap-10 lg:grid-cols-[minmax(0,1.1fr)_minmax(0,0.9fr)] lg:items-center lg:gap-14">
           <div className="space-y-5">
             <p className="text-center text-xs font-semibold uppercase tracking-[0.25em] text-primary lg:text-left">
               QR-powered journey
@@ -51,7 +51,7 @@ export function MenuCardsSection() {
             <h2 className="text-center text-[clamp(1.8rem,3vw+0.5rem,2.4rem)] font-semibold leading-tight tracking-tight text-foreground lg:text-left">
               From scan to paid in a single digital flow.
             </h2>
-            <p className="max-w-lg text-sm leading-relaxed text-muted-foreground">
+            <p className="mx-auto max-w-lg text-sm leading-relaxed text-muted-foreground lg:mx-0">
               DineEasy connects each table to a live, mobile-first menu. Guests
               scan a QR code, browse categories, place orders, and come back
               again—all without installing an app.
@@ -76,7 +76,7 @@ export function MenuCardsSection() {
         <div
           ref={cardsRef}
           className={cn(
-            "mt-16 grid gap-6 sm:grid-cols-2 lg:grid-cols-3",
+            "mt-12 grid gap-5 sm:mt-14 sm:gap-6 sm:grid-cols-2 lg:mt-16 lg:grid-cols-3",
             "fade-up",
             cardsVisible && "is-visible"
           )}

@@ -24,7 +24,7 @@ export function WorkflowSection() {
   return (
     <section
       id="workflow"
-      className="relative overflow-hidden border-t border-border/60 bg-background py-24 md:py-28 lg:py-32"
+      className="relative overflow-hidden border-t border-border/60 bg-background py-16 sm:py-20 md:py-24 lg:py-28 2xl:py-32"
     >
       {/* Ambient blur shapes */}
       <div className="pointer-events-none absolute inset-0 -z-10">
@@ -33,9 +33,9 @@ export function WorkflowSection() {
         <div className="absolute left-1/2 top-[40%] h-56 w-56 -translate-x-1/2 rounded-full bg-[var(--sage-light)]/18 blur-3xl" />
       </div>
 
-      <div className="mx-auto max-w-6xl px-6 lg:px-10">
-        <div className="grid gap-16 lg:grid-cols-2 lg:gap-20 lg:items-center">
-          <div>
+      <div className="mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-10 2xl:max-w-[90rem]">
+        <div className="grid gap-10 sm:gap-12 lg:grid-cols-2 lg:items-center lg:gap-16 xl:gap-20">
+          <div className="text-center lg:text-left">
             <FadeIn>
               <p className="text-xs font-semibold uppercase tracking-[0.25em] text-primary">
                 How it works
@@ -47,14 +47,14 @@ export function WorkflowSection() {
               </h2>
             </FadeIn>
             <FadeIn delay={0.14}>
-              <p className="mt-4 max-w-xl text-base leading-relaxed text-muted-foreground sm:text-lg">
+              <p className="mx-auto mt-4 max-w-xl text-base leading-relaxed text-muted-foreground sm:text-lg lg:mx-0">
                 Watch the flow guests experience at the table: scan a QR, add items to cart, confirm an order,
                 then reserve a time slot—all without downloading an app.
               </p>
             </FadeIn>
-            <StaggerContainer className="mt-10 space-y-7" staggerDelay={0.06}>
+            <StaggerContainer className="mt-8 space-y-6 sm:mt-10 sm:space-y-7" staggerDelay={0.06}>
               {steps.map((step, i) => (
-                <StaggerItem key={step.title} className="flex gap-4">
+                <StaggerItem key={step.title} className="flex gap-4 text-left">
                   <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-primary/40 bg-card/70 text-sm font-semibold text-primary shadow-soft backdrop-blur">
                     {i + 1}
                   </span>
@@ -70,7 +70,7 @@ export function WorkflowSection() {
               ))}
             </StaggerContainer>
             <FadeIn delay={0.25}>
-              <Link href="/signup" className="mt-10 inline-block">
+              <Link href="/signup" className="mt-8 inline-block sm:mt-10">
                 <Button size="lg" className="rounded-full px-8 shadow-lg shadow-primary/20 hover:shadow-xl hover:shadow-primary/30 transition-all duration-300">
                   Start with DineEasy
                 </Button>
@@ -79,7 +79,7 @@ export function WorkflowSection() {
           </div>
           <FadeIn delay={0.15} direction="left">
             <div className="relative flex justify-center lg:justify-end">
-              <div className="w-full max-w-[300px] lg:max-w-[280px]">
+              <div className="w-full max-w-[260px] sm:max-w-[290px] lg:max-w-[280px]">
                 <PhoneDemo />
               </div>
             </div>

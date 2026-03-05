@@ -11,8 +11,8 @@ const metrics = [
 
 export function TrustSection() {
   return (
-    <section className="relative border-t border-border/60 bg-background py-20 md:py-24 lg:py-28">
-      <div className="mx-auto max-w-6xl px-6 lg:px-10">
+    <section className="relative border-t border-border/60 bg-background py-16 sm:py-20 md:py-24 lg:py-28">
+      <div className="mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-10 2xl:max-w-[90rem]">
         <div className="mx-auto max-w-3xl text-center">
           <FadeIn>
             <p className="text-xs font-semibold uppercase tracking-[0.25em] text-primary">
@@ -32,7 +32,7 @@ export function TrustSection() {
           </FadeIn>
         </div>
 
-        <div className="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="mt-8 grid gap-4 sm:mt-10 sm:gap-6 sm:grid-cols-2 lg:grid-cols-4">
           {metrics.map((metric) => (
             <FadeIn key={metric.label} delay={0.16}>
               <div className="rounded-2xl border border-border/70 bg-card/90 px-5 py-6 text-center shadow-soft">

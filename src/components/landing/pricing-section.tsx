@@ -28,7 +28,7 @@ export function PricingSection() {
   const isAnnual = billingCycle === "annual";
 
   return (
-    <section className="relative overflow-hidden border-t border-border/70 bg-[radial-gradient(circle_at_15%_0%,rgba(91,122,47,0.10),transparent_48%),radial-gradient(circle_at_95%_10%,rgba(232,228,217,0.75),transparent_55%),linear-gradient(180deg,var(--warm),var(--section-alt))] py-24 sm:py-28 lg:py-32">
+    <section className="relative overflow-hidden border-t border-border/70 bg-[radial-gradient(circle_at_15%_0%,rgba(91,122,47,0.10),transparent_48%),radial-gradient(circle_at_95%_10%,rgba(232,228,217,0.75),transparent_55%),linear-gradient(180deg,var(--warm),var(--section-alt))] py-16 sm:py-20 md:py-24 lg:py-28 2xl:py-32">
       <div className="pointer-events-none absolute inset-0 -z-10">
         <div className="absolute left-[10%] top-10 h-72 w-72 rounded-full bg-primary/12 blur-3xl animate-parallax-bg" />
         <div
@@ -41,7 +41,7 @@ export function PricingSection() {
         />
       </div>
 
-      <div className="mx-auto max-w-6xl px-6 lg:px-10">
+      <div className="mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-10 2xl:max-w-[90rem]">
         {/* 1️⃣ Top Area (Centered) */}
         <div className="mx-auto max-w-3xl text-center">
           <p className="text-xs font-semibold uppercase tracking-[0.25em] text-primary">
@@ -95,7 +95,7 @@ export function PricingSection() {
         </div>
 
         {/* 2️⃣ Bottom Area (Cards Section) */}
-        <div className="mt-14 mx-auto grid max-w-5xl grid-cols-1 items-stretch justify-items-center gap-6 md:grid-cols-2 md:gap-7 lg:gap-8">
+        <div className="mt-10 mx-auto grid w-full max-w-5xl grid-cols-1 items-stretch justify-items-center gap-5 sm:mt-12 sm:gap-6 md:grid-cols-2 md:gap-6 lg:mt-14 lg:gap-8">
           {/* Free Plan */}
           <motion.div
             initial={{ opacity: 0, y: 16 }}
@@ -129,7 +129,7 @@ export function PricingSection() {
               <div className="mt-auto pt-6">
                 <Button
                   asChild
-                  className="h-11 w-full rounded-xl border border-primary/20 bg-white/55 text-sm font-semibold text-foreground shadow-soft backdrop-blur transition-all duration-300 hover:bg-white/70 hover:shadow-md"
+                className="h-11 w-full rounded-xl border border-primary/20 bg-white/55 text-sm font-semibold text-foreground shadow-soft backdrop-blur transition-all duration-300 hover:bg-white/70 hover:shadow-md"
                 >
                   <Link href="/signup?plan=free">Start Free</Link>
                 </Button>

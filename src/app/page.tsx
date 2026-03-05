@@ -18,7 +18,7 @@ export default function LandingPage() {
   return (
     <PageTransition>
       <Navbar />
-      <main>
+      <main className="overflow-x-clip">
         <Hero />
         <HeroFeatureBar />
         <MenuCardsSection />
