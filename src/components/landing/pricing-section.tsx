@@ -103,7 +103,6 @@ export function PricingSection() {
             viewport={{ once: true, amount: 0.35 }}
             transition={{ duration: 0.35, ease: "easeOut" }}
             whileHover={{ y: -5 }}
-            transition={{ type: "spring", stiffness: 260, damping: 22 }}
             className="h-full w-full max-w-[460px]"
           >
             <div className="group relative flex h-full flex-col rounded-2xl border border-primary/18 bg-white/55 p-6 shadow-soft backdrop-blur-xl transition-all duration-300 hover:shadow-card">
@@ -144,7 +143,6 @@ export function PricingSection() {
             viewport={{ once: true, amount: 0.35 }}
             transition={{ duration: 0.4, ease: "easeOut" }}
             whileHover={{ y: -5 }}
-            transition={{ type: "spring", stiffness: 260, damping: 22 }}
             className="h-full w-full max-w-[460px]"
           >
             <div className="group relative flex h-full flex-col rounded-2xl border border-primary/26 bg-white/60 p-6 shadow-card backdrop-blur-xl transition-all duration-300 hover:shadow-floating">
