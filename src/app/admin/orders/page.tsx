@@ -389,7 +389,7 @@ export default function OrdersPage() {
         <CardContent className="p-6">
           <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             {/* Tab Navigation */}
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 overflow-x-auto pb-1">
               <button
                 onClick={() => handleTabChange("all")}
                 className={`px-4 py-2 rounded-xl text-sm font-semibold transition-all duration-200 ${
@@ -424,7 +424,7 @@ export default function OrdersPage() {
 
             {/* Date Selector */}
             {mounted && (
-              <div className="flex items-center gap-2">
+              <div className="flex w-full items-center gap-2 sm:w-auto">
                 <Calendar className="h-4 w-4 text-[#6B7B5A] dark:text-[#9CA88A]" />
                 <input
                   type="date"

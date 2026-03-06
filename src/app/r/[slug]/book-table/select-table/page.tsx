@@ -727,7 +727,7 @@ export default function SelectTablePage() {
               <h1 className="text-2xl font-semibold text-[#2D3A1A]">Book a Table</h1>
             </div>
           </div>
-          <p className="ml-12 flex flex-wrap items-center gap-3 text-sm text-[#6B7B5A]">
+          <p className="ml-0 flex flex-wrap items-center gap-3 text-sm text-[#6B7B5A] sm:ml-12">
             <span className="inline-flex items-center gap-1.5">
               <Calendar className="h-4 w-4" />
               {stepData.bookingDate}
@@ -755,7 +755,7 @@ export default function SelectTablePage() {
             </Card>
           ) : (
             <div className="mx-auto w-full max-w-2xl">
-              <div className="grid grid-cols-4 gap-2">
+              <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-4">
                 {[...tables]
                   .sort((a, b) => {
                     const aMatch = a.table_name.match(/T-(\d+)/i);
