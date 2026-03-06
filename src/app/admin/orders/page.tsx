@@ -3,7 +3,7 @@
 import { useEffect, useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
-import { Loader2, Clock, ChefHat, CheckCircle, MoreVertical, Eye } from "lucide-react";
+import { Loader2, Clock, ChefHat, CheckCircle, MoreVertical, Eye, Calendar, ChevronLeft, ChevronRight, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { PageTitle } from "@/components/ui/page-title";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -70,11 +70,14 @@ export default function OrdersPage() {
   const { resetNotification } = useOrderNotification();
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
-  const [statusFilter, setStatusFilter] = useState<string>("active"); // Default to active orders
+  const [statusFilter, setStatusFilter] = useState<string>("all"); // Default to all orders
   const [updatingStatus, setUpdatingStatus] = useState<string | null>(null);
   const [restaurantId, setRestaurantId] = useState<string | null>(null);
   const [mounted, setMounted] = useState(false);
   const { isPro, loading: subscriptionLoading } = useSubscription();
+  const [selectedDate, setSelectedDate] = useState<string>("");
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage] = useState(10);
 
   const loadOrders = useCallback(async (currentRestaurantId: string) => {
     setLoading(true);
@@ -88,10 +91,19 @@ export default function OrdersPage() {
         .eq("restaurant_id", currentRestaurantId)
         .order("created_at", { ascending: false });
 
-      // Default filter: show pending + preparing first
-      if (statusFilter === "active") {
-        query = query.in("status", ["pending", "preparing"]);
-      } else if (statusFilter !== "all") {
+      // Date filter
+      if (selectedDate) {
+        const startOfDay = new Date(selectedDate);
+        startOfDay.setHours(0, 0, 0, 0);
+        const endOfDay = new Date(selectedDate);
+        endOfDay.setHours(23, 59, 59, 999);
+        query = query
+          .gte("created_at", startOfDay.toISOString())
+          .lte("created_at", endOfDay.toISOString());
+      }
+
+      // Filter by status
+      if (statusFilter !== "all") {
         query = query.eq("status", statusFilter);
       }
 
@@ -165,6 +177,7 @@ export default function OrdersPage() {
       });
 
       setOrders(ordersWithItems);
+      setCurrentPage(1); // Reset to first page when filters change
     } catch (error: any) {
       console.error("Error loading orders:", error);
       const errorMessage = error?.message || "Failed to load orders";
@@ -173,7 +186,7 @@ export default function OrdersPage() {
     } finally {
       setLoading(false);
     }
-  }, [statusFilter]);
+  }, [statusFilter, selectedDate]);
 
   useEffect(() => {
     setMounted(true);
@@ -242,7 +255,33 @@ export default function OrdersPage() {
     if (restaurantId && isPro) {
       loadOrders(restaurantId);
     }
-  }, [statusFilter, restaurantId, isPro, loadOrders]);
+  }, [statusFilter, selectedDate, restaurantId, isPro, loadOrders]);
+
+  // Pagination logic
+  const totalPages = Math.ceil(orders.length / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const paginatedOrders = orders.slice(startIndex, endIndex);
+
+  // Tab filter handlers
+  const handleTabChange = (tab: string) => {
+    if (tab === "all") {
+      setStatusFilter("all");
+    } else if (tab === "pending") {
+      setStatusFilter("pending");
+    } else if (tab === "completed") {
+      setStatusFilter("completed");
+    }
+    setCurrentPage(1);
+  };
+
+  // Get active tab based on statusFilter
+  const getActiveTab = () => {
+    if (statusFilter === "all") return "all";
+    if (statusFilter === "pending") return "pending";
+    if (statusFilter === "completed") return "completed";
+    return "all"; // Default
+  };
 
   async function updateOrderStatus(orderId: string, newStatus: string) {
     setUpdatingStatus(orderId);
@@ -308,165 +347,342 @@ export default function OrdersPage() {
     return null;
   }
 
+  // Get address display text
+  const getAddressText = (order: Order) => {
+    if (order.order_type === "dine_in" && order.table_number) {
+      return `Table ${order.table_number}`;
+    }
+    if (order.order_type === "takeaway" && order.delivery_address) {
+      return order.delivery_address;
+    }
+    return "-";
+  };
+
+  // Get status badge color
+  const getStatusBadgeColor = (status: Order["status"]) => {
+    switch (status) {
+      case "completed":
+        return "bg-[#5B7A2F]/10 text-[#5B7A2F] border-[#5B7A2F]/20 dark:bg-[#7A9E4A]/20 dark:text-[#7A9E4A] dark:border-[#7A9E4A]/30";
+      case "pending":
+        return "bg-yellow-100 text-yellow-700 border-yellow-200 dark:bg-yellow-900/30 dark:text-yellow-400 dark:border-yellow-800/30";
+      case "preparing":
+        return "bg-blue-100 text-blue-700 border-blue-200 dark:bg-blue-900/30 dark:text-blue-400 dark:border-blue-800/30";
+      default:
+        return "bg-gray-100 text-gray-700 border-gray-200 dark:bg-gray-800 dark:text-gray-300 dark:border-gray-700";
+    }
+  };
+
+  // Get customer avatar initial
+  const getAvatarInitial = (name: string) => {
+    return name.charAt(0).toUpperCase();
+  };
+
   return (
     <div className="space-y-6">
+      {/* Header with Title */}
       <div className="flex items-center justify-between">
         <PageTitle>{t.admin.orders.title}</PageTitle>
-        {mounted && (
-          <Select value={statusFilter} onValueChange={setStatusFilter}>
-            <SelectTrigger className="w-[180px]">
-              <SelectValue placeholder="Filter by status" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="active">Active Orders</SelectItem>
-              <SelectItem value="all">All Orders</SelectItem>
-              <SelectItem value="pending">Pending</SelectItem>
-              <SelectItem value="preparing">Preparing</SelectItem>
-              <SelectItem value="completed">Completed</SelectItem>
-            </SelectContent>
-          </Select>
-        )}
       </div>
 
+      {/* Tabs and Date Filter */}
+      <Card className="rounded-2xl border border-[#D6D2C4]/50 bg-gradient-to-br from-[#FAFAF5] to-[#F0EDE4]/50 shadow-sm dark:border-[#3D4F2A]/50 dark:from-[#1A2212] dark:to-[#243019]/50">
+        <CardContent className="p-6">
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+            {/* Tab Navigation */}
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => handleTabChange("all")}
+                className={`px-4 py-2 rounded-xl text-sm font-semibold transition-all duration-200 ${
+                  getActiveTab() === "all"
+                    ? "bg-[#5B7A2F] text-white shadow-md dark:bg-[#7A9E4A]"
+                    : "bg-white/50 text-[#6B7B5A] hover:bg-[#E8E4D9]/50 dark:bg-[#243019]/50 dark:text-[#9CA88A] dark:hover:bg-[#2D3A1A]/50"
+                }`}
+              >
+                All Orders
+              </button>
+              <button
+                onClick={() => handleTabChange("pending")}
+                className={`px-4 py-2 rounded-xl text-sm font-semibold transition-all duration-200 ${
+                  getActiveTab() === "pending"
+                    ? "bg-[#5B7A2F] text-white shadow-md dark:bg-[#7A9E4A]"
+                    : "bg-white/50 text-[#6B7B5A] hover:bg-[#E8E4D9]/50 dark:bg-[#243019]/50 dark:text-[#9CA88A] dark:hover:bg-[#2D3A1A]/50"
+                }`}
+              >
+                Pending
+              </button>
+              <button
+                onClick={() => handleTabChange("completed")}
+                className={`px-4 py-2 rounded-xl text-sm font-semibold transition-all duration-200 ${
+                  getActiveTab() === "completed"
+                    ? "bg-[#5B7A2F] text-white shadow-md dark:bg-[#7A9E4A]"
+                    : "bg-white/50 text-[#6B7B5A] hover:bg-[#E8E4D9]/50 dark:bg-[#243019]/50 dark:text-[#9CA88A] dark:hover:bg-[#2D3A1A]/50"
+                }`}
+              >
+                Completed
+              </button>
+            </div>
+
+            {/* Date Selector */}
+            {mounted && (
+              <div className="flex items-center gap-2">
+                <Calendar className="h-4 w-4 text-[#6B7B5A] dark:text-[#9CA88A]" />
+                <input
+                  type="date"
+                  value={selectedDate}
+                  onChange={(e) => {
+                    setSelectedDate(e.target.value);
+                    setCurrentPage(1);
+                  }}
+                  className="rounded-xl border border-[#D6D2C4]/50 bg-white px-3 py-2 text-sm text-[#2D3A1A] shadow-sm transition-all hover:border-[#5B7A2F]/50 focus:border-[#5B7A2F] focus:outline-none focus:ring-2 focus:ring-[#5B7A2F]/20 dark:border-[#3D4F2A]/50 dark:bg-[#243019] dark:text-[#E8E4D9] dark:hover:border-[#7A9E4A]/50 dark:focus:border-[#7A9E4A]"
+                />
+                {selectedDate && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => {
+                      setSelectedDate("");
+                      setCurrentPage(1);
+                    }}
+                    className="text-xs text-[#6B7B5A] hover:text-[#2D3A1A] dark:text-[#9CA88A] dark:hover:text-[#E8E4D9]"
+                  >
+                    Clear
+                  </Button>
+                )}
+              </div>
+            )}
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Orders Table */}
       {loading ? (
         <div className="flex items-center justify-center py-12">
-          <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+          <Loader2 className="h-6 w-6 animate-spin text-[#5B7A2F] dark:text-[#7A9E4A]" />
         </div>
       ) : orders.length === 0 ? (
         <FadeIn>
-          <Card>
+          <Card className="rounded-2xl border border-[#D6D2C4]/50 bg-gradient-to-br from-[#FAFAF5] to-[#F0EDE4]/50 shadow-sm dark:border-[#3D4F2A]/50 dark:from-[#1A2212] dark:to-[#243019]/50">
             <CardContent className="flex flex-col items-center justify-center py-12">
-              <p className="text-muted-foreground">{t.admin.orders.noOrders}</p>
+              <p className="text-[#6B7B5A] dark:text-[#9CA88A]">{t.admin.orders.noOrders}</p>
             </CardContent>
           </Card>
         </FadeIn>
       ) : (
-        <div className="space-y-4">
-          {orders.map((order, index) => (
-            <FadeIn key={order.id} delay={index * 0.05}>
-              <Card>
-                <CardHeader>
-                  <div className="flex items-start justify-between">
-                    <div className="space-y-1">
-                      <div className="flex items-center gap-3">
-                        <CardTitle className="text-lg">
-                          {order.customer_name}
-                        </CardTitle>
-                        <Badge
-                          variant="outline"
-                          className={`flex items-center gap-1.5 ${getStatusColor(order.status)}`}
-                        >
-                          {getStatusIcon(order.status)}
-                          {order.status.charAt(0).toUpperCase() +
-                            order.status.slice(1)}
-                        </Badge>
-                      </div>
-                      <div className="flex flex-wrap items-center gap-4 text-sm text-muted-foreground">
-                        <span>
-                          {order.order_type === "dine_in"
-                            ? "Dine-in"
-                            : "Takeaway"}
+        <Card className="rounded-2xl border border-[#D6D2C4]/50 bg-gradient-to-br from-[#FAFAF5] to-[#F0EDE4]/50 shadow-sm dark:border-[#3D4F2A]/50 dark:from-[#1A2212] dark:to-[#243019]/50">
+          <CardContent className="p-0">
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead>
+                  <tr className="border-b border-[#D6D2C4]/30 dark:border-[#3D4F2A]/30">
+                    <th className="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider text-[#6B7B5A] dark:text-[#9CA88A]">
+                      Order ID
+                    </th>
+                    <th className="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider text-[#6B7B5A] dark:text-[#9CA88A]">
+                      Customer Name
+                    </th>
+                    <th className="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider text-[#6B7B5A] dark:text-[#9CA88A]">
+                      Type
+                    </th>
+                    <th className="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider text-[#6B7B5A] dark:text-[#9CA88A]">
+                      Address
+                    </th>
+                    <th className="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider text-[#6B7B5A] dark:text-[#9CA88A]">
+                      Date
+                    </th>
+                    <th className="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider text-[#6B7B5A] dark:text-[#9CA88A]">
+                      Price
+                    </th>
+                    <th className="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider text-[#6B7B5A] dark:text-[#9CA88A]">
+                      Status
+                    </th>
+                    <th className="px-6 py-4 text-right text-xs font-bold uppercase tracking-wider text-[#6B7B5A] dark:text-[#9CA88A]">
+                      Action
+                    </th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-[#D6D2C4]/20 dark:divide-[#3D4F2A]/20">
+                  {paginatedOrders.map((order, index) => (
+                    <motion.tr
+                      key={order.id}
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: index * 0.03 }}
+                      className="transition-colors hover:bg-[#E8E4D9]/30 dark:hover:bg-[#2D3A1A]/30"
+                    >
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <span className="text-sm font-medium text-[#2D3A1A] dark:text-[#E8E4D9]">
+                          #{order.id.slice(0, 8)}
                         </span>
-                        {order.order_type === "dine_in" && order.table_number && (
-                          <span>Table {order.table_number}</span>
-                        )}
-                        {order.order_type === "takeaway" && order.delivery_address && (
-                          <span className="max-w-xs truncate" title={order.delivery_address}>
-                            📍 {order.delivery_address}
-                          </span>
-                        )}
-                        <span>{formatDate(order.created_at)}</span>
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <Link href={`/admin/orders/${order.id}`}>
-                        <Button variant="outline" size="sm">
-                          <Eye className="h-4 w-4 mr-2" />
-                          View
-                        </Button>
-                      </Link>
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            disabled={updatingStatus === order.id}
-                          >
-                            {updatingStatus === order.id ? (
-                              <Loader2 className="h-4 w-4 animate-spin" />
-                            ) : (
-                              <MoreVertical className="h-4 w-4" />
-                            )}
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                          {order.status !== "pending" && (
-                            <DropdownMenuItem
-                              onClick={() =>
-                                updateOrderStatus(order.id, "pending")
-                              }
-                            >
-                              {t.admin.orders.markAsPending}
-                            </DropdownMenuItem>
-                          )}
-                          {order.status !== "preparing" && (
-                            <DropdownMenuItem
-                              onClick={() =>
-                                updateOrderStatus(order.id, "preparing")
-                              }
-                            >
-                              {t.admin.orders.markAsPreparing}
-                            </DropdownMenuItem>
-                          )}
-                          {order.status !== "completed" && (
-                            <DropdownMenuItem
-                              onClick={() =>
-                                updateOrderStatus(order.id, "completed")
-                              }
-                            >
-                              {t.admin.orders.markAsCompleted}
-                            </DropdownMenuItem>
-                          )}
-                        </DropdownMenuContent>
-                      </DropdownMenu>
-                    </div>
-                  </div>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-3">
-                    <div className="space-y-2">
-                      {order.items.slice(0, 3).map((item) => (
-                        <div
-                          key={item.id}
-                          className="flex items-center justify-between text-sm"
-                        >
-                          <span className="text-muted-foreground">
-                            {item.quantity}x{" "}
-                            {getDisplayTitle(item.item_title, language)}
-                          </span>
-                          <span className="font-medium">
-                            CHF {(item.price * item.quantity).toFixed(2)}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="flex items-center gap-3">
+                          <div className="flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-br from-[#5B7A2F] to-[#7A9E4A] text-white font-semibold text-sm shadow-md">
+                            {getAvatarInitial(order.customer_name)}
+                          </div>
+                          <span className="text-sm font-semibold text-[#2D3A1A] dark:text-[#E8E4D9]">
+                            {order.customer_name}
                           </span>
                         </div>
-                      ))}
-                      {order.items.length > 3 && (
-                        <p className="text-xs text-muted-foreground">
-                          +{order.items.length - 3} more items
-                        </p>
-                      )}
-                    </div>
-                    <div className="flex items-center justify-between border-t border-border pt-3">
-                      <span className="font-semibold">{t.admin.orders.total}</span>
-                      <span className="text-lg font-bold">
-                        CHF {order.total.toFixed(2)}
-                      </span>
-                    </div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <span className="inline-flex items-center rounded-full bg-white/70 px-3 py-1 text-xs font-semibold text-[#5B7A2F] shadow-sm dark:bg-[#243019]/70 dark:text-[#7A9E4A]">
+                          {order.order_type === "dine_in" ? "Dine-in" : "Takeaway"}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4">
+                        <span className="text-sm text-[#6B7B5A] dark:text-[#9CA88A] max-w-xs truncate block" title={getAddressText(order)}>
+                          {getAddressText(order)}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <span className="text-sm text-[#6B7B5A] dark:text-[#9CA88A]">
+                          {formatDate(order.created_at)}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <span className="text-sm font-bold text-[#2D3A1A] dark:text-[#E8E4D9]">
+                          CHF {order.total.toFixed(2)}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <Badge
+                          variant="outline"
+                          className={`flex w-fit items-center gap-1.5 border ${getStatusBadgeColor(order.status)}`}
+                        >
+                          {getStatusIcon(order.status)}
+                          <span className="capitalize">{order.status}</span>
+                        </Badge>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-right">
+                        <div className="flex items-center justify-end gap-2">
+                          <Link href={`/admin/orders/${order.id}`}>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              className="rounded-xl border-[#D6D2C4]/50 bg-white/50 text-[#5B7A2F] hover:bg-[#5B7A2F] hover:text-white hover:border-[#5B7A2F] shadow-sm transition-all dark:border-[#3D4F2A]/50 dark:bg-[#243019]/50 dark:text-[#7A9E4A] dark:hover:bg-[#7A9E4A] dark:hover:text-[#1A2212]"
+                            >
+                              <Eye className="h-4 w-4" />
+                            </Button>
+                          </Link>
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                disabled={updatingStatus === order.id}
+                                className="rounded-xl hover:bg-[#E8E4D9]/50 dark:hover:bg-[#2D3A1A]/50"
+                              >
+                                {updatingStatus === order.id ? (
+                                  <Loader2 className="h-4 w-4 animate-spin text-[#5B7A2F] dark:text-[#7A9E4A]" />
+                                ) : (
+                                  <MoreVertical className="h-4 w-4 text-[#6B7B5A] dark:text-[#9CA88A]" />
+                                )}
+                              </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end" className="rounded-xl border-[#D6D2C4]/50 dark:border-[#3D4F2A]/50">
+                              {order.status !== "pending" && (
+                                <DropdownMenuItem
+                                  onClick={() =>
+                                    updateOrderStatus(order.id, "pending")
+                                  }
+                                  className="rounded-lg"
+                                >
+                                  {t.admin.orders.markAsPending}
+                                </DropdownMenuItem>
+                              )}
+                              {order.status !== "preparing" && (
+                                <DropdownMenuItem
+                                  onClick={() =>
+                                    updateOrderStatus(order.id, "preparing")
+                                  }
+                                  className="rounded-lg"
+                                >
+                                  {t.admin.orders.markAsPreparing}
+                                </DropdownMenuItem>
+                              )}
+                              {order.status !== "completed" && (
+                                <DropdownMenuItem
+                                  onClick={() =>
+                                    updateOrderStatus(order.id, "completed")
+                                  }
+                                  className="rounded-lg"
+                                >
+                                  {t.admin.orders.markAsCompleted}
+                                </DropdownMenuItem>
+                              )}
+                            </DropdownMenuContent>
+                          </DropdownMenu>
+                        </div>
+                      </td>
+                    </motion.tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+
+            {/* Pagination */}
+            {totalPages > 1 && (
+              <div className="border-t border-[#D6D2C4]/30 px-6 py-4 dark:border-[#3D4F2A]/30">
+                <div className="flex items-center justify-between">
+                  <div className="text-sm text-[#6B7B5A] dark:text-[#9CA88A]">
+                    Showing {startIndex + 1} to {Math.min(endIndex, orders.length)} of {orders.length} orders
                   </div>
-                </CardContent>
-              </Card>
-            </FadeIn>
-          ))}
-        </div>
+                  <div className="flex items-center gap-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setCurrentPage((prev) => Math.max(1, prev - 1))}
+                      disabled={currentPage === 1}
+                      className="rounded-xl border-[#D6D2C4]/50 bg-white/50 hover:bg-[#E8E4D9]/50 disabled:opacity-50 dark:border-[#3D4F2A]/50 dark:bg-[#243019]/50 dark:hover:bg-[#2D3A1A]/50"
+                    >
+                      <ChevronLeft className="h-4 w-4" />
+                      Previous
+                    </Button>
+                    <div className="flex items-center gap-1">
+                      {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                        let pageNum;
+                        if (totalPages <= 5) {
+                          pageNum = i + 1;
+                        } else if (currentPage <= 3) {
+                          pageNum = i + 1;
+                        } else if (currentPage >= totalPages - 2) {
+                          pageNum = totalPages - 4 + i;
+                        } else {
+                          pageNum = currentPage - 2 + i;
+                        }
+                        return (
+                          <Button
+                            key={pageNum}
+                            variant={currentPage === pageNum ? "default" : "outline"}
+                            size="sm"
+                            onClick={() => setCurrentPage(pageNum)}
+                            className={`rounded-xl ${
+                              currentPage === pageNum
+                                ? "bg-[#5B7A2F] text-white shadow-md dark:bg-[#7A9E4A]"
+                                : "border-[#D6D2C4]/50 bg-white/50 hover:bg-[#E8E4D9]/50 dark:border-[#3D4F2A]/50 dark:bg-[#243019]/50 dark:hover:bg-[#2D3A1A]/50"
+                            }`}
+                          >
+                            {pageNum}
+                          </Button>
+                        );
+                      })}
+                    </div>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setCurrentPage((prev) => Math.min(totalPages, prev + 1))}
+                      disabled={currentPage === totalPages}
+                      className="rounded-xl border-[#D6D2C4]/50 bg-white/50 hover:bg-[#E8E4D9]/50 disabled:opacity-50 dark:border-[#3D4F2A]/50 dark:bg-[#243019]/50 dark:hover:bg-[#2D3A1A]/50"
+                    >
+                      Next
+                      <ChevronRight className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            )}
+          </CardContent>
+        </Card>
       )}
     </div>
   );

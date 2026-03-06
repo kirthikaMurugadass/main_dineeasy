@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { motion } from "framer-motion";
-import { CheckCircle2, Loader2 } from "lucide-react";
+import { CheckCircle2, Loader2, Table2, Users, Calendar, Clock, ArrowLeft } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -59,6 +59,9 @@ export default function SelectTablePage() {
   const [selectedTableId, setSelectedTableId] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
   const [bookingDisabled, setBookingDisabled] = useState(false);
+  const [activeFloor, setActiveFloor] = useState<"ground" | "first" | "second" | "rooftop">("ground");
+  const [uiStep, setUiStep] = useState<"select" | "summary">("select");
+  const [bookingData, setBookingData] = useState<any | null>(null);
 
   const slug = params.slug as string;
 
@@ -275,9 +278,23 @@ export default function SelectTablePage() {
 
   const getStatusForTable = (tableId: string): TableStatus => {
     if (selectedTableId === tableId) return "selected";
-    if (bookedTableIds.has(tableId)) return "booked";
-    if (lockedTableIds.has(tableId)) return "locked";
+    if (bookedTableIds.has(tableId)) return "booked"; // Occupied
+    if (lockedTableIds.has(tableId)) return "locked"; // Reserved
     return "available";
+  };
+
+  const getStatusColor = (status: TableStatus) => {
+    if (status === "selected") return "bg-[#22C55E] border-[#22C55E] text-white";
+    if (status === "booked") return "bg-white border-[#F97316] text-[#2D3A1A]"; // Orange - Occupied
+    if (status === "locked") return "bg-white border-[#3B82F6] text-[#2D3A1A]"; // Blue - Reserved
+    return "bg-white border-[#22C55E] text-[#2D3A1A]"; // Green - Available
+  };
+
+  const getStatusDotColor = (status: TableStatus) => {
+    if (status === "selected") return "bg-[#22C55E]";
+    if (status === "booked") return "bg-[#F97316]"; // Orange - Occupied
+    if (status === "locked") return "bg-[#3B82F6]"; // Blue - Reserved
+    return "bg-[#22C55E]"; // Green - Available
   };
 
   const handleTableClick = async (tableId: string) => {
@@ -385,6 +402,8 @@ export default function SelectTablePage() {
         throw new Error(data.error || "Failed to create booking");
       }
 
+      setBookingData(data);
+
       // Clear lock(s) for this session
       await supabase
         .from("table_locks")
@@ -449,116 +468,405 @@ export default function SelectTablePage() {
 
   if (success) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-background p-4">
+      <div className="flex min-h-screen items-center justify-center bg-[#FAFAF5] p-4">
         <motion.div
-          initial={{ opacity: 0, scale: 0.9 }}
-          animate={{ opacity: 1, scale: 1 }}
-          className="text-center"
+          initial={{ opacity: 0, y: 20, scale: 0.95 }}
+          animate={{ opacity: 1, y: 0, scale: 1 }}
+          transition={{ duration: 0.5, ease: [0.23, 1, 0.32, 1] }}
+          className="relative w-full max-w-md rounded-3xl border border-[#D6D2C4]/60 bg-gradient-to-b from-white to-[#F5F2E8] p-8 text-center shadow-xl"
         >
-          <CheckCircle2 className="mx-auto mb-4 h-16 w-16 text-green-500" />
-          <h1 className="mb-2 text-3xl font-bold">Booking Request Sent!</h1>
-          <p className="mb-6 text-muted-foreground">
-            We will confirm your reservation shortly.
+          {/* Simple confetti dots */}
+          <div className="pointer-events-none absolute inset-0 overflow-hidden">
+            <motion.div
+              className="absolute -top-4 left-10 h-2 w-2 rounded-full bg-[#22C55E]"
+              initial={{ y: -10, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              transition={{ delay: 0.2 }}
+            />
+            <motion.div
+              className="absolute top-4 right-8 h-2 w-2 rounded-full bg-[#FACC15]"
+              initial={{ y: -10, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              transition={{ delay: 0.3 }}
+            />
+            <motion.div
+              className="absolute bottom-6 left-6 h-2 w-2 rounded-full bg-[#F97316]"
+              initial={{ y: 10, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              transition={{ delay: 0.4 }}
+            />
+          </div>
+
+          <motion.div
+            initial={{ scale: 0.8, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            transition={{ delay: 0.25, type: "spring", stiffness: 240, damping: 16 }}
+            className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-[#DCFCE7] text-[#16A34A] shadow-md"
+          >
+            <CheckCircle2 className="h-9 w-9" />
+          </motion.div>
+          <h1 className="mb-1 text-xl font-semibold text-[#1F2933]">
+            Table Booked Successfully!
+          </h1>
+          <p className="mb-6 text-sm text-[#6B7B5A]">
+            Your table reservation has been confirmed.
           </p>
-          <Button onClick={() => router.push(`/r/${restaurant.slug}`)}>
-            Return to Menu
-          </Button>
+
+          {stepData && (
+            <div className="mb-6 space-y-4 rounded-2xl bg-white/90 p-6 text-left text-sm shadow-inner">
+              <div className="space-y-3">
+                {/* Table Number */}
+                <div className="border-b border-[#E4E0D2] pb-3">
+                  <p className="text-xs font-medium uppercase tracking-wide text-[#9CA88A] mb-1">Table Number</p>
+                  <p className="text-lg font-bold text-[#2D3A1A]">
+                    {selectedTableId
+                      ? tables.find((t) => t.id === selectedTableId)?.table_name ?? "N/A"
+                      : "N/A"}
+                  </p>
+                </div>
+
+                {/* Order Details */}
+                <div className="border-b border-[#E4E0D2] pb-3">
+                  <p className="text-xs font-medium uppercase tracking-wide text-[#9CA88A] mb-2">Order Details</p>
+                  <div className="space-y-1">
+                    <p className="text-sm text-[#2D3A1A]">
+                      <span className="font-medium">Customer:</span> {stepData.customerName}
+                    </p>
+                    <p className="text-sm text-[#6B7B5A]">
+                      <span className="font-medium">Guests:</span> {stepData.guestCount}{" "}
+                      {stepData.guestCount === 1 ? "person" : "persons"}
+                    </p>
+                    {bookingData?.id && (
+                      <p className="text-sm text-[#6B7B5A]">
+                        <span className="font-medium">Reservation ID:</span> {bookingData.id ?? bookingData.bookingId ?? "—"}
+                      </p>
+                    )}
+                  </div>
+                </div>
+
+                {/* Booking Time */}
+                <div>
+                  <p className="text-xs font-medium uppercase tracking-wide text-[#9CA88A] mb-1">Booking Time</p>
+                  <p className="text-base font-semibold text-[#2D3A1A]">
+                    {stepData.bookingDate} at {stepData.bookingTime}
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
+
+          <div className="flex flex-col gap-2 sm:flex-row sm:justify-center">
+            <Button
+              variant="outline"
+              className="w-full rounded-full border-[#D6D2C4]/70 bg-white/80 hover:bg-[#E8E4D9]/80 sm:w-auto"
+              onClick={() => router.push(`/r/${restaurant.slug}`)}
+            >
+              Back to Home
+            </Button>
+            <Button
+              className="w-full rounded-full bg-gradient-to-r from-[#22C55E] to-[#16A34A] text-white shadow-md hover:shadow-lg sm:w-auto"
+              onClick={() => router.push(`/r/${restaurant.slug}`)}
+            >
+              View Reservation
+            </Button>
+          </div>
         </motion.div>
       </div>
     );
   }
 
-  return (
-    <div className="min-h-screen bg-background">
-      <div className="mx-auto max-w-3xl px-4 py-8 sm:px-6 lg:px-8">
-        <div className="mb-6">
-          <p className="text-sm text-muted-foreground mb-1">
-            Step 2 of 2
-          </p>
-          <h1 className="text-2xl font-bold">Select Your Table</h1>
-          <p className="mt-2 text-sm text-muted-foreground">
-            {restaurant.name} — {stepData.bookingDate} at {stepData.bookingTime} •{" "}
-            {stepData.guestCount} {stepData.guestCount === 1 ? "guest" : "guests"}
-          </p>
-        </div>
+  // Order Summary Step
+  if (uiStep === "summary") {
+    const selectedTable = tables.find((t) => t.id === selectedTableId);
+    const basePrice = stepData.guestCount * 10; // UI-only estimate
+    const tax = Math.round(basePrice * 0.1);
+    const total = basePrice + tax;
 
-        <Card>
-          <CardHeader>
-            <CardTitle>Available Tables</CardTitle>
-          </CardHeader>
-          <CardContent>
-            {tables.length === 0 ? (
-              <p className="text-sm text-muted-foreground">
-                No tables configured yet. Please contact the restaurant.
-              </p>
-            ) : (
-              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 mb-6">
-                {tables.map((table) => {
-                  const status = getStatusForTable(table.id);
-                  const isDisabled = status === "booked" || (status === "locked" && selectedTableId !== table.id);
-                  const bgClass =
-                    status === "booked"
-                      ? "border-red-500 bg-red-500/10 text-red-600 dark:text-red-400"
-                      : status === "locked"
-                      ? "border-orange-500 bg-orange-500/10 text-orange-600 dark:text-orange-400"
-                      : status === "selected"
-                      ? "border-blue-500 bg-blue-500/10 text-blue-700 dark:text-blue-300"
-                      : "border-emerald-500 bg-emerald-500/5 text-emerald-700 dark:text-emerald-300";
-
-                  const label =
-                    status === "booked"
-                      ? "Booked"
-                      : status === "locked"
-                      ? "Held"
-                      : status === "selected"
-                      ? "Selected"
-                      : "Available";
-
-                  return (
-                    <button
-                      key={table.id}
-                      type="button"
-                      onClick={() => handleTableClick(table.id)}
-                      disabled={isDisabled || submitting}
-                      className={`flex flex-col items-start justify-between rounded-xl border px-3 py-2 text-left text-sm transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${bgClass} disabled:opacity-60`}
-                    >
-                      <span className="font-semibold">{table.table_name}</span>
-                      <span className="text-xs opacity-80">
-                        Capacity: {table.capacity}
-                      </span>
-                      <span className="mt-1 text-[11px] font-medium uppercase tracking-wide">
-                        {label}
-                      </span>
-                    </button>
-                  );
-                })}
-              </div>
-            )}
-
-            <div className="flex items-center justify-between gap-3 mt-4">
+    return (
+      <div className="min-h-screen bg-[#FAFAF5]">
+        <div className="mx-auto flex min-h-screen max-w-2xl flex-col px-4 pb-32 pt-6 sm:px-6 lg:px-8">
+          {/* Step header */}
+          <div className="mb-6 flex flex-col gap-2">
+            <div className="flex items-center gap-3">
               <Button
-                variant="outline"
-                onClick={() => router.push(`/r/${restaurant.slug}/book-table`)}
-                disabled={submitting}
+                variant="ghost"
+                size="icon"
+                onClick={() => setUiStep("select")}
+                className="h-9 w-9 rounded-full border border-[#D6D2C4]/60 text-[#6B7B5A] hover:bg-[#E8E4D9]/50"
               >
-                Back
+                <ArrowLeft className="h-4 w-4" />
               </Button>
+              <div>
+                <p className="text-[11px] font-medium uppercase tracking-[0.16em] text-[#9CA88A]">
+                  Step 3 of 4
+                </p>
+                <h1 className="text-2xl font-semibold text-[#2D3A1A]">Order Summary</h1>
+              </div>
+            </div>
+          </div>
+
+          {/* Order Summary Card */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.4 }}
+            className="space-y-4"
+          >
+            <Card className="rounded-2xl border border-[#D6D2C4]/60 bg-gradient-to-b from-white to-[#F7F4EA] shadow-sm">
+              <CardHeader>
+                <CardTitle className="text-lg font-semibold text-[#2D3A1A]">Reservation Details</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                {/* Selected Table */}
+                <div className="space-y-2">
+                  <p className="text-xs font-medium uppercase tracking-wide text-[#9CA88A]">Selected Table</p>
+                  <p className="text-xl font-bold text-[#2D3A1A]">{selectedTable?.table_name || "N/A"}</p>
+                </div>
+
+                {/* Customer Information */}
+                <div className="space-y-2 border-t border-[#E4E0D2] pt-4">
+                  <p className="text-xs font-medium uppercase tracking-wide text-[#9CA88A]">Customer Information</p>
+                  <div className="space-y-1 text-sm">
+                    <p className="font-medium text-[#2D3A1A]">{stepData.customerName}</p>
+                    <p className="text-[#6B7B5A]">{stepData.phone}</p>
+                    {stepData.email && <p className="text-[#6B7B5A]">{stepData.email}</p>}
+                  </div>
+                </div>
+
+                {/* Reservation Info */}
+                <div className="space-y-2 border-t border-[#E4E0D2] pt-4">
+                  <p className="text-xs font-medium uppercase tracking-wide text-[#9CA88A]">Reservation Info</p>
+                  <div className="space-y-1 text-sm">
+                    <p className="text-[#6B7B5A]">
+                      <span className="font-medium text-[#2D3A1A]">Date:</span> {stepData.bookingDate}
+                    </p>
+                    <p className="text-[#6B7B5A]">
+                      <span className="font-medium text-[#2D3A1A]">Time:</span> {stepData.bookingTime}
+                    </p>
+                    <p className="text-[#6B7B5A]">
+                      <span className="font-medium text-[#2D3A1A]">Guests:</span> {stepData.guestCount}{" "}
+                      {stepData.guestCount === 1 ? "person" : "persons"}
+                    </p>
+                  </div>
+                </div>
+
+                {/* Ordered Items (UI placeholder) */}
+                <div className="space-y-2 border-t border-[#E4E0D2] pt-4">
+                  <p className="text-xs font-medium uppercase tracking-wide text-[#9CA88A]">Ordered Items</p>
+                  <div className="rounded-xl bg-[#F7F4EA] p-3 text-sm text-[#6B7B5A]">
+                    Table reservation fee
+                  </div>
+                </div>
+
+                {/* Billing Section */}
+                <div className="space-y-3 border-t border-[#E4E0D2] pt-4">
+                  <p className="text-xs font-medium uppercase tracking-wide text-[#9CA88A]">Billing</p>
+                  <div className="space-y-2 text-sm">
+                    <div className="flex items-center justify-between text-[#6B7B5A]">
+                      <span>Subtotal</span>
+                      <span className="font-medium text-[#2D3A1A]">CHF {basePrice.toFixed(2)}</span>
+                    </div>
+                    <div className="flex items-center justify-between text-[#6B7B5A]">
+                      <span>Tax (10%)</span>
+                      <span className="font-medium text-[#2D3A1A]">CHF {tax.toFixed(2)}</span>
+                    </div>
+                    <div className="flex items-center justify-between border-t border-[#E4E0D2] pt-2 text-lg font-bold text-[#2D3A1A]">
+                      <span>Total Price</span>
+                      <span className="text-[#22C55E]">CHF {total.toFixed(2)}</span>
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </motion.div>
+
+          {/* Confirm Order button */}
+          <div className="fixed inset-x-0 bottom-0 z-20 bg-gradient-to-t from-[#FAFAF5] via-[#FAFAF5]/95 to-transparent pb-4 pt-6">
+            <div className="mx-auto w-full max-w-2xl px-4 sm:px-6 lg:px-8">
               <Button
+                type="button"
                 onClick={handleConfirm}
                 disabled={submitting || !selectedTableId}
+                className="w-full rounded-full bg-gradient-to-r from-[#22C55E] to-[#16A34A] text-white shadow-lg transition-all hover:shadow-xl hover:from-[#16A34A] hover:to-[#15803D] disabled:opacity-60 disabled:cursor-not-allowed h-12 text-base font-semibold"
               >
                 {submitting ? (
                   <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Confirming...
+                    <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                    Processing...
                   </>
                 ) : (
-                  "Confirm Booking"
+                  "Confirm Order"
                 )}
               </Button>
             </div>
-          </CardContent>
-        </Card>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Table Selection Step
+  return (
+    <div className="min-h-screen bg-[#FAFAF5]">
+      <div className="mx-auto flex min-h-screen max-w-5xl flex-col px-4 pb-32 pt-6 sm:px-6 lg:px-8">
+        {/* Step header */}
+        <div className="mb-6 flex flex-col gap-2">
+          <div className="flex items-center gap-3">
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => router.push(`/r/${restaurant.slug}/book-table`)}
+              className="h-9 w-9 rounded-full border border-[#D6D2C4]/60 text-[#6B7B5A] hover:bg-[#E8E4D9]/50"
+            >
+              <ArrowLeft className="h-4 w-4" />
+            </Button>
+            <div>
+              <p className="text-[11px] font-medium uppercase tracking-[0.16em] text-[#9CA88A]">
+                Step 2 of 4
+              </p>
+              <h1 className="text-2xl font-semibold text-[#2D3A1A]">Book a Table</h1>
+            </div>
+          </div>
+          <p className="ml-12 flex flex-wrap items-center gap-3 text-sm text-[#6B7B5A]">
+            <span className="inline-flex items-center gap-1.5">
+              <Calendar className="h-4 w-4" />
+              {stepData.bookingDate}
+            </span>
+            <span className="inline-flex items-center gap-1.5">
+              <Clock className="h-4 w-4" />
+              {stepData.bookingTime}
+            </span>
+            <span className="inline-flex items-center gap-1.5">
+              <Users className="h-4 w-4" />
+              {stepData.guestCount} {stepData.guestCount === 1 ? "guest" : "guests"}
+            </span>
+          </p>
+        </div>
+
+        {/* Table grid */}
+        <div className="mb-8 flex-1">
+          {tables.length === 0 ? (
+            <Card className="rounded-2xl border border-[#D6D2C4]/60 bg-gradient-to-b from-white to-[#F7F4EA] shadow-sm">
+              <CardContent className="py-12 text-center">
+                <p className="text-sm text-[#6B7B5A]">
+                  No tables configured yet. Please contact the restaurant.
+                </p>
+              </CardContent>
+            </Card>
+          ) : (
+            <div className="mx-auto w-full max-w-2xl">
+              <div className="grid grid-cols-4 gap-2">
+                {[...tables]
+                  .sort((a, b) => {
+                    const aMatch = a.table_name.match(/T-(\d+)/i);
+                    const bMatch = b.table_name.match(/T-(\d+)/i);
+                    if (aMatch && bMatch) return Number(aMatch[1]) - Number(bMatch[1]);
+                    return a.table_name.localeCompare(b.table_name, undefined, {
+                      numeric: true,
+                      sensitivity: "base",
+                    });
+                  })
+                  .map((table) => {
+                    const status = getStatusForTable(table.id);
+                    const isDisabled =
+                      status === "booked" ||
+                      (status === "locked" && selectedTableId !== table.id);
+                    const statusColor = getStatusColor(status);
+                    const dotColor = getStatusDotColor(status);
+
+                    return (
+                      <motion.button
+                        key={table.id}
+                        type="button"
+                        whileHover={!isDisabled ? { y: -2, scale: 1.01 } : {}}
+                        whileTap={!isDisabled ? { scale: 0.98 } : {}}
+                        onClick={() => handleTableClick(table.id)}
+                        disabled={isDisabled || submitting}
+                        className={`relative flex h-20 flex-col items-center justify-center rounded-md border-2 px-1 py-1 shadow-sm transition-all hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#22C55E]/50 disabled:cursor-not-allowed disabled:opacity-50 ${statusColor} ${
+                          status === "selected"
+                            ? "ring-2 ring-[#22C55E] ring-offset-2"
+                            : ""
+                        }`}
+                      >
+                        {status === "selected" && (
+                          <motion.div
+                            initial={{ scale: 0, opacity: 0 }}
+                            animate={{ scale: 1, opacity: 1 }}
+                            transition={{ type: "spring", stiffness: 300, damping: 20 }}
+                            className="absolute -top-2 -right-2 flex h-4 w-4 items-center justify-center rounded-full bg-[#22C55E] text-white shadow-lg"
+                          >
+                            <CheckCircle2 className="h-3 w-3" />
+                          </motion.div>
+                        )}
+                        {/* Table number at top */}
+                        <div
+                          className={`text-[13px] font-bold ${
+                            status === "selected" ? "text-white" : "text-[#2D3A1A]"
+                          }`}
+                        >
+                          {table.table_name}
+                        </div>
+                        {/* Status dot under table number */}
+                        <div className={`mt-1 h-1.5 w-1.5 rounded-full ${dotColor}`} />
+                        {/* Capacity text at bottom */}
+                        <div
+                          className={`mt-auto text-[10px] font-medium leading-tight ${
+                            status === "selected" ? "text-white/90" : "text-[#6B7B5A]"
+                          }`}
+                        >
+                          Capacity: {table.capacity}{" "}
+                          {table.capacity === 1 ? "Person" : "Persons"}
+                        </div>
+                      </motion.button>
+                    );
+                  })}
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Legend */}
+        <div className="mb-6 flex flex-wrap items-center justify-center gap-6 rounded-2xl border border-[#D6D2C4]/60 bg-gradient-to-b from-white to-[#F7F4EA] px-6 py-4 shadow-sm">
+          <div className="flex items-center gap-2">
+            <div className="h-2 w-2 rounded-full bg-[#22C55E]" />
+            <span className="text-sm text-[#6B7B5A]">Available</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <div className="h-2 w-2 rounded-full bg-[#F97316]" />
+            <span className="text-sm text-[#6B7B5A]">Occupied</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <div className="h-2 w-2 rounded-full bg-[#3B82F6]" />
+            <span className="text-sm text-[#6B7B5A]">Reserved</span>
+          </div>
+        </div>
+
+        {/* Continue button */}
+        <div className="fixed inset-x-0 bottom-0 z-20 bg-gradient-to-t from-[#FAFAF5] via-[#FAFAF5]/95 to-transparent pb-4 pt-6">
+          <div className="mx-auto w-full max-w-5xl px-4 sm:px-6 lg:px-8">
+            <Button
+              type="button"
+              onClick={() => {
+                if (!selectedTableId) {
+                  toast.error("Please select a table to continue.");
+                  return;
+                }
+                setUiStep("summary");
+              }}
+              disabled={!selectedTableId || submitting}
+              className="w-full rounded-full bg-gradient-to-r from-[#22C55E] to-[#16A34A] text-white shadow-lg transition-all hover:shadow-xl hover:from-[#16A34A] hover:to-[#15803D] disabled:opacity-60 disabled:cursor-not-allowed h-12 text-base font-semibold"
+            >
+              {submitting ? (
+                <>
+                  <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                  Processing...
+                </>
+              ) : (
+                "Continue"
+              )}
+            </Button>
+          </div>
+        </div>
       </div>
     </div>
   );

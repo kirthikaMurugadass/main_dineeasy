@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
-import { Moon, Sun, Monitor, User, Globe, Crown } from "lucide-react";
+import { Moon, Sun, Monitor, User, Globe, Crown, LogOut } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useTheme } from "@/components/providers/theme-provider";
 import { Button } from "@/components/ui/button";
@@ -56,6 +56,13 @@ export function AdminTopbar() {
       .slice(0, 2)
       .join("")
       .toUpperCase() || "AD";
+
+  async function handleLogout() {
+    const supabase = createClient();
+    await supabase.auth.signOut();
+    router.push("/login");
+    router.refresh();
+  }
 
   return (
     <header className="sticky top-0 z-30 border-b border-border/60 bg-background dark:bg-background backdrop-blur-xl shadow-sm">
@@ -216,10 +223,10 @@ export function AdminTopbar() {
                 </span>
               </DropdownMenuItem>
               <DropdownMenuItem
-                onClick={() => router.push("/admin/settings")}
+                onClick={() => router.push("/admin/profile")}
                 className="mt-0.5 rounded-lg py-2.5 text-sm"
               >
-                Profile / Edit Profile
+                Profile
               </DropdownMenuItem>
               <DropdownMenuItem
                 onClick={() => router.push("/admin/settings")}
@@ -228,10 +235,11 @@ export function AdminTopbar() {
                 {t.admin.sidebar.settings}
               </DropdownMenuItem>
               <DropdownMenuItem
-                onClick={() => router.push("/")}
-                className="rounded-lg py-2.5 text-sm"
+                onClick={handleLogout}
+                className="rounded-lg py-2.5 text-sm text-rose-600 focus:text-rose-700 dark:text-rose-400 dark:focus:text-rose-300"
               >
-                {t.landing.nav.home}
+                <LogOut className="mr-2 h-4 w-4" />
+                {t.admin.sidebar.signOut}
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>

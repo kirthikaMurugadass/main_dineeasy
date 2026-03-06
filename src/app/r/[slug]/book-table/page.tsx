@@ -30,6 +30,7 @@ export default function BookTablePage() {
   const [bookingDisabled, setBookingDisabled] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [success, setSuccess] = useState(false);
+  const [showIntro, setShowIntro] = useState(true);
   
   // Form state
   const [name, setName] = useState("");
@@ -183,7 +184,7 @@ export default function BookTablePage() {
   if (bookingDisabled) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-background px-4">
-        <Card className="max-w-md">
+        <Card className="max-w-md rounded-2xl shadow-lg">
           <CardHeader>
             <CardTitle>Online bookings are not available</CardTitle>
           </CardHeader>
@@ -194,7 +195,7 @@ export default function BookTablePage() {
             </p>
             <Button
               variant="outline"
-              className="w-full"
+              className="w-full rounded-full"
               onClick={() => router.push(`/r/${restaurant.slug}`)}
             >
               Back to menu
@@ -205,105 +206,172 @@ export default function BookTablePage() {
     );
   }
 
+  // QR Scan Intro Page - shown before reservation form
+  if (showIntro) {
+    return (
+      <div className="min-h-screen bg-[#FAFAF5]">
+        <div className="mx-auto flex min-h-screen max-w-md flex-col items-center justify-center px-4 sm:max-w-lg sm:px-6">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5 }}
+            className="w-full space-y-6 text-center"
+          >
+            <Card className="rounded-2xl border border-[#E4E0D2] bg-gradient-to-b from-white to-[#F7F4EA] shadow-sm">
+              <CardHeader className="pb-4">
+                <CardTitle className="text-2xl font-semibold text-[#2D3A1A]">
+                  Book a Table
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <p className="text-sm leading-relaxed text-[#6B7B5A]">
+                  Reserve your table in advance for a smooth dining experience.
+                  Choose your preferred date, time, and seating capacity before placing your order.
+                </p>
+                <Button
+                  onClick={() => setShowIntro(false)}
+                  className="w-full rounded-full bg-gradient-to-r from-[#22C55E] to-[#16A34A] text-white shadow-lg transition-all hover:shadow-xl"
+                  size="lg"
+                >
+                  Reserve a Table
+                </Button>
+              </CardContent>
+            </Card>
+          </motion.div>
+        </div>
+      </div>
+    );
+  }
+
   // Success screen is now handled after table selection / final confirmation
 
   return (
-    <div className="min-h-screen bg-background">
-      <div className="mx-auto max-w-2xl px-4 py-8 sm:px-6 lg:px-8">
-        {/* Header */}
-        <div className="mb-8 text-center">
-          <h1 className="text-3xl font-bold">Book a Table</h1>
-          <p className="mt-2 text-muted-foreground">
-            Reserve your table at {restaurant.name}
-          </p>
+    <div className="min-h-screen bg-[#FAFAF5]">
+      <div className="mx-auto flex min-h-screen max-w-md flex-col px-4 pb-28 pt-6 sm:max-w-lg sm:px-6">
+        {/* Step header */}
+        <div className="mb-4 flex items-center justify-between">
+          <div>
+            <p className="text-[11px] font-medium uppercase tracking-[0.16em] text-[#9CA88A]">
+              Step 1 of 4
+            </p>
+            <h1 className="text-xl font-semibold text-[#2D3A1A]">Reservation Details</h1>
+          </div>
+          <div className="rounded-full bg-[#DCFCE7] px-3 py-1 text-[11px] font-medium text-[#166534]">
+            {restaurant.name}
+          </div>
         </div>
 
         {/* Booking Form */}
         <motion.form
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4, ease: [0.23, 1, 0.32, 1] }}
           onSubmit={handleSubmit}
-          className="space-y-6"
+          className="flex-1 space-y-4"
+          id="book-table-form"
         >
-          <Card>
-            <CardHeader>
-              <CardTitle>Reservation Details</CardTitle>
+          <Card className="rounded-2xl border border-[#E4E0D2] bg-gradient-to-b from-white to-[#F7F4EA] shadow-sm">
+            <CardHeader className="pb-3">
+              <CardTitle className="text-sm font-semibold text-[#2D3A1A]">
+                Guest Information
+              </CardTitle>
             </CardHeader>
-            <CardContent className="space-y-6">
+            <CardContent className="space-y-4">
               {/* Name */}
-              <div className="space-y-2">
-                <Label htmlFor="name">
-                  <User className="mr-2 inline h-4 w-4" />
-                  Your Name <span className="text-destructive">*</span>
+              <div className="space-y-1.5">
+                <Label htmlFor="name" className="text-xs font-medium text-[#6B7B5A]">
+                  Full Name <span className="text-red-500">*</span>
                 </Label>
-                <Input
-                  id="name"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  placeholder="Enter your name"
-                  required
-                  disabled={submitting}
-                />
+                <div className="relative">
+                  <User className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#9CA88A]" />
+                  <Input
+                    id="name"
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    placeholder="John Doe"
+                    required
+                    disabled={submitting}
+                    className="h-11 rounded-xl border-2 border-[#E4E0D2] bg-white pl-10 text-sm shadow-xs transition-all placeholder:text-[#C0BBA7] focus-visible:border-[#22C55E] focus-visible:ring-[#22C55E]/15"
+                  />
+                </div>
               </div>
 
               {/* Phone */}
-              <div className="space-y-2">
-                <Label htmlFor="phone">
-                  <Phone className="mr-2 inline h-4 w-4" />
-                  Phone Number <span className="text-destructive">*</span>
+              <div className="space-y-1.5">
+                <Label htmlFor="phone" className="text-xs font-medium text-[#6B7B5A]">
+                  Phone Number <span className="text-red-500">*</span>
                 </Label>
-                <Input
-                  id="phone"
-                  type="tel"
-                  value={phone}
-                  onChange={(e) => setPhone(e.target.value)}
-                  placeholder="Enter your phone number"
-                  required
-                  disabled={submitting}
-                />
+                <div className="relative">
+                  <Phone className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#9CA88A]" />
+                  <Input
+                    id="phone"
+                    type="tel"
+                    value={phone}
+                    onChange={(e) => setPhone(e.target.value)}
+                    placeholder="+41 79 000 00 00"
+                    required
+                    disabled={submitting}
+                    className="h-11 rounded-xl border-2 border-[#E4E0D2] bg-white pl-10 text-sm shadow-xs transition-all placeholder:text-[#C0BBA7] focus-visible:border-[#22C55E] focus-visible:ring-[#22C55E]/15"
+                  />
+                </div>
               </div>
 
               {/* Email */}
-              <div className="space-y-2">
-                <Label htmlFor="email">
-                  Email <span className="text-destructive">*</span>
+              <div className="space-y-1.5">
+                <Label htmlFor="email" className="text-xs font-medium text-[#6B7B5A]">
+                  Email <span className="text-red-500">*</span>
                 </Label>
                 <Input
                   id="email"
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  placeholder="Enter your email"
+                  placeholder="you@example.com"
                   required
                   disabled={submitting}
+                  className="h-11 rounded-xl border-2 border-[#E4E0D2] bg-white text-sm shadow-xs transition-all placeholder:text-[#C0BBA7] focus-visible:border-[#22C55E] focus-visible:ring-[#22C55E]/15"
                 />
               </div>
+            </CardContent>
+          </Card>
 
+          <Card className="rounded-2xl border border-[#E4E0D2] bg-gradient-to-b from-white to-[#F7F4EA] shadow-sm">
+            <CardHeader className="pb-3">
+              <CardTitle className="text-sm font-semibold text-[#2D3A1A]">
+                Visit Details
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
               {/* Date */}
-              <div className="space-y-2">
-                <Label htmlFor="date">
-                  <Calendar className="mr-2 inline h-4 w-4" />
-                  Date <span className="text-destructive">*</span>
+              <div className="space-y-1.5">
+                <Label htmlFor="date" className="text-xs font-medium text-[#6B7B5A]">
+                  Date to Come <span className="text-red-500">*</span>
                 </Label>
-                <Input
-                  id="date"
-                  type="date"
-                  value={date}
-                  onChange={(e) => setDate(e.target.value)}
-                  min={today}
-                  required
-                  disabled={submitting}
-                />
+                <div className="relative">
+                  <Calendar className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#9CA88A]" />
+                  <Input
+                    id="date"
+                    type="date"
+                    value={date}
+                    onChange={(e) => setDate(e.target.value)}
+                    min={today}
+                    required
+                    disabled={submitting}
+                    className="h-11 rounded-xl border-2 border-[#E4E0D2] bg-white pl-10 text-sm shadow-xs transition-all focus-visible:border-[#22C55E] focus-visible:ring-[#22C55E]/15"
+                  />
+                </div>
               </div>
 
               {/* Time */}
-              <div className="space-y-2">
-                <Label htmlFor="time">
-                  <Clock className="mr-2 inline h-4 w-4" />
-                  Time <span className="text-destructive">*</span>
+              <div className="space-y-1.5">
+                <Label htmlFor="time" className="text-xs font-medium text-[#6B7B5A]">
+                  Time to Come <span className="text-red-500">*</span>
                 </Label>
                 <Select value={time} onValueChange={setTime} disabled={submitting}>
-                  <SelectTrigger id="time">
+                  <SelectTrigger
+                    id="time"
+                    className="h-11 rounded-xl border-2 border-[#E4E0D2] bg-white text-sm shadow-xs transition-all focus-visible:border-[#22C55E] focus-visible:ring-[#22C55E]/15"
+                  >
                     <SelectValue placeholder="Select time" />
                   </SelectTrigger>
                   <SelectContent>
@@ -317,19 +385,21 @@ export default function BookTablePage() {
               </div>
 
               {/* Guest Count */}
-              <div className="space-y-2">
-                <Label htmlFor="guests">
-                  <Users className="mr-2 inline h-4 w-4" />
-                  Number of Guests <span className="text-destructive">*</span>
+              <div className="space-y-1.5">
+                <Label htmlFor="guests" className="text-xs font-medium text-[#6B7B5A]">
+                  Number of Person <span className="text-red-500">*</span>
                 </Label>
                 <Select value={guestCount} onValueChange={setGuestCount} disabled={submitting}>
-                  <SelectTrigger id="guests">
-                    <SelectValue />
+                  <SelectTrigger
+                    id="guests"
+                    className="h-11 rounded-xl border-2 border-[#E4E0D2] bg-white text-sm shadow-xs transition-all focus-visible:border-[#22C55E] focus-visible:ring-[#22C55E]/15"
+                  >
+                    <SelectValue placeholder="Select" />
                   </SelectTrigger>
                   <SelectContent>
                     {Array.from({ length: 10 }, (_, i) => i + 1).map((num) => (
                       <SelectItem key={num} value={num.toString()}>
-                        {num} {num === 1 ? "Guest" : "Guests"}
+                        {num} {num === 1 ? "Person" : "Persons"}
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -337,40 +407,51 @@ export default function BookTablePage() {
               </div>
 
               {/* Special Note */}
-              <div className="space-y-2">
-                <Label htmlFor="note">
-                  <MessageSquare className="mr-2 inline h-4 w-4" />
-                  Special Requests (Optional)
+              <div className="space-y-1.5">
+                <Label htmlFor="note" className="text-xs font-medium text-[#6B7B5A]">
+                  Notes (optional)
                 </Label>
                 <Textarea
                   id="note"
                   value={specialNote}
                   onChange={(e) => setSpecialNote(e.target.value)}
                   placeholder="Any special requests or dietary requirements..."
-                  rows={4}
+                  rows={3}
                   disabled={submitting}
+                  className="rounded-xl border-2 border-[#E4E0D2] bg-white text-sm shadow-xs transition-all placeholder:text-[#C0BBA7] focus-visible:border-[#22C55E] focus-visible:ring-[#22C55E]/15"
                 />
               </div>
-
-              {/* Submit Button */}
-              <Button
-                type="submit"
-                size="lg"
-                className="w-full"
-                disabled={submitting}
-              >
-                {submitting ? (
-                  <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Submitting...
-                  </>
-                ) : (
-                  "Submit Booking Request"
-                )}
-              </Button>
             </CardContent>
           </Card>
         </motion.form>
+
+        {/* Bottom sticky CTA */}
+        <div className="pointer-events-none fixed inset-x-0 bottom-0 z-20 bg-gradient-to-t from-[#FAFAF5] via-[#FAFAF5]/95 to-transparent pb-4 pt-4">
+          <div className="pointer-events-auto mx-auto flex w-full max-w-md flex-col gap-2 px-4 sm:max-w-lg sm:px-6">
+            <div className="flex items-center justify-between text-[11px] text-[#6B7B5A]">
+              <span>Next: Select Table</span>
+              <span>
+                {guestCount} {guestCount === "1" ? "person" : "persons"}
+              </span>
+            </div>
+            <Button
+              type="submit"
+              form="book-table-form"
+              size="lg"
+              className="w-full rounded-full bg-gradient-to-r from-[#22C55E] to-[#16A34A] text-white shadow-lg transition-all hover:shadow-xl disabled:opacity-60"
+              disabled={submitting}
+            >
+              {submitting ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Please wait...
+                </>
+              ) : (
+                "Continue"
+              )}
+            </Button>
+          </div>
+        </div>
       </div>
     </div>
   );

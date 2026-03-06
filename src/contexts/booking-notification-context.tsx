@@ -126,9 +126,11 @@ export function BookingNotificationProvider({
         if (status === "SUBSCRIBED") {
           console.log("[BookingNotification] Successfully subscribed to bookings table");
         } else if (status === "CHANNEL_ERROR") {
-          console.error("[BookingNotification] Channel subscription error");
+          // Surface as a warning instead of an error to avoid noisy dev console,
+          // but keep logging so issues are still visible during debugging.
+          console.warn("[BookingNotification] Channel subscription error (non-fatal)");
         } else if (status === "TIMED_OUT") {
-          console.error("[BookingNotification] Subscription timed out");
+          console.warn("[BookingNotification] Subscription timed out (non-fatal)");
         } else if (status === "CLOSED") {
           console.log("[BookingNotification] Subscription closed");
         }
