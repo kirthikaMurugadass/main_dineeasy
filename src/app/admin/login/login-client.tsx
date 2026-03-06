@@ -125,7 +125,7 @@ export function AdminLoginClient({ registered }: { registered?: string }) {
 
   return (
     <AuthSplitPanel
-      imageSrc="/images/image3.jpg"
+      imageSrc="/images/dine1.jpg"
       imageOnLeft={false}
       leftHeading="Hello, Friend!"
       leftSubtitle="Enter your personal details and start your journey with us"
@@ -153,14 +153,14 @@ export function AdminLoginClient({ registered }: { registered?: string }) {
           transition={{ delay: STAGGER * 1, duration: 0.4, ease: EASE }}
           className="space-y-2"
         >
-          <Label htmlFor="email" className="text-sm font-medium text-gray-300">
+          <Label htmlFor="email" className="text-sm font-medium text-foreground">
             Email address
           </Label>
           <div className="relative">
             <Mail
               size={16}
               className={`absolute left-3.5 top-1/2 -translate-y-1/2 transition-colors duration-300 ${
-                focusedField === "email" ? "text-gold" : "text-gray-500"
+                focusedField === "email" ? "text-primary" : "text-muted-foreground"
               }`}
             />
             <Input
@@ -171,10 +171,10 @@ export function AdminLoginClient({ registered }: { registered?: string }) {
               onChange={(e) => setEmail(e.target.value)}
               onFocus={() => setFocusedField("email")}
               onBlur={() => setFocusedField(null)}
-              className={`h-12 rounded-[14px] border bg-white/5 pl-10 pr-4 text-white placeholder:text-gray-500 transition-all duration-300 ${
+              className={`h-12 rounded-[14px] border bg-white/70 pl-10 pr-4 text-foreground placeholder:text-muted-foreground shadow-sm transition-all duration-300 ${
                 focusedField === "email"
-                  ? "border-gold/50 ring-2 ring-gold/20"
-                  : "border-white/10 focus-visible:border-gold/50 focus-visible:ring-2 focus-visible:ring-gold/20"
+                  ? "border-primary/40 ring-2 ring-primary/15"
+                  : "border-border focus-visible:border-primary/40 focus-visible:ring-2 focus-visible:ring-primary/15"
               }`}
               required
               autoComplete="email"
@@ -190,7 +190,7 @@ export function AdminLoginClient({ registered }: { registered?: string }) {
         >
           <Label
             htmlFor="password"
-            className="text-sm font-medium text-gray-300"
+            className="text-sm font-medium text-foreground"
           >
             Password
           </Label>
@@ -198,7 +198,7 @@ export function AdminLoginClient({ registered }: { registered?: string }) {
             <Lock
               size={16}
               className={`absolute left-3.5 top-1/2 -translate-y-1/2 transition-colors duration-300 ${
-                focusedField === "password" ? "text-gold" : "text-gray-500"
+                focusedField === "password" ? "text-primary" : "text-muted-foreground"
               }`}
             />
             <PasswordInput
@@ -208,10 +208,10 @@ export function AdminLoginClient({ registered }: { registered?: string }) {
               onChange={(e) => setPassword(e.target.value)}
               onFocus={() => setFocusedField("password")}
               onBlur={() => setFocusedField(null)}
-              className={`h-12 rounded-[14px] border bg-white/5 pl-10 text-white placeholder:text-gray-500 transition-all duration-300 ${
+              className={`h-12 rounded-[14px] border bg-white/70 pl-10 text-foreground placeholder:text-muted-foreground shadow-sm transition-all duration-300 ${
                 focusedField === "password"
-                  ? "border-gold/50 ring-2 ring-gold/20"
-                  : "border-white/10 focus-visible:border-gold/50 focus-visible:ring-2 focus-visible:ring-gold/20"
+                  ? "border-primary/40 ring-2 ring-primary/15"
+                  : "border-border focus-visible:border-primary/40 focus-visible:ring-2 focus-visible:ring-primary/15"
               }`}
               required
               autoComplete="current-password"
@@ -221,7 +221,7 @@ export function AdminLoginClient({ registered }: { registered?: string }) {
             <button
               type="button"
               onClick={() => setShowForgotPassword(true)}
-              className="text-xs font-medium text-gold underline-offset-2 transition-colors duration-300 hover:text-gold/80"
+              className="text-xs font-medium text-primary underline-offset-2 transition-colors duration-300 hover:text-primary/80"
             >
               Forgot Password?
             </button>
@@ -236,7 +236,7 @@ export function AdminLoginClient({ registered }: { registered?: string }) {
           <Button
             type="submit"
             disabled={loading || !email || !password}
-            className="h-12 w-full rounded-[14px] bg-gradient-to-r from-[#C6A75E] to-[#B8964A] text-[#0f0f0f] font-semibold shadow-lg shadow-gold/25 transition-all duration-300 hover:scale-[1.03] hover:shadow-gold/40 active:scale-[0.98]"
+            className="h-12 w-full rounded-[14px] border border-primary/30 bg-primary/20 text-foreground font-semibold shadow-sm transition-colors duration-300 hover:bg-primary/30 active:bg-primary/35"
           >
             {loading ? <Loader2 size={18} className="animate-spin" /> : "Sign In"}
           </Button>
@@ -246,12 +246,12 @@ export function AdminLoginClient({ registered }: { registered?: string }) {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: STAGGER * 4, duration: 0.4 }}
-          className="text-center text-sm text-gray-400"
+          className="text-center text-sm text-muted-foreground"
         >
           Don&apos;t have an account?{" "}
           <Link
             href="/admin/signup"
-            className="font-medium text-gold underline-offset-2 transition-colors duration-300 hover:text-gold/80"
+            className="font-medium text-primary underline-offset-2 transition-colors duration-300 hover:text-primary/80"
           >
             Sign up
           </Link>

@@ -13,16 +13,41 @@ interface PageProps {
 
 async function getRestaurantDataForPreview(
   restaurantSlug: string,
-  menuId: string
-): Promise<PublicRestaurantData | null> {
+  menuId: string,
+  options?: { allowInactive?: boolean }
+): Promise<(PublicRestaurantData & { restaurantId: string }) | null> {
   const supabase = await createClient();
 
-  // Fetch restaurant by slug
-  const { data: restaurant } = await supabase
+  // Fetch restaurant by slug (include plan fields when available)
+  type RestaurantRow = {
+    id: string;
+    name: string;
+    slug: string;
+    logo_url: string | null;
+    theme_config: ThemeConfig | null;
+    plan_type?: string | null;
+    plan_status?: string | null;
+  };
+
+  let restaurant: RestaurantRow | null = null;
+
+  const resWithPlan = await supabase
     .from("restaurants")
-    .select("id, name, slug, logo_url, theme_config")
+    .select("id, name, slug, logo_url, theme_config, plan_type, plan_status")
     .eq("slug", restaurantSlug)
     .single();
+
+  if (resWithPlan.error) {
+    // Fallback for environments where plan columns are not present yet
+    const resFallback = await supabase
+      .from("restaurants")
+      .select("id, name, slug, logo_url, theme_config")
+      .eq("slug", restaurantSlug)
+      .single();
+    restaurant = (resFallback.data as RestaurantRow | null) ?? null;
+  } else {
+    restaurant = (resWithPlan.data as RestaurantRow | null) ?? null;
+  }
 
   if (!restaurant) return null;
 
@@ -34,7 +59,7 @@ async function getRestaurantDataForPreview(
     .eq("restaurant_id", restaurant.id)
     .single();
 
-  if (!menu || !menu.is_active) {
+  if (!menu || (!options?.allowInactive && !menu.is_active)) {
     return null;
   }
 
@@ -60,12 +85,15 @@ async function getRestaurantDataForPreview(
   }
 
   if (!categories.length) {
-    const result: PublicRestaurantData = {
+    const result: PublicRestaurantData & { restaurantId: string } = {
+      restaurantId: restaurant.id,
       restaurant: {
         name: restaurant.name,
         slug: restaurant.slug,
         logo_url: restaurant.logo_url,
         theme_config: restaurant.theme_config,
+        plan_type: restaurant.plan_type ?? undefined,
+        plan_status: restaurant.plan_status ?? undefined,
       },
       categories: [],
       availableLanguages: ["de", "en", "fr", "it"],
@@ -123,12 +151,15 @@ async function getRestaurantDataForPreview(
   }
 
   // Assemble public data
-  const publicData: PublicRestaurantData = {
+  const publicData: PublicRestaurantData & { restaurantId: string } = {
+    restaurantId: restaurant.id,
     restaurant: {
       name: restaurant.name,
       slug: restaurant.slug,
       logo_url: restaurant.logo_url,
       theme_config: restaurant.theme_config, // Will be overridden by preview config
+      plan_type: restaurant.plan_type ?? undefined,
+      plan_status: restaurant.plan_status ?? undefined,
     },
     categories: categories.map((cat) => ({
       id: cat.id,
@@ -192,7 +223,10 @@ export default async function PreviewPage({ params, searchParams }: PageProps) {
     }
   }
 
-  const data = await getRestaurantDataForPreview(restaurant, menuId);
+  const data = await getRestaurantDataForPreview(restaurant, menuId, {
+    // Appearance page preview should render even when the menu isn't published yet.
+    allowInactive: true,
+  });
 
   if (!data) notFound();
 
@@ -227,7 +261,12 @@ export default async function PreviewPage({ params, searchParams }: PageProps) {
   if (isIframe) {
     return (
       <div style={{ minHeight: "100vh", backgroundColor: "transparent" }}>
-        <PublicMenuView data={viewData} initialLang={validatedLang} />
+        <PublicMenuView
+          data={viewData}
+          restaurantId={data.restaurantId}
+          menuId={menuId}
+          initialLang={validatedLang}
+        />
       </div>
     );
   }
@@ -235,7 +274,12 @@ export default async function PreviewPage({ params, searchParams }: PageProps) {
   return (
     <>
       <PreviewBanner restaurantSlug={restaurant} menuId={menuId} />
-      <PublicMenuView data={viewData} initialLang={validatedLang} />
+      <PublicMenuView
+        data={viewData}
+        restaurantId={data.restaurantId}
+        menuId={menuId}
+        initialLang={validatedLang}
+      />
     </>
   );
 }

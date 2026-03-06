@@ -33,7 +33,7 @@ export function HeroFeatureBar() {
       <div
         ref={ref}
         className={cn(
-          "mx-auto w-full max-w-7xl rounded-[2rem] border border-border/70 bg-[var(--feature-bar)]/95 shadow-lg shadow-black/5 backdrop-blur-md sm:rounded-[2.5rem] 2xl:max-w-[90rem]",
+          "mx-auto w-full max-w-7xl rounded-[2rem] border border-border/70 bg-[var(--feature-bar)]/95 shadow-lg shadow-primary/10 backdrop-blur-md sm:rounded-[2.5rem] 2xl:max-w-[90rem]",
           "fade-up",
           isVisible && "is-visible"
         )}

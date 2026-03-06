@@ -134,6 +134,8 @@ export function PublicMenuView({ data, restaurantId, menuId, initialLang }: Prop
     initialPlanType === "pro" && initialPlanStatus === "active",
   );
   const [ordersModalOpen, setOrdersModalOpen] = useState(false);
+  const [heroImageFailed, setHeroImageFailed] = useState(false);
+  const [logoImageFailed, setLogoImageFailed] = useState(false);
   
   // Cart store
   const {
@@ -389,13 +391,31 @@ export function PublicMenuView({ data, restaurantId, menuId, initialLang }: Prop
     ctaStyle: "solid" as const,
   };
 
+  const heroBackgroundImage = heroBanner.backgroundImage || theme.headerImageUrl;
+  const showHeroImage =
+    heroBanner.backgroundType === "image" &&
+    !!heroBackgroundImage &&
+    !heroImageFailed;
+
+  useEffect(() => {
+    setHeroImageFailed(false);
+  }, [heroBackgroundImage]);
+
+  useEffect(() => {
+    setLogoImageFailed(false);
+  }, [data.restaurant.logo_url]);
+
   // Get background style based on type
   const getBackgroundStyle = () => {
-    if (heroBanner.backgroundType === "image" && heroBanner.backgroundImage) {
+    if (showHeroImage && heroBackgroundImage) {
       return {
-        backgroundImage: `url(${heroBanner.backgroundImage})`,
+        backgroundImage: `url(${heroBackgroundImage})`,
         backgroundSize: "cover",
         backgroundPosition: "center",
+      };
+    } else if (heroBanner.backgroundType === "image") {
+      return {
+        background: `linear-gradient(to bottom, ${heroBanner.gradientStart}, ${heroBanner.gradientEnd})`,
       };
     } else if (heroBanner.backgroundType === "gradient") {
       const directionMap = {
@@ -455,17 +475,18 @@ export function PublicMenuView({ data, restaurantId, menuId, initialLang }: Prop
       {/* ─── Hero Banner ─── */}
       <header className="relative min-h-[60vh] sm:min-h-[70vh] flex flex-col overflow-hidden">
         <div className="absolute inset-0" style={getBackgroundStyle()}>
-          {heroBanner.backgroundType === "image" && heroBanner.backgroundImage && (
+          {showHeroImage && heroBackgroundImage && (
             <Image
-              src={heroBanner.backgroundImage}
+              src={heroBackgroundImage}
               alt=""
               fill
               className="object-cover"
               priority
               sizes="100vw"
               unoptimized={
-                heroBanner.backgroundImage.includes("127.0.0.1") || heroBanner.backgroundImage.includes("localhost")
+                heroBackgroundImage.includes("127.0.0.1") || heroBackgroundImage.includes("localhost")
               }
+              onError={() => setHeroImageFailed(true)}
             />
           )}
           {/* Customizable overlay */}
@@ -475,7 +496,7 @@ export function PublicMenuView({ data, restaurantId, menuId, initialLang }: Prop
         {/* Top bar: Logo + Name (left), Cart (right) */}
         <div className="relative z-10 flex items-center justify-between px-4 pt-6 sm:px-8 sm:pt-8">
           <div className="flex items-center gap-3">
-            {data.restaurant.logo_url && theme.showLogo ? (
+            {data.restaurant.logo_url && theme.showLogo && !logoImageFailed ? (
               <Image
                 src={data.restaurant.logo_url}
                 alt=""
@@ -483,6 +504,7 @@ export function PublicMenuView({ data, restaurantId, menuId, initialLang }: Prop
                 height={48}
                 unoptimized
                 className="h-12 w-12 rounded-lg object-cover"
+                onError={() => setLogoImageFailed(true)}
               />
             ) : (
               <div
@@ -506,7 +528,7 @@ export function PublicMenuView({ data, restaurantId, menuId, initialLang }: Prop
               >
                 {data.restaurant.name}
               </h1>
-              {!ordersEnabled && (
+              {!isProPlan && (
                 <span className="mt-1 inline-flex items-center rounded-full bg-black/40 px-2.5 py-0.5 text-[11px] font-medium uppercase tracking-[0.16em] text-amber-200">
                   <Lock className="mr-1 h-3 w-3" />
                   Menu View Only

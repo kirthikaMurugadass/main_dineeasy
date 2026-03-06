@@ -26,14 +26,14 @@ export function Hero() {
       }}
     >
       {/* Dark overlay to keep text readable */}
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(0,0,0,0.55),transparent_55%),linear-gradient(to_right,rgba(0,0,0,0.65),rgba(0,0,0,0.45),rgba(0,0,0,0.35))]" />
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(2,6,23,0.55),transparent_55%),linear-gradient(to_right,rgba(2,6,23,0.65),rgba(15,23,42,0.45),rgba(15,23,42,0.35))]" />
 
       <div className="relative mx-auto flex min-h-[70vh] w-full max-w-7xl items-center px-4 py-16 sm:px-6 sm:py-20 md:py-24 lg:py-28 lg:px-10 2xl:max-w-[90rem] 2xl:py-32">
         <div className="flex w-full flex-col items-center text-center lg:w-1/2 lg:items-start lg:text-left">
           {/* Badge */}
           <p
             className={cn(
-              "inline-flex items-center rounded-full bg-black/30 px-4 py-1.5 text-xs font-medium uppercase tracking-[0.2em] text-[var(--sage-light)] shadow-soft",
+              "inline-flex items-center rounded-full bg-[#0f172a]/45 px-4 py-1.5 text-xs font-medium uppercase tracking-[0.2em] text-[#4ade80] shadow-soft",
               "slide-in-left",
               visible && "is-visible",
               "delay-100"
@@ -83,7 +83,7 @@ export function Hero() {
             <Link href="/signup">
               <Button
                 size="lg"
-                className="group h-12 rounded-full bg-primary px-8 text-sm font-semibold text-primary-foreground shadow-lg shadow-black/25 transition-all duration-300 hover:-translate-y-0.5 hover:bg-primary/90 hover:shadow-xl hover:shadow-black/35"
+                className="group h-12 rounded-full bg-primary px-8 text-sm font-semibold text-primary-foreground shadow-lg shadow-primary/40 transition-all duration-300 hover:-translate-y-0.5 hover:bg-primary/90 hover:shadow-xl hover:shadow-primary/50"
               >
                 {t.landing.hero.cta}
                 <ArrowRight className="ml-2 h-4 w-4 transition-transform duration-300 group-hover:translate-x-1" />
@@ -93,7 +93,7 @@ export function Hero() {
               <Button
                 size="lg"
                 variant="ghost"
-                className="h-12 rounded-full border border-white/50 bg-white/10 px-7 text-sm font-medium text-white shadow-soft transition-all duration-300 hover:bg-white/15"
+                className="h-12 rounded-full border border-[#4ade80] bg-transparent px-7 text-sm font-medium text-white shadow-soft transition-all duration-300 hover:border-[#22c55e] hover:bg-primary/10 hover:text-white"
               >
                 {t.landing.hero.ctaSecondary}
               </Button>
