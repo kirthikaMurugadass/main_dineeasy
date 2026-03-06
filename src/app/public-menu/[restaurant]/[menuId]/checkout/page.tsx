@@ -13,6 +13,7 @@ import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { toast } from "sonner";
 import type { Language } from "@/types/database";
+import { LocationPickerMap, type LatLng } from "@/components/checkout/location-picker-map";
 
 function getDisplayTitle(
   titleRecord: Record<Language, string> | undefined,
@@ -42,6 +43,7 @@ export default function CheckoutPage({
   const [tableNumber, setTableNumber] = useState("");
   const [deliveryAddress, setDeliveryAddress] = useState("");
   const [phoneNumber, setPhoneNumber] = useState("");
+  const [deliveryLocation, setDeliveryLocation] = useState<LatLng | null>(null);
   const [loading, setLoading] = useState(false);
   const [mounted, setMounted] = useState(false);
   const [orderSuccess, setOrderSuccess] = useState(false);
@@ -65,7 +67,7 @@ export default function CheckoutPage({
     }
   }, [mounted, items.length, resolvedParams, router]);
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleContinue = async (e: React.FormEvent) => {
     e.preventDefault();
 
     // Validation
@@ -89,52 +91,27 @@ export default function CheckoutPage({
       return;
     }
 
-    setLoading(true);
-
     try {
-      const response = await fetch("/api/orders", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          restaurantId,
-          customerName: customerName.trim(),
-          orderType,
-          tableNumber: orderType === "dine_in" ? parseInt(tableNumber) : null,
-          deliveryAddress: orderType === "takeaway" ? deliveryAddress.trim() : null,
-          phoneNumber: orderType === "takeaway" ? (phoneNumber.trim() || null) : null,
-          items: items.map((item) => ({
-            itemId: item.id,
-            quantity: item.quantity,
-            price: item.price,
-          })),
-        }),
-      });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.error || "Failed to place order");
+      // Persist step-1 checkout data for Order Summary page
+      const key = `dineeasy-checkout-step1-${resolvedParams?.restaurant}-${resolvedParams?.menuId}`;
+      const payload = {
+        customerName: customerName.trim(),
+        orderType,
+        tableNumber: orderType === "dine_in" ? tableNumber.trim() : "",
+        deliveryAddress: orderType === "takeaway" ? deliveryAddress.trim() : "",
+        phoneNumber: orderType === "takeaway" ? phoneNumber.trim() : "",
+        deliveryLocation: orderType === "takeaway" ? deliveryLocation : null,
+      };
+      if (typeof window !== "undefined") {
+        sessionStorage.setItem(key, JSON.stringify(payload));
       }
 
-      toast.success("Order placed successfully!");
-      clearCart();
-      setOrderSuccess(true);
-      
-      // Redirect after 3 seconds
-      if (resolvedParams) {
-        setTimeout(() => {
-          router.push(
-            `/public-menu/${resolvedParams.restaurant}/${resolvedParams.menuId}`
-          );
-        }, 3000);
-      }
-    } catch (error) {
-      console.error("Order error:", error);
-      toast.error(
-        error instanceof Error ? error.message : "Failed to place order"
+      router.push(
+        `/public-menu/${resolvedParams?.restaurant}/${resolvedParams?.menuId}/checkout/order-summary`
       );
-    } finally {
-      setLoading(false);
+    } catch (error) {
+      console.error("Checkout continue error:", error);
+      toast.error("Failed to continue. Please try again.");
     }
   };
 
@@ -225,7 +202,7 @@ export default function CheckoutPage({
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1 }}
-          onSubmit={handleSubmit}
+          onSubmit={handleContinue}
           className="space-y-6 rounded-2xl border border-border/60 bg-card p-6 shadow-sm"
         >
           {/* Customer Name */}
@@ -257,6 +234,7 @@ export default function CheckoutPage({
                 if (newOrderType === "dine_in") {
                   setDeliveryAddress("");
                   setPhoneNumber("");
+                  setDeliveryLocation(null);
                 } else {
                   setTableNumber("");
                 }
@@ -286,7 +264,7 @@ export default function CheckoutPage({
 
           {/* Table Number (conditional for dine-in) */}
           {orderType === "dine_in" && (
-            <div className="space-y-2 animate-in fade-in duration-200">
+            <div className="space-y-2">
               <Label htmlFor="tableNumber">
                 Table Number <span className="text-destructive">*</span>
               </Label>
@@ -305,7 +283,7 @@ export default function CheckoutPage({
 
           {/* Delivery Address (conditional for takeaway) */}
           {orderType === "takeaway" && (
-            <div className="space-y-2 animate-in fade-in duration-200">
+            <div className="space-y-2">
               <Label htmlFor="deliveryAddress">
                 Delivery Address <span className="text-destructive">*</span>
               </Label>
@@ -320,9 +298,26 @@ export default function CheckoutPage({
             </div>
           )}
 
+          {/* Map (conditional for takeaway when address is being entered) */}
+          {orderType === "takeaway" && deliveryAddress.trim().length > 0 && (
+            <div className="space-y-2">
+              <Label>
+                Delivery Location{" "}
+                <span className="text-muted-foreground">(Select on map)</span>
+              </Label>
+              <LocationPickerMap
+                value={deliveryLocation}
+                onChange={setDeliveryLocation}
+              />
+              <p className="text-xs text-muted-foreground">
+                Tap on the map to drop a pin for the delivery location.
+              </p>
+            </div>
+          )}
+
           {/* Phone Number (conditional for takeaway) */}
           {orderType === "takeaway" && (
-            <div className="space-y-2 animate-in fade-in duration-200">
+            <div className="space-y-2">
               <Label htmlFor="phoneNumber">
                 Phone Number <span className="text-muted-foreground">(Optional)</span>
               </Label>
@@ -347,10 +342,10 @@ export default function CheckoutPage({
             {loading ? (
               <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Placing Order...
+                Please wait...
               </>
             ) : (
-              "Place Order"
+              "Continue"
             )}
           </Button>
         </motion.form>

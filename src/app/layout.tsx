@@ -3,6 +3,7 @@ import { Inter } from "next/font/google";
 import { Toaster } from "@/components/ui/sonner";
 import { I18nProviderWrapper } from "@/components/providers/i18n-provider-wrapper";
 import { ThemeProvider } from "@/components/providers/theme-provider";
+import "leaflet/dist/leaflet.css";
 import "./globals.css";
 
 const inter = Inter({
