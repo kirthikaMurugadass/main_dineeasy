@@ -78,7 +78,7 @@ export function WorkflowSection() {
             </FadeIn>
           </div>
           <FadeIn delay={0.15} direction="left">
-            <div className="relative flex justify-center lg:justify-end">
+            <div className="relative flex justify-center lg:justify-center lg:ml-8">
               <div className="w-full max-w-[260px] sm:max-w-[290px] lg:max-w-[280px]">
                 <PhoneDemo />
               </div>
