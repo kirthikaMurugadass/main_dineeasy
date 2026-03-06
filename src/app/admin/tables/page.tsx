@@ -467,7 +467,7 @@ export default function TablesPage() {
             <CardContent className="space-y-4">
               {/* Match the customer-facing booking UI table grid */}
               <div className="mx-auto w-full max-w-2xl">
-                <div className="grid grid-cols-4 gap-2">
+                <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-4">
                   {sortedPreviewTables().map((table) => {
                     // Admin preview is purely visual (no real-time booking status),
                     // so we render all active tables as "Available" (green).

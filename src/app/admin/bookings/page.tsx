@@ -335,7 +335,7 @@ export default function BookingsPage() {
         <CardContent className="p-6">
           <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             {/* Tab Navigation */}
-            <div className="flex items-center gap-2 flex-wrap">
+            <div className="flex items-center gap-2 overflow-x-auto pb-1">
               <button
                 onClick={() => handleTabChange("all")}
                 className={cn(
@@ -406,8 +406,8 @@ export default function BookingsPage() {
 
             {/* Date Selector and Search */}
             {mounted && (
-              <div className="flex items-center gap-2 flex-wrap">
-                <div className="relative">
+              <div className="flex w-full items-center gap-2 flex-wrap sm:w-auto">
+                <div className="relative w-full sm:w-auto">
                   <input
                     type="text"
                     placeholder="Search by customer name..."
@@ -416,7 +416,7 @@ export default function BookingsPage() {
                       setSearchQuery(e.target.value);
                       setCurrentPage(1);
                     }}
-                    className="rounded-xl border border-[#D6D2C4]/50 bg-white px-3 py-2 pl-10 text-sm text-[#2D3A1A] shadow-sm transition-all hover:border-[#5B7A2F]/50 focus:border-[#5B7A2F] focus:outline-none focus:ring-2 focus:ring-[#5B7A2F]/20 dark:border-[#3D4F2A]/50 dark:bg-[#243019] dark:text-[#E8E4D9] dark:hover:border-[#7A9E4A]/50 dark:focus:border-[#7A9E4A] w-[200px]"
+                    className="w-full rounded-xl border border-[#D6D2C4]/50 bg-white px-3 py-2 pl-10 text-sm text-[#2D3A1A] shadow-sm transition-all hover:border-[#5B7A2F]/50 focus:border-[#5B7A2F] focus:outline-none focus:ring-2 focus:ring-[#5B7A2F]/20 dark:border-[#3D4F2A]/50 dark:bg-[#243019] dark:text-[#E8E4D9] dark:hover:border-[#7A9E4A]/50 dark:focus:border-[#7A9E4A] sm:w-[200px]"
                   />
                   <User2 className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-[#6B7B5A] dark:text-[#9CA88A]" />
                 </div>

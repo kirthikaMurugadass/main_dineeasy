@@ -193,7 +193,7 @@ export default function CheckoutOrderSummaryPage({
 
   return (
     <div className="min-h-screen bg-background">
-      <div className="mx-auto max-w-2xl px-4 py-8 sm:px-6 lg:px-8">
+      <div className="mx-auto max-w-2xl px-4 py-6 sm:px-6 sm:py-8 lg:px-8">
         {/* Header */}
         <div className="mb-8">
           <Link href={`/public-menu/${resolvedParams.restaurant}/${resolvedParams.menuId}/checkout`}>
@@ -201,7 +201,7 @@ export default function CheckoutOrderSummaryPage({
               <ArrowLeft className="h-5 w-5" />
             </Button>
           </Link>
-          <h1 className="text-3xl font-bold">Order Summary</h1>
+          <h1 className="text-2xl font-bold sm:text-3xl">Order Summary</h1>
           <p className="mt-2 text-muted-foreground">
             Review your details before placing the order
           </p>
@@ -211,20 +211,20 @@ export default function CheckoutOrderSummaryPage({
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="mb-8 space-y-4 rounded-2xl border border-border/60 bg-card p-6 shadow-sm"
+          className="mb-8 space-y-4 rounded-2xl border border-border/60 bg-card p-4 shadow-sm sm:p-6"
         >
           <div className="grid gap-3 text-sm">
-            <div className="flex items-center justify-between">
+            <div className="flex flex-wrap items-center justify-between gap-2">
               <span className="text-muted-foreground">Customer Name</span>
               <span className="font-semibold">{step1.customerName}</span>
             </div>
-            <div className="flex items-center justify-between">
+            <div className="flex flex-wrap items-center justify-between gap-2">
               <span className="text-muted-foreground">Order Type</span>
               <span className="font-semibold">{prettyOrderType}</span>
             </div>
 
             {step1.orderType === "dine_in" && (
-              <div className="flex items-center justify-between">
+              <div className="flex flex-wrap items-center justify-between gap-2">
                 <span className="text-muted-foreground">Table Number</span>
                 <span className="font-semibold">{step1.tableNumber || "—"}</span>
               </div>
@@ -232,11 +232,11 @@ export default function CheckoutOrderSummaryPage({
 
             {step1.orderType === "takeaway" && (
               <>
-                <div className="flex items-center justify-between">
+                <div className="flex flex-wrap items-center justify-between gap-2">
                   <span className="text-muted-foreground">Address</span>
-                  <span className="font-semibold">{step1.deliveryAddress || "—"}</span>
+                  <span className="max-w-full break-words text-right font-semibold">{step1.deliveryAddress || "—"}</span>
                 </div>
-                <div className="flex items-center justify-between">
+                <div className="flex flex-wrap items-center justify-between gap-2">
                   <span className="inline-flex items-center gap-2 text-muted-foreground">
                     <MapPin className="h-4 w-4" /> Map Location
                   </span>
@@ -255,7 +255,7 @@ export default function CheckoutOrderSummaryPage({
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="mb-8 rounded-2xl border border-border/60 bg-card p-6 shadow-sm"
+          className="mb-8 rounded-2xl border border-border/60 bg-card p-4 shadow-sm sm:p-6"
         >
           <h2 className="mb-4 text-lg font-semibold">Ordered Items</h2>
           <div className="space-y-2">
@@ -277,7 +277,7 @@ export default function CheckoutOrderSummaryPage({
         </motion.div>
 
         {/* Place Order */}
-        <Card className="rounded-2xl border border-border/60 bg-card p-6 shadow-sm">
+        <Card className="rounded-2xl border border-border/60 bg-card p-4 shadow-sm sm:p-6">
           <Button
             type="button"
             size="lg"

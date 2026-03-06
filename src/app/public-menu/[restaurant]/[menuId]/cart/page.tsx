@@ -99,8 +99,8 @@ export default function CartPage({
     <div className="min-h-screen bg-background">
       <div className="mx-auto max-w-4xl px-4 py-8 sm:px-6 lg:px-8">
         {/* Header */}
-        <div className="mb-8 flex items-center justify-between">
-          <div className="flex items-center gap-4">
+        <div className="mb-8 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex items-center gap-3 sm:gap-4">
             {resolvedParams && (
               <Link
                 href={`/public-menu/${resolvedParams.restaurant}/${resolvedParams.menuId}`}
@@ -126,7 +126,7 @@ export default function CartPage({
               key={item.id}
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
-              className="flex gap-4 rounded-2xl border border-border/60 bg-card p-4 shadow-sm"
+              className="flex flex-col gap-4 rounded-2xl border border-border/60 bg-card p-4 shadow-sm sm:flex-row"
             >
               {/* Item Image */}
               <div className="relative h-20 w-20 shrink-0 overflow-hidden rounded-lg">
@@ -167,7 +167,7 @@ export default function CartPage({
                 </div>
 
                 {/* Quantity Controls */}
-                <div className="flex items-center justify-between">
+                <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                   <div className="flex items-center gap-3">
                     <button
                       onClick={() => {
@@ -203,10 +203,10 @@ export default function CartPage({
         </div>
 
         {/* Total and Checkout */}
-        <div className="sticky bottom-0 rounded-2xl border border-border/60 bg-card p-6 shadow-lg">
-          <div className="mb-6 flex items-center justify-between text-lg">
+        <div className="sticky bottom-0 rounded-2xl border border-border/60 bg-card p-4 shadow-lg sm:p-6">
+          <div className="mb-6 flex items-center justify-between text-base sm:text-lg">
             <span className="font-semibold">Total</span>
-            <span className="text-2xl font-bold">CHF {total.toFixed(2)}</span>
+            <span className="text-xl font-bold sm:text-2xl">CHF {total.toFixed(2)}</span>
           </div>
           {resolvedParams && (
             <Link

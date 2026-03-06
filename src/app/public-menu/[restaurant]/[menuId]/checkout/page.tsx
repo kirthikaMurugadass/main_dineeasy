@@ -153,7 +153,7 @@ export default function CheckoutPage({
 
   return (
     <div className="min-h-screen bg-background">
-      <div className="mx-auto max-w-2xl px-4 py-8 sm:px-6 lg:px-8">
+      <div className="mx-auto max-w-2xl px-4 py-6 sm:px-6 sm:py-8 lg:px-8">
         {/* Header */}
         <div className="mb-8">
           <Link
@@ -163,7 +163,7 @@ export default function CheckoutPage({
               <ArrowLeft className="h-5 w-5" />
             </Button>
           </Link>
-          <h1 className="text-3xl font-bold">Checkout</h1>
+          <h1 className="text-2xl font-bold sm:text-3xl">Checkout</h1>
           <p className="mt-2 text-muted-foreground">
             Please provide your details to complete your order
           </p>
@@ -173,7 +173,7 @@ export default function CheckoutPage({
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="mb-8 rounded-2xl border border-border/60 bg-card p-6 shadow-sm"
+          className="mb-8 rounded-2xl border border-border/60 bg-card p-4 shadow-sm sm:p-6"
         >
           <h2 className="mb-4 text-lg font-semibold">Order Summary</h2>
           <div className="space-y-2">
@@ -191,7 +191,7 @@ export default function CheckoutPage({
               </div>
             ))}
           </div>
-          <div className="mt-4 flex items-center justify-between border-t border-border pt-4">
+          <div className="mt-4 flex items-center justify-between gap-3 border-t border-border pt-4">
             <span className="text-lg font-semibold">Total</span>
             <span className="text-xl font-bold">CHF {total.toFixed(2)}</span>
           </div>
@@ -203,7 +203,7 @@ export default function CheckoutPage({
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1 }}
           onSubmit={handleContinue}
-          className="space-y-6 rounded-2xl border border-border/60 bg-card p-6 shadow-sm"
+          className="space-y-6 rounded-2xl border border-border/60 bg-card p-4 shadow-sm sm:p-6"
         >
           {/* Customer Name */}
           <div className="space-y-2">

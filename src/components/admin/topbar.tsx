@@ -104,7 +104,7 @@ export function AdminTopbar() {
           {!planLoading && !isPro && (
             <Button
               size="sm"
-              className="rounded-full bg-primary text-primary-foreground hover:bg-primary/90"
+              className="hidden rounded-full bg-primary text-primary-foreground hover:bg-primary/90 sm:inline-flex"
               onClick={() => router.push("/admin/checkout")}
             >
               Upgrade to Pro
@@ -124,7 +124,7 @@ export function AdminTopbar() {
             </DropdownMenuTrigger>
             <DropdownMenuContent
               align="end"
-              className="min-w-[190px] rounded-xl border border-border/70 bg-card p-1 shadow-xl backdrop-blur-xl"
+              className="w-48 max-w-[calc(100vw-1rem)] rounded-xl border border-border/70 bg-card p-1 shadow-xl backdrop-blur-xl"
             >
               {languages?.map((lang) => (
                 <DropdownMenuItem
@@ -166,7 +166,7 @@ export function AdminTopbar() {
             </DropdownMenuTrigger>
             <DropdownMenuContent
               align="end"
-              className="min-w-[170px] rounded-xl border border-border bg-card p-1 shadow-xl backdrop-blur-xl"
+              className="w-44 max-w-[calc(100vw-1rem)] rounded-xl border border-border bg-card p-1 shadow-xl backdrop-blur-xl"
             >
               <DropdownMenuItem
                 onClick={() => setTheme("light")}
@@ -209,7 +209,7 @@ export function AdminTopbar() {
             </DropdownMenuTrigger>
             <DropdownMenuContent
               align="end"
-              className="min-w-[220px] rounded-xl border border-border/70 bg-card p-1.5 shadow-2xl backdrop-blur-xl"
+              className="w-56 max-w-[calc(100vw-1rem)] rounded-xl border border-border/70 bg-card p-1.5 shadow-2xl backdrop-blur-xl"
             >
               <DropdownMenuItem
                 disabled
