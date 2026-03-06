@@ -12,6 +12,7 @@ import { Label } from "@/components/ui/label";
 import { createClient } from "@/lib/supabase/client";
 import { toast } from "sonner";
 import { useI18n } from "@/lib/i18n/context";
+import { AuthSplitPanel } from "@/components/auth/auth-split-panel";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -20,16 +21,6 @@ export default function LoginPage() {
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [focusedField, setFocusedField] = useState<string | null>(null);
-  const [isMobile, setIsMobile] = useState(false);
-
-  useEffect(() => {
-    const checkMobile = () => {
-      setIsMobile(window.innerWidth < 768);
-    };
-    checkMobile();
-    window.addEventListener("resize", checkMobile);
-    return () => window.removeEventListener("resize", checkMobile);
-  }, []);
 
   async function handleLogin(e: React.FormEvent) {
     e.preventDefault();
@@ -107,164 +98,137 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gray-50 px-4 py-10 sm:px-6 lg:px-8">
-      <motion.div
-        initial={{ opacity: 0, scale: 0.95 }}
-        animate={{ opacity: 1, scale: 1 }}
-        transition={{ duration: 0.5, ease: [0.4, 0, 0.2, 1] }}
-        className="relative w-full max-w-5xl overflow-hidden rounded-2xl shadow-2xl md:min-h-[600px]"
-      >
-        {/* Diagonal Split Container */}
-        <div className="relative flex flex-col md:flex-row md:min-h-[600px]">
-          {/* Form Section - Left Side */}
-          <motion.div
-            initial={{ opacity: 0, x: -20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.5, delay: 0.1 }}
-            className="relative z-10 flex w-full flex-col justify-center bg-white p-8 md:w-1/2 md:p-12"
-            style={{
-              clipPath: !isMobile ? "polygon(0 0, 100% 0, 85% 100%, 0% 100%)" : "none",
-            }}
-          >
-            <div className="w-full max-w-md mx-auto space-y-8">
-              <div>
-                <h1 className="text-3xl font-bold text-black mb-2">
-                  {t.auth.login.title}
-                </h1>
-                <div className="w-12 h-0.5 bg-black"></div>
-              </div>
+    <AuthSplitPanel
+      imageSrc="/images/hero.jpg"
+      imageOnLeft={false}
+      leftHeading="Hello, Friend!"
+      leftSubtitle="Enter your personal details and start your journey with us"
+      leftButtonText="SIGN UP"
+      leftButtonHref="/signup"
+      formTitle="Sign In"
+      formSubtitle="or use your email for login"
+    >
+      <form onSubmit={handleLogin} className="space-y-5">
+        <motion.div
+          initial={{ opacity: 0, y: 8 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4, ease: [0.4, 0, 0.2, 1] }}
+          className="space-y-2"
+        >
+          <Label htmlFor="email" className="text-sm font-medium text-foreground">
+            {t.auth.login.emailLabel}
+          </Label>
+          <div className="relative">
+            <Mail
+              size={16}
+              className={`absolute left-3.5 top-1/2 -translate-y-1/2 transition-colors duration-300 ${
+                focusedField === "email" ? "text-primary" : "text-muted-foreground"
+              }`}
+            />
+            <Input
+              id="email"
+              type="email"
+              placeholder="you@restaurant.ch"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              onFocus={() => setFocusedField("email")}
+              onBlur={() => setFocusedField(null)}
+              className={`h-12 rounded-[14px] border bg-white/70 pl-10 pr-4 text-foreground placeholder:text-muted-foreground shadow-sm transition-all duration-300 ${
+                focusedField === "email"
+                  ? "border-primary/40 ring-2 ring-primary/15"
+                  : "border-border focus-visible:border-primary/40 focus-visible:ring-2 focus-visible:ring-primary/15"
+              }`}
+              required
+              disabled={loading}
+              autoComplete="email"
+            />
+          </div>
+        </motion.div>
 
-              <form onSubmit={handleLogin} className="space-y-6">
-                <div className="space-y-1">
-                  <Label htmlFor="email" className="text-sm font-medium text-gray-700">
-                    {t.auth.login.emailLabel}
-                  </Label>
-                  <div className="relative">
-                    <Input
-                      id="email"
-                      type="email"
-                      placeholder=""
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
-                      onFocus={() => setFocusedField("email")}
-                      onBlur={() => setFocusedField(null)}
-                      className="h-12 border-0 border-b-2 border-gray-300 rounded-none bg-transparent px-0 pr-8 focus:border-green-600 focus:ring-0 focus-visible:ring-0 focus-visible:ring-offset-0"
-                      required
-                      disabled={loading}
-                      autoComplete="email"
-                    />
-                    <Mail
-                      size={18}
-                      className={`absolute right-0 top-1/2 -translate-y-1/2 transition-colors ${
-                        focusedField === "email" ? "text-green-600" : "text-gray-400"
-                      }`}
-                    />
-                  </div>
-                </div>
+        <motion.div
+          initial={{ opacity: 0, y: 8 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.1, duration: 0.4, ease: [0.4, 0, 0.2, 1] }}
+          className="space-y-2"
+        >
+          <Label htmlFor="password" className="text-sm font-medium text-foreground">
+            {t.auth.login.passwordLabel}
+          </Label>
+          <div className="relative">
+            <Lock
+              size={16}
+              className={`absolute left-3.5 top-1/2 -translate-y-1/2 transition-colors duration-300 ${
+                focusedField === "password" ? "text-primary" : "text-muted-foreground"
+              }`}
+            />
+            <PasswordInput
+              id="password"
+              placeholder={t.auth.login.passwordPlaceholder ?? "Enter your password"}
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              onFocus={() => setFocusedField("password")}
+              onBlur={() => setFocusedField(null)}
+              className={`h-12 rounded-[14px] border bg-white/70 pl-10 text-foreground placeholder:text-muted-foreground shadow-sm transition-all duration-300 ${
+                focusedField === "password"
+                  ? "border-primary/40 ring-2 ring-primary/15"
+                  : "border-border focus-visible:border-primary/40 focus-visible:ring-2 focus-visible:ring-primary/15"
+              }`}
+              required
+              disabled={loading}
+              autoComplete="current-password"
+            />
+          </div>
+          <div className="flex justify-end">
+            <button
+              type="button"
+              onClick={() => router.push("/forgot-password")}
+              className="text-xs font-medium text-primary underline-offset-2 transition-colors duration-300 hover:text-primary/80"
+            >
+              {t.auth.login.forgotPassword}
+            </button>
+          </div>
+        </motion.div>
 
-                <div className="space-y-1">
-                  <div className="flex items-center justify-between">
-                    <Label htmlFor="password" className="text-sm font-medium text-gray-700">
-                      {t.auth.login.passwordLabel}
-                    </Label>
-                    <button
-                      type="button"
-                      onClick={() => router.push("/forgot-password")}
-                      className="text-xs font-medium text-blue-600 hover:underline"
-                    >
-                      {t.auth.login.forgotPassword}
-                    </button>
-                  </div>
-                  <div className="relative">
-                    <PasswordInput
-                      id="password"
-                      placeholder=""
-                      value={password}
-                      onChange={(e) => setPassword(e.target.value)}
-                      onFocus={() => setFocusedField("password")}
-                      onBlur={() => setFocusedField(null)}
-                      className="h-12 border-0 border-b-2 border-gray-300 rounded-none bg-transparent px-0 pr-20 focus:border-green-600 focus:ring-0 focus-visible:ring-0 focus-visible:ring-offset-0"
-                      wrapperClassName="relative"
-                      required
-                      disabled={loading}
-                      autoComplete="current-password"
-                    />
-                    <Lock
-                      size={18}
-                      className={`absolute right-10 top-1/2 -translate-y-1/2 transition-colors pointer-events-none ${
-                        focusedField === "password" ? "text-green-600" : "text-gray-400"
-                      }`}
-                    />
-                  </div>
-                </div>
-
-                <Button
-                  type="submit"
-                  disabled={loading || !email || !password}
-                  className="h-12 w-full rounded-full bg-green-600 text-white font-semibold shadow-lg hover:bg-green-700 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  <AnimatePresence mode="wait">
-                    {loading ? (
-                      <motion.span
-                        key="loading"
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        exit={{ opacity: 0 }}
-                        className="flex items-center justify-center gap-2"
-                      >
-                        <Loader2 size={18} className="animate-spin" />
-                        {t.auth.login.submitButton}...
-                      </motion.span>
-                    ) : (
-                      <motion.span key="default" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
-                        {t.auth.login.submitButton}
-                      </motion.span>
-                    )}
-                  </AnimatePresence>
-                </Button>
-
-                <p className="text-center text-sm text-gray-600">
-                  {t.auth.login.noAccount}{" "}
-                  <Link href="/signup" className="font-medium text-blue-600 hover:underline">
-                    {t.auth.login.signUpLink}
-                  </Link>
-                </p>
-              </form>
-            </div>
-          </motion.div>
-
-          {/* Welcome Section - Right Side (Green) */}
-          <motion.div
-            initial={{ opacity: 0, x: 20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.5, delay: 0.2 }}
-            className="relative flex w-full flex-col items-center justify-center bg-gradient-to-br from-green-600 to-green-700 p-8 md:w-1/2 md:p-12 min-h-[300px] md:min-h-0"
-            style={{
-              clipPath: !isMobile ? "polygon(15% 0, 100% 0, 100% 100%, 0% 100%)" : "none",
-            }}
-          >
-            <div className="absolute inset-0 bg-gradient-to-br from-green-600 via-green-650 to-green-700"></div>
-            <div className="relative z-10 text-center text-white">
-              <motion.h2
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, delay: 0.3 }}
-                className="text-4xl font-bold mb-4 md:text-5xl"
+        <Button
+          type="submit"
+          disabled={loading || !email || !password}
+          className="h-12 w-full rounded-[14px] border border-primary/30 bg-primary/20 text-foreground font-semibold shadow-sm transition-colors duration-300 hover:bg-primary/30 active:bg-primary/35"
+        >
+          <AnimatePresence mode="wait">
+            {loading ? (
+              <motion.span
+                key="loading"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                className="flex items-center justify-center gap-2"
               >
-                WELCOME BACK!
-              </motion.h2>
-              <motion.p
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, delay: 0.4 }}
-                className="text-base text-green-50 md:text-lg"
+                <Loader2 size={18} className="animate-spin" />
+                {t.auth.login.submitButton}...
+              </motion.span>
+            ) : (
+              <motion.span
+                key="default"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
               >
-                Lorem ipsum dolor sit amet consectetur adipisicing elit. Deleniti, rem?
-              </motion.p>
-            </div>
-          </motion.div>
-        </div>
-      </motion.div>
-    </div>
+                {t.auth.login.submitButton}
+              </motion.span>
+            )}
+          </AnimatePresence>
+        </Button>
+
+        <p className="text-center text-sm text-muted-foreground">
+          {t.auth.login.noAccount}{" "}
+          <Link
+            href="/signup"
+            className="font-medium text-primary underline-offset-2 transition-colors duration-300 hover:text-primary/80"
+          >
+            {t.auth.login.signUpLink}
+          </Link>
+        </p>
+      </form>
+    </AuthSplitPanel>
   );
 }

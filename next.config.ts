@@ -37,26 +37,7 @@ const nextConfig: NextConfig = {
   // Support subdomain routing
   async headers() {
     return [
-      // Preview routes must come FIRST to allow iframe embedding
-      {
-        source: "/preview/:restaurant/:menuId",
-        headers: [
-          {
-            key: "X-Frame-Options",
-            value: "SAMEORIGIN", // Allow iframe embedding for preview pages
-          },
-        ],
-      },
-      {
-        source: "/preview/:path*",
-        headers: [
-          {
-            key: "X-Frame-Options",
-            value: "SAMEORIGIN", // Allow iframe embedding for preview pages
-          },
-        ],
-      },
-      // All other routes
+      // Base security headers for all routes
       {
         source: "/:path*",
         headers: [
@@ -75,6 +56,25 @@ const nextConfig: NextConfig = {
           {
             key: "Referrer-Policy",
             value: "strict-origin-when-cross-origin",
+          },
+        ],
+      },
+      // Preview routes must come AFTER the catch-all so this override wins
+      {
+        source: "/preview/:restaurant/:menuId",
+        headers: [
+          {
+            key: "X-Frame-Options",
+            value: "SAMEORIGIN", // Allow iframe embedding for preview pages
+          },
+        ],
+      },
+      {
+        source: "/preview/:path*",
+        headers: [
+          {
+            key: "X-Frame-Options",
+            value: "SAMEORIGIN", // Allow iframe embedding for preview pages
           },
         ],
       },

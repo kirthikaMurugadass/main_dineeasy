@@ -29,12 +29,12 @@ export function AuthSplitPanel({
   children,
 }: AuthSplitPanelProps) {
   return (
-    <div className="flex min-h-[calc(100vh-5rem)] w-full items-center justify-center p-4 md:p-6">
+    <div className="flex min-h-[calc(100vh-5rem)] w-full items-center justify-center bg-background p-4 md:p-6">
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5, ease: EASE }}
-        className="flex w-full max-w-5xl flex-col overflow-hidden rounded-[24px] bg-[#0f0f0f] shadow-[0_25px_50px_-12px_rgba(0,0,0,0.6)] md:min-h-[600px] md:flex-row"
+        className="flex w-full max-w-5xl flex-col overflow-hidden rounded-[24px] bg-card shadow-[0_25px_50px_-12px_rgba(45,58,26,0.18)] ring-1 ring-border md:min-h-[600px] md:flex-row"
       >
         {/* IMAGE PANEL - position swaps via order (mobile: always on top) */}
         <div
@@ -47,7 +47,7 @@ export function AuthSplitPanel({
               className="absolute inset-0 bg-cover bg-center bg-no-repeat animate-auth-zoom"
               style={{ backgroundImage: `url(${imageSrc})` }}
             />
-            <div className="absolute inset-0 bg-black/60" />
+            <div className="absolute inset-0 bg-foreground/40" />
           </div>
           <div className="relative z-10 flex flex-col items-center text-center">
             <motion.h2
@@ -76,7 +76,7 @@ export function AuthSplitPanel({
                 <motion.span
                   whileHover={{ scale: 1.03 }}
                   whileTap={{ scale: 0.98 }}
-                  className="inline-flex items-center justify-center rounded-xl border-2 border-white px-8 py-3 text-sm font-semibold text-white transition-all duration-300 hover:shadow-[0_0_20px_rgba(255,255,255,0.3)]"
+                  className="inline-flex items-center justify-center rounded-xl border border-white/50 bg-primary/25 px-8 py-3 text-sm font-semibold text-white shadow-sm transition-all duration-300 hover:bg-primary/35 hover:shadow-[0_0_20px_rgba(255,255,255,0.22)]"
                 >
                   {leftButtonText}
                 </motion.span>
@@ -87,7 +87,7 @@ export function AuthSplitPanel({
 
         {/* FORM PANEL */}
         <div
-          className={`flex w-full flex-col justify-center bg-[#0f0f0f] p-6 md:w-1/2 md:p-10 ${
+          className={`flex w-full flex-col justify-center bg-card p-6 md:w-1/2 md:p-10 ${
             imageOnLeft ? "order-2 md:order-2" : "order-2 md:order-1"
           }`}
         >
@@ -95,7 +95,7 @@ export function AuthSplitPanel({
             initial={{ opacity: 0, y: 8 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.1, duration: 0.4, ease: EASE }}
-            className="font-serif text-2xl font-bold text-white md:text-3xl"
+            className="font-serif text-2xl font-bold text-foreground md:text-3xl"
           >
             {formTitle}
           </motion.h1>
@@ -104,7 +104,7 @@ export function AuthSplitPanel({
               initial={{ opacity: 0, y: 8 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.12, duration: 0.4, ease: EASE }}
-              className="mt-1 text-sm text-gray-400"
+              className="mt-1 text-sm text-muted-foreground"
             >
               {formSubtitle}
             </motion.p>
@@ -120,7 +120,7 @@ export function AuthSplitPanel({
             <button
               type="button"
               disabled
-              className="flex h-11 w-11 items-center justify-center rounded-full border border-white/20 bg-white/5 text-gray-400 transition-all duration-300 hover:border-gold/30 hover:bg-gold/10 hover:text-gold/80 disabled:cursor-not-allowed disabled:opacity-60"
+              className="flex h-11 w-11 items-center justify-center rounded-full border border-border bg-background/60 text-muted-foreground shadow-sm transition-all duration-300 hover:border-primary/30 hover:bg-primary/10 hover:text-primary disabled:cursor-not-allowed disabled:opacity-60"
               aria-label="Google"
             >
               <svg className="h-5 w-5" viewBox="0 0 24 24" fill="currentColor">
@@ -133,7 +133,7 @@ export function AuthSplitPanel({
             <button
               type="button"
               disabled
-              className="flex h-11 w-11 items-center justify-center rounded-full border border-white/20 bg-white/5 text-gray-400 transition-all duration-300 hover:border-gold/30 hover:bg-gold/10 hover:text-gold/80 disabled:cursor-not-allowed disabled:opacity-60"
+              className="flex h-11 w-11 items-center justify-center rounded-full border border-border bg-background/60 text-muted-foreground shadow-sm transition-all duration-300 hover:border-primary/30 hover:bg-primary/10 hover:text-primary disabled:cursor-not-allowed disabled:opacity-60"
               aria-label="Facebook"
             >
               <svg className="h-5 w-5" fill="currentColor" viewBox="0 0 24 24">
@@ -143,7 +143,7 @@ export function AuthSplitPanel({
             <button
               type="button"
               disabled
-              className="flex h-11 w-11 items-center justify-center rounded-full border border-white/20 bg-white/5 text-gray-400 transition-all duration-300 hover:border-gold/30 hover:bg-gold/10 hover:text-gold/80 disabled:cursor-not-allowed disabled:opacity-60"
+              className="flex h-11 w-11 items-center justify-center rounded-full border border-border bg-background/60 text-muted-foreground shadow-sm transition-all duration-300 hover:border-primary/30 hover:bg-primary/10 hover:text-primary disabled:cursor-not-allowed disabled:opacity-60"
               aria-label="GitHub"
             >
               <svg className="h-5 w-5" fill="currentColor" viewBox="0 0 24 24">

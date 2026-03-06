@@ -64,7 +64,7 @@ export function Navbar() {
           "fixed inset-x-0 top-0 z-[9999] border-b border-border/60 transition-all duration-300 ease-out",
           scrolled
             ? "bg-background/90 shadow-md backdrop-blur-md"
-            : "border-transparent bg-black/30 shadow-none backdrop-blur-md"
+            : "border-transparent bg-black/30 shadow-none backdrop-blur-md dark:bg-background/70"
         )}
       >
         <div className="mx-auto flex h-16 w-full max-w-7xl items-center justify-between gap-3 px-4 sm:px-6 lg:h-[72px] lg:gap-8 lg:px-10 2xl:max-w-[90rem]">
