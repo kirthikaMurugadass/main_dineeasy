@@ -201,6 +201,7 @@ export default function AdminProfilePage() {
   if (!profile) return null;
 
   function beginEdit() {
+    if (!profile) return;
     setEditFullName(profile.fullName || "");
     setEditPhone(profile.phone || "");
     setEditAvatarUrl(profile.avatarUrl || "");

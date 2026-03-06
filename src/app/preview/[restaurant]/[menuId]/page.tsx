@@ -91,7 +91,7 @@ async function getRestaurantDataForPreview(
         name: restaurant.name,
         slug: restaurant.slug,
         logo_url: restaurant.logo_url,
-        theme_config: restaurant.theme_config,
+        theme_config: restaurant.theme_config || defaultThemeConfig,
         plan_type: restaurant.plan_type ?? undefined,
         plan_status: restaurant.plan_status ?? undefined,
       },
@@ -157,7 +157,7 @@ async function getRestaurantDataForPreview(
       name: restaurant.name,
       slug: restaurant.slug,
       logo_url: restaurant.logo_url,
-      theme_config: restaurant.theme_config, // Will be overridden by preview config
+      theme_config: restaurant.theme_config || defaultThemeConfig, // Will be overridden by preview config
       plan_type: restaurant.plan_type ?? undefined,
       plan_status: restaurant.plan_status ?? undefined,
     },
