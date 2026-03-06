@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
@@ -20,6 +20,16 @@ export default function LoginPage() {
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [focusedField, setFocusedField] = useState<string | null>(null);
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+    checkMobile();
+    window.addEventListener("resize", checkMobile);
+    return () => window.removeEventListener("resize", checkMobile);
+  }, []);
 
   async function handleLogin(e: React.FormEvent) {
     e.preventDefault();
@@ -97,85 +107,93 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center px-4 py-10 sm:px-6 lg:px-8">
+    <div className="flex min-h-screen items-center justify-center bg-gray-50 px-4 py-10 sm:px-6 lg:px-8">
       <motion.div
-        initial={{ opacity: 0, y: 24 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
-        className="w-full max-w-md rounded-3xl border border-border/60 bg-card/80 p-6 shadow-floating backdrop-blur-xl sm:p-8"
+        initial={{ opacity: 0, scale: 0.95 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ duration: 0.5, ease: [0.4, 0, 0.2, 1] }}
+        className="relative w-full max-w-5xl overflow-hidden rounded-2xl shadow-2xl md:min-h-[600px]"
       >
-        <motion.div
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.4, delay: 0.1 }}
-          className="space-y-8"
-        >
+        {/* Diagonal Split Container */}
+        <div className="relative flex flex-col md:flex-row md:min-h-[600px]">
+          {/* Form Section - Left Side */}
+          <motion.div
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.5, delay: 0.1 }}
+            className="relative z-10 flex w-full flex-col justify-center bg-white p-8 md:w-1/2 md:p-12"
+            style={{
+              clipPath: !isMobile ? "polygon(0 0, 100% 0, 85% 100%, 0% 100%)" : "none",
+            }}
+          >
+            <div className="w-full max-w-md mx-auto space-y-8">
               <div>
-                <h1 className="text-2xl font-semibold tracking-tight text-foreground lg:text-3xl">
+                <h1 className="text-3xl font-bold text-black mb-2">
                   {t.auth.login.title}
                 </h1>
-                <p className="mt-2 text-sm text-muted-foreground">{t.auth.login.subtitle}</p>
+                <div className="w-12 h-0.5 bg-black"></div>
               </div>
 
-              <form onSubmit={handleLogin} className="space-y-5">
-                <div className="space-y-2">
-                  <Label htmlFor="email" className="text-sm font-medium">
+              <form onSubmit={handleLogin} className="space-y-6">
+                <div className="space-y-1">
+                  <Label htmlFor="email" className="text-sm font-medium text-gray-700">
                     {t.auth.login.emailLabel}
                   </Label>
                   <div className="relative">
-                    <Mail
-                      size={18}
-                      className={`absolute left-3.5 top-1/2 -translate-y-1/2 transition-colors ${
-                        focusedField === "email" ? "text-primary" : "text-muted-foreground"
-                      }`}
-                    />
                     <Input
                       id="email"
                       type="email"
-                      placeholder={t.auth.login.emailPlaceholder}
+                      placeholder=""
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
                       onFocus={() => setFocusedField("email")}
                       onBlur={() => setFocusedField(null)}
-                      className="h-12 rounded-xl border-border/80 bg-background/80 pl-11 pr-4"
+                      className="h-12 border-0 border-b-2 border-gray-300 rounded-none bg-transparent px-0 pr-8 focus:border-green-600 focus:ring-0 focus-visible:ring-0 focus-visible:ring-offset-0"
                       required
                       disabled={loading}
                       autoComplete="email"
                     />
+                    <Mail
+                      size={18}
+                      className={`absolute right-0 top-1/2 -translate-y-1/2 transition-colors ${
+                        focusedField === "email" ? "text-green-600" : "text-gray-400"
+                      }`}
+                    />
                   </div>
                 </div>
 
-                <div className="space-y-2">
+                <div className="space-y-1">
                   <div className="flex items-center justify-between">
-                    <Label htmlFor="password" className="text-sm font-medium">
+                    <Label htmlFor="password" className="text-sm font-medium text-gray-700">
                       {t.auth.login.passwordLabel}
                     </Label>
                     <button
                       type="button"
                       onClick={() => router.push("/forgot-password")}
-                      className="text-xs font-medium text-primary hover:underline"
+                      className="text-xs font-medium text-blue-600 hover:underline"
                     >
                       {t.auth.login.forgotPassword}
                     </button>
                   </div>
                   <div className="relative">
-                    <Lock
-                      size={18}
-                      className={`absolute left-3.5 top-1/2 -translate-y-1/2 transition-colors ${
-                        focusedField === "password" ? "text-primary" : "text-muted-foreground"
-                      }`}
-                    />
                     <PasswordInput
                       id="password"
-                      placeholder={t.auth.login.passwordPlaceholder}
+                      placeholder=""
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
                       onFocus={() => setFocusedField("password")}
                       onBlur={() => setFocusedField(null)}
-                      className="h-12 rounded-xl border-border/80 bg-background/80 pl-11"
+                      className="h-12 border-0 border-b-2 border-gray-300 rounded-none bg-transparent px-0 pr-20 focus:border-green-600 focus:ring-0 focus-visible:ring-0 focus-visible:ring-offset-0"
+                      wrapperClassName="relative"
                       required
                       disabled={loading}
                       autoComplete="current-password"
+                    />
+                    <Lock
+                      size={18}
+                      className={`absolute right-10 top-1/2 -translate-y-1/2 transition-colors pointer-events-none ${
+                        focusedField === "password" ? "text-green-600" : "text-gray-400"
+                      }`}
                     />
                   </div>
                 </div>
@@ -183,7 +201,7 @@ export default function LoginPage() {
                 <Button
                   type="submit"
                   disabled={loading || !email || !password}
-                  className="h-12 w-full rounded-xl bg-primary text-primary-foreground shadow-soft hover:bg-primary/90"
+                  className="h-12 w-full rounded-full bg-green-600 text-white font-semibold shadow-lg hover:bg-green-700 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   <AnimatePresence mode="wait">
                     {loading ? (
@@ -205,14 +223,47 @@ export default function LoginPage() {
                   </AnimatePresence>
                 </Button>
 
-                <p className="text-center text-sm text-muted-foreground">
+                <p className="text-center text-sm text-gray-600">
                   {t.auth.login.noAccount}{" "}
-                  <Link href="/signup" className="font-medium text-primary hover:underline">
+                  <Link href="/signup" className="font-medium text-blue-600 hover:underline">
                     {t.auth.login.signUpLink}
                   </Link>
                 </p>
               </form>
-            </motion.div>
+            </div>
+          </motion.div>
+
+          {/* Welcome Section - Right Side (Green) */}
+          <motion.div
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.5, delay: 0.2 }}
+            className="relative flex w-full flex-col items-center justify-center bg-gradient-to-br from-green-600 to-green-700 p-8 md:w-1/2 md:p-12 min-h-[300px] md:min-h-0"
+            style={{
+              clipPath: !isMobile ? "polygon(15% 0, 100% 0, 100% 100%, 0% 100%)" : "none",
+            }}
+          >
+            <div className="absolute inset-0 bg-gradient-to-br from-green-600 via-green-650 to-green-700"></div>
+            <div className="relative z-10 text-center text-white">
+              <motion.h2
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5, delay: 0.3 }}
+                className="text-4xl font-bold mb-4 md:text-5xl"
+              >
+                WELCOME BACK!
+              </motion.h2>
+              <motion.p
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5, delay: 0.4 }}
+                className="text-base text-green-50 md:text-lg"
+              >
+                Lorem ipsum dolor sit amet consectetur adipisicing elit. Deleniti, rem?
+              </motion.p>
+            </div>
+          </motion.div>
+        </div>
       </motion.div>
     </div>
   );

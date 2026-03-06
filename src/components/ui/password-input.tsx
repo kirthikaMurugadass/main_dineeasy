@@ -36,7 +36,7 @@ export const PasswordInput = React.forwardRef<HTMLInputElement, PasswordInputPro
           onClick={toggleVisible}
           aria-label={ariaLabel}
           aria-pressed={visible}
-          className="absolute inset-y-0 right-2 flex items-center justify-center rounded-full text-muted-foreground transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background hover:text-foreground"
+          className="absolute inset-y-0 right-0 flex items-center justify-center w-8 text-muted-foreground transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background hover:text-foreground"
         >
           <AnimatePresence initial={false} mode="wait">
             <motion.span

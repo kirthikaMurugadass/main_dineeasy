@@ -902,7 +902,12 @@ export default function CategoryDetailPage() {
   }
 
   return (
-    <div className="space-y-6">
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.5 }}
+      className="space-y-6"
+    >
       {/* Breadcrumbs */}
       <FadeIn>
         <Breadcrumb>
@@ -926,91 +931,89 @@ export default function CategoryDetailPage() {
         </Breadcrumb>
       </FadeIn>
 
-      {/* Header */}
-      <FadeIn>
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between rounded-2xl border border-border/50 bg-card/80 px-3 py-3 sm:px-4 sm:py-4 lg:px-5 lg:py-4 shadow-sm">
-          <div className="flex min-w-0 flex-1 items-center gap-2 sm:gap-4">
-            <Link href="/admin/categories">
-              <Button variant="ghost" size="icon" className="h-9 w-9 flex-shrink-0 rounded-full border border-border/60">
-                <ArrowLeft size={18} />
+      {/* Modern Header Section */}
+      <motion.div
+        initial={{ opacity: 0, y: -20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5 }}
+        className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between"
+      >
+        <div className="flex items-center gap-4">
+          <Link href="/admin/categories">
+            <motion.div
+              whileHover={{ scale: 1.05, x: -2 }}
+              whileTap={{ scale: 0.95 }}
+            >
+              <Button 
+                variant="ghost" 
+                size="icon" 
+                className="h-10 w-10 rounded-xl border border-[#D6D2C4]/50 bg-white/50 hover:bg-[#E8E4D9]/50 dark:border-[#3D4F2A]/50 dark:bg-[#243019]/50 dark:hover:bg-[#2D3A1A]/50"
+              >
+                <ArrowLeft size={18} className="text-[#2D3A1A] dark:text-[#E8E4D9]" />
               </Button>
-            </Link>
-            <div className="min-w-0 space-y-1">
-              <PageTitle className="truncate">
-                {isNew
-                  ? t.admin.categories.newCategory
-                  : categoryTranslations.find((t) => t.language === language)?.title ||
-                    categoryTranslations.find((t) => t.title)?.title ||
-                    t.admin.categories.editCategory}
-              </PageTitle>
-              <p className="text-xs text-muted-foreground">
-                {isNew
-                  ? t.admin.categories.newCategorySubtitle
-                  : t.admin.categories.editCategorySubtitle}
+            </motion.div>
+          </Link>
+          <div className="flex items-center gap-3">
+            <div className="rounded-xl bg-gradient-to-br from-[#5B7A2F]/20 to-[#5B7A2F]/10 p-2.5 dark:from-[#7A9E4A]/20 dark:to-[#7A9E4A]/10">
+              <Plus className="h-5 w-5 text-[#5B7A2F] dark:text-[#7A9E4A]" />
+            </div>
+            <div>
+              <h1 className="text-2xl font-bold text-[#2D3A1A] dark:text-[#E8E4D9]">
+                {isNew ? "Add New Category" : t.admin.categories.editCategory}
+              </h1>
+              <p className="text-sm text-[#6B7B5A] dark:text-[#9CA88A] mt-0.5">
+                {isNew ? "Create and organize categories for your menu" : t.admin.categories.editCategorySubtitle}
               </p>
             </div>
           </div>
-          <div className="flex flex-shrink-0 items-center gap-2 sm:gap-3">
-            {autoSaveStatus === "saving" && (
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                className="flex items-center gap-1.5 sm:gap-2 text-xs sm:text-sm text-muted-foreground"
-              >
-                <Loader2 className="h-3.5 w-3.5 sm:h-4 sm:w-4 animate-spin" />
-                <span className="hidden sm:inline">{t.admin.categories.saving}</span>
-              </motion.div>
-            )}
-            {autoSaveStatus === "saved" && (
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                className="flex items-center gap-1.5 sm:gap-2 text-xs sm:text-sm text-emerald-500"
-              >
-                <CheckCircle2 className="h-3.5 w-3.5 sm:h-4 sm:w-4 flex-shrink-0" />
-                <span className="hidden sm:inline">{t.admin.categories.draftSaved}</span>
-                <span className="sm:hidden">{t.admin.categories.save}</span>
-              </motion.div>
-            )}
+        </div>
+        <div className="flex items-center gap-3">
+          {autoSaveStatus === "saving" && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              className="flex items-center gap-2 text-sm text-[#6B7B5A] dark:text-[#9CA88A]"
+            >
+              <Loader2 className="h-4 w-4 animate-spin text-[#5B7A2F] dark:text-[#7A9E4A]" />
+              <span className="hidden sm:inline">{t.admin.categories.saving}</span>
+            </motion.div>
+          )}
+          {autoSaveStatus === "saved" && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              className="flex items-center gap-2 text-sm text-[#5B7A2F] dark:text-[#7A9E4A]"
+            >
+              <CheckCircle2 className="h-4 w-4" />
+              <span className="hidden sm:inline">{t.admin.categories.draftSaved}</span>
+            </motion.div>
+          )}
+          <motion.div
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
+          >
             <Button
               onClick={handleSave}
               disabled={saving}
-              className="flex-shrink-0 gap-1.5 px-3 text-xs sm:h-10 sm:gap-2 sm:px-4 sm:text-sm"
-              size="sm"
+              className="rounded-full bg-gradient-to-r from-[#22C55E] to-[#16A34A] text-white shadow-lg hover:shadow-xl transition-all hover:from-[#16A34A] hover:to-[#15803D] disabled:opacity-50 px-6"
+              size="lg"
             >
               {saving ? (
-                <Loader2 size={14} className="animate-spin sm:w-4 sm:h-4" />
+                <>
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  <span>Saving...</span>
+                </>
               ) : (
-                <Save size={14} className="sm:w-4 sm:h-4" />
+                <>
+                  <Save className="h-4 w-4 mr-2" />
+                  <span>{isNew ? "Add Category" : t.admin.categories.saveCategory}</span>
+                </>
               )}
-              <span className="hidden sm:inline">{t.admin.categories.saveCategory}</span>
-              <span className="sm:hidden">{t.admin.categories.save}</span>
             </Button>
-          </div>
+          </motion.div>
         </div>
-      </FadeIn>
+      </motion.div>
 
-      {/* Category Settings */}
-      <FadeIn delay={0.1}>
-        <Card className="rounded-2xl border border-border/60 bg-card/80 shadow-sm">
-          <CardContent className="flex flex-col gap-3 p-4 sm:flex-row sm:items-center sm:justify-between sm:p-5 lg:p-6">
-            <div className="space-y-1">
-              <h2 className="text-sm font-semibold tracking-tight text-foreground">
-                {t.admin.categories.statusTitle}
-              </h2>
-              <p className="text-xs text-muted-foreground max-w-md">
-                {t.admin.categories.statusDescription}
-              </p>
-            </div>
-            <div className="flex items-center gap-2 rounded-full border border-border/60 bg-background/60 px-3 py-1.5">
-              <Switch checked={categoryActive} onCheckedChange={setCategoryActive} />
-              <Label className="text-sm">
-                {categoryActive ? t.admin.categories.active : t.admin.categories.inactive}
-              </Label>
-            </div>
-          </CardContent>
-        </Card>
-      </FadeIn>
 
       {/* Language Tabs & Category/Items */}
       <FadeIn delay={0.15}>
@@ -1030,29 +1033,40 @@ export default function CategoryDetailPage() {
             return (
               <TabsContent key={lang.code} value={lang.code}>
                 <div className="space-y-6 pt-2">
-                  {/* Modern Two-Column Category Form */}
-                  <div className="grid gap-6 lg:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)]">
-                    {/* Left Column: Main Form */}
-                    <div className="space-y-6">
+                  {/* Modern Centered Form Card */}
+                  <div className="max-w-5xl mx-auto">
+                    <motion.div
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ duration: 0.5 }}
+                      className="space-y-6"
+                    >
                       {/* Category Details Card */}
-                      <FadeIn delay={0.1}>
-                        <Card className="rounded-2xl border border-border/60 bg-card/80 shadow-sm">
-                          <CardHeader className="pb-3">
-                            <CardTitle className="text-base font-semibold tracking-tight">
-                              {t.admin.categories.detailsTitle}
-                            </CardTitle>
-                            <p className="text-xs text-muted-foreground">
-                              {t.admin.categories.detailsSubtitle}
-                            </p>
-                          </CardHeader>
-                          <CardContent className="space-y-5">
+                      <Card className="rounded-3xl border border-[#D6D2C4]/50 bg-gradient-to-br from-[#FAFAF5] to-[#F0EDE4]/50 shadow-xl dark:border-[#3D4F2A]/50 dark:from-[#1A2212] dark:to-[#243019]/50">
+                        <CardHeader className="pb-4">
+                          <CardTitle className="text-xl font-bold text-[#2D3A1A] dark:text-[#E8E4D9] flex items-center gap-2">
+                            <div className="rounded-xl bg-gradient-to-br from-[#5B7A2F]/20 to-[#5B7A2F]/10 p-2 dark:from-[#7A9E4A]/20 dark:to-[#7A9E4A]/10">
+                              <Edit2 className="h-5 w-5 text-[#5B7A2F] dark:text-[#7A9E4A]" />
+                            </div>
+                            {t.admin.categories.detailsTitle}
+                          </CardTitle>
+                          <p className="text-sm text-[#6B7B5A] dark:text-[#9CA88A] mt-1">
+                            {t.admin.categories.detailsSubtitle}
+                          </p>
+                        </CardHeader>
+                        <CardContent className="space-y-6">
                             {/* Category Name */}
-                            <div className="space-y-2">
+                            <motion.div
+                              initial={{ opacity: 0, y: 10 }}
+                              animate={{ opacity: 1, y: 0 }}
+                              transition={{ delay: 0.1 }}
+                              className="space-y-2"
+                            >
                               <div className="flex items-center justify-between">
-                                <Label className="text-sm font-medium">
+                                <Label className="text-sm font-semibold text-[#2D3A1A] dark:text-[#E8E4D9]">
                                   {t.admin.categories.nameLabel}
                                 </Label>
-                                <span className="text-xs text-muted-foreground">
+                                <span className="text-xs text-[#6B7B5A] dark:text-[#9CA88A]">
                                   {catTr?.title?.length || 0}/50
                                 </span>
                               </div>
@@ -1079,11 +1093,11 @@ export default function CategoryDetailPage() {
                                     validateField("title", value);
                                   }}
                                   placeholder={t.admin.categories.namePlaceholder}
-                                  className={`h-11 pr-10 text-sm ${
+                                  className={`h-12 rounded-xl border-2 pr-10 text-sm transition-all ${
                                     validationErrors.title
-                                      ? "border-destructive focus-visible:ring-destructive"
-                                      : ""
-                                  }`}
+                                      ? "border-red-300 focus-visible:border-red-500 focus-visible:ring-red-500/20"
+                                      : "border-[#D6D2C4]/50 focus-visible:border-[#5B7A2F] focus-visible:ring-[#5B7A2F]/20 dark:border-[#3D4F2A]/50 dark:focus-visible:border-[#7A9E4A]"
+                                  } bg-white/50 dark:bg-[#243019]/50`}
                                   maxLength={50}
                                 />
                                 {catTr?.title && (
@@ -1093,9 +1107,9 @@ export default function CategoryDetailPage() {
                                     className="absolute right-3 top-1/2 -translate-y-1/2"
                                   >
                                     {validationErrors.title ? (
-                                      <AlertCircle className="h-4 w-4 text-destructive" />
+                                      <AlertCircle className="h-4 w-4 text-red-500" />
                                     ) : (
-                                      <CheckCircle2 className="h-4 w-4 text-green-500" />
+                                      <CheckCircle2 className="h-4 w-4 text-[#22C55E]" />
                                     )}
                                   </motion.div>
                                 )}
@@ -1104,25 +1118,30 @@ export default function CategoryDetailPage() {
                                 <motion.p
                                   initial={{ opacity: 0, y: -5 }}
                                   animate={{ opacity: 1, y: 0 }}
-                                  className="text-xs text-destructive flex items-center gap-1"
+                                  className="text-xs text-red-600 dark:text-red-400 flex items-center gap-1"
                                 >
                                   <AlertCircle className="h-3 w-3" />
                                   {validationErrors.title}
                                 </motion.p>
                               )}
-                            </div>
+                            </motion.div>
 
                             {/* Auto-generated Slug */}
-                            <div className="space-y-2">
+                            <motion.div
+                              initial={{ opacity: 0, y: 10 }}
+                              animate={{ opacity: 1, y: 0 }}
+                              transition={{ delay: 0.15 }}
+                              className="space-y-2"
+                            >
                               <div className="flex items-center justify-between gap-2">
-                                <Label className="text-sm font-medium">
+                                <Label className="text-sm font-semibold text-[#2D3A1A] dark:text-[#E8E4D9]">
                                   {t.admin.categories.urlSlugLabel}
                                 </Label>
                                 <Button
                                   variant="outline"
                                   size="sm"
                                   onClick={() => setSlugEditable(!slugEditable)}
-                                  className="h-7 px-2 text-[11px]"
+                                  className="h-8 px-3 text-xs rounded-xl border-[#D6D2C4]/50 bg-white/50 hover:bg-[#E8E4D9]/50 dark:border-[#3D4F2A]/50 dark:bg-[#243019]/50 dark:hover:bg-[#2D3A1A]/50"
                                 >
                                   {slugEditable ? (
                                     <>
@@ -1149,20 +1168,25 @@ export default function CategoryDetailPage() {
                                 }}
                                 placeholder={t.admin.categories.urlSlugPlaceholder}
                                 disabled={!slugEditable}
-                                className="h-10 font-mono text-sm"
+                                className="h-11 font-mono text-sm rounded-xl border-2 border-[#D6D2C4]/50 bg-white/50 focus-visible:border-[#5B7A2F] focus-visible:ring-[#5B7A2F]/20 dark:border-[#3D4F2A]/50 dark:bg-[#243019]/50 dark:focus-visible:border-[#7A9E4A]"
                               />
-                              <p className="text-xs text-muted-foreground">
+                              <p className="text-xs text-[#6B7B5A] dark:text-[#9CA88A]">
                                 {t.admin.categories.urlSlugHelper}
                               </p>
-                            </div>
+                            </motion.div>
 
                             {/* Description with Character Limit */}
-                            <div className="space-y-2">
+                            <motion.div
+                              initial={{ opacity: 0, y: 10 }}
+                              animate={{ opacity: 1, y: 0 }}
+                              transition={{ delay: 0.2 }}
+                              className="space-y-2"
+                            >
                               <div className="flex items-center justify-between">
-                                <Label className="text-sm font-medium">
+                                <Label className="text-sm font-semibold text-[#2D3A1A] dark:text-[#E8E4D9]">
                                   {t.admin.categories.descriptionLabel}
                                 </Label>
-                                <span className="text-xs text-muted-foreground">
+                                <span className="text-xs text-[#6B7B5A] dark:text-[#9CA88A]">
                                   {catTr?.description?.length || 0}/200
                                 </span>
                               </div>
@@ -1178,24 +1202,30 @@ export default function CategoryDetailPage() {
                                   setCategoryTranslations(updated);
                                 }}
                                 placeholder={t.admin.categories.descriptionPlaceholder}
-                                className="min-h-[100px] resize-none"
+                                className="min-h-[120px] resize-none rounded-xl border-2 border-[#D6D2C4]/50 bg-white/50 focus-visible:border-[#5B7A2F] focus-visible:ring-[#5B7A2F]/20 transition-all dark:border-[#3D4F2A]/50 dark:bg-[#243019]/50 dark:focus-visible:border-[#7A9E4A]"
                                 maxLength={200}
                               />
-                            </div>
+                            </motion.div>
                           </CardContent>
                         </Card>
-                      </FadeIn>
 
-                      {/* Media Upload Card */}
-                      <FadeIn delay={0.15}>
-                        <Card className="border-border/50 shadow-sm">
-                          <CardHeader>
-                            <CardTitle className="text-lg">
+                      {/* Modern Image Upload Card */}
+                      <motion.div
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: 0.25 }}
+                      >
+                        <Card className="rounded-3xl border border-[#D6D2C4]/50 bg-gradient-to-br from-[#FAFAF5] to-[#F0EDE4]/50 shadow-xl dark:border-[#3D4F2A]/50 dark:from-[#1A2212] dark:to-[#243019]/50">
+                          <CardHeader className="pb-4">
+                            <CardTitle className="text-xl font-bold text-[#2D3A1A] dark:text-[#E8E4D9] flex items-center gap-2">
+                              <div className="rounded-xl bg-gradient-to-br from-[#5B7A2F]/20 to-[#5B7A2F]/10 p-2 dark:from-[#7A9E4A]/20 dark:to-[#7A9E4A]/10">
+                                <ImageIcon className="h-5 w-5 text-[#5B7A2F] dark:text-[#7A9E4A]" />
+                              </div>
                               {t.admin.categories.imageTitle}
                             </CardTitle>
                           </CardHeader>
                           <CardContent>
-                            <div
+                            <motion.div
                               onDragOver={(e) => {
                                 e.preventDefault();
                                 setIsDragging(true);
@@ -1209,10 +1239,11 @@ export default function CategoryDetailPage() {
                                   handleImageUpload(file);
                                 }
                               }}
-                              className={`relative border-2 border-dashed rounded-lg p-8 transition-all ${
+                              whileHover={{ scale: 1.01 }}
+                              className={`relative border-2 border-dashed rounded-2xl p-12 transition-all ${
                                 isDragging
-                                  ? "border-primary bg-primary/5"
-                                  : "border-border hover:border-primary/40"
+                                  ? "border-[#22C55E] bg-[#DCFCE7]/50 dark:bg-[#7A9E4A]/10"
+                                  : "border-[#D6D2C4]/50 hover:border-[#5B7A2F]/50 hover:bg-[#DCFCE7]/20 dark:border-[#3D4F2A]/50 dark:hover:border-[#7A9E4A]/50 dark:hover:bg-[#7A9E4A]/10"
                               }`}
                             >
                               {categoryImagePreview ? (
@@ -1222,29 +1253,41 @@ export default function CategoryDetailPage() {
                                     animate={{ opacity: 1, scale: 1 }}
                                     src={categoryImagePreview}
                                     alt="Category preview"
-                                    className="w-full h-48 object-cover rounded-lg"
+                                    className="w-full h-64 object-cover rounded-xl shadow-lg"
                                   />
-                                  <Button
-                                    variant="destructive"
-                                    size="icon"
-                                    className="absolute top-2 right-2"
-                                    onClick={() => {
-                                      setCategoryImagePreview(null);
-                                      setCategoryImageFile(null);
-                                      if (categoryImage) setCategoryImageDelete(true);
-                                    }}
+                                  <motion.div
+                                    whileHover={{ scale: 1.1 }}
+                                    whileTap={{ scale: 0.9 }}
                                   >
-                                    <X className="h-4 w-4" />
-                                  </Button>
+                                    <Button
+                                      variant="destructive"
+                                      size="icon"
+                                      className="absolute top-3 right-3 rounded-full shadow-lg"
+                                      onClick={() => {
+                                        setCategoryImagePreview(null);
+                                        setCategoryImageFile(null);
+                                        if (categoryImage) setCategoryImageDelete(true);
+                                      }}
+                                    >
+                                      <X className="h-4 w-4" />
+                                    </Button>
+                                  </motion.div>
                                 </div>
                               ) : (
                                 <div className="text-center">
-                                  <ImageIcon className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-                                  <p className="text-sm font-medium mb-2">
-                                    {t.admin.categories.imageUploadCta}
+                                  <motion.div
+                                    initial={{ scale: 0 }}
+                                    animate={{ scale: 1 }}
+                                    transition={{ delay: 0.1, type: "spring" }}
+                                    className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-gradient-to-br from-[#DCFCE7] to-[#BBF7D0] dark:from-[#7A9E4A]/20 dark:to-[#7A9E4A]/10"
+                                  >
+                                    <Upload className="h-8 w-8 text-[#22C55E] dark:text-[#7A9E4A]" />
+                                  </motion.div>
+                                  <p className="text-base font-semibold mb-2 text-[#2D3A1A] dark:text-[#E8E4D9]">
+                                    Upload category image
                                   </p>
-                                  <p className="text-xs text-muted-foreground mb-4">
-                                    {t.admin.categories.imageUploadHint}
+                                  <p className="text-sm text-[#6B7B5A] dark:text-[#9CA88A] mb-6">
+                                    Drag and drop an image here, or click to browse
                                   </p>
                                   <label>
                                     <input
@@ -1256,203 +1299,31 @@ export default function CategoryDetailPage() {
                                         if (file) handleImageUpload(file);
                                       }}
                                     />
-                                    <Button variant="outline" type="button" asChild>
-                                      <span>
+                                    <motion.div
+                                      whileHover={{ scale: 1.05 }}
+                                      whileTap={{ scale: 0.95 }}
+                                    >
+                                      <Button
+                                        type="button"
+                                        className="rounded-full bg-gradient-to-r from-[#22C55E] to-[#16A34A] text-white shadow-lg hover:shadow-xl hover:from-[#16A34A] hover:to-[#15803D] px-6"
+                                      >
                                         <Upload className="h-4 w-4 mr-2" />
                                         {t.admin.categories.uploadImageButton}
-                                      </span>
-                                    </Button>
+                                      </Button>
+                                    </motion.div>
                                   </label>
-                                  <p className="text-xs text-muted-foreground mt-3">
-                                    {t.admin.categories.imageUploadHint}
-                                  </p>
                                 </div>
                               )}
-                            </div>
+                            </motion.div>
                           </CardContent>
                         </Card>
-                      </FadeIn>
-
-                      {/* Settings Card */}
-                      <FadeIn delay={0.2}>
-                      <Card className="border-border/50 shadow-sm">
-                        <CardHeader>
-                          <CardTitle className="text-lg">{t.admin.categories.settingsTitle}</CardTitle>
-                        </CardHeader>
-                          <CardContent className="space-y-5">
-                            <div className="flex items-center justify-between">
-                              <div className="space-y-0.5">
-                                <Label className="text-sm font-medium">
-                                  {t.admin.categories.statusLabel}
-                                </Label>
-                                <p className="text-xs text-muted-foreground">
-                                  {categoryActive
-                                    ? t.admin.categories.statusActiveHint
-                                    : t.admin.categories.statusInactiveHint}
-                                </p>
-                              </div>
-                              <Switch
-                                checked={categoryActive}
-                                onCheckedChange={setCategoryActive}
-                              />
-                            </div>
-                            <div className="flex items-center justify-between">
-                              <div className="space-y-0.5">
-                                <Label className="text-sm font-medium">
-                                  {t.admin.categories.visibilityLabel}
-                                </Label>
-                                <p className="text-xs text-muted-foreground">
-                                  {categoryVisible
-                                    ? t.admin.categories.visibilityPublic
-                                    : t.admin.categories.visibilityPrivate}
-                                </p>
-                              </div>
-                              <Switch
-                                checked={categoryVisible}
-                                onCheckedChange={setCategoryVisible}
-                              />
-                            </div>
-                            <div className="space-y-3">
-                              <div className="flex items-center justify-between">
-                                <Label className="text-sm font-medium">
-                                  {t.admin.categories.displayOrderLabel}
-                                </Label>
-                                <span className="text-sm font-mono text-muted-foreground">
-                                  {displayOrder}
-                                </span>
-                              </div>
-                              <Slider
-                                value={[displayOrder]}
-                                onValueChange={([value]) => setDisplayOrder(value)}
-                                min={0}
-                                max={100}
-                                step={1}
-                                className="w-full"
-                              />
-                              <p className="text-xs text-muted-foreground">
-                                {t.admin.categories.displayOrderHint}
-                              </p>
-                            </div>
-                          </CardContent>
-                        </Card>
-                      </FadeIn>
-                    </div>
-
-                    {/* Right Column: Smart UX Panel */}
-                    <div className="space-y-6">
-                      {/* Live Preview Card */}
-                      <FadeIn delay={0.25}>
-                        <Card className="border-border/50 shadow-sm sticky top-6">
-                          <CardHeader>
-                            <CardTitle className="text-lg flex items-center gap-2">
-                              <Eye className="h-5 w-5 text-primary" />
-                              {t.admin.categories.livePreviewTitle}
-                            </CardTitle>
-                          </CardHeader>
-                          <CardContent>
-                            <div className="space-y-4">
-                              {loading ? (
-                                <div className="space-y-3">
-                                  <div className="h-32 animate-pulse rounded-lg bg-muted" />
-                                  <div className="h-4 w-3/4 animate-pulse rounded bg-muted" />
-                                  <div className="h-4 w-1/2 animate-pulse rounded bg-muted" />
-                                </div>
-                              ) : (
-                                <motion.div
-                                  key={`${catTr?.title}-${categoryImagePreview}`}
-                                  initial={{ opacity: 0 }}
-                                  animate={{ opacity: 1 }}
-                                  className="space-y-3"
-                                >
-                                  {categoryImagePreview && (
-                                    <img
-                                      src={categoryImagePreview}
-                                      alt="Preview"
-                                      className="w-full h-32 object-cover rounded-lg"
-                                    />
-                                  )}
-                                  <h3 className="font-semibold text-lg">
-                                    {catTr?.title || t.admin.categories.livePreviewFallbackName}
-                                  </h3>
-                                  {catTr?.description && (
-                                    <p className="text-sm text-muted-foreground line-clamp-2">
-                                      {catTr.description}
-                                    </p>
-                                  )}
-                                  <div className="flex items-center gap-2 text-xs">
-                                    <span
-                                      className={`px-2 py-1 rounded ${
-                                        categoryActive
-                                          ? "bg-green-500/10 text-green-600"
-                                          : "bg-muted text-muted-foreground"
-                                      }`}
-                                    >
-                                      {categoryActive ? t.admin.categories.previewActive : t.admin.categories.previewInactive}
-                                    </span>
-                                    <span className="text-muted-foreground">
-                                      {t.admin.categories.previewOrder}: {displayOrder}
-                                    </span>
-                                  </div>
-                                </motion.div>
-                              )}
-                            </div>
-                          </CardContent>
-                        </Card>
-                      </FadeIn>
-
-                      {/* Smart Tips Panel */}
-                      <FadeIn delay={0.3}>
-                        <Card className="border-border/50 shadow-sm">
-                          <CardHeader>
-                            <CardTitle className="text-lg flex items-center gap-2">
-                              <Lightbulb className="h-5 w-5 text-primary" />
-                              {t.admin.categories.tipsTitle}
-                            </CardTitle>
-                          </CardHeader>
-                          <CardContent className="space-y-4">
-                            <div className="space-y-3">
-                              <div className="flex gap-3">
-                                <Info className="h-4 w-4 text-blue-500 mt-0.5 flex-shrink-0" />
-                                <div>
-                                  <p className="text-sm font-medium">
-                                    {t.admin.categories.tipsNamingTitle}
-                                  </p>
-                                  <p className="text-xs text-muted-foreground">
-                                    {t.admin.categories.tipsNamingBody}
-                                  </p>
-                                </div>
-                              </div>
-                              <div className="flex gap-3">
-                                <TrendingUp className="h-4 w-4 text-green-500 mt-0.5 flex-shrink-0" />
-                                <div>
-                                  <p className="text-sm font-medium">
-                                    {t.admin.categories.tipsSeoTitle}
-                                  </p>
-                                  <p className="text-xs text-muted-foreground">
-                                    {t.admin.categories.tipsSeoBody}
-                                  </p>
-                                </div>
-                              </div>
-                              <div className="flex gap-3">
-                                <ImageIcon className="h-4 w-4 text-purple-500 mt-0.5 flex-shrink-0" />
-                                <div>
-                                  <p className="text-sm font-medium">
-                                    {t.admin.categories.tipsImageTitle}
-                                  </p>
-                                  <p className="text-xs text-muted-foreground">
-                                    {t.admin.categories.tipsImageBody}
-                                  </p>
-                                </div>
-                              </div>
-                            </div>
-                          </CardContent>
-                        </Card>
-                      </FadeIn>
-                    </div>
+                      </motion.div>
+                    </motion.div>
                   </div>
 
                   {/* Menu Items Section */}
                   <FadeIn delay={0.3}>
+                    <div className="max-w-5xl mx-auto">
                     <Card className="border-border/50 shadow-sm">
                       <CardHeader>
                         <div className="flex items-center justify-between">
@@ -1522,13 +1393,91 @@ export default function CategoryDetailPage() {
                         </div>
                       </CardContent>
                     </Card>
+                    </div>
                   </FadeIn>
+
+                  {/* Settings Card - placed below Menu Items */}
+                  <div className="max-w-5xl mx-auto">
+                    <motion.div
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: 0.35 }}
+                    >
+                      <Card className="mt-4 rounded-3xl border border-[#D6D2C4]/50 bg-gradient-to-br from-[#FAFAF5] to-[#F0EDE4]/50 shadow-xl dark:border-[#3D4F2A]/50 dark:from-[#1A2212] dark:to-[#243019]/50">
+                        <CardHeader className="pb-4">
+                          <CardTitle className="text-xl font-bold text-[#2D3A1A] dark:text-[#E8E4D9] flex items-center gap-2">
+                            <div className="rounded-xl bg-gradient-to-br from-[#5B7A2F]/20 to-[#5B7A2F]/10 p-2 dark:from-[#7A9E4A]/20 dark:to-[#7A9E4A]/10">
+                              <CheckCircle2 className="h-5 w-5 text-[#5B7A2F] dark:text-[#7A9E4A]" />
+                            </div>
+                            {t.admin.categories.settingsTitle}
+                          </CardTitle>
+                        </CardHeader>
+                        <CardContent className="space-y-6">
+                          <div className="flex items-center justify-between p-4 rounded-xl bg-white/50 dark:bg-[#243019]/50 border border-[#D6D2C4]/30 dark:border-[#3D4F2A]/30">
+                            <div className="space-y-1">
+                              <Label className="text-sm font-semibold text-[#2D3A1A] dark:text-[#E8E4D9]">
+                                {t.admin.categories.statusLabel}
+                              </Label>
+                              <p className="text-xs text-[#6B7B5A] dark:text-[#9CA88A]">
+                                {categoryActive
+                                  ? t.admin.categories.statusActiveHint
+                                  : t.admin.categories.statusInactiveHint}
+                              </p>
+                            </div>
+                            <Switch
+                              checked={categoryActive}
+                              onCheckedChange={setCategoryActive}
+                              className="data-[state=checked]:bg-[#22C55E]"
+                            />
+                          </div>
+                          <div className="flex items-center justify-between p-4 rounded-xl bg-white/50 dark:bg-[#243019]/50 border border-[#D6D2C4]/30 dark:border-[#3D4F2A]/30">
+                            <div className="space-y-1">
+                              <Label className="text-sm font-semibold text-[#2D3A1A] dark:text-[#E8E4D9]">
+                                {t.admin.categories.visibilityLabel}
+                              </Label>
+                              <p className="text-xs text-[#6B7B5A] dark:text-[#9CA88A]">
+                                {categoryVisible
+                                  ? t.admin.categories.visibilityPublic
+                                  : t.admin.categories.visibilityPrivate}
+                              </p>
+                            </div>
+                            <Switch
+                              checked={categoryVisible}
+                              onCheckedChange={setCategoryVisible}
+                              className="data-[state=checked]:bg-[#22C55E]"
+                            />
+                          </div>
+                          <div className="space-y-3 p-4 rounded-xl bg-white/50 dark:bg-[#243019]/50 border border-[#D6D2C4]/30 dark:border-[#3D4F2A]/30">
+                            <div className="flex items-center justify-between">
+                              <Label className="text-sm font-semibold text-[#2D3A1A] dark:text-[#E8E4D9]">
+                                {t.admin.categories.displayOrderLabel}
+                              </Label>
+                              <span className="text-sm font-mono font-bold text-[#5B7A2F] dark:text-[#7A9E4A] bg-[#DCFCE7]/50 dark:bg-[#7A9E4A]/10 px-3 py-1 rounded-lg">
+                                {displayOrder}
+                              </span>
+                            </div>
+                            <Slider
+                              value={[displayOrder]}
+                              onValueChange={([value]) => setDisplayOrder(value)}
+                              min={0}
+                              max={100}
+                              step={1}
+                              className="w-full"
+                            />
+                            <p className="text-xs text-[#6B7B5A] dark:text-[#9CA88A]">
+                              {t.admin.categories.displayOrderHint}
+                            </p>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    </motion.div>
+                  </div>
                 </div>
               </TabsContent>
             );
           })}
         </Tabs>
       </FadeIn>
-    </div>
+    </motion.div>
   );
 }

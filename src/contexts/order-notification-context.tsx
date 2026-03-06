@@ -126,9 +126,9 @@ export function OrderNotificationProvider({
         if (status === "SUBSCRIBED") {
           console.log("[OrderNotification] Successfully subscribed to orders table");
         } else if (status === "CHANNEL_ERROR") {
-          console.error("[OrderNotification] Channel subscription error");
+          console.warn("[OrderNotification] Channel subscription error (non-fatal)");
         } else if (status === "TIMED_OUT") {
-          console.error("[OrderNotification] Subscription timed out");
+          console.warn("[OrderNotification] Subscription timed out (non-fatal)");
         } else if (status === "CLOSED") {
           console.log("[OrderNotification] Subscription closed");
         }
