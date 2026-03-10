@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Image from "next/image";
 import { motion } from "framer-motion";
@@ -62,6 +62,7 @@ export default function BookTablePage() {
   const [time, setTime] = useState("");
   const [guestCount, setGuestCount] = useState("2");
   const [specialNote, setSpecialNote] = useState("");
+  const dateInputRef = useRef<HTMLInputElement | null>(null);
 
   const settings = (restaurant?.theme_config ?? {})?.settings ?? {};
   const heroImageUrl: string =
@@ -421,6 +422,7 @@ export default function BookTablePage() {
                       <div className="relative">
                         {/* Hide native indicator (we render our own icon), but keep input behavior */}
                         <Input
+                          ref={dateInputRef}
                           type="date"
                           value={date}
                           onChange={(e) => setDate(e.target.value)}
@@ -432,7 +434,20 @@ export default function BookTablePage() {
                             "[&::-webkit-calendar-picker-indicator]:cursor-pointer",
                           ].join(" ")}
                         />
-                        <Calendar className="pointer-events-none absolute right-4 top-1/2 h-[18px] w-[18px] -translate-y-1/2 text-white/70" />
+                        <Calendar
+                          className="absolute right-4 top-1/2 h-[18px] w-[18px] -translate-y-1/2 cursor-pointer text-white/70"
+                          onClick={() => {
+                            const el = dateInputRef.current;
+                            if (!el) return;
+                            // Prefer native date picker if supported (not in all TS DOM typings yet)
+                            const anyEl = el as any;
+                            if (typeof anyEl.showPicker === "function") {
+                              anyEl.showPicker();
+                            } else {
+                              el.focus();
+                            }
+                          }}
+                        />
                       </div>
                     </div>
 
