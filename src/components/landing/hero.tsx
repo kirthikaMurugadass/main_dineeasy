@@ -6,9 +6,12 @@ import { ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useI18n } from "@/lib/i18n/context";
 import { cn } from "@/lib/utils";
+import { useTheme } from "@/components/providers/theme-provider";
+import Particles from "@/components/ui/particles-background";
 
 export function Hero() {
   const { t } = useI18n();
+  const { resolvedTheme } = useTheme();
   const [visible, setVisible] = useState(false);
 
   useEffect(() => {
@@ -16,24 +19,46 @@ export function Hero() {
     setVisible(true);
   }, []);
 
-  return (
-    <section
-      className="relative overflow-hidden text-white"
-      style={{
-        backgroundImage: "url('/images/hero.jpg')",
-        backgroundSize: "cover",
-        backgroundPosition: "center",
-      }}
-    >
-      {/* Dark overlay to keep text readable */}
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(2,6,23,0.55),transparent_55%),linear-gradient(to_right,rgba(2,6,23,0.65),rgba(15,23,42,0.45),rgba(15,23,42,0.35))]" />
+  // Green theme colors for particles - brighter for visibility
+  const particleColors = resolvedTheme === "dark" 
+    ? ["#22c55e", "#4ade80", "#86efac", "#34d399"] // Green shades for dark theme
+    : ["#22c55e", "#16a34a", "#10b981", "#059669"]; // Green shades for light theme
 
-      <div className="relative mx-auto flex min-h-[70vh] w-full max-w-7xl items-center px-4 py-16 sm:px-6 sm:py-20 md:py-24 lg:py-28 lg:px-10 2xl:max-w-[90rem] 2xl:py-32">
-        <div className="flex w-full flex-col items-center text-center lg:w-1/2 lg:items-start lg:text-left">
+  // Get pixel ratio safely for SSR
+  const [pixelRatio, setPixelRatio] = useState(1);
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+    }
+  }, []);
+
+  return (
+    <section className="relative overflow-hidden bg-background min-h-[80vh]">
+      {/* Particles Background Layer */}
+      <div className="absolute inset-0 z-0 w-full h-full" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%' }}>
+        <Particles
+          particleCount={100}
+          particleSpread={10}
+          speed={0.08}
+          particleColors={particleColors}
+          moveParticlesOnHover={false}
+          alphaParticles={true}
+          particleBaseSize={120}
+          sizeRandomness={0.8}
+          cameraDistance={18}
+          disableRotation={false}
+          pixelRatio={pixelRatio}
+          className="w-full h-full"
+        />
+      </div>
+      
+      {/* Hero Content Layer */}
+      <div className="relative z-10 mx-auto flex min-h-[80vh] w-full max-w-7xl items-center justify-center px-4 py-16 sm:px-6 sm:py-20 md:py-24 lg:py-28 lg:px-10 2xl:max-w-[90rem] 2xl:py-32">
+        <div className="flex w-full max-w-4xl flex-col items-center text-center">
           {/* Badge */}
           <p
             className={cn(
-              "inline-flex items-center rounded-full bg-[#0f172a]/45 px-4 py-1.5 text-xs font-medium uppercase tracking-[0.2em] text-[#4ade80] shadow-soft",
+              "inline-flex items-center rounded-full bg-primary/10 px-4 py-1.5 text-xs font-medium uppercase tracking-[0.2em] text-primary shadow-soft",
               "slide-in-left",
               visible && "is-visible",
               "delay-100"
@@ -45,7 +70,7 @@ export function Hero() {
           {/* Heading */}
           <h1
             className={cn(
-              "mt-5 text-balance text-[clamp(2.4rem,4.4vw+1rem,3.9rem)] font-semibold leading-[1.05] tracking-tight",
+              "mt-5 text-balance text-[clamp(2.4rem,4.4vw+1rem,3.9rem)] font-semibold leading-[1.05] tracking-tight text-foreground",
               "slide-in-left",
               visible && "is-visible",
               "delay-200"
@@ -53,7 +78,7 @@ export function Hero() {
           >
             {t.landing.hero.title}
             {t.landing.hero.titleAccent && (
-              <span className="mt-2 block bg-gradient-to-r from-[var(--sage-medium)] via-white to-[var(--sage-medium)] bg-clip-text text-transparent">
+              <span className="mt-2 block bg-gradient-to-r from-primary via-primary/80 to-primary bg-clip-text text-transparent">
                 {t.landing.hero.titleAccent}
               </span>
             )}
@@ -62,7 +87,7 @@ export function Hero() {
           {/* Description */}
           <p
             className={cn(
-              "mt-4 max-w-xl text-base leading-relaxed text-white/85 text-balance sm:text-lg",
+              "mt-4 max-w-xl text-base leading-relaxed text-muted-foreground text-balance sm:text-lg",
               "slide-in-left",
               visible && "is-visible",
               "delay-300"
@@ -92,8 +117,8 @@ export function Hero() {
             <Link href="#workflow">
               <Button
                 size="lg"
-                variant="ghost"
-                className="h-12 rounded-full border border-[#4ade80] bg-transparent px-7 text-sm font-medium text-white shadow-soft transition-all duration-300 hover:border-[#22c55e] hover:bg-primary/10 hover:text-white"
+                variant="outline"
+                className="h-12 rounded-full border-primary bg-transparent px-7 text-sm font-medium text-primary shadow-soft transition-all duration-300 hover:bg-primary hover:text-primary-foreground"
               >
                 {t.landing.hero.ctaSecondary}
               </Button>

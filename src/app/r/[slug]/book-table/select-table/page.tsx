@@ -419,6 +419,11 @@ export default function SelectTablePage() {
 
       toast.success("Booking request sent! We will confirm shortly.");
       setSuccess(true);
+      
+      // Auto-close success modal after 5 seconds
+      setTimeout(() => {
+        router.push(`/r/${restaurant?.slug}`);
+      }, 5000);
     } catch (error) {
       console.error("Final booking error:", error);
       toast.error(
@@ -467,58 +472,106 @@ export default function SelectTablePage() {
   }
 
   if (success) {
+    // Generate confetti particles
+    const confettiColors = ["#22C55E", "#FACC15", "#F97316", "#3B82F6", "#A855F7", "#EC4899"];
+    const confettiParticles = Array.from({ length: 50 }, (_, i) => ({
+      id: i,
+      color: confettiColors[i % confettiColors.length],
+      x: Math.random() * 100,
+      delay: Math.random() * 0.5,
+      duration: 2 + Math.random() * 1,
+      rotation: Math.random() * 360,
+    }));
+
     return (
-      <div className="flex min-h-screen items-center justify-center bg-[#FAFAF5] p-4">
+      <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#FAFAF5]/95 backdrop-blur-md p-4 dark:bg-[#000000]/95">
+        {/* Enhanced Confetti Animation */}
+        <div className="pointer-events-none absolute inset-0 overflow-hidden">
+          {confettiParticles.map((particle) => (
+            <motion.div
+              key={particle.id}
+              className="absolute h-3 w-3 rounded-sm"
+              style={{
+                backgroundColor: particle.color,
+                left: `${particle.x}%`,
+                top: "-10px",
+              }}
+              initial={{
+                y: -20,
+                opacity: 0,
+                rotate: 0,
+                scale: 0.8,
+              }}
+              animate={{
+                y: typeof window !== "undefined" ? window.innerHeight + 100 : 800,
+                opacity: [0, 1, 1, 0],
+                rotate: particle.rotation + 720,
+                scale: [0.8, 1, 1, 0.8],
+                x: [
+                  0,
+                  (Math.random() - 0.5) * 200,
+                  (Math.random() - 0.5) * 300,
+                  (Math.random() - 0.5) * 400,
+                ],
+              }}
+              transition={{
+                duration: particle.duration,
+                delay: particle.delay,
+                ease: "easeOut",
+              }}
+            />
+          ))}
+        </div>
+
         <motion.div
           initial={{ opacity: 0, y: 20, scale: 0.95 }}
           animate={{ opacity: 1, y: 0, scale: 1 }}
           transition={{ duration: 0.5, ease: [0.23, 1, 0.32, 1] }}
-          className="relative w-full max-w-md rounded-3xl border border-[#D6D2C4]/60 bg-gradient-to-b from-white to-[#F5F2E8] p-8 text-center shadow-xl"
+          className="relative z-10 w-full max-w-md rounded-3xl border border-[#D6D2C4]/60 bg-white p-10 text-center shadow-2xl dark:border-[#1f1f1f] dark:bg-[#000000] overflow-hidden"
         >
-          {/* Simple confetti dots */}
-          <div className="pointer-events-none absolute inset-0 overflow-hidden">
-            <motion.div
-              className="absolute -top-4 left-10 h-2 w-2 rounded-full bg-[#22C55E]"
-              initial={{ y: -10, opacity: 0 }}
-              animate={{ y: 0, opacity: 1 }}
-              transition={{ delay: 0.2 }}
-            />
-            <motion.div
-              className="absolute top-4 right-8 h-2 w-2 rounded-full bg-[#FACC15]"
-              initial={{ y: -10, opacity: 0 }}
-              animate={{ y: 0, opacity: 1 }}
-              transition={{ delay: 0.3 }}
-            />
-            <motion.div
-              className="absolute bottom-6 left-6 h-2 w-2 rounded-full bg-[#F97316]"
-              initial={{ y: 10, opacity: 0 }}
-              animate={{ y: 0, opacity: 1 }}
-              transition={{ delay: 0.4 }}
-            />
-          </div>
+          {/* Decorative background gradient */}
+          <div className="absolute inset-0 bg-gradient-to-br from-[#22C55E]/5 via-transparent to-transparent dark:from-[#22C55E]/5" />
 
-          <motion.div
-            initial={{ scale: 0.8, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            transition={{ delay: 0.25, type: "spring", stiffness: 240, damping: 16 }}
-            className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-[#DCFCE7] text-[#16A34A] shadow-md"
-          >
-            <CheckCircle2 className="h-9 w-9" />
-          </motion.div>
-          <h1 className="mb-1 text-xl font-semibold text-[#1F2933]">
-            Table Booked Successfully!
-          </h1>
-          <p className="mb-6 text-sm text-[#6B7B5A]">
-            Your table reservation has been confirmed.
-          </p>
+          <div className="relative z-10">
+            <motion.div
+              initial={{ scale: 0.8, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              transition={{ delay: 0.25, type: "spring", stiffness: 240, damping: 16 }}
+              className="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-full bg-gradient-to-br from-[#22C55E] to-[#16A34A] text-white shadow-xl"
+            >
+              <CheckCircle2 className="h-10 w-10" />
+            </motion.div>
+            <motion.h1 
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.3 }}
+              className="mb-2 text-3xl font-bold text-[#1F2933] dark:text-white mb-3"
+              style={{ fontFamily: "'Inter', system-ui, sans-serif" }}
+            >
+              Table Booked Successfully! 🎉
+            </motion.h1>
+            <motion.p 
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.4 }}
+              className="mb-8 text-base text-[#6B7B5A] dark:text-[#9ca3af]"
+              style={{ fontFamily: "'Inter', system-ui, sans-serif" }}
+            >
+              Your table reservation has been confirmed.
+            </motion.p>
 
           {stepData && (
-            <div className="mb-6 space-y-4 rounded-2xl bg-white/90 p-6 text-left text-sm shadow-inner">
+            <motion.div 
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.5 }}
+              className="mb-6 space-y-4 rounded-2xl bg-white/90 p-6 text-left text-sm shadow-inner dark:bg-[#0a0a0a] dark:border dark:border-[#1f1f1f]"
+            >
               <div className="space-y-3">
                 {/* Table Number */}
-                <div className="border-b border-[#E4E0D2] pb-3">
-                  <p className="text-xs font-medium uppercase tracking-wide text-[#9CA88A] mb-1">Table Number</p>
-                  <p className="text-lg font-bold text-[#2D3A1A]">
+                <div className="border-b border-[#E4E0D2] dark:border-[#1f1f1f] pb-3">
+                  <p className="text-xs font-medium uppercase tracking-wide text-[#9CA88A] dark:text-[#9ca3af] mb-1">Table Number</p>
+                  <p className="text-lg font-bold text-[#2D3A1A] dark:text-[#ffffff]">
                     {selectedTableId
                       ? tables.find((t) => t.id === selectedTableId)?.table_name ?? "N/A"
                       : "N/A"}
@@ -526,18 +579,18 @@ export default function SelectTablePage() {
                 </div>
 
                 {/* Order Details */}
-                <div className="border-b border-[#E4E0D2] pb-3">
-                  <p className="text-xs font-medium uppercase tracking-wide text-[#9CA88A] mb-2">Order Details</p>
+                <div className="border-b border-[#E4E0D2] dark:border-[#1f1f1f] pb-3">
+                  <p className="text-xs font-medium uppercase tracking-wide text-[#9CA88A] dark:text-[#9ca3af] mb-2">Order Details</p>
                   <div className="space-y-1">
-                    <p className="text-sm text-[#2D3A1A]">
+                    <p className="text-sm text-[#2D3A1A] dark:text-[#ffffff]">
                       <span className="font-medium">Customer:</span> {stepData.customerName}
                     </p>
-                    <p className="text-sm text-[#6B7B5A]">
+                    <p className="text-sm text-[#6B7B5A] dark:text-[#9ca3af]">
                       <span className="font-medium">Guests:</span> {stepData.guestCount}{" "}
                       {stepData.guestCount === 1 ? "person" : "persons"}
                     </p>
                     {bookingData?.id && (
-                      <p className="text-sm text-[#6B7B5A]">
+                      <p className="text-sm text-[#6B7B5A] dark:text-[#9ca3af]">
                         <span className="font-medium">Reservation ID:</span> {bookingData.id ?? bookingData.bookingId ?? "—"}
                       </p>
                     )}
@@ -546,13 +599,13 @@ export default function SelectTablePage() {
 
                 {/* Booking Time */}
                 <div>
-                  <p className="text-xs font-medium uppercase tracking-wide text-[#9CA88A] mb-1">Booking Time</p>
-                  <p className="text-base font-semibold text-[#2D3A1A]">
+                  <p className="text-xs font-medium uppercase tracking-wide text-[#9CA88A] dark:text-[#9ca3af] mb-1">Booking Time</p>
+                  <p className="text-base font-semibold text-[#2D3A1A] dark:text-[#ffffff]">
                     {stepData.bookingDate} at {stepData.bookingTime}
                   </p>
                 </div>
               </div>
-            </div>
+            </motion.div>
           )}
 
           <div className="flex flex-col gap-2 sm:flex-row sm:justify-center">
@@ -570,7 +623,8 @@ export default function SelectTablePage() {
               View Reservation
             </Button>
           </div>
-        </motion.div>
+        </div>
+      </motion.div>
       </div>
     );
   }
@@ -583,7 +637,7 @@ export default function SelectTablePage() {
     const total = basePrice + tax;
 
     return (
-      <div className="min-h-screen bg-[#FAFAF5]">
+      <div className="min-h-screen bg-[#FAFAF5] dark:bg-[#000000]">
         <div className="mx-auto flex min-h-screen max-w-2xl flex-col px-4 pb-32 pt-6 sm:px-6 lg:px-8">
           {/* Step header */}
           <div className="mb-6 flex flex-col gap-2">
@@ -592,15 +646,15 @@ export default function SelectTablePage() {
                 variant="ghost"
                 size="icon"
                 onClick={() => setUiStep("select")}
-                className="h-9 w-9 rounded-full border border-[#D6D2C4]/60 text-[#6B7B5A] hover:bg-[#E8E4D9]/50"
+                className="h-9 w-9 rounded-full border border-[#D6D2C4]/60 text-[#6B7B5A] hover:bg-[#E8E4D9]/50 dark:border-[#3f3f3f] dark:text-[#e5e5e5] dark:hover:bg-[#111111]"
               >
                 <ArrowLeft className="h-4 w-4" />
               </Button>
               <div>
-                <p className="text-[11px] font-medium uppercase tracking-[0.16em] text-[#9CA88A]">
+                <p className="text-[11px] font-medium uppercase tracking-[0.16em] text-[#9CA88A] dark:text-[#9ca3af]">
                   Step 3 of 4
                 </p>
-                <h1 className="text-2xl font-semibold text-[#2D3A1A]">Order Summary</h1>
+                <h1 className="text-2xl font-semibold text-[#2D3A1A] dark:text-[#ffffff]">Order Summary</h1>
               </div>
             </div>
           </div>
@@ -612,11 +666,11 @@ export default function SelectTablePage() {
             transition={{ duration: 0.4 }}
             className="space-y-4"
           >
-            <Card className="rounded-2xl border border-[#D6D2C4]/60 bg-gradient-to-b from-white to-[#F7F4EA] shadow-sm">
+            <Card className="rounded-2xl border border-[#D6D2C4]/60 bg-gradient-to-b from-white to-[#F7F4EA] shadow-sm dark:border-[#1f1f1f] dark:bg-[#000000] dark:from-transparent dark:via-transparent dark:to-transparent">
               <CardHeader>
-                <CardTitle className="text-lg font-semibold text-[#2D3A1A]">Reservation Details</CardTitle>
+                <CardTitle className="text-lg font-semibold text-[#2D3A1A] dark:text-[#ffffff]">Reservation Details</CardTitle>
               </CardHeader>
-              <CardContent className="space-y-6">
+              <CardContent className="space-y-6 text-[#2D3A1A] dark:text-[#ffffff]">
                 {/* Selected Table */}
                 <div className="space-y-2">
                   <p className="text-xs font-medium uppercase tracking-wide text-[#9CA88A]">Selected Table</p>
@@ -624,53 +678,53 @@ export default function SelectTablePage() {
                 </div>
 
                 {/* Customer Information */}
-                <div className="space-y-2 border-t border-[#E4E0D2] pt-4">
-                  <p className="text-xs font-medium uppercase tracking-wide text-[#9CA88A]">Customer Information</p>
+                <div className="space-y-2 border-t border-[#E4E0D2] pt-4 dark:border-[#1f1f1f]">
+                  <p className="text-xs font-medium uppercase tracking-wide text-[#9CA88A] dark:text-[#9ca3af]">Customer Information</p>
                   <div className="space-y-1 text-sm">
-                    <p className="font-medium text-[#2D3A1A]">{stepData.customerName}</p>
-                    <p className="text-[#6B7B5A]">{stepData.phone}</p>
-                    {stepData.email && <p className="text-[#6B7B5A]">{stepData.email}</p>}
+                    <p className="font-medium text-[#2D3A1A] dark:text-[#ffffff]">{stepData.customerName}</p>
+                    <p className="text-[#6B7B5A] dark:text-[#e5e5e5]">{stepData.phone}</p>
+                    {stepData.email && <p className="text-[#6B7B5A] dark:text-[#e5e5e5]">{stepData.email}</p>}
                   </div>
                 </div>
 
                 {/* Reservation Info */}
-                <div className="space-y-2 border-t border-[#E4E0D2] pt-4">
-                  <p className="text-xs font-medium uppercase tracking-wide text-[#9CA88A]">Reservation Info</p>
+                <div className="space-y-2 border-t border-[#E4E0D2] pt-4 dark:border-[#1f1f1f]">
+                  <p className="text-xs font-medium uppercase tracking-wide text-[#9CA88A] dark:text-[#9ca3af]">Reservation Info</p>
                   <div className="space-y-1 text-sm">
-                    <p className="text-[#6B7B5A]">
-                      <span className="font-medium text-[#2D3A1A]">Date:</span> {stepData.bookingDate}
+                    <p className="text-[#6B7B5A] dark:text-[#e5e5e5]">
+                      <span className="font-medium text-[#2D3A1A] dark:text-[#ffffff]">Date:</span> {stepData.bookingDate}
                     </p>
-                    <p className="text-[#6B7B5A]">
-                      <span className="font-medium text-[#2D3A1A]">Time:</span> {stepData.bookingTime}
+                    <p className="text-[#6B7B5A] dark:text-[#e5e5e5]">
+                      <span className="font-medium text-[#2D3A1A] dark:text-[#ffffff]">Time:</span> {stepData.bookingTime}
                     </p>
-                    <p className="text-[#6B7B5A]">
-                      <span className="font-medium text-[#2D3A1A]">Guests:</span> {stepData.guestCount}{" "}
+                    <p className="text-[#6B7B5A] dark:text-[#e5e5e5]">
+                      <span className="font-medium text-[#2D3A1A] dark:text-[#ffffff]">Guests:</span> {stepData.guestCount}{" "}
                       {stepData.guestCount === 1 ? "person" : "persons"}
                     </p>
                   </div>
                 </div>
 
                 {/* Ordered Items (UI placeholder) */}
-                <div className="space-y-2 border-t border-[#E4E0D2] pt-4">
-                  <p className="text-xs font-medium uppercase tracking-wide text-[#9CA88A]">Ordered Items</p>
-                  <div className="rounded-xl bg-[#F7F4EA] p-3 text-sm text-[#6B7B5A]">
+                <div className="space-y-2 border-t border-[#E4E0D2] pt-4 dark:border-[#1f1f1f]">
+                  <p className="text-xs font-medium uppercase tracking-wide text-[#9CA88A] dark:text-[#9ca3af]">Ordered Items</p>
+                  <div className="rounded-xl bg-[#F7F4EA] p-3 text-sm text-[#6B7B5A] dark:bg-[#111111] dark:text-[#e5e5e5]">
                     Table reservation fee
                   </div>
                 </div>
 
                 {/* Billing Section */}
-                <div className="space-y-3 border-t border-[#E4E0D2] pt-4">
-                  <p className="text-xs font-medium uppercase tracking-wide text-[#9CA88A]">Billing</p>
+                <div className="space-y-3 border-t border-[#E4E0D2] pt-4 dark:border-[#1f1f1f]">
+                  <p className="text-xs font-medium uppercase tracking-wide text-[#9CA88A] dark:text-[#9ca3af]">Billing</p>
                   <div className="space-y-2 text-sm">
-                    <div className="flex items-center justify-between text-[#6B7B5A]">
+                    <div className="flex items-center justify-between text-[#6B7B5A] dark:text-[#e5e5e5]">
                       <span>Subtotal</span>
-                      <span className="font-medium text-[#2D3A1A]">CHF {basePrice.toFixed(2)}</span>
+                      <span className="font-medium text-[#2D3A1A] dark:text-[#ffffff]">CHF {basePrice.toFixed(2)}</span>
                     </div>
-                    <div className="flex items-center justify-between text-[#6B7B5A]">
+                    <div className="flex items-center justify-between text-[#6B7B5A] dark:text-[#e5e5e5]">
                       <span>Tax (10%)</span>
-                      <span className="font-medium text-[#2D3A1A]">CHF {tax.toFixed(2)}</span>
+                      <span className="font-medium text-[#2D3A1A] dark:text-[#ffffff]">CHF {tax.toFixed(2)}</span>
                     </div>
-                    <div className="flex items-center justify-between border-t border-[#E4E0D2] pt-2 text-lg font-bold text-[#2D3A1A]">
+                    <div className="flex items-center justify_between border-t border-[#E4E0D2] pt-2 text-lg font-bold text-[#2D3A1A] dark:border-[#1f1f1f] dark:text-[#ffffff]">
                       <span>Total Price</span>
                       <span className="text-[#22C55E]">CHF {total.toFixed(2)}</span>
                     </div>
@@ -681,7 +735,7 @@ export default function SelectTablePage() {
           </motion.div>
 
           {/* Confirm Order button */}
-          <div className="fixed inset-x-0 bottom-0 z-20 bg-gradient-to-t from-[#FAFAF5] via-[#FAFAF5]/95 to-transparent pb-4 pt-6">
+          <div className="fixed inset-x-0 bottom-0 z-20 bg-gradient-to-t from-[#FAFAF5] via-[#FAFAF5]/95 to-transparent pb-4 pt-6 dark:from-[#000000] dark:via-[#000000] dark:to-transparent">
             <div className="mx-auto w-full max-w-2xl px-4 sm:px-6 lg:px-8">
               <Button
                 type="button"
@@ -707,7 +761,7 @@ export default function SelectTablePage() {
 
   // Table Selection Step
   return (
-    <div className="min-h-screen bg-[#FAFAF5]">
+    <div className="min-h-screen bg-[#FAFAF5] dark:bg-[#000000]">
       <div className="mx-auto flex min-h-screen max-w-5xl flex-col px-4 pb-32 pt-6 sm:px-6 lg:px-8">
         {/* Step header */}
         <div className="mb-6 flex flex-col gap-2">
@@ -721,13 +775,13 @@ export default function SelectTablePage() {
               <ArrowLeft className="h-4 w-4" />
             </Button>
             <div>
-              <p className="text-[11px] font-medium uppercase tracking-[0.16em] text-[#9CA88A]">
+              <p className="text-[11px] font-medium uppercase tracking-[0.16em] text-[#9CA88A] dark:text-[#9ca3af]">
                 Step 2 of 4
               </p>
-              <h1 className="text-2xl font-semibold text-[#2D3A1A]">Book a Table</h1>
+              <h1 className="text-2xl font-semibold text-[#2D3A1A] dark:text-[#ffffff]">Book a Table</h1>
             </div>
           </div>
-          <p className="ml-0 flex flex-wrap items-center gap-3 text-sm text-[#6B7B5A] sm:ml-12">
+          <p className="ml-0 flex flex-wrap items-center gap-3 text-sm text-[#6B7B5A] dark:text-[#9ca3af] sm:ml-12">
             <span className="inline-flex items-center gap-1.5">
               <Calendar className="h-4 w-4" />
               {stepData.bookingDate}
@@ -746,7 +800,7 @@ export default function SelectTablePage() {
         {/* Table grid */}
         <div className="mb-8 flex-1">
           {tables.length === 0 ? (
-            <Card className="rounded-2xl border border-[#D6D2C4]/60 bg-gradient-to-b from-white to-[#F7F4EA] shadow-sm">
+            <Card className="rounded-2xl border border-[#D6D2C4]/60 bg-gradient-to-b from-white to-[#F7F4EA] shadow-sm dark:border-[#1f1f1f] dark:bg-[#000000] dark:from-transparent dark:via-transparent dark:to-transparent">
               <CardContent className="py-12 text-center">
                 <p className="text-sm text-[#6B7B5A]">
                   No tables configured yet. Please contact the restaurant.
@@ -754,7 +808,7 @@ export default function SelectTablePage() {
               </CardContent>
             </Card>
           ) : (
-            <div className="mx-auto w-full max-w-2xl">
+            <div className="mx-auto w-full max-w-2xl text-[#2D3A1A] dark:text-[#ffffff]">
               <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-4">
                 {[...tables]
                   .sort((a, b) => {
@@ -842,7 +896,7 @@ export default function SelectTablePage() {
         </div>
 
         {/* Continue button */}
-        <div className="fixed inset-x-0 bottom-0 z-20 bg-gradient-to-t from-[#FAFAF5] via-[#FAFAF5]/95 to-transparent pb-4 pt-6">
+          <div className="fixed inset-x-0 bottom-0 z-20 bg-gradient-to-t from-[#FAFAF5] via-[#FAFAF5]/95 to-transparent pb-4 pt-6 dark:from-[#000000] dark:via-[#000000] dark:to-transparent">
           <div className="mx-auto w-full max-w-5xl px-4 sm:px-6 lg:px-8">
             <Button
               type="button"

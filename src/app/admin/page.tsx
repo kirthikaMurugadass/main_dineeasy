@@ -1,47 +1,36 @@
 "use client";
 
-import { useEffect, useState, useMemo } from "react";
+import { useEffect, useState, useMemo, useCallback } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 import {
-  Folder,
-  Eye,
-  QrCode,
-  Plus,
-  FileText,
-  BarChart3,
-  Palette,
-  Clock,
-  TrendingUp,
-  Activity,
-  Sparkles,
-  Crown,
   DollarSign,
   ShoppingCart,
   Users,
   ChefHat,
-  UtensilsCrossed,
-  Coffee,
-  Timer,
-  AlertCircle,
+  Table,
+  Activity,
+  Crown,
   Zap,
-  TrendingDown,
+  TrendingUp,
   ArrowUpRight,
   ArrowDownRight,
-  Table,
+  UtensilsCrossed,
   Calendar,
-  Package,
-  FileBarChart,
-  UserCheck,
-  Circle,
+  BarChart3,
+  Palette,
+  QrCode,
+  Plus,
+  Lock,
+  Clock,
+  CheckCircle,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { FadeIn, StaggerContainer, StaggerItem, HoverScale } from "@/components/motion";
+import { FadeIn } from "@/components/motion";
 import { useI18n } from "@/lib/i18n/context";
-import { useTheme } from "@/components/providers/theme-provider";
 import { createClient } from "@/lib/supabase/client";
 import { getGreeting } from "@/lib/utils/greeting";
 import { useSubscription } from "@/contexts/subscription-context";
@@ -53,80 +42,103 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 
-interface DashboardStats {
-  hasMenu: boolean;
-  menuActive: boolean;
-  restaurantName: string;
-  restaurantSlug: string;
+interface Order {
+  id: string;
+  customer_name: string;
+  order_type: string;
+  table_number: number | null;
+  status: "pending" | "preparing" | "completed";
+  created_at: string;
+  items: Array<{
+    item_id: string;
+    quantity: number;
+    price: number;
+    menu_item?: {
+      translations?: Array<{ title: string; language: string }>;
+    };
+  }>;
+}
+
+interface TableStatus {
+  id: string;
+  table_name: string;
+  capacity: number;
+  status: "available" | "occupied" | "reserved";
+}
+
+interface BusinessStats {
+  todayRevenue: number;
+  pendingOrders: number;
+  totalOrdersToday: number;
+  tablesOccupied: number;
+  tablesAvailable: number;
   totalCategories: number;
   activeCategories: number;
-}
-
-interface RecentActivity {
-  id: string;
-  type: "category" | "qr" | "menu";
-  title: string;
-  timestamp: Date;
-  icon: typeof Folder;
-  color: string;
-}
-
-interface ChartData {
-  labels: string[];
-  values: number[];
 }
 
 export default function AdminDashboard() {
   const { t } = useI18n();
   const router = useRouter();
-  const { resolvedTheme } = useTheme();
-  const chartColor = resolvedTheme === "dark" ? "rgb(250, 250, 250)" : "rgb(15, 15, 15)";
-  const [stats, setStats] = useState<DashboardStats>({
-    hasMenu: false,
-    menuActive: false,
-    restaurantName: "",
-    restaurantSlug: "",
-    totalCategories: 0,
-    activeCategories: 0,
-  });
   const [loading, setLoading] = useState(true);
-  const [recentActivities, setRecentActivities] = useState<RecentActivity[]>([]);
-  const [categoryChartData, setCategoryChartData] = useState<ChartData>({ labels: [], values: [] });
-  const [qrChartData, setQrChartData] = useState<ChartData>({ labels: [], values: [] });
-  const [menuId, setMenuId] = useState<string | null>(null);
   const [restaurantId, setRestaurantId] = useState<string | null>(null);
   const [userName, setUserName] = useState<string>("");
+  const [restaurantName, setRestaurantName] = useState<string>("");
   const [restaurantLogo, setRestaurantLogo] = useState<string | null>(null);
   const { isPro, loading: planLoading } = useSubscription();
   const [upgradeModalOpen, setUpgradeModalOpen] = useState(false);
 
+  // Real-time data state
+  const [orders, setOrders] = useState<Order[]>([]);
+  const [tables, setTables] = useState<TableStatus[]>([]);
+  const [stats, setStats] = useState<BusinessStats>({
+    todayRevenue: 0,
+    pendingOrders: 0,
+    totalOrdersToday: 0,
+    tablesOccupied: 0,
+    tablesAvailable: 0,
+    totalCategories: 0,
+    activeCategories: 0,
+  });
+  
+  // Chart data state
+  const [ordersChartData, setOrdersChartData] = useState<Array<{ hour: string; count: number }>>([]);
+  const [ordersMonthlyData, setOrdersMonthlyData] = useState<Array<{ day: string; count: number }>>([]);
+  const [revenueChartData, setRevenueChartData] = useState<Array<{ hour: string; revenue: number }>>([]);
+  const [revenueMonthlyData, setRevenueMonthlyData] = useState<Array<{ day: string; revenue: number }>>([]);
+  const [bookingsChartData, setBookingsChartData] = useState<Array<{ hour: string; count: number }>>([]);
+  const [bookingsMonthlyData, setBookingsMonthlyData] = useState<Array<{ day: string; count: number }>>([]);
+  
+  // View toggles
+  const [ordersView, setOrdersView] = useState<"day" | "month">("day");
+  const [revenueView, setRevenueView] = useState<"day" | "month">("day");
+  const [bookingsView, setBookingsView] = useState<"day" | "month">("day");
+
+  // Load initial data and set up real-time subscriptions
   useEffect(() => {
-    async function load() {
+    let ordersChannel: any = null;
+    let bookingsChannel: any = null;
+    let tablesChannel: any = null;
       const supabase = createClient();
 
-      let user: any | null = null;
-      try {
+    async function init() {
+
+      // Get user
         const {
-          data,
+        data: { user },
           error: userError,
         } = await supabase.auth.getUser();
-        if (userError) {
-          console.error("Admin dashboard getUser error:", userError);
-          router.push("/login");
-          return;
-        }
-        user = data.user;
-      } catch (err) {
-        console.error("Admin dashboard getUser lock error:", err);
+      if (userError || !user) {
         router.push("/login");
         return;
       }
 
-      if (!user) {
-        router.push("/login");
-        return;
-      }
+      const displayName =
+        (user.user_metadata as any)?.full_name ||
+        user.email?.split("@")[0] ||
+        "Admin";
+      setUserName(displayName);
 
+      // Get restaurant
       const { data: restaurant } = await supabase
         .from("restaurants")
         .select("id, name, slug, logo_url")
@@ -138,122 +150,536 @@ export default function AdminDashboard() {
         return;
       }
 
-      const displayName =
-        (user.user_metadata as any)?.full_name ||
-        user.email?.split("@")[0] ||
-        "Admin";
-      setUserName(displayName);
-
       setRestaurantId(restaurant.id);
-
+      setRestaurantName(restaurant.name);
       if (restaurant.logo_url) {
         setRestaurantLogo(`${restaurant.logo_url}?t=${Date.now()}`);
       }
 
+      // Load initial data
+      await loadDashboardData(restaurant.id);
+
+      // Set up real-time subscriptions
+      if (isPro) {
+        // Orders subscription
+        ordersChannel = supabase
+          .channel(`orders-${restaurant.id}`)
+          .on(
+            "postgres_changes",
+            {
+              event: "*",
+              schema: "public",
+              table: "orders",
+              filter: `restaurant_id=eq.${restaurant.id}`,
+            },
+            () => {
+              loadDashboardData(restaurant.id);
+            }
+          )
+          .subscribe();
+
+        // Bookings subscription
+        bookingsChannel = supabase
+          .channel(`bookings-${restaurant.id}`)
+          .on(
+            "postgres_changes",
+            {
+              event: "*",
+              schema: "public",
+              table: "bookings",
+              filter: `restaurant_id=eq.${restaurant.id}`,
+            },
+            () => {
+              loadDashboardData(restaurant.id);
+            }
+          )
+          .subscribe();
+
+        // Tables subscription
+        tablesChannel = supabase
+          .channel(`tables-${restaurant.id}`)
+          .on(
+            "postgres_changes",
+            {
+              event: "*",
+              schema: "public",
+              table: "restaurant_tables",
+              filter: `restaurant_id=eq.${restaurant.id}`,
+            },
+            () => {
+              loadDashboardData(restaurant.id);
+            }
+          )
+          .subscribe();
+      }
+
+      setLoading(false);
+    }
+
+    async function loadDashboardData(restId: string) {
+      const supabase = createClient();
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      const todayStr = today.toISOString().split("T")[0];
+
+      // Load orders (Pro only)
+      if (isPro) {
+        try {
+          // First, fetch orders
+          const { data: ordersData, error: ordersError } = await supabase
+            .from("orders")
+            .select("id, customer_name, order_type, table_number, status, created_at")
+            .eq("restaurant_id", restId)
+            .order("created_at", { ascending: false })
+            .limit(10);
+          
+          if (ordersError) {
+            console.error("Error loading orders:", ordersError);
+            setOrders([]);
+          } else if (!ordersData || ordersData.length === 0) {
+            setOrders([]);
+          } else {
+            // Fetch order items for these orders
+            const orderIds = ordersData.map((o) => o.id);
+            const { data: orderItemsData, error: itemsError } = await supabase
+              .from("order_items")
+              .select("id, order_id, item_id, quantity, price")
+              .in("order_id", orderIds);
+            
+            if (itemsError) {
+              console.error("Error loading order items:", itemsError);
+              // Still set orders but without items
+              const formattedOrders: Order[] = ordersData.map((order: any) => ({
+                id: order.id,
+                customer_name: order.customer_name || "Guest",
+                order_type: order.order_type,
+                table_number: order.table_number,
+                status: order.status,
+                created_at: order.created_at,
+                items: [],
+              }));
+              setOrders(formattedOrders);
+            } else {
+              // Fetch menu item translations
+              const itemIds = [
+                ...new Set(
+                  (orderItemsData || [])
+                    .map((oi) => oi.item_id)
+                    .filter(Boolean)
+                ),
+              ];
+              
+              let translationMap = new Map<string, Array<{ title: string; language: string }>>();
+              
+              if (itemIds.length > 0) {
+                const { data: translationsData, error: translationsError } = await supabase
+                  .from("menu_item_translations")
+                  .select("menu_item_id, title, language")
+                  .in("menu_item_id", itemIds);
+                
+                if (!translationsError && translationsData) {
+                  translationsData.forEach((t: any) => {
+                    if (!translationMap.has(t.menu_item_id)) {
+                      translationMap.set(t.menu_item_id, []);
+                    }
+                    translationMap.get(t.menu_item_id)!.push({
+                      title: t.title,
+                      language: t.language,
+                    });
+                  });
+                }
+              }
+              
+              // Group order items by order_id
+              const itemsByOrderId = new Map<string, typeof orderItemsData>();
+              (orderItemsData || []).forEach((item: any) => {
+                if (!itemsByOrderId.has(item.order_id)) {
+                  itemsByOrderId.set(item.order_id, []);
+                }
+                itemsByOrderId.get(item.order_id)!.push(item);
+              });
+              
+              // Format orders with their items
+              const formattedOrders: Order[] = ordersData.map((order: any) => {
+                const orderItems = itemsByOrderId.get(order.id) || [];
+                const items = orderItems.map((item: any) => {
+                  const translations = translationMap.get(item.item_id) || [];
+                  return {
+                    item_id: item.item_id || item.id,
+                    quantity: item.quantity || 0,
+                    price: item.price || 0,
+                    menu_item: translations.length > 0 ? { translations } : undefined,
+                  };
+                });
+                
+                return {
+                  id: order.id,
+                  customer_name: order.customer_name || "Guest",
+                  order_type: order.order_type,
+                  table_number: order.table_number,
+                  status: order.status,
+                  created_at: order.created_at,
+                  items: items,
+                };
+              });
+              
+              setOrders(formattedOrders);
+            }
+          }
+        } catch (error) {
+          console.error("Unexpected error loading orders:", error);
+          setOrders([]);
+        }
+
+        // Calculate stats from orders
+        const { data: todayOrders } = await supabase
+          .from("orders")
+          .select("status, order_items(price, quantity)")
+          .eq("restaurant_id", restId)
+          .gte("created_at", today.toISOString());
+
+        let revenue = 0;
+        let pendingOrdersCount = 0;
+        let totalOrdersTodayCount = 0;
+
+        // Always initialize to 0, then calculate from data if available
+        if (todayOrders && todayOrders.length > 0) {
+          totalOrdersTodayCount = todayOrders.length;
+          todayOrders.forEach((order: any) => {
+            // Count pending orders (not completed)
+            if (order.status !== "completed") {
+              pendingOrdersCount++;
+            }
+            // Calculate revenue
+            if (order.order_items) {
+              order.order_items.forEach((item: any) => {
+                revenue += parseFloat(item.price || 0) * (item.quantity || 0);
+              });
+            }
+          });
+        }
+
+        // Load bookings for table status and chart data
+        const { data: bookings } = await supabase
+          .from("bookings")
+          .select("table_id, status, booking_date, booking_time, created_at")
+          .eq("restaurant_id", restId)
+          .eq("status", "confirmed");
+        
+        // Filter today's bookings for table status
+        const todayBookings = bookings?.filter((b) => b.booking_date === todayStr) || [];
+
+        // Load active orders for table status checking (needed for both free and pro plans)
+        const { data: activeOrdersData } = await supabase
+          .from("orders")
+          .select("id, table_number, status")
+          .eq("restaurant_id", restId)
+          .neq("status", "completed");
+
+        // Load tables
+        const { data: tablesData } = await supabase
+          .from("restaurant_tables")
+          .select("id, table_name, capacity, is_active")
+          .eq("restaurant_id", restId)
+          .eq("is_active", true);
+
+        // Initialize table metrics to 0
+        let occupiedTables = 0;
+        let availableTables = 0;
+        const tableStatuses: TableStatus[] = [];
+
+        if (tablesData && tablesData.length > 0) {
+          // Map table statuses
+          tablesData.forEach((table) => {
+            // Check if table is reserved (has confirmed booking for today)
+            const isReserved = todayBookings.some(
+              (b) => b.table_id === table.id
+            );
+
+            // Check if table has active order (pending or preparing, not completed)
+            const hasActiveOrder = (activeOrdersData || []).some(
+              (o) =>
+                o.status !== "completed" &&
+                o.table_number &&
+                o.table_number.toString() === table.table_name.replace("T-", "")
+            );
+
+            let status: "available" | "occupied" | "reserved" = "available";
+            if (hasActiveOrder) {
+              status = "occupied";
+            } else if (isReserved) {
+              status = "reserved";
+            }
+
+            tableStatuses.push({
+              id: table.id,
+              table_name: table.table_name,
+              capacity: table.capacity,
+              status,
+            });
+
+            // Count occupied tables (has active order or is reserved)
+            if (hasActiveOrder || isReserved) {
+              occupiedTables++;
+            }
+          });
+
+          setTables(tableStatuses);
+          availableTables = tablesData.length - occupiedTables;
+        } else {
+          // No tables configured - set empty array
+          setTables([]);
+        }
+
+        // Always set stats, ensuring all values default to 0
+        setStats({
+          todayRevenue: revenue || 0,
+          pendingOrders: pendingOrdersCount || 0,
+          totalOrdersToday: totalOrdersTodayCount || 0,
+          tablesOccupied: occupiedTables || 0,
+          tablesAvailable: availableTables || 0,
+          totalCategories: 0, // Will be loaded separately
+          activeCategories: 0,
+        });
+
+        // Generate chart data for orders over time (today) - real-time
+        generateOrdersChartData(todayOrders || []);
+        
+        // Generate monthly orders data
+        generateOrdersMonthlyData(restId);
+        
+        // Generate revenue chart data (dummy data for now - will be replaced with real data later)
+        generateRevenueChartData();
+        
+        // Generate bookings chart data (use all bookings for today's chart)
+        const todayBookingsForChart = bookings?.filter((b) => {
+          const bookingDate = new Date(b.created_at);
+          const today = new Date();
+          return bookingDate.toDateString() === today.toDateString();
+        }) || [];
+        generateBookingsChartData(todayBookingsForChart);
+        
+        // Generate monthly bookings data
+        generateBookingsMonthlyData(restId);
+      } else {
+        // Free plan: basic stats only
       const { data: menu } = await supabase
         .from("menus")
-        .select("id, is_active, created_at, updated_at")
-        .eq("restaurant_id", restaurant.id)
+          .select("id")
+          .eq("restaurant_id", restId)
         .maybeSingle();
 
       if (menu) {
-        setMenuId(menu.id);
-      }
-
-      // Fetch category stats
-      let totalCategories = 0;
-      let activeCategories = 0;
-      const activities: RecentActivity[] = [];
-
-      if (menu) {
-        const { data: categories } = await supabase
+          const { data: categories } = await supabase
           .from("categories")
-          .select("id, is_active, created_at")
-          .eq("menu_id", menu.id)
-          .order("created_at", { ascending: false })
-          .limit(5);
+            .select("id, is_active")
+            .eq("menu_id", menu.id);
 
-        totalCategories = categories?.length ?? 0;
-        activeCategories = categories?.filter((c) => c.is_active).length ?? 0;
-
-        // Add recent categories to activities
-        if (categories) {
-          for (const cat of categories.slice(0, 3)) {
-            const { data: translations } = await supabase
-              .from("translations")
-              .select("title")
-              .eq("entity_id", cat.id)
-              .eq("entity_type", "category")
-              .eq("language", "en")
-              .single();
-
-            activities.push({
-              id: cat.id,
-              type: "category",
-              title: translations?.title || "New Category",
-              timestamp: new Date(cat.created_at),
-              icon: Folder,
-              color: "text-blue-500",
-            });
-          }
-        }
-
-        // Add menu update activity
-        if (menu.updated_at && menu.updated_at !== menu.created_at) {
-          activities.push({
-            id: menu.id,
-            type: "menu",
-            title: t.admin.dashboard.activity.menuUpdated,
-            timestamp: new Date(menu.updated_at),
-            icon: FileText,
-            color: "text-purple-500",
+          setStats({
+            todayRevenue: 0,
+            pendingOrders: 0,
+            totalOrdersToday: 0,
+            tablesOccupied: 0,
+            tablesAvailable: 0,
+            totalCategories: categories?.length || 0,
+            activeCategories: categories?.filter((c) => c.is_active).length || 0,
           });
         }
+        
+        // Generate revenue chart data (dummy data) for free plan too
+        generateRevenueChartData();
+      }
+    }
+
+    function generateOrdersChartData(todayOrders: any[]) {
+      // Group orders by hour
+      const hourCounts: Record<number, number> = {};
+      const now = new Date();
+      const currentHour = now.getHours();
+      
+      // Initialize all hours from 0 to current hour with 0
+      for (let i = 0; i <= currentHour; i++) {
+        hourCounts[i] = 0;
+      }
+      
+      // Count orders per hour
+      todayOrders.forEach((order: any) => {
+        const orderHour = new Date(order.created_at).getHours();
+        if (orderHour <= currentHour) {
+          hourCounts[orderHour] = (hourCounts[orderHour] || 0) + 1;
+        }
+      });
+      
+      // Convert to array format
+      const chartData = Object.entries(hourCounts)
+        .map(([hour, count]) => ({
+          hour: `${parseInt(hour)}:00`,
+          count: count as number,
+        }))
+        .sort((a, b) => {
+          const hourA = parseInt(a.hour.split(':')[0]);
+          const hourB = parseInt(b.hour.split(':')[0]);
+          return hourA - hourB;
+        });
+      
+      setOrdersChartData(chartData);
+    }
+
+    async function generateOrdersMonthlyData(restId: string) {
+      const supabase = createClient();
+      const now = new Date();
+      const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+      
+      const { data: monthlyOrders } = await supabase
+        .from("orders")
+        .select("created_at")
+        .eq("restaurant_id", restId)
+        .gte("created_at", startOfMonth.toISOString());
+      
+      // Group orders by day
+      const dayCounts: Record<string, number> = {};
+      const daysInMonth = now.getDate();
+      
+      // Initialize all days in current month
+      for (let i = 1; i <= daysInMonth; i++) {
+        dayCounts[i] = 0;
+      }
+      
+      if (monthlyOrders) {
+        monthlyOrders.forEach((order: any) => {
+          const orderDate = new Date(order.created_at);
+          const day = orderDate.getDate();
+          if (day <= daysInMonth) {
+            dayCounts[day] = (dayCounts[day] || 0) + 1;
+          }
+        });
+      }
+      
+      const chartData = Object.entries(dayCounts)
+        .map(([day, count]) => ({
+          day: `Day ${day}`,
+          count: count as number,
+        }))
+        .sort((a, b) => {
+          const dayA = parseInt(a.day.replace("Day ", ""));
+          const dayB = parseInt(b.day.replace("Day ", ""));
+          return dayA - dayB;
+        });
+      
+      setOrdersMonthlyData(chartData);
+    }
+
+    function generateBookingsChartData(todayBookings: any[]) {
+      // Group bookings by hour
+      const hourCounts: Record<number, number> = {};
+      const now = new Date();
+      const currentHour = now.getHours();
+      
+      // Initialize all hours from 0 to current hour with 0
+      for (let i = 0; i <= currentHour; i++) {
+        hourCounts[i] = 0;
       }
 
-      // Add QR code activity (simulated - you can enhance this with actual QR generation tracking)
-      activities.push({
-        id: "qr-1",
-        type: "qr",
-        title: t.admin.dashboard.activity.qrGenerated,
-        timestamp: new Date(Date.now() - 2 * 60 * 60 * 1000),
-        icon: QrCode,
-        color: "text-primary",
+      // Count bookings per hour
+      todayBookings.forEach((booking: any) => {
+        const bookingHour = new Date(booking.created_at).getHours();
+        if (bookingHour <= currentHour) {
+          hourCounts[bookingHour] = (hourCounts[bookingHour] || 0) + 1;
+        }
       });
-
-      // Sort activities by timestamp
-      activities.sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime());
-
-      // Generate chart data (simulated - you can enhance with actual analytics)
-      const last7Days = Array.from({ length: 7 }, (_, i) => {
-        const date = new Date();
-        date.setDate(date.getDate() - (6 - i));
-        return date.toLocaleDateString("en-US", { month: "short", day: "numeric" });
-      });
-
-      setCategoryChartData({
-        labels: last7Days,
-        values: last7Days.map(() => Math.floor(Math.random() * 5) + 1), // Simulated data
-      });
-
-      setQrChartData({
-        labels: last7Days,
-        values: last7Days.map(() => Math.floor(Math.random() * 10) + 5), // Simulated data
-      });
-
-      setStats({
-        hasMenu: !!menu,
-        menuActive: menu?.is_active ?? false,
-        restaurantName: restaurant.name,
-        restaurantSlug: restaurant.slug,
-        totalCategories,
-        activeCategories,
-      });
-      setRecentActivities(activities);
-      setLoading(false);
+      
+      // Convert to array format
+      const chartData = Object.entries(hourCounts)
+        .map(([hour, count]) => ({
+          hour: `${parseInt(hour)}:00`,
+          count: count as number,
+        }))
+        .sort((a, b) => {
+          const hourA = parseInt(a.hour.split(':')[0]);
+          const hourB = parseInt(b.hour.split(':')[0]);
+          return hourA - hourB;
+        });
+      
+      setBookingsChartData(chartData);
     }
-    load();
-  }, []);
+
+    async function generateBookingsMonthlyData(restId: string) {
+      const supabase = createClient();
+      const now = new Date();
+      const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+      
+      const { data: monthlyBookings } = await supabase
+        .from("bookings")
+        .select("created_at")
+        .eq("restaurant_id", restId)
+        .gte("created_at", startOfMonth.toISOString());
+
+      // Group bookings by day
+      const dayCounts: Record<string, number> = {};
+      const daysInMonth = now.getDate();
+      
+      // Initialize all days in current month
+      for (let i = 1; i <= daysInMonth; i++) {
+        dayCounts[i] = 0;
+      }
+      
+      if (monthlyBookings) {
+        monthlyBookings.forEach((booking: any) => {
+          const bookingDate = new Date(booking.created_at);
+          const day = bookingDate.getDate();
+          if (day <= daysInMonth) {
+            dayCounts[day] = (dayCounts[day] || 0) + 1;
+          }
+        });
+      }
+      
+      const chartData = Object.entries(dayCounts)
+        .map(([day, count]) => ({
+          day: `Day ${day}`,
+          count: count as number,
+        }))
+        .sort((a, b) => {
+          const dayA = parseInt(a.day.replace("Day ", ""));
+          const dayB = parseInt(b.day.replace("Day ", ""));
+          return dayA - dayB;
+        });
+      
+      setBookingsMonthlyData(chartData);
+    }
+
+    function generateRevenueChartData() {
+      // Dummy revenue data for today (hourly) - will be replaced with real data later
+      const hours = Array.from({ length: 12 }, (_, i) => i);
+      const chartData = hours.map((hour) => ({
+        hour: `${hour * 2}:00`,
+        revenue: Math.floor(Math.random() * 500) + 100, // Dummy data between 100-600
+      }));
+      setRevenueChartData(chartData);
+      
+      // Generate monthly revenue data (dummy)
+      const now = new Date();
+      const daysInMonth = now.getDate();
+      const monthlyData = Array.from({ length: daysInMonth }, (_, i) => ({
+        day: `Day ${i + 1}`,
+        revenue: Math.floor(Math.random() * 2000) + 500, // Dummy data between 500-2500
+      }));
+      setRevenueMonthlyData(monthlyData);
+    }
+
+    init();
+
+    return () => {
+      if (ordersChannel) {
+        supabase.removeChannel(ordersChannel);
+      }
+      if (bookingsChannel) {
+        supabase.removeChannel(bookingsChannel);
+      }
+      if (tablesChannel) {
+        supabase.removeChannel(tablesChannel);
+    }
+    };
+  }, [isPro, router]);
 
   const rawGreeting = useMemo(
     () =>
@@ -273,27 +699,13 @@ export default function AdminDashboard() {
     return [parts[0] ?? "", parts[1] ?? ""];
   }, [rawGreeting]);
 
-  const statCards = [
-    {
-      title: t.admin.dashboard.totalCategories,
-      value: stats.totalCategories,
-      icon: Folder,
-      color: "text-green-600 dark:text-green-400",
-      bg: "bg-green-100 dark:bg-green-900/30",
-      gradient: "from-green-100 to-green-50 dark:from-green-900/40 dark:to-green-800/20",
-    },
-    {
-      title: t.admin.dashboard.activeCategories,
-      value: stats.activeCategories,
-      icon: Eye,
-      color: "text-green-600 dark:text-green-400",
-      bg: "bg-green-100 dark:bg-green-900/30",
-      gradient: "from-green-100 to-green-50 dark:from-green-900/40 dark:to-green-800/20",
-    },
-  ];
-
-  // Animated Counter Component with Landing Page Colors
-  function AnimatedCounter({ value, delay = 0 }: { value: number; delay?: number }) {
+  function AnimatedCounter({
+    value,
+    delay = 0,
+  }: {
+    value: number;
+    delay?: number;
+  }) {
     const [displayValue, setDisplayValue] = useState(0);
 
     useEffect(() => {
@@ -305,7 +717,10 @@ export default function AdminDashboard() {
       let currentStep = 0;
       const timer = setInterval(() => {
         currentStep++;
-        const nextValue = Math.min(Math.floor(increment * currentStep), value);
+        const nextValue = Math.min(
+          Math.floor(increment * currentStep),
+          value
+        );
         setDisplayValue(nextValue);
         if (currentStep >= steps) {
           clearInterval(timer);
@@ -321,29 +736,97 @@ export default function AdminDashboard() {
         initial={{ opacity: 0, y: 20, scale: 0.8 }}
         animate={{ opacity: 1, y: 0, scale: 1 }}
         transition={{ delay, duration: 0.6, type: "spring", stiffness: 200 }}
-        className="text-[#2D3A1A] dark:text-[#E8E4D9]"
+        className="text-foreground dark:text-[#ffffff]"
       >
         {displayValue}
       </motion.span>
     );
   }
 
+  function formatTimeAgo(date: string): string {
+    const now = new Date();
+    const orderDate = new Date(date);
+    const diffMs = now.getTime() - orderDate.getTime();
+    const diffMins = Math.floor(diffMs / 60000);
+    if (diffMins < 1) return "Just now";
+    if (diffMins < 60) return `${diffMins}m ago`;
+    const diffHours = Math.floor(diffMins / 60);
+    if (diffHours < 24) return `${diffHours}h ago`;
+    return orderDate.toLocaleDateString();
+  }
+
+  const quickActions = [
+    { label: "Manage Menu", icon: UtensilsCrossed, href: "/admin/categories", pro: false },
+    { label: "View Orders", icon: ShoppingCart, href: "/admin/orders", pro: true },
+    { label: "Manage Tables", icon: Table, href: "/admin/tables", pro: true },
+    { label: "View Bookings", icon: Calendar, href: "/admin/bookings", pro: true },
+    { label: "Analytics", icon: BarChart3, href: "/admin/analytics", pro: false },
+    { label: "Appearance", icon: Palette, href: "/admin/appearance", pro: false },
+    { label: "QR Code", icon: QrCode, href: "/admin/qr", pro: false },
+  ];
+
+  const overviewCards = isPro
+    ? [
+        {
+          title: "Today's Revenue",
+          value: stats.todayRevenue,
+          change: 0, // Can calculate from previous day
+          icon: DollarSign,
+        },
+        {
+          title: "Pending Orders",
+          value: stats.pendingOrders,
+          change: 0,
+          icon: Clock,
+        },
+        {
+          title: "Total Orders Today",
+          value: stats.totalOrdersToday,
+          change: 0,
+          icon: ShoppingCart,
+        },
+        {
+          title: "Tables Occupied",
+          value: stats.tablesOccupied,
+          change: 0,
+          icon: Table,
+        },
+        {
+          title: "Tables Available",
+          value: stats.tablesAvailable,
+          change: 0,
+          icon: CheckCircle,
+        },
+      ]
+    : [
+        {
+          title: "Total Categories",
+          value: stats.totalCategories,
+          change: 0,
+          icon: UtensilsCrossed,
+        },
+        {
+          title: "Active Categories",
+          value: stats.activeCategories,
+          change: 0,
+          icon: UtensilsCrossed,
+        },
+      ];
+
   return (
-    <div className="space-y-8 pb-8">
-      {/* Modern Welcome Card with Light Green Theme */}
+    <div className="space-y-8 pb-8 dark:bg-[#000000]">
+      {/* Welcome Card */}
       <motion.div
         initial={{ opacity: 0, y: 30 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.7, ease: [0.4, 0, 0.2, 1] }}
-        className="group relative overflow-hidden rounded-3xl border border-green-200/50 bg-gradient-to-br from-green-50 via-white to-green-50/30 p-8 shadow-xl backdrop-blur-sm transition-all duration-500 hover:shadow-2xl dark:from-green-950/20 dark:via-background dark:to-green-950/10 dark:border-green-800/30"
+        className="group relative overflow-hidden rounded-3xl border border-green-200/50 bg-gradient-to-br from-green-50 via-white to-green-50/30 p-5 shadow-xl backdrop-blur-sm transition-all duration-500 hover:shadow-2xl dark:from-green-950/20 dark:via-background dark:to-green-950/10 dark:border-green-800/30"
       >
-        {/* Light green gradient accent */}
         <div className="absolute -right-32 -top-32 h-96 w-96 rounded-full bg-gradient-to-br from-green-200/40 via-green-100/20 to-transparent blur-3xl transition-all duration-1000 group-hover:scale-150 dark:from-green-500/20 dark:via-green-400/10" />
         <div className="absolute -left-20 -bottom-20 h-64 w-64 rounded-full bg-gradient-to-tr from-green-100/30 to-transparent blur-2xl dark:from-green-500/10" />
         
-        <div className="relative z-10 flex flex-col gap-6 sm:flex-row sm:items-center sm:justify-between">
-          <div className="flex items-center gap-5">
-            {/* Avatar with light green ring */}
+        <div className="relative z-10 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex items-center gap-4">
             <motion.div
               initial={{ scale: 0, rotate: -180 }}
               animate={{ scale: 1, rotate: 0 }}
@@ -351,17 +834,17 @@ export default function AdminDashboard() {
               className="relative"
             >
               <div className="absolute inset-0 rounded-full bg-gradient-to-br from-green-300/50 via-green-200/30 to-green-100/20 blur-xl animate-pulse" />
-              <div className="relative flex h-20 w-20 items-center justify-center rounded-full bg-gradient-to-br from-green-100 to-green-50 ring-4 ring-green-200/50 shadow-lg dark:from-green-900/30 dark:to-green-800/20 dark:ring-green-800/30">
+              <div className="relative flex h-16 w-16 items-center justify-center rounded-full bg-gradient-to-br from-green-100 to-green-50 ring-4 ring-green-200/50 shadow-lg dark:from-green-900/30 dark:to-green-800/20 dark:ring-green-800/30">
                 {restaurantLogo ? (
                   <Image
                     src={restaurantLogo}
-                    alt={stats.restaurantName || t.admin.settings.restaurantProfile}
-                    width={80}
-                    height={80}
+                    alt={restaurantName}
+                    width={64}
+                    height={64}
                     className="rounded-full object-cover"
                   />
                 ) : (
-                  <span className="text-3xl font-bold text-green-600 dark:text-green-400">
+                  <span className="text-2xl font-bold text-green-600 dark:text-green-400">
                     {(userName || "A")[0].toUpperCase()}
                   </span>
                 )}
@@ -373,7 +856,7 @@ export default function AdminDashboard() {
                 initial={{ opacity: 0, x: -20 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ delay: 0.3 }}
-                className="text-4xl font-bold tracking-tight text-gray-900 dark:text-white"
+                className="text-2xl font-bold tracking-tight text-gray-900 dark:text-white"
               >
                 {greetingPrefix}
                 <span className="bg-gradient-to-r from-green-600 via-green-500 to-green-600 bg-clip-text text-transparent dark:from-green-400 dark:via-green-300 dark:to-green-400">
@@ -385,19 +868,18 @@ export default function AdminDashboard() {
                 initial={{ opacity: 0, x: -20 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ delay: 0.4 }}
-                className="mt-2 text-xl font-semibold text-gray-600 dark:text-gray-300"
+                className="mt-1 text-base font-semibold text-gray-600 dark:text-gray-300"
               >
-                {stats.restaurantName || t.admin.settings.restaurantProfile}
+                {restaurantName}
               </motion.p>
             </div>
           </div>
 
-          {/* Dashboard badge with light green */}
           <motion.div
             initial={{ opacity: 0, scale: 0.8 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ delay: 0.5, type: "spring" }}
-            className="rounded-2xl border border-green-200 bg-gradient-to-br from-green-50 to-green-100/50 px-5 py-3 shadow-md backdrop-blur-sm dark:border-green-800/50 dark:from-green-900/30 dark:to-green-800/20"
+            className="rounded-xl border border-green-200 bg-gradient-to-br from-green-50 to-green-100/50 px-4 py-2 shadow-md backdrop-blur-sm dark:border-green-800/50 dark:from-green-900/30 dark:to-green-800/20"
           >
             <p className="text-xs font-bold uppercase tracking-widest text-green-700 dark:text-green-400">
               {t.admin.dashboard.title}
@@ -406,7 +888,7 @@ export default function AdminDashboard() {
         </div>
       </motion.div>
 
-      {/* Modern Upgrade card with Light Green Theme */}
+      {/* Upgrade Card */}
       {!planLoading && !isPro && (
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -414,7 +896,6 @@ export default function AdminDashboard() {
           transition={{ delay: 0.3 }}
           className="group relative overflow-hidden rounded-3xl border border-green-200/60 bg-gradient-to-br from-green-50 via-green-100/30 to-white p-7 shadow-xl backdrop-blur-sm transition-all duration-500 hover:shadow-2xl dark:border-green-800/40 dark:from-green-950/30 dark:via-green-900/20 dark:to-background"
         >
-          {/* Light green animated gradient background */}
           <div className="absolute -right-24 -top-24 h-80 w-80 rounded-full bg-gradient-to-br from-green-300/30 via-green-200/20 to-transparent blur-3xl transition-all duration-1000 group-hover:scale-150 dark:from-green-500/20 dark:via-green-400/10" />
           
           <div className="relative z-10 flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
@@ -428,7 +909,7 @@ export default function AdminDashboard() {
               </motion.div>
               <div>
                 <p className="text-xl font-bold text-gray-900 dark:text-white">
-                  Unlock Orders, Tables & Bookings
+                  Upgrade to Pro to unlock advanced analytics
                 </p>
                 <p className="mt-1.5 text-sm font-medium text-gray-600 dark:text-gray-300">
                   Get real-time orders, table management, and booking notifications with Pro.
@@ -461,11 +942,7 @@ export default function AdminDashboard() {
         </DialogContent>
       </Dialog>
 
-      {/* ============================================
-          CAFE MANAGEMENT DASHBOARD - BELOW GREETING
-          ============================================ */}
-      
-      {/* 1. Live Business Overview */}
+      {/* Live Business Overview */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -473,60 +950,21 @@ export default function AdminDashboard() {
         className="space-y-6"
       >
         <div className="flex items-center justify-between">
-          <h2 className="text-2xl font-bold text-[#2D3A1A] dark:text-[#E8E4D9]">Live Business Overview</h2>
-          <div className="flex items-center gap-2 text-sm text-[#6B7B5A] dark:text-[#9CA88A]">
+          <h2 className="text-2xl font-bold text-foreground dark:text-[#ffffff]">
+            Live Business Overview
+          </h2>
+          <div className="flex items-center gap-2 text-sm text-muted-foreground dark:text-[#9ca3af]">
             <motion.div
               animate={{ scale: [1, 1.2, 1] }}
               transition={{ duration: 2, repeat: Infinity }}
-              className="h-2 w-2 rounded-full bg-[#5B7A2F] dark:bg-[#7A9E4A]"
+              className="h-2 w-2 rounded-full bg-primary"
             />
             <span className="font-medium">Live</span>
           </div>
         </div>
 
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-5">
-          {[
-            { 
-              title: "Today's Revenue", 
-              value: 2847, 
-              change: +12.5, 
-              icon: DollarSign, 
-              color: "text-[#5B7A2F] dark:text-[#7A9E4A]",
-              bg: "bg-[#E8E4D9]/30 dark:bg-[#2D3A1A]/50"
-            },
-            { 
-              title: "Active Orders", 
-              value: 23, 
-              change: +8, 
-              icon: ShoppingCart, 
-              color: "text-[#5B7A2F] dark:text-[#7A9E4A]",
-              bg: "bg-[#E8E4D9]/30 dark:bg-[#2D3A1A]/50"
-            },
-            { 
-              title: "Tables Occupied", 
-              value: 12, 
-              change: -3, 
-              icon: Table, 
-              color: "text-[#5B7A2F] dark:text-[#7A9E4A]",
-              bg: "bg-[#E8E4D9]/30 dark:bg-[#2D3A1A]/50"
-            },
-            { 
-              title: "Kitchen Queue", 
-              value: 8, 
-              change: -2, 
-              icon: ChefHat, 
-              color: "text-[#5B7A2F] dark:text-[#7A9E4A]",
-              bg: "bg-[#E8E4D9]/30 dark:bg-[#2D3A1A]/50"
-            },
-            { 
-              title: "Customer Footfall", 
-              value: 156, 
-              change: +18, 
-              icon: Users, 
-              color: "text-[#5B7A2F] dark:text-[#7A9E4A]",
-              bg: "bg-[#E8E4D9]/30 dark:bg-[#2D3A1A]/50"
-            },
-          ].map((metric, i) => (
+          {overviewCards.map((metric, i) => (
             <motion.div
               key={i}
               initial={{ opacity: 0, y: 20 }}
@@ -535,282 +973,374 @@ export default function AdminDashboard() {
               whileHover={{ y: -4, scale: 1.02 }}
               className="group"
             >
-              <Card className="relative overflow-hidden rounded-2xl border border-[#D6D2C4]/50 bg-gradient-to-br from-[#FAFAF5] to-[#F0EDE4]/50 shadow-sm transition-all duration-300 hover:shadow-lg dark:border-[#3D4F2A]/50 dark:from-[#1A2212] dark:to-[#243019]/50">
+              <Card className="relative overflow-hidden rounded-2xl border border-border/50 bg-card shadow-sm transition-all duration-300 hover:shadow-lg dark:border-[#1f1f1f] dark:bg-[#111111]">
                 <CardHeader className="pb-3">
                   <div className="flex items-center justify-between">
-                    <div className={`rounded-xl ${metric.bg} p-2.5`}>
-                      <metric.icon className={`h-5 w-5 ${metric.color}`} />
+                    <div className="rounded-xl bg-primary/10 p-2.5 dark:bg-primary/10">
+                      <metric.icon className="h-5 w-5 text-primary" />
                     </div>
                     <motion.div
                       animate={{ scale: [1, 1.3, 1], opacity: [1, 0.7, 1] }}
                       transition={{ duration: 2, repeat: Infinity }}
-                      className="h-2 w-2 rounded-full bg-[#5B7A2F] dark:bg-[#7A9E4A]"
+                      className="h-2 w-2 rounded-full bg-primary"
                     />
                   </div>
-                  <CardTitle className="mt-3 text-xs font-semibold uppercase tracking-wider text-[#6B7B5A] dark:text-[#9CA88A]">
+                  <CardTitle className="mt-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground dark:text-[#bfbfbf]">
                     {metric.title}
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
                   <div className="flex items-baseline justify-between">
-                    <div className="text-3xl font-bold text-[#2D3A1A] dark:text-[#E8E4D9]">
-                      {loading ? (
-                        <div className="h-8 w-16 animate-pulse rounded bg-[#E8E4D9]/50 dark:bg-[#2D3A1A]/50" />
+                    <div className="text-3xl font-bold text-foreground dark:text-[#ffffff]">
+                      {metric.title.includes("Revenue") ? (
+                        <>
+                          $
+                          <AnimatedCounter
+                            value={Math.round(metric.value || 0)}
+                            delay={loading ? 0 : 0.4 + i * 0.1}
+                          />
+                        </>
                       ) : (
-                        <AnimatedCounter value={metric.value} delay={0.4 + i * 0.1} />
+                        <AnimatedCounter
+                          value={metric.value || 0}
+                          delay={loading ? 0 : 0.4 + i * 0.1}
+                        />
                       )}
-                    </div>
-                    <div className={`flex items-center gap-1 text-xs font-semibold ${metric.change > 0 ? 'text-[#5B7A2F] dark:text-[#7A9E4A]' : 'text-red-500'}`}>
-                      {metric.change > 0 ? <ArrowUpRight className="h-3 w-3" /> : <ArrowDownRight className="h-3 w-3" />}
-                      {Math.abs(metric.change)}%
                     </div>
                   </div>
                 </CardContent>
+                {!isPro && i >= 2 && (
+                  <div className="absolute inset-0 flex items-center justify-center bg-black/50 rounded-2xl">
+                    <div className="flex items-center gap-2 text-white">
+                      <Lock className="h-4 w-4" />
+                      <span className="text-sm font-semibold">Pro Feature</span>
+                    </div>
+                  </div>
+                )}
               </Card>
             </motion.div>
           ))}
         </div>
       </motion.div>
 
-      {/* 2. Live Order Activity Feed & Quick Actions */}
+      {/* Live Order Activity & Quick Actions */}
       <div className="grid gap-6 lg:grid-cols-3">
-        {/* Live Order Activity Feed */}
+        {/* Live Order Activity */}
+        {isPro ? (
         <motion.div
           initial={{ opacity: 0, x: -20 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ delay: 0.4 }}
           className="lg:col-span-2"
         >
-          <Card className="rounded-2xl border border-[#D6D2C4]/50 bg-gradient-to-br from-[#FAFAF5] to-[#F0EDE4]/50 shadow-sm dark:border-[#3D4F2A]/50 dark:from-[#1A2212] dark:to-[#243019]/50">
+            <Card className="rounded-2xl border border-border bg-card shadow-sm dark:border-[#1f1f1f] dark:bg-[#111111]">
             <CardHeader>
               <div className="flex items-center justify-between">
-                <CardTitle className="flex items-center gap-3 text-lg font-bold text-[#2D3A1A] dark:text-[#E8E4D9]">
-                  <div className="rounded-xl bg-[#E8E4D9]/30 p-2 dark:bg-[#2D3A1A]/50">
-                    <Activity className="h-5 w-5 text-[#5B7A2F] dark:text-[#7A9E4A]" />
+                  <CardTitle className="flex items-center gap-3 text-lg font-bold text-foreground dark:text-[#ffffff]">
+                    <div className="rounded-xl bg-primary/10 p-2 dark:bg-primary/10">
+                      <Activity className="h-5 w-5 text-primary" />
                   </div>
                   Live Order Activity
                 </CardTitle>
                 <motion.div
                   animate={{ scale: [1, 1.2, 1] }}
                   transition={{ duration: 2, repeat: Infinity }}
-                  className="flex items-center gap-2 text-xs font-medium text-[#6B7B5A] dark:text-[#9CA88A]"
+                    className="flex items-center gap-2 text-xs font-medium text-muted-foreground dark:text-[#9ca3af]"
                 >
-                  <div className="h-2 w-2 rounded-full bg-[#5B7A2F] dark:bg-[#7A9E4A]" />
+                    <div className="h-2 w-2 rounded-full bg-primary" />
                   Real-time
                 </motion.div>
               </div>
             </CardHeader>
             <CardContent>
               <div className="space-y-3 max-h-96 overflow-y-auto pr-2">
-                {[
-                  { item: "Cappuccino × 2", table: "T-05", status: "Preparing", time: "2m ago", icon: Coffee },
-                  { item: "Caesar Salad", table: "T-12", status: "Ready", time: "5m ago", icon: UtensilsCrossed },
-                  { item: "Espresso × 1", table: "T-08", status: "Served", time: "8m ago", icon: Coffee },
-                  { item: "Pasta Carbonara", table: "T-03", status: "Preparing", time: "3m ago", icon: UtensilsCrossed },
-                  { item: "Latte × 3", table: "T-15", status: "Ready", time: "1m ago", icon: Coffee },
-                ].map((order, i) => (
+                  {loading ? (
+                    <div className="text-center py-8 text-muted-foreground">
+                      Loading orders...
+                    </div>
+                  ) : orders.length === 0 ? (
+                    <div className="text-center py-8 text-muted-foreground">
+                      No orders yet
+                    </div>
+                  ) : (
+                    orders.map((order, i) => {
+                      const itemNames = order.items && order.items.length > 0
+                        ? order.items
+                            .map((item) => {
+                              const title =
+                                item.menu_item?.translations?.[0]?.title ||
+                                `Item ${item.item_id || 'Unknown'}`;
+                              return `${title} × ${item.quantity}`;
+                            })
+                            .join(", ")
+                        : "Order #" + order.id.slice(0, 8);
+
+                      return (
                   <motion.div
-                    key={i}
+                          key={order.id}
                     initial={{ opacity: 0, x: -20 }}
                     animate={{ opacity: 1, x: 0 }}
                     transition={{ delay: 0.5 + i * 0.1 }}
-                    className="flex items-center gap-4 rounded-xl border border-[#D6D2C4]/30 bg-white/50 p-4 shadow-sm transition-all hover:shadow-md dark:border-[#3D4F2A]/30 dark:bg-[#243019]/30"
+                          className="flex items-center gap-4 rounded-xl border border-border bg-card p-4 shadow-sm transition-all hover:shadow-md dark:border-[#1f1f1f] dark:bg-[#0f0f0f]"
                   >
-                    <div className="rounded-lg bg-[#E8E4D9]/40 p-2.5 dark:bg-[#2D3A1A]/50">
-                      <order.icon className="h-5 w-5 text-[#5B7A2F] dark:text-[#7A9E4A]" />
+                          <div className="rounded-lg bg-primary/10 p-2.5 dark:bg-primary/10">
+                            <UtensilsCrossed className="h-5 w-5 text-primary" />
                     </div>
                     <div className="flex-1">
-                      <p className="font-semibold text-[#2D3A1A] dark:text-[#E8E4D9]">{order.item}</p>
-                      <p className="text-sm text-[#6B7B5A] dark:text-[#9CA88A]">Table {order.table} • {order.time}</p>
+                            <p className="font-semibold text-foreground dark:text-[#ffffff]">
+                              {itemNames || "Order items"}
+                            </p>
+                            <p className="text-sm text-muted-foreground dark:text-[#9ca3af]">
+                              {order.customer_name}
+                              {order.table_number
+                                ? ` • Table T-${order.table_number.toString().padStart(2, "0")}`
+                                : ""}{" "}
+                              • {formatTimeAgo(order.created_at)}
+                            </p>
                     </div>
-                    <div className={`rounded-full px-3 py-1 text-xs font-semibold ${
-                      order.status === 'Preparing' ? 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400' :
-                      order.status === 'Ready' ? 'bg-[#5B7A2F]/20 text-[#5B7A2F] dark:bg-[#7A9E4A]/20 dark:text-[#7A9E4A]' :
-                      'bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300'
-                    }`}>
-                      {order.status}
+                          <div
+                            className={`rounded-full px-3 py-1 text-xs font-semibold ${
+                              order.status === "preparing"
+                                ? "bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400"
+                                : order.status === "completed"
+                                ? "bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300"
+                                : "bg-primary/20 text-primary dark:bg-primary/30 dark:text-primary"
+                            }`}
+                          >
+                            {order.status.charAt(0).toUpperCase() +
+                              order.status.slice(1)}
                     </div>
                   </motion.div>
-                ))}
+                      );
+                    })
+                  )}
               </div>
             </CardContent>
           </Card>
         </motion.div>
+        ) : (
+          <motion.div
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ delay: 0.4 }}
+            className="lg:col-span-2"
+          >
+            <Card className="rounded-2xl border border-border bg-card shadow-sm dark:border-[#1f1f1f] dark:bg-[#111111]">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-3 text-lg font-bold text-foreground dark:text-[#ffffff]">
+                  <div className="rounded-xl bg-primary/10 p-2 dark:bg-primary/10">
+                    <Activity className="h-5 w-5 text-primary" />
+                  </div>
+                  Live Order Activity
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="flex flex-col items-center justify-center py-12 gap-4">
+                  <Lock className="h-12 w-12 text-muted-foreground" />
+                  <p className="text-lg font-semibold text-foreground">
+                    Pro Feature
+                  </p>
+                  <p className="text-sm text-muted-foreground text-center">
+                    Upgrade to Pro to view real-time orders and manage your
+                    restaurant operations.
+                  </p>
+                  <Button
+                    onClick={() => setUpgradeModalOpen(true)}
+                    className="mt-2"
+                  >
+                    Upgrade to Pro
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          </motion.div>
+        )}
 
-        {/* Quick Actions Section */}
+        {/* Quick Actions */}
         <motion.div
           initial={{ opacity: 0, x: 20 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ delay: 0.5 }}
         >
-          <Card className="rounded-2xl border border-[#D6D2C4]/50 bg-gradient-to-br from-[#FAFAF5] to-[#F0EDE4]/50 shadow-sm dark:border-[#3D4F2A]/50 dark:from-[#1A2212] dark:to-[#243019]/50">
+          <Card className="rounded-2xl border border-border bg-card shadow-sm dark:border-[#1f1f1f] dark:bg-[#111111]">
             <CardHeader>
-              <CardTitle className="flex items-center gap-3 text-lg font-bold text-[#2D3A1A] dark:text-[#E8E4D9]">
-                <div className="rounded-xl bg-[#E8E4D9]/30 p-2 dark:bg-[#2D3A1A]/50">
-                  <Zap className="h-5 w-5 text-[#5B7A2F] dark:text-[#7A9E4A]" />
+              <CardTitle className="flex items-center gap-3 text-lg font-bold text-foreground dark:text-[#ffffff]">
+                <div className="rounded-xl bg-primary/10 p-2 dark:bg-primary/10">
+                  <Zap className="h-5 w-5 text-primary" />
                 </div>
                 Quick Actions
               </CardTitle>
             </CardHeader>
             <CardContent>
               <div className="grid grid-cols-1 gap-3">
-                {[
-                  { label: "New Order", icon: Plus, href: "/admin/categories", color: "bg-[#5B7A2F] dark:bg-[#7A9E4A]" },
-                  { label: "Reserve Table", icon: Calendar, href: "#", color: "bg-[#5B7A2F] dark:bg-[#7A9E4A]" },
-                  { label: "Add Menu Item", icon: UtensilsCrossed, href: "/admin/categories", color: "bg-[#5B7A2F] dark:bg-[#7A9E4A]" },
-                  { label: "View Kitchen", icon: ChefHat, href: "#", color: "bg-[#5B7A2F] dark:bg-[#7A9E4A]" },
-                  { label: "Stock Update", icon: Package, href: "#", color: "bg-[#5B7A2F] dark:bg-[#7A9E4A]" },
-                  { label: "Generate Report", icon: FileBarChart, href: "#", color: "bg-[#5B7A2F] dark:bg-[#7A9E4A]" },
-                ].map((action, i) => (
+                {quickActions.map((action, i) => {
+                  const isDisabled = action.pro && !isPro;
+                  return (
                   <motion.div
                     key={i}
                     initial={{ opacity: 0, scale: 0.9 }}
                     animate={{ opacity: 1, scale: 1 }}
                     transition={{ delay: 0.6 + i * 0.05 }}
-                    whileHover={{ scale: 1.02, x: 4 }}
-                    whileTap={{ scale: 0.98 }}
+                      whileHover={!isDisabled ? { scale: 1.02, x: 4 } : {}}
+                      whileTap={!isDisabled ? { scale: 0.98 } : {}}
                   >
-                    <Link href={action.href}>
+                      <Link href={isDisabled ? "#" : action.href}>
                       <Button
                         variant="outline"
-                        className="w-full justify-start gap-3 rounded-xl border border-[#D6D2C4]/30 bg-white/50 px-4 py-6 shadow-sm transition-all hover:border-[#5B7A2F]/50 hover:shadow-md dark:border-[#3D4F2A]/30 dark:bg-[#243019]/30 dark:hover:border-[#7A9E4A]/50"
+                          disabled={isDisabled}
+                          className="w-full justify-start gap-3 rounded-xl border-border bg-card px-4 py-6 shadow-sm transition-all hover:border-primary hover:shadow-md dark:border-[#1f1f1f] dark:bg-[#0f0f0f] disabled:opacity-50"
+                          onClick={
+                            isDisabled
+                              ? (e) => {
+                                  e.preventDefault();
+                                  setUpgradeModalOpen(true);
+                                }
+                              : undefined
+                          }
                       >
-                        <div className={`rounded-lg ${action.color} p-2`}>
+                          <div className="rounded-lg bg-primary p-2">
                           <action.icon className="h-4 w-4 text-white" />
                         </div>
-                        <span className="font-semibold text-[#2D3A1A] dark:text-[#E8E4D9]">{action.label}</span>
+                          <span className="font-semibold text-foreground dark:text-[#ffffff]">
+                            {action.label}
+                          </span>
+                          {isDisabled && (
+                            <Lock className="ml-auto h-4 w-4 text-muted-foreground" />
+                          )}
                       </Button>
                     </Link>
                   </motion.div>
-                ))}
+                  );
+                })}
               </div>
             </CardContent>
           </Card>
         </motion.div>
       </div>
 
-      {/* 3. Smart Insights & Table Status */}
-      <div className="grid gap-6 lg:grid-cols-2">
-        {/* Smart Insights Panel */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.6 }}
-        >
-          <Card className="rounded-2xl border border-[#D6D2C4]/50 bg-gradient-to-br from-[#FAFAF5] to-[#F0EDE4]/50 shadow-sm dark:border-[#3D4F2A]/50 dark:from-[#1A2212] dark:to-[#243019]/50">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-3 text-lg font-bold text-[#2D3A1A] dark:text-[#E8E4D9]">
-                <div className="rounded-xl bg-[#E8E4D9]/30 p-2 dark:bg-[#2D3A1A]/50">
-                  <Sparkles className="h-5 w-5 text-[#5B7A2F] dark:text-[#7A9E4A]" />
-                </div>
-                Smart Insights
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                {[
-                  { title: "Most Ordered Today", value: "Cappuccino", count: "47 orders", icon: Coffee },
-                  { title: "Peak Order Time", value: "2:00 PM", count: "23 orders", icon: TrendingUp },
-                  { title: "Fastest Selling", value: "Espresso", count: "Ready in 2min", icon: Zap },
-                  { title: "Low Stock Alert", value: "Milk", count: "Only 5L left", icon: AlertCircle, alert: true },
-                ].map((insight, i) => (
-                  <motion.div
-                    key={i}
-                    initial={{ opacity: 0, x: -10 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: 0.7 + i * 0.1 }}
-                    className={`rounded-xl border p-4 transition-all hover:shadow-md ${
-                      insight.alert 
-                        ? 'border-red-200 bg-red-50/50 dark:border-red-900/30 dark:bg-red-950/20' 
-                        : 'border-[#D6D2C4]/30 bg-white/50 dark:border-[#3D4F2A]/30 dark:bg-[#243019]/30'
-                    }`}
-                  >
-                    <div className="flex items-start justify-between">
-                      <div className="flex-1">
-                        <p className="text-xs font-semibold uppercase tracking-wider text-[#6B7B5A] dark:text-[#9CA88A]">
-                          {insight.title}
-                        </p>
-                        <p className={`mt-1 text-lg font-bold ${insight.alert ? 'text-red-700 dark:text-red-400' : 'text-[#2D3A1A] dark:text-[#E8E4D9]'}`}>
-                          {insight.value}
-                        </p>
-                        <p className="mt-1 text-sm text-[#6B7B5A] dark:text-[#9CA88A]">{insight.count}</p>
-                      </div>
-                      <div className={`rounded-lg ${insight.alert ? 'bg-red-100 dark:bg-red-900/30' : 'bg-[#E8E4D9]/40 dark:bg-[#2D3A1A]/50'} p-2.5`}>
-                        <insight.icon className={`h-5 w-5 ${insight.alert ? 'text-red-600 dark:text-red-400' : 'text-[#5B7A2F] dark:text-[#7A9E4A]'}`} />
-                      </div>
-                    </div>
-                  </motion.div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-        </motion.div>
-
-        {/* Table Status Visualization */}
+      {/* Table Status */}
+      <div className="mt-6">
+        {isPro ? (
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.7 }}
         >
-          <Card className="rounded-2xl border border-[#D6D2C4]/50 bg-gradient-to-br from-[#FAFAF5] to-[#F0EDE4]/50 shadow-sm dark:border-[#3D4F2A]/50 dark:from-[#1A2212] dark:to-[#243019]/50">
+            <Card className="rounded-2xl border border-border bg-card shadow-sm dark:border-[#1f1f1f] dark:bg-[#111111]">
             <CardHeader>
-              <CardTitle className="flex items-center gap-3 text-lg font-bold text-[#2D3A1A] dark:text-[#E8E4D9]">
-                <div className="rounded-xl bg-[#E8E4D9]/30 p-2 dark:bg-[#2D3A1A]/50">
-                  <Table className="h-5 w-5 text-[#5B7A2F] dark:text-[#7A9E4A]" />
+                <CardTitle className="flex items-center gap-3 text-lg font-bold text-foreground dark:text-[#ffffff]">
+                  <div className="rounded-xl bg-primary/10 p-2 dark:bg-primary/10">
+                    <Table className="h-5 w-5 text-primary" />
                 </div>
                 Table Status
               </CardTitle>
             </CardHeader>
             <CardContent>
               <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
-                {Array.from({ length: 16 }).map((_, i) => {
-                  const status = i < 8 ? 'available' : i < 12 ? 'occupied' : 'reserved';
-                  return (
+                  {loading ? (
+                    <div className="col-span-full text-center py-8 text-muted-foreground">
+                      Loading tables...
+                    </div>
+                  ) : tables.length === 0 ? (
+                    <div className="col-span-full text-center py-8 text-muted-foreground">
+                      No tables configured. Add tables in the Tables section.
+                    </div>
+                  ) : (
+                    tables.map((table, i) => (
                     <motion.div
-                      key={i}
+                        key={table.id}
                       initial={{ opacity: 0, scale: 0.8 }}
                       animate={{ opacity: 1, scale: 1 }}
                       transition={{ delay: 0.8 + i * 0.02 }}
                       whileHover={{ scale: 1.1 }}
                       className={`aspect-square rounded-xl border-2 p-3 shadow-sm transition-all ${
-                        status === 'available' 
-                          ? 'border-[#5B7A2F]/30 bg-[#5B7A2F]/10 dark:border-[#7A9E4A]/30 dark:bg-[#7A9E4A]/10' 
-                          : status === 'occupied'
-                          ? 'border-orange-300 bg-orange-100 dark:border-orange-700/30 dark:bg-orange-900/20'
-                          : 'border-blue-300 bg-blue-100 dark:border-blue-700/30 dark:bg-blue-900/20'
+                          table.status === "available"
+                            ? "border-primary/30 bg-primary/10 dark:border-primary/30 dark:bg-primary/20"
+                            : table.status === "occupied"
+                            ? "border-red-500/50 bg-red-100 dark:border-red-700/30 dark:bg-red-900/20"
+                            : "border-blue-300 bg-blue-100 dark:border-blue-700/30 dark:bg-blue-900/20"
                       }`}
                     >
                       <div className="flex h-full flex-col items-center justify-center">
-                        <p className="text-xs font-bold text-[#2D3A1A] dark:text-[#E8E4D9]">T-{String(i + 1).padStart(2, '0')}</p>
-                        <div className={`mt-1 h-1.5 w-1.5 rounded-full ${
-                          status === 'available' ? 'bg-[#5B7A2F] dark:bg-[#7A9E4A]' :
-                          status === 'occupied' ? 'bg-orange-500' : 'bg-blue-500'
-                        }`} />
+                          <p className="text-xs font-bold text-foreground dark:text-[#ffffff]">
+                            {table.table_name}
+                          </p>
+                          <div
+                            className={`mt-1 h-1.5 w-1.5 rounded-full ${
+                              table.status === "available"
+                                ? "bg-primary"
+                                : table.status === "occupied"
+                                ? "bg-red-500"
+                                : "bg-blue-500"
+                            }`}
+                          />
                       </div>
                     </motion.div>
-                  );
-                })}
+                    ))
+                  )}
               </div>
               <div className="mt-4 flex items-center justify-center gap-4 text-xs">
                 <div className="flex items-center gap-2">
-                  <div className="h-2 w-2 rounded-full bg-[#5B7A2F] dark:bg-[#7A9E4A]" />
-                  <span className="text-[#6B7B5A] dark:text-[#9CA88A]">Available</span>
+                    <div className="h-2 w-2 rounded-full bg-primary" />
+                    <span className="text-muted-foreground dark:text-[#9ca3af]">
+                      Available
+                    </span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <div className="h-2 w-2 rounded-full bg-orange-500" />
-                  <span className="text-[#6B7B5A] dark:text-[#9CA88A]">Occupied</span>
+                    <div className="h-2 w-2 rounded-full bg-red-500" />
+                    <span className="text-muted-foreground dark:text-[#9ca3af]">
+                      Occupied
+                    </span>
                 </div>
                 <div className="flex items-center gap-2">
                   <div className="h-2 w-2 rounded-full bg-blue-500" />
-                  <span className="text-[#6B7B5A] dark:text-[#9CA88A]">Reserved</span>
+                    <span className="text-muted-foreground dark:text-[#9ca3af]">
+                      Reserved
+                    </span>
                 </div>
               </div>
             </CardContent>
           </Card>
         </motion.div>
+        ) : (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.7 }}
+          >
+            <Card className="rounded-2xl border border-border bg-card shadow-sm dark:border-[#1f1f1f] dark:bg-[#111111]">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-3 text-lg font-bold text-foreground dark:text-[#ffffff]">
+                  <div className="rounded-xl bg-primary/10 p-2 dark:bg-primary/10">
+                    <Table className="h-5 w-5 text-primary" />
+                  </div>
+                  Table Status
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="flex flex-col items-center justify-center py-12 gap-4">
+                  <Lock className="h-12 w-12 text-muted-foreground" />
+                  <p className="text-lg font-semibold text-foreground">
+                    Pro Feature
+                  </p>
+                  <p className="text-sm text-muted-foreground text-center">
+                    Upgrade to Pro to manage tables and view real-time table
+                    status.
+                  </p>
+                  <Button
+                    onClick={() => setUpgradeModalOpen(true)}
+                    className="mt-2"
+                  >
+                    Upgrade to Pro
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          </motion.div>
+        )}
       </div>
 
-      {/* 4. Revenue Graph & Trending Menu Items */}
+      {/* Charts Section */}
       <div className="grid gap-6 lg:grid-cols-3">
         {/* Revenue Graph */}
         <motion.div
@@ -819,271 +1349,622 @@ export default function AdminDashboard() {
           transition={{ delay: 0.8 }}
           className="lg:col-span-2"
         >
-          <Card className="rounded-2xl border border-[#D6D2C4]/50 bg-gradient-to-br from-[#FAFAF5] to-[#F0EDE4]/50 shadow-sm dark:border-[#3D4F2A]/50 dark:from-[#1A2212] dark:to-[#243019]/50">
+          <Card className="rounded-2xl border border-border bg-card shadow-sm dark:border-[#1f1f1f] dark:bg-[#111111]">
             <CardHeader>
-              <CardTitle className="flex items-center gap-3 text-lg font-bold text-[#2D3A1A] dark:text-[#E8E4D9]">
-                <div className="rounded-xl bg-[#E8E4D9]/30 p-2 dark:bg-[#2D3A1A]/50">
-                  <TrendingUp className="h-5 w-5 text-[#5B7A2F] dark:text-[#7A9E4A]" />
+              <div className="flex items-center justify-between">
+                <CardTitle className="flex items-center gap-3 text-lg font-bold text-foreground dark:text-[#ffffff]">
+                  <div className="rounded-xl bg-primary/10 p-2 dark:bg-primary/10">
+                    <TrendingUp className="h-5 w-5 text-primary" />
                 </div>
-                Revenue Graph (Today)
+                  Revenue Analytics
               </CardTitle>
+                <div className="flex items-center gap-2">
+                  <Button
+                    variant={revenueView === "day" ? "default" : "outline"}
+                    size="sm"
+                    onClick={() => setRevenueView("day")}
+                    className="h-7 text-xs"
+                  >
+                    Daily
+                  </Button>
+                  <Button
+                    variant={revenueView === "month" ? "default" : "outline"}
+                    size="sm"
+                    onClick={() => setRevenueView("month")}
+                    className="h-7 text-xs"
+                  >
+                    Monthly
+                  </Button>
+                </div>
+              </div>
             </CardHeader>
             <CardContent>
-              {loading ? (
-                <div className="h-64 animate-pulse rounded-xl bg-[#E8E4D9]/30 dark:bg-[#2D3A1A]/30" />
-              ) : (
-                <motion.div
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  transition={{ delay: 0.9 }}
-                  className="h-64"
-                >
-                  <MiniChart data={categoryChartData} color="rgb(91, 122, 47)" />
-                </motion.div>
-              )}
+              <div className="h-64 w-full">
+                <RevenueChart
+                  data={revenueView === "day" ? revenueChartData : revenueMonthlyData}
+                  view={revenueView}
+                />
+              </div>
             </CardContent>
           </Card>
         </motion.div>
 
-        {/* Trending Menu Items */}
+        {/* Orders Graph */}
+        {isPro ? (
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.9 }}
         >
-          <Card className="rounded-2xl border border-[#D6D2C4]/50 bg-gradient-to-br from-[#FAFAF5] to-[#F0EDE4]/50 shadow-sm dark:border-[#3D4F2A]/50 dark:from-[#1A2212] dark:to-[#243019]/50">
+            <Card className="rounded-2xl border border-border bg-card shadow-sm dark:border-[#1f1f1f] dark:bg-[#111111]">
             <CardHeader>
-              <CardTitle className="flex items-center gap-3 text-lg font-bold text-[#2D3A1A] dark:text-[#E8E4D9]">
-                <div className="rounded-xl bg-[#E8E4D9]/30 p-2 dark:bg-[#2D3A1A]/50">
-                  <TrendingUp className="h-5 w-5 text-[#5B7A2F] dark:text-[#7A9E4A]" />
+                <div className="flex items-center justify-between mb-2">
+                  <CardTitle className="flex items-center gap-3 text-lg font-bold text-foreground dark:text-[#ffffff]">
+                    <div className="rounded-xl bg-primary/10 p-2 dark:bg-primary/10">
+                      <ShoppingCart className="h-5 w-5 text-primary" />
                 </div>
-                Trending Items
+                    Orders
               </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                {[
-                  { name: "Cappuccino", orders: 47, revenue: "$423", trend: "up" },
-                  { name: "Espresso", orders: 32, revenue: "$256", trend: "up" },
-                  { name: "Caesar Salad", orders: 28, revenue: "$392", trend: "up" },
-                  { name: "Latte", orders: 24, revenue: "$288", trend: "down" },
-                ].map((item, i) => (
                   <motion.div
-                    key={i}
-                    initial={{ opacity: 0, x: 10 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: 1 + i * 0.1 }}
-                    className="rounded-xl border border-[#D6D2C4]/30 bg-white/50 p-4 shadow-sm transition-all hover:shadow-md dark:border-[#3D4F2A]/30 dark:bg-[#243019]/30"
+                    animate={{ scale: [1, 1.2, 1] }}
+                    transition={{ duration: 2, repeat: Infinity }}
+                    className="flex items-center gap-2 text-xs font-medium text-muted-foreground dark:text-[#9ca3af]"
                   >
-                    <div className="flex items-center justify-between">
-                      <div className="flex-1">
-                        <p className="font-semibold text-[#2D3A1A] dark:text-[#E8E4D9]">{item.name}</p>
-                        <p className="text-sm text-[#6B7B5A] dark:text-[#9CA88A]">{item.orders} orders</p>
-                      </div>
-                      <div className="text-right">
-                        <p className="font-bold text-[#5B7A2F] dark:text-[#7A9E4A]">{item.revenue}</p>
-                        {item.trend === 'up' ? (
-                          <ArrowUpRight className="mt-1 h-3 w-3 text-[#5B7A2F] dark:text-[#7A9E4A]" />
-                        ) : (
-                          <ArrowDownRight className="mt-1 h-3 w-3 text-red-500" />
-                        )}
-                      </div>
-                    </div>
+                    <div className="h-2 w-2 rounded-full bg-primary" />
+                    Live
                   </motion.div>
-                ))}
+                      </div>
+                <div className="flex items-center gap-2">
+                  <Button
+                    variant={ordersView === "day" ? "default" : "outline"}
+                    size="sm"
+                    onClick={() => setOrdersView("day")}
+                    className="h-7 text-xs"
+                  >
+                    Today
+                  </Button>
+                  <Button
+                    variant={ordersView === "month" ? "default" : "outline"}
+                    size="sm"
+                    onClick={() => setOrdersView("month")}
+                    className="h-7 text-xs"
+                  >
+                    Month
+                  </Button>
+                      </div>
+              </CardHeader>
+              <CardContent className="pt-0">
+                <div className="mx-auto w-full max-w-[560px] aspect-[9/5]">
+                  <OrdersChart
+                    data={ordersView === "day" ? ordersChartData : ordersMonthlyData}
+                    view={ordersView}
+                  />
               </div>
             </CardContent>
           </Card>
         </motion.div>
-      </div>
-
-      {/* 5. Staff Activity Snapshot */}
+        ) : (
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 1 }}
+            transition={{ delay: 0.9 }}
       >
-        <Card className="rounded-2xl border border-[#D6D2C4]/50 bg-gradient-to-br from-[#FAFAF5] to-[#F0EDE4]/50 shadow-sm dark:border-[#3D4F2A]/50 dark:from-[#1A2212] dark:to-[#243019]/50">
+            <Card className="rounded-2xl border border-border bg-card shadow-sm dark:border-[#1f1f1f] dark:bg-[#111111]">
           <CardHeader>
-            <CardTitle className="flex items-center gap-3 text-lg font-bold text-[#2D3A1A] dark:text-[#E8E4D9]">
-              <div className="rounded-xl bg-[#E8E4D9]/30 p-2 dark:bg-[#2D3A1A]/50">
-                <UserCheck className="h-5 w-5 text-[#5B7A2F] dark:text-[#7A9E4A]" />
+                <CardTitle className="flex items-center gap-3 text-lg font-bold text-foreground dark:text-[#ffffff]">
+                  <div className="rounded-xl bg-primary/10 p-2 dark:bg-primary/10">
+                    <ShoppingCart className="h-5 w-5 text-primary" />
               </div>
-              Staff Activity Today
+                  Orders
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-              {[
-                { name: "Sarah Chen", role: "Barista", orders: 23, status: "active" },
-                { name: "Mike Johnson", role: "Server", orders: 18, status: "active" },
-                { name: "Emma Davis", role: "Chef", orders: 31, status: "active" },
-                { name: "Alex Brown", role: "Manager", orders: 12, status: "break" },
-              ].map((staff, i) => (
+                <div className="flex flex-col items-center justify-center py-12 gap-4">
+                  <Lock className="h-12 w-12 text-muted-foreground" />
+                  <p className="text-lg font-semibold text-foreground">
+                    Pro Feature
+                  </p>
+                  <p className="text-sm text-muted-foreground text-center">
+                    Upgrade to Pro to view real-time orders graph.
+                  </p>
+                  <Button
+                    onClick={() => setUpgradeModalOpen(true)}
+                    className="mt-2"
+                  >
+                    Upgrade to Pro
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          </motion.div>
+        )}
+      </div>
+
+      {/* Table Bookings Graph */}
+      {isPro && (
                 <motion.div
-                  key={i}
-                  initial={{ opacity: 0, scale: 0.9 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  transition={{ delay: 1.1 + i * 0.1 }}
-                  className="rounded-xl border border-[#D6D2C4]/30 bg-white/50 p-4 shadow-sm transition-all hover:shadow-md dark:border-[#3D4F2A]/30 dark:bg-[#243019]/30"
-                >
-                  <div className="flex items-center gap-3">
-                    <div className="relative">
-                      <div className="h-12 w-12 rounded-full bg-gradient-to-br from-[#5B7A2F] to-[#7A9E4A] flex items-center justify-center text-white font-bold">
-                        {staff.name[0]}
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 1.0 }}
+        >
+          <Card className="rounded-2xl border border-border bg-card shadow-sm dark:border-[#1f1f1f] dark:bg-[#111111]">
+            <CardHeader>
+              <div className="flex items-center justify-between mb-2">
+                <CardTitle className="flex items-center gap-3 text-lg font-bold text-foreground dark:text-[#ffffff]">
+                  <div className="rounded-xl bg-primary/10 p-2 dark:bg-primary/10">
+                    <Calendar className="h-5 w-5 text-primary" />
                       </div>
-                      {staff.status === 'active' && (
+                  Table Bookings Analytics
+                </CardTitle>
                         <motion.div
                           animate={{ scale: [1, 1.2, 1] }}
                           transition={{ duration: 2, repeat: Infinity }}
-                          className="absolute -bottom-0 -right-0 h-4 w-4 rounded-full border-2 border-white bg-[#5B7A2F] dark:bg-[#7A9E4A]"
-                        />
-                      )}
-                    </div>
-                    <div className="flex-1">
-                      <p className="font-semibold text-[#2D3A1A] dark:text-[#E8E4D9]">{staff.name}</p>
-                      <p className="text-xs text-[#6B7B5A] dark:text-[#9CA88A]">{staff.role}</p>
-                      <p className="mt-1 text-sm font-medium text-[#5B7A2F] dark:text-[#7A9E4A]">{staff.orders} orders</p>
-                    </div>
-                  </div>
+                  className="flex items-center gap-2 text-xs font-medium text-muted-foreground dark:text-[#9ca3af]"
+                >
+                  <div className="h-2 w-2 rounded-full bg-primary" />
+                  Live
                 </motion.div>
-              ))}
+                    </div>
+              <div className="flex items-center gap-2">
+                <Button
+                  variant={bookingsView === "day" ? "default" : "outline"}
+                  size="sm"
+                  onClick={() => setBookingsView("day")}
+                  className="h-7 text-xs"
+                >
+                  Today
+                </Button>
+                <Button
+                  variant={bookingsView === "month" ? "default" : "outline"}
+                  size="sm"
+                  onClick={() => setBookingsView("month")}
+                  className="h-7 text-xs"
+                >
+                  Month
+                </Button>
+                    </div>
+            </CardHeader>
+            <CardContent className="pt-0">
+              <div className="mx-auto w-full max-w-[560px] aspect-[9/5]">
+                <BookingsChart
+                  data={bookingsView === "day" ? bookingsChartData : bookingsMonthlyData}
+                  view={bookingsView}
+                />
             </div>
           </CardContent>
         </Card>
       </motion.div>
+      )}
 
-      {/* Legacy sections removed - replaced with cafe management dashboard above */}
     </div>
   );
 }
 
-// Helper function to format timestamps
-function formatTimestamp(date: Date): string {
-  const now = new Date();
-  const diff = now.getTime() - date.getTime();
-  const minutes = Math.floor(diff / 60000);
-  const hours = Math.floor(diff / 3600000);
-  const days = Math.floor(diff / 86400000);
-
-  if (minutes < 1) return "Just now";
-  if (minutes < 60) return `${minutes}m ago`;
-  if (hours < 24) return `${hours}h ago`;
-  if (days < 7) return `${days}d ago`;
-  return date.toLocaleDateString();
+// Revenue Chart Component
+function RevenueChart({
+  data,
+  view,
+}: {
+  data: Array<{ hour?: string; day?: string; revenue: number }>;
+  view: "day" | "month";
+}) {
+  if (!data || data.length === 0) {
+    return (
+      <div className="flex items-center justify-center h-full text-muted-foreground">
+        No data available
+      </div>
+    );
 }
 
-// Enhanced Mini Chart Component with gradients
-function MiniChart({ data, color }: { data: ChartData; color: string }) {
-  const maxValue = Math.max(...data.values, 1);
-  const chartHeight = 120;
-  const points = data.values.map(
-    (value, i) =>
-      `${i * 40 + 20},${chartHeight - (value / maxValue) * chartHeight * 0.8 - 10}`
+  const maxRevenue = Math.max(...data.map((d) => d.revenue), 1);
+  const chartHeight = 200;
+  const spacing = view === "day" ? 40 : 20;
+  const chartWidth = Math.max(data.length * spacing, 400);
+  const padding = 40;
+
+  const points = data.map(
+    (d, i) =>
+      `${i * spacing + padding},${chartHeight - (d.revenue / maxRevenue) * (chartHeight - padding * 2) - padding}`
   );
-  const areaPoints = `${points[0]} L${points.join(" L")} L${data.labels.length * 40 - 20},${chartHeight - 10} L20,${chartHeight - 10} Z`;
-  
-  // Create stable gradient IDs based on color
-  const colorHash = color.replace(/[^a-zA-Z0-9]/g, "").substring(0, 10);
-  const gradientId = useMemo(() => `gradient-${colorHash}`, [colorHash]);
-  const lineGradientId = useMemo(() => `lineGradient-${colorHash}`, [colorHash]);
+  const areaPoints = `M${padding},${chartHeight - padding} L${points.join(" L")} L${chartWidth - padding},${chartHeight - padding} Z`;
 
   return (
-    <div className="relative h-full">
-      <svg viewBox={`0 0 ${data.labels.length * 40} ${chartHeight}`} className="h-full w-full">
-        {/* Gradient definitions */}
+    <div className="relative h-full w-full">
+      <svg
+        viewBox={`0 0 ${chartWidth} ${chartHeight}`}
+        className="h-full w-full"
+      >
         <defs>
-          <linearGradient id={gradientId} x1="0%" y1="0%" x2="0%" y2="100%">
-            <stop offset="0%" stopColor={color} stopOpacity="0.3" />
-            <stop offset="100%" stopColor={color} stopOpacity="0.05" />
-          </linearGradient>
-          <linearGradient id={lineGradientId} x1="0%" y1="0%" x2="100%" y2="0%">
-            <stop offset="0%" stopColor={color} stopOpacity="0.8" />
-            <stop offset="100%" stopColor={color} stopOpacity="1" />
+          <linearGradient id="revenueGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+            <stop offset="0%" stopColor="rgb(93, 199, 137)" stopOpacity="0.3" />
+            <stop offset="100%" stopColor="rgb(93, 199, 137)" stopOpacity="0.05" />
           </linearGradient>
         </defs>
 
-        {/* Grid lines with fade effect - Light Green */}
+        {/* Grid lines */}
         {[0, 0.25, 0.5, 0.75, 1].map((y, i) => (
-          <motion.line
-            key={y}
-            x1="0"
-            y1={y * chartHeight}
-            x2={data.labels.length * 40}
-            y2={y * chartHeight}
-            stroke="rgb(220, 252, 231)"
+          <line
+            key={i}
+            x1={padding}
+            y1={y * (chartHeight - padding * 2) + padding}
+            x2={chartWidth - padding}
+            y2={y * (chartHeight - padding * 2) + padding}
+            stroke="currentColor"
             strokeWidth="0.5"
-            strokeOpacity="0.4"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: i * 0.1 }}
+            strokeOpacity="0.1"
+            className="text-foreground"
           />
         ))}
 
-        {/* Gradient area fill */}
-        <motion.path
+        {/* Area fill */}
+        <path
           d={areaPoints}
-          fill={`url(#${gradientId})`}
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.3, duration: 0.8 }}
+          fill="url(#revenueGradient)"
         />
 
-        {/* Chart line with gradient */}
-        <motion.polyline
+        {/* Line */}
+        <polyline
           points={points.join(" ")}
           fill="none"
-          stroke={`url(#${lineGradientId})`}
+          stroke="rgb(93, 199, 137)"
           strokeWidth="3"
           strokeLinecap="round"
           strokeLinejoin="round"
-          className="drop-shadow-lg"
-          initial={{ pathLength: 0 }}
-          animate={{ pathLength: 1 }}
-          transition={{ duration: 1.2, ease: [0.4, 0, 0.2, 1] }}
         />
 
-        {/* Data points with glow */}
-        {data.values.map((value, i) => (
+        {/* Data points */}
+        {data.map((d, i) => {
+          const x = i * spacing + padding;
+          const y =
+            chartHeight -
+            (d.revenue / maxRevenue) * (chartHeight - padding * 2) -
+            padding;
+          return (
           <g key={i}>
-            <motion.circle
-              cx={i * 40 + 20}
-              cy={chartHeight - (value / maxValue) * chartHeight * 0.8 - 10}
+              <circle
+                cx={x}
+                cy={y}
               r="6"
-              fill={color}
+                fill="rgb(93, 199, 137)"
               fillOpacity="0.2"
-              initial={{ scale: 0 }}
-              animate={{ scale: 1 }}
-              transition={{ delay: i * 0.1 + 0.5, type: "spring", stiffness: 200 }}
-            />
-            <motion.circle
-              cx={i * 40 + 20}
-              cy={chartHeight - (value / maxValue) * chartHeight * 0.8 - 10}
-              r="4"
-              fill={color}
-              initial={{ scale: 0 }}
-              animate={{ scale: 1 }}
-              transition={{ delay: i * 0.1 + 0.6, type: "spring", stiffness: 200 }}
-            />
-          </g>
-        ))}
+              />
+              <circle cx={x} cy={y} r="4" fill="rgb(93, 199, 137)" />
+            </g>
+          );
+        })}
 
         {/* Labels */}
-        {data.labels.map((label, i) => (
-          <motion.text
-            key={i}
-            x={i * 40 + 20}
-            y={chartHeight - 5}
-            textAnchor="middle"
-            className="text-[9px] font-medium fill-muted-foreground"
-            initial={{ opacity: 0, y: 5 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: i * 0.1 + 0.8 }}
-          >
-            {label}
-          </motion.text>
-        ))}
+        {data.map((d, i) => {
+          const x = i * spacing + padding;
+          const label = view === "day" ? (d.hour || "") : (d.day || "");
+          return (
+            <text
+              key={i}
+              x={x}
+              y={chartHeight - 10}
+              textAnchor="middle"
+              className="text-[10px] fill-muted-foreground"
+            >
+              {label}
+            </text>
+          );
+        })}
       </svg>
+    </div>
+  );
+}
+
+// Orders Chart Component
+function OrdersChart({
+  data,
+  view,
+}: {
+  data: Array<{ hour?: string; day?: string; count: number }>;
+  view: "day" | "month";
+}) {
+  if (!data || data.length === 0) {
+    return (
+      <div className="flex items-center justify-center h-full text-muted-foreground">
+        {view === "day" ? "No orders today" : "No orders this month"}
+      </div>
+    );
+  }
+
+  const maxCount = Math.max(...data.map((d) => d.count), 1);
+  const chartHeight = 200;
+  const padding = 40;
+  const minSpacingPerBar = view === "day" ? 28 : 20;
+  // Calculate chart width based on number of data points
+  const chartWidth = Math.max(data.length * minSpacingPerBar + padding * 2, 560);
+  const chartArea = chartWidth - padding * 2;
+  // Divide chart area into equal segments for each data point
+  const segmentWidth = chartArea / data.length;
+  const barWidth = Math.max(
+    8,
+    Math.min(segmentWidth * 0.5, view === "day" ? 20 : 14)
+  );
+
+  return (
+    <div className="relative h-full w-full">
+      <svg
+        viewBox={`0 0 ${chartWidth} ${chartHeight}`}
+        className="h-full w-full"
+        preserveAspectRatio="xMidYMid meet"
+      >
+        {/* Grid lines */}
+        {[0, 0.25, 0.5, 0.75, 1].map((y, i) => (
+          <line
+            key={i}
+            x1={padding}
+            y1={y * (chartHeight - padding * 2) + padding}
+            x2={chartWidth - padding}
+            y2={y * (chartHeight - padding * 2) + padding}
+            stroke="currentColor"
+            strokeWidth="0.5"
+            strokeOpacity="0.1"
+            className="text-foreground"
+          />
+        ))}
+
+        {/* Bars */}
+        {data.map((d, i) => {
+          // Center each bar in its segment
+          const x = padding + (i + 0.5) * segmentWidth;
+          const barHeight =
+            (d.count / maxCount) * (chartHeight - padding * 2);
+          const y = chartHeight - padding - barHeight;
+          return (
+            <g key={i}>
+              <motion.rect
+                x={x - barWidth / 2}
+                y={y}
+                width={barWidth}
+                height={barHeight}
+                fill="rgb(93, 199, 137)"
+                rx="4"
+                initial={{ height: 0, y: chartHeight - padding }}
+                animate={{ height: barHeight, y: y }}
+                transition={{ delay: i * 0.05, duration: 0.5 }}
+              />
+              {/* Value label */}
+              {d.count > 0 && (
+                <text
+                  x={x}
+                  y={y - 5}
+                  textAnchor="middle"
+                  className="text-[10px] font-semibold fill-foreground"
+                >
+                  {d.count}
+                </text>
+              )}
+          </g>
+          );
+        })}
+
+        {/* Labels - Show all labels for proper alignment */}
+        {data.map((d, i) => {
+          // Center label under each bar
+          const x = padding + (i + 0.5) * segmentWidth;
+          const label = view === "day" ? (d.hour || "") : (d.day?.replace("Day ", "") || "");
+          return (
+            <text
+              key={i}
+              x={x}
+              y={chartHeight - 8}
+              textAnchor="middle"
+              className="text-[10px] fill-muted-foreground"
+            >
+              {label}
+            </text>
+          );
+        })}
+      </svg>
+    </div>
+  );
+}
+
+// Bookings Chart Component
+function BookingsChart({
+  data,
+  view,
+}: {
+  data: Array<{ hour?: string; day?: string; count: number }>;
+  view: "day" | "month";
+}) {
+  if (!data || data.length === 0) {
+    return (
+      <div className="flex items-center justify-center h-full text-muted-foreground">
+        {view === "day" ? "No bookings today" : "No bookings this month"}
+      </div>
+    );
+  }
+
+  const maxCount = Math.max(...data.map((d) => d.count), 1);
+  const chartHeight = 200;
+  const padding = 40;
+  const minSpacingPerBar = view === "day" ? 28 : 20;
+  // Calculate chart width based on number of data points
+  const chartWidth = Math.max(data.length * minSpacingPerBar + padding * 2, 560);
+  const chartArea = chartWidth - padding * 2;
+  // Divide chart area into equal segments for each data point
+  const segmentWidth = chartArea / data.length;
+  const barWidth = Math.max(
+    8,
+    Math.min(segmentWidth * 0.5, view === "day" ? 20 : 14)
+  );
+
+  return (
+    <div className="relative h-full w-full">
+      <svg
+        viewBox={`0 0 ${chartWidth} ${chartHeight}`}
+        className="h-full w-full"
+        preserveAspectRatio="xMidYMid meet"
+      >
+        {/* Grid lines */}
+        {[0, 0.25, 0.5, 0.75, 1].map((y, i) => (
+          <line
+            key={i}
+            x1={padding}
+            y1={y * (chartHeight - padding * 2) + padding}
+            x2={chartWidth - padding}
+            y2={y * (chartHeight - padding * 2) + padding}
+            stroke="currentColor"
+            strokeWidth="0.5"
+            strokeOpacity="0.1"
+            className="text-foreground"
+          />
+        ))}
+
+        {/* Bars */}
+        {data.map((d, i) => {
+          // Center each bar in its segment
+          const x = padding + (i + 0.5) * segmentWidth;
+          const barHeight =
+            (d.count / maxCount) * (chartHeight - padding * 2);
+          const y = chartHeight - padding - barHeight;
+          return (
+            <g key={i}>
+              <motion.rect
+                x={x - barWidth / 2}
+                y={y}
+                width={barWidth}
+                height={barHeight}
+                fill="rgb(59, 130, 246)"
+                rx="4"
+                initial={{ height: 0, y: chartHeight - padding }}
+                animate={{ height: barHeight, y: y }}
+                transition={{ delay: i * 0.05, duration: 0.5 }}
+              />
+              {/* Value label */}
+              {d.count > 0 && (
+                <text
+                  x={x}
+                  y={y - 5}
+                  textAnchor="middle"
+                  className="text-[10px] font-semibold fill-foreground"
+                >
+                  {d.count}
+                </text>
+              )}
+            </g>
+          );
+        })}
+
+        {/* Labels - Show all labels for proper alignment */}
+        {data.map((d, i) => {
+          // Center label under each bar
+          const x = padding + (i + 0.5) * segmentWidth;
+          const label = view === "day" ? (d.hour || "") : (d.day?.replace("Day ", "") || "");
+          return (
+            <text
+              key={i}
+              x={x}
+              y={chartHeight - 8}
+              textAnchor="middle"
+              className="text-[10px] fill-muted-foreground"
+            >
+              {label}
+            </text>
+          );
+        })}
+      </svg>
+    </div>
+  );
+}
+
+// Tables Chart Component
+function TablesChart({
+  occupied,
+  available,
+}: {
+  occupied: number;
+  available: number;
+}) {
+  const total = occupied + available;
+  const occupiedPercent = total > 0 ? (occupied / total) * 100 : 0;
+  const availablePercent = total > 0 ? (available / total) * 100 : 0;
+
+  return (
+    <div className="relative h-full w-full flex flex-col items-center justify-center gap-6">
+      {/* Pie/Doughnut Chart */}
+      <div className="relative w-48 h-48">
+        <svg viewBox="0 0 200 200" className="w-full h-full transform -rotate-90">
+          {/* Background circle */}
+          <circle
+            cx="100"
+            cy="100"
+            r="80"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="20"
+            strokeOpacity="0.1"
+            className="text-foreground"
+          />
+          {/* Occupied segment */}
+          {occupied > 0 && (
+            <motion.circle
+              cx="100"
+              cy="100"
+              r="80"
+              fill="none"
+              stroke="rgb(239, 68, 68)"
+              strokeWidth="20"
+              strokeDasharray={`${(occupiedPercent / 100) * 502.65} 502.65`}
+              strokeLinecap="round"
+              initial={{ strokeDasharray: "0 502.65" }}
+              animate={{
+                strokeDasharray: `${(occupiedPercent / 100) * 502.65} 502.65`,
+              }}
+              transition={{ duration: 1, ease: "easeOut" }}
+            />
+          )}
+          {/* Available segment */}
+          {available > 0 && (
+            <motion.circle
+              cx="100"
+              cy="100"
+              r="80"
+              fill="none"
+              stroke="rgb(93, 199, 137)"
+              strokeWidth="20"
+              strokeDasharray={`${(availablePercent / 100) * 502.65} 502.65`}
+              strokeDashoffset={-((occupiedPercent / 100) * 502.65)}
+              strokeLinecap="round"
+              initial={{ strokeDasharray: "0 502.65" }}
+              animate={{
+                strokeDasharray: `${(availablePercent / 100) * 502.65} 502.65`,
+                strokeDashoffset: -((occupiedPercent / 100) * 502.65),
+              }}
+              transition={{ duration: 1, ease: "easeOut", delay: 0.2 }}
+            />
+          )}
+        </svg>
+        {/* Center text */}
+        <div className="absolute inset-0 flex flex-col items-center justify-center">
+          <div className="text-3xl font-bold text-foreground dark:text-[#ffffff]">
+            {total}
+          </div>
+          <div className="text-xs text-muted-foreground dark:text-[#9ca3af]">
+            Total Tables
+          </div>
+        </div>
+      </div>
+
+      {/* Legend */}
+      <div className="flex items-center gap-6">
+        <div className="flex items-center gap-2">
+          <div className="h-4 w-4 rounded-full bg-red-500" />
+          <span className="text-sm text-foreground dark:text-[#ffffff]">
+            Occupied: {occupied}
+          </span>
+        </div>
+        <div className="flex items-center gap-2">
+          <div className="h-4 w-4 rounded-full bg-primary" />
+          <span className="text-sm text-foreground dark:text-[#ffffff]">
+            Available: {available}
+          </span>
+        </div>
+      </div>
     </div>
   );
 }

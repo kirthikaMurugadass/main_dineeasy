@@ -99,7 +99,7 @@ export default function LoginPage() {
 
   return (
     <AuthSplitPanel
-      imageSrc="/images/hero.jpg"
+      imageSrc="/images/sign2.jpg"
       imageOnLeft={false}
       leftHeading="Hello, Friend!"
       leftSubtitle="Enter your personal details and start your journey with us"

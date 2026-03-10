@@ -29,10 +29,36 @@ export default function SettingsPage() {
   const [name, setName] = useState("");
   const [slug, setSlug] = useState("");
   const [originalSlug, setOriginalSlug] = useState("");
-  const [email, setEmail] = useState("");
+  const [ownerEmail, setOwnerEmail] = useState("");
+  const [contactEmail, setContactEmail] = useState("");
+  const [description, setDescription] = useState("");
+  const [contactPhone, setContactPhone] = useState("");
+  const [street, setStreet] = useState("");
+  const [city, setCity] = useState("");
+  const [stateRegion, setStateRegion] = useState("");
+  const [country, setCountry] = useState("");
+  const [postalCode, setPostalCode] = useState("");
+  const [openingHours, setOpeningHours] = useState("");
+  const [closingHours, setClosingHours] = useState("");
+  const [timeZone, setTimeZone] = useState("");
+  const [currency, setCurrency] = useState("");
+  const [bookingEnabled, setBookingEnabled] = useState(true);
+  const [maxGuestsPerTable, setMaxGuestsPerTable] = useState("");
+  const [minGuestsPerTable, setMinGuestsPerTable] = useState("");
+  const [advanceBookingLimit, setAdvanceBookingLimit] = useState("");
+  const [bookingIntervalMinutes, setBookingIntervalMinutes] = useState("");
+  const [defaultTableCapacity, setDefaultTableCapacity] = useState("");
+  const [allowMultipleReservations, setAllowMultipleReservations] =
+    useState(false);
+  const [autoConfirmBooking, setAutoConfirmBooking] = useState(false);
+  const [requireApproval, setRequireApproval] = useState(true);
+  const [cancellationTimeLimit, setCancellationTimeLimit] = useState("");
+  const [emailNotifyNewBookings, setEmailNotifyNewBookings] = useState(true);
+  const [smsNotifyNewBookings, setSmsNotifyNewBookings] = useState(false);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [restaurantId, setRestaurantId] = useState("");
+  const [themeConfig, setThemeConfig] = useState<any>({});
 
   useEffect(() => {
     async function load() {
@@ -42,11 +68,12 @@ export default function SettingsPage() {
       } = await supabase.auth.getUser();
       if (!user) return;
 
-      setEmail(user.email ?? "");
+      const userEmail = user.email ?? "";
+      setOwnerEmail(userEmail);
 
       const { data: restaurant } = await supabase
         .from("restaurants")
-        .select("id, name, slug")
+        .select("id, name, slug, theme_config")
         .eq("owner_id", user.id)
         .single();
 
@@ -55,6 +82,73 @@ export default function SettingsPage() {
         setName(restaurant.name);
         setSlug(restaurant.slug);
         setOriginalSlug(restaurant.slug);
+        const cfg = (restaurant as any).theme_config ?? {};
+        setThemeConfig(cfg);
+        const settings = cfg.settings ?? {};
+        setDescription(settings.description ?? "");
+        setContactPhone(settings.contactPhone ?? "");
+        setContactEmail(settings.contactEmail ?? userEmail);
+        const addr = settings.address ?? {};
+        setStreet(addr.street ?? "");
+        setCity(addr.city ?? "");
+        setStateRegion(addr.state ?? "");
+        setCountry(addr.country ?? "");
+        setPostalCode(addr.postalCode ?? "");
+        const business = settings.business ?? {};
+        setOpeningHours(business.openingHours ?? "");
+        setClosingHours(business.closingHours ?? "");
+        setTimeZone(business.timeZone ?? "");
+        setCurrency(business.currency ?? "");
+        const booking = settings.booking ?? {};
+        setBookingEnabled(
+          booking.enabled === undefined ? true : Boolean(booking.enabled),
+        );
+        setMaxGuestsPerTable(
+          booking.maxGuestsPerTable != null
+            ? String(booking.maxGuestsPerTable)
+            : "",
+        );
+        setMinGuestsPerTable(
+          booking.minGuestsPerTable != null
+            ? String(booking.minGuestsPerTable)
+            : "",
+        );
+        setAdvanceBookingLimit(
+          booking.advanceBookingLimitDays != null
+            ? String(booking.advanceBookingLimitDays)
+            : "",
+        );
+        setBookingIntervalMinutes(
+          booking.bookingIntervalMinutes != null
+            ? String(booking.bookingIntervalMinutes)
+            : "",
+        );
+        setDefaultTableCapacity(
+          booking.defaultTableCapacity != null
+            ? String(booking.defaultTableCapacity)
+            : "",
+        );
+        setAllowMultipleReservations(
+          booking.allowMultipleReservations ?? false,
+        );
+        setAutoConfirmBooking(booking.autoConfirm ?? false);
+        setRequireApproval(
+          booking.requireApproval === undefined
+            ? true
+            : Boolean(booking.requireApproval),
+        );
+        setCancellationTimeLimit(
+          booking.cancellationTimeLimitMinutes != null
+            ? String(booking.cancellationTimeLimitMinutes)
+            : "",
+        );
+        const notifications = settings.notifications ?? {};
+        setEmailNotifyNewBookings(
+          notifications.emailNewBookings === undefined
+            ? true
+            : Boolean(notifications.emailNewBookings),
+        );
+        setSmsNotifyNewBookings(Boolean(notifications.smsNewBookings));
       }
       setLoading(false);
     }
@@ -65,9 +159,60 @@ export default function SettingsPage() {
     setSaving(true);
     try {
       const supabase = createClient();
+      const updatedThemeConfig = {
+        ...themeConfig,
+        settings: {
+          ...(themeConfig.settings ?? {}),
+          description,
+          contactPhone,
+          contactEmail,
+          address: {
+            street,
+            city,
+            state: stateRegion,
+            country,
+            postalCode,
+          },
+          business: {
+            openingHours,
+            closingHours,
+            timeZone,
+            currency,
+          },
+          booking: {
+            enabled: bookingEnabled,
+            maxGuestsPerTable: maxGuestsPerTable
+              ? Number(maxGuestsPerTable)
+              : null,
+            minGuestsPerTable: minGuestsPerTable
+              ? Number(minGuestsPerTable)
+              : null,
+            advanceBookingLimitDays: advanceBookingLimit
+              ? Number(advanceBookingLimit)
+              : null,
+            bookingIntervalMinutes: bookingIntervalMinutes
+              ? Number(bookingIntervalMinutes)
+              : null,
+            defaultTableCapacity: defaultTableCapacity
+              ? Number(defaultTableCapacity)
+              : null,
+            allowMultipleReservations,
+            autoConfirm: autoConfirmBooking,
+            requireApproval,
+            cancellationTimeLimitMinutes: cancellationTimeLimit
+              ? Number(cancellationTimeLimit)
+              : null,
+          },
+          notifications: {
+            emailNewBookings: emailNotifyNewBookings,
+            smsNewBookings: smsNotifyNewBookings,
+          },
+        },
+      };
+
       const { error } = await supabase
         .from("restaurants")
-        .update({ name, slug })
+        .update({ name, slug, theme_config: updatedThemeConfig })
         .eq("id", restaurantId);
 
       if (error) throw error;
@@ -127,10 +272,10 @@ export default function SettingsPage() {
       <div className="grid gap-6 lg:grid-cols-2">
         {/* Restaurant Settings */}
         <FadeIn delay={0.08}>
-          <Card className="rounded-3xl border border-[#D6D2C4]/60 bg-gradient-to-br from-[#FAFAF5] via-[#F8F6EE] to-[#F0EDE4] shadow-xl dark:border-[#3D4F2A]/60 dark:from-[#1A2212] dark:via-[#1F2914] dark:to-[#243019]">
+          <Card className="rounded-3xl border border-[#D6D2C4]/60 bg-gradient-to-br from-[#FAFAF5] via-[#F8F6EE] to-[#F0EDE4] shadow-xl dark:border-[#1f1f1f] dark:!bg-[#000000] dark:from-transparent dark:via-transparent dark:to-transparent">
             <CardHeader className="pb-3">
               <CardTitle className="flex items-center gap-2 text-lg font-semibold text-[#2D3A1A] dark:text-[#E8E4D9]">
-                <span className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-[#DCFCE7] text-[#16A34A] dark:bg-[#1F2914] dark:text-[#7A9E4A]">
+                <span className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-[#DCFCE7] text-[#16A34A] dark:bg-[#0f0f0f] dark:text-[#22c55e]">
                   <Store className="h-4 w-4" />
                 </span>
                 Restaurant Settings
@@ -138,7 +283,7 @@ export default function SettingsPage() {
             </CardHeader>
             <CardContent className="space-y-6">
               {/* Restaurant Basic Info */}
-              <div className="rounded-2xl border border-[#D6D2C4]/60 bg-white/70 p-4 shadow-sm dark:border-[#3D4F2A]/60 dark:bg-[#111827]/50">
+              <div className="rounded-2xl border border-[#D6D2C4]/60 bg-white/70 p-4 shadow-sm dark:border-[#1f1f1f] dark:bg-[#000000]">
                 <div className="mb-3 flex items-center gap-2">
                   <Settings2 className="h-4 w-4 text-[#16A34A]" />
                   <p className="text-sm font-semibold text-[#2D3A1A] dark:text-[#E8E4D9]">
@@ -152,16 +297,17 @@ export default function SettingsPage() {
                       value={name}
                       onChange={(e) => setName(e.target.value)}
                       placeholder={t.admin.settings.restaurantNamePlaceholder}
-                      className="h-11 rounded-xl border-2 border-[#D6D2C4]/70 bg-white/80 text-sm shadow-sm transition-all focus-visible:border-[#22C55E] focus-visible:ring-[#22C55E]/20 dark:border-[#3D4F2A]/70 dark:bg-[#111827]/60"
+                      className="h-11 rounded-xl border-2 border-[#D6D2C4]/70 bg-white/80 text-sm shadow-sm transition-all focus-visible:border-[#22C55E] focus-visible:ring-[#22C55E]/20 dark:border-[#1f1f1f] dark:bg-[#0f0f0f] dark:text-white"
                     />
                   </div>
 
                   <div className="space-y-2">
                     <Label>Restaurant Description</Label>
                     <Textarea
-                      disabled
-                      placeholder="Add a short description for your restaurant (coming soon)"
-                      className="min-h-[90px] rounded-xl border-2 border-[#D6D2C4]/70 bg-white/60 text-sm shadow-sm dark:border-[#3D4F2A]/70 dark:bg-[#111827]/50"
+                      value={description}
+                      onChange={(e) => setDescription(e.target.value)}
+                      placeholder="Add a short description for your restaurant"
+                      className="min-h-[90px] rounded-xl border-2 border-[#D6D2C4]/70 bg-white/60 text-sm shadow-sm transition-all focus-visible:border-[#22C55E] focus-visible:ring-[#22C55E]/20 dark:border-[#1f1f1f] dark:bg-[#0f0f0f] dark:text-white"
                     />
                   </div>
 
@@ -169,20 +315,23 @@ export default function SettingsPage() {
                     <div className="space-y-2">
                       <Label>Contact Phone</Label>
                       <Input
-                        disabled
-                        placeholder="Coming soon"
-                        className="h-11 rounded-xl border-2 border-[#D6D2C4]/70 bg-muted/40 text-sm shadow-sm dark:border-[#3D4F2A]/70"
+                        value={contactPhone}
+                        onChange={(e) => setContactPhone(e.target.value)}
+                        placeholder="+41 79 000 00 00"
+                        className="h-11 rounded-xl border-2 border-[#D6D2C4]/70 bg-white/80 text-sm shadow-sm transition-all focus-visible:border-[#22C55E] focus-visible:ring-[#22C55E]/20 dark:border-[#1f1f1f] dark:bg-[#0f0f0f] dark:text-white"
                       />
                     </div>
                     <div className="space-y-2">
                       <Label>Contact Email</Label>
                       <Input
-                        value={email}
-                        disabled
-                        className="h-11 rounded-xl border-2 border-[#D6D2C4]/70 bg-muted/40 text-sm shadow-sm dark:border-[#3D4F2A]/70"
+                        type="email"
+                        value={contactEmail}
+                        onChange={(e) => setContactEmail(e.target.value)}
+                        placeholder={ownerEmail || "you@example.com"}
+                        className="h-11 rounded-xl border-2 border-[#D6D2C4]/70 bg-white/80 text-sm shadow-sm transition-all focus-visible:border-[#22C55E] focus-visible:ring-[#22C55E]/20 dark:border-[#1f1f1f] dark:bg-[#0f0f0f] dark:text-white"
                       />
                       <p className="text-xs text-[#6B7B5A] dark:text-[#9CA88A]">
-                        Uses your owner account email for now.
+                        Default email from your owner account: <span className="font-medium">{ownerEmail}</span>
                       </p>
                     </div>
                   </div>
@@ -195,7 +344,7 @@ export default function SettingsPage() {
                         setSlug(e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, "-"))
                       }
                       placeholder={t.admin.settings.urlSlugPlaceholder}
-                      className="h-11 rounded-xl border-2 border-[#D6D2C4]/70 bg-white/80 text-sm shadow-sm transition-all focus-visible:border-[#22C55E] focus-visible:ring-[#22C55E]/20 dark:border-[#3D4F2A]/70 dark:bg-[#111827]/60"
+                      className="h-11 rounded-xl border-2 border-[#D6D2C4]/70 bg-white/80 text-sm shadow-sm transition-all focus-visible:border-[#22C55E] focus-visible:ring-[#22C55E]/20 dark:border-[#1f1f1f] dark:bg-[#0f0f0f] dark:text-white"
                     />
                     <p className="text-xs text-muted-foreground">
                       {t.admin.settings.urlDescription}
@@ -206,7 +355,7 @@ export default function SettingsPage() {
               </div>
 
               {/* Restaurant Address */}
-              <div className="rounded-2xl border border-[#D6D2C4]/60 bg-white/70 p-4 shadow-sm dark:border-[#3D4F2A]/60 dark:bg-[#111827]/50">
+              <div className="rounded-2xl border border-[#D6D2C4]/60 bg-white/70 p-4 shadow-sm dark:border-[#1f1f1f] dark:bg-[#000000]">
                 <div className="mb-3 flex items-center gap-2">
                   <MapPin className="h-4 w-4 text-[#16A34A]" />
                   <p className="text-sm font-semibold text-[#2D3A1A] dark:text-[#E8E4D9]">
@@ -216,29 +365,54 @@ export default function SettingsPage() {
                 <div className="grid gap-4 sm:grid-cols-2">
                   <div className="space-y-2 sm:col-span-2">
                     <Label>Street Address</Label>
-                    <Input disabled placeholder="Coming soon" className="h-11 rounded-xl border-2 border-[#D6D2C4]/70 bg-muted/40 text-sm shadow-sm dark:border-[#3D4F2A]/70" />
+                    <Input
+                      value={street}
+                      onChange={(e) => setStreet(e.target.value)}
+                      placeholder="Street and number"
+                      className="h-11 rounded-xl border-2 border-[#D6D2C4]/70 bg-white/80 text-sm shadow-sm transition-all focus-visible:border-[#22C55E] focus-visible:ring-[#22C55E]/20 dark:border-[#1f1f1f] dark:bg-[#0f0f0f] dark:text-white"
+                    />
                   </div>
                   <div className="space-y-2">
                     <Label>City</Label>
-                    <Input disabled placeholder="Coming soon" className="h-11 rounded-xl border-2 border-[#D6D2C4]/70 bg-muted/40 text-sm shadow-sm dark:border-[#3D4F2A]/70" />
+                    <Input
+                      value={city}
+                      onChange={(e) => setCity(e.target.value)}
+                      placeholder="City"
+                      className="h-11 rounded-xl border-2 border-[#D6D2C4]/70 bg-white/80 text-sm shadow-sm transition-all focus-visible:border-[#22C55E] focus-visible:ring-[#22C55E]/20 dark:border-[#1f1f1f] dark:bg-[#0f0f0f] dark:text-white"
+                    />
                   </div>
                   <div className="space-y-2">
                     <Label>State</Label>
-                    <Input disabled placeholder="Coming soon" className="h-11 rounded-xl border-2 border-[#D6D2C4]/70 bg-muted/40 text-sm shadow-sm dark:border-[#3D4F2A]/70" />
+                    <Input
+                      value={stateRegion}
+                      onChange={(e) => setStateRegion(e.target.value)}
+                      placeholder="State / Region"
+                      className="h-11 rounded-xl border-2 border-[#D6D2C4]/70 bg-white/80 text-sm shadow-sm transition-all focus-visible:border-[#22C55E] focus-visible:ring-[#22C55E]/20 dark:border-[#1f1f1f] dark:bg-[#0f0f0f] dark:text-white"
+                    />
                   </div>
                   <div className="space-y-2">
                     <Label>Country</Label>
-                    <Input disabled placeholder="Coming soon" className="h-11 rounded-xl border-2 border-[#D6D2C4]/70 bg-muted/40 text-sm shadow-sm dark:border-[#3D4F2A]/70" />
+                    <Input
+                      value={country}
+                      onChange={(e) => setCountry(e.target.value)}
+                      placeholder="Country"
+                      className="h-11 rounded-xl border-2 border-[#D6D2C4]/70 bg-white/80 text-sm shadow-sm transition-all focus-visible:border-[#22C55E] focus-visible:ring-[#22C55E]/20 dark:border-[#1f1f1f] dark:bg-[#0f0f0f] dark:text-white"
+                    />
                   </div>
                   <div className="space-y-2">
                     <Label>Postal Code</Label>
-                    <Input disabled placeholder="Coming soon" className="h-11 rounded-xl border-2 border-[#D6D2C4]/70 bg-muted/40 text-sm shadow-sm dark:border-[#3D4F2A]/70" />
+                    <Input
+                      value={postalCode}
+                      onChange={(e) => setPostalCode(e.target.value)}
+                      placeholder="ZIP / Postal Code"
+                      className="h-11 rounded-xl border-2 border-[#D6D2C4]/70 bg-white/80 text-sm shadow-sm transition-all focus-visible:border-[#22C55E] focus-visible:ring-[#22C55E]/20 dark:border-[#1f1f1f] dark:bg-[#0f0f0f] dark:text-white"
+                    />
                   </div>
                 </div>
               </div>
 
               {/* Business Details */}
-              <div className="rounded-2xl border border-[#D6D2C4]/60 bg-white/70 p-4 shadow-sm dark:border-[#3D4F2A]/60 dark:bg-[#111827]/50">
+              <div className="rounded-2xl border border-[#D6D2C4]/60 bg-white/70 p-4 shadow-sm dark:border-[#1f1f1f] dark:bg-[#000000]">
                 <div className="mb-3 flex items-center gap-2">
                   <Briefcase className="h-4 w-4 text-[#16A34A]" />
                   <p className="text-sm font-semibold text-[#2D3A1A] dark:text-[#E8E4D9]">
@@ -248,55 +422,53 @@ export default function SettingsPage() {
                 <div className="grid gap-4 sm:grid-cols-2">
                   <div className="space-y-2">
                     <Label>Opening Hours</Label>
-                    <Input disabled placeholder="Coming soon" className="h-11 rounded-xl border-2 border-[#D6D2C4]/70 bg-muted/40 text-sm shadow-sm dark:border-[#3D4F2A]/70" />
+                    <Input
+                      value={openingHours}
+                      onChange={(e) => setOpeningHours(e.target.value)}
+                      placeholder="e.g. 09:00"
+                      className="h-11 rounded-xl border-2 border-[#D6D2C4]/70 bg-white/80 text-sm shadow-sm transition-all focus-visible:border-[#22C55E] focus-visible:ring-[#22C55E]/20 dark:border-[#1f1f1f] dark:bg-[#0f0f0f] dark:text-white"
+                    />
                   </div>
                   <div className="space-y-2">
                     <Label>Closing Hours</Label>
-                    <Input disabled placeholder="Coming soon" className="h-11 rounded-xl border-2 border-[#D6D2C4]/70 bg-muted/40 text-sm shadow-sm dark:border-[#3D4F2A]/70" />
+                    <Input
+                      value={closingHours}
+                      onChange={(e) => setClosingHours(e.target.value)}
+                      placeholder="e.g. 22:00"
+                      className="h-11 rounded-xl border-2 border-[#D6D2C4]/70 bg-white/80 text-sm shadow-sm transition-all focus-visible:border-[#22C55E] focus-visible:ring-[#22C55E]/20 dark:border-[#1f1f1f] dark:bg-[#0f0f0f] dark:text-white"
+                    />
                   </div>
                   <div className="space-y-2">
                     <Label>Time Zone</Label>
-                    <Input disabled placeholder="Coming soon" className="h-11 rounded-xl border-2 border-[#D6D2C4]/70 bg-muted/40 text-sm shadow-sm dark:border-[#3D4F2A]/70" />
+                    <Input
+                      value={timeZone}
+                      onChange={(e) => setTimeZone(e.target.value)}
+                      placeholder="e.g. Europe/Zurich"
+                      className="h-11 rounded-xl border-2 border-[#D6D2C4]/70 bg-white/80 text-sm shadow-sm transition-all focus-visible:border-[#22C55E] focus-visible:ring-[#22C55E]/20 dark:border-[#1f1f1f] dark:bg-[#0f0f0f] dark:text-white"
+                    />
                   </div>
                   <div className="space-y-2">
                     <Label>Currency</Label>
-                    <Input disabled placeholder="Coming soon" className="h-11 rounded-xl border-2 border-[#D6D2C4]/70 bg-muted/40 text-sm shadow-sm dark:border-[#3D4F2A]/70" />
+                    <Input
+                      value={currency}
+                      onChange={(e) => setCurrency(e.target.value)}
+                      placeholder="e.g. CHF"
+                      className="h-11 rounded-xl border-2 border-[#D6D2C4]/70 bg-white/80 text-sm shadow-sm transition-all focus-visible:border-[#22C55E] focus-visible:ring-[#22C55E]/20 dark:border-[#1f1f1f] dark:bg-[#0f0f0f] dark:text-white"
+                    />
                   </div>
                 </div>
               </div>
 
-              {/* Appearance */}
-              <div className="rounded-2xl border border-[#D6D2C4]/60 bg-white/70 p-4 shadow-sm dark:border-[#3D4F2A]/60 dark:bg-[#111827]/50">
-                <div className="mb-3 flex items-center gap-2">
-                  <Palette className="h-4 w-4 text-[#16A34A]" />
-                  <p className="text-sm font-semibold text-[#2D3A1A] dark:text-[#E8E4D9]">
-                    Appearance
-                  </p>
-                </div>
-                <div className="grid gap-4 sm:grid-cols-2">
-                  <div className="space-y-2">
-                    <Label>Theme Color</Label>
-                    <Input disabled placeholder="Managed in Appearance" className="h-11 rounded-xl border-2 border-[#D6D2C4]/70 bg-muted/40 text-sm shadow-sm dark:border-[#3D4F2A]/70" />
-                  </div>
-                  <div className="space-y-2">
-                    <Label>Restaurant Banner Image</Label>
-                    <Input disabled placeholder="Managed in Appearance" className="h-11 rounded-xl border-2 border-[#D6D2C4]/70 bg-muted/40 text-sm shadow-sm dark:border-[#3D4F2A]/70" />
-                  </div>
-                </div>
-                <p className="mt-2 text-xs text-[#6B7B5A] dark:text-[#9CA88A]">
-                  These visual settings are managed in the Appearance page.
-                </p>
-              </div>
             </CardContent>
           </Card>
         </FadeIn>
 
         {/* Book a Table Settings */}
         <FadeIn delay={0.12}>
-          <Card className="rounded-3xl border border-[#D6D2C4]/60 bg-gradient-to-br from-[#FAFAF5] via-[#F8F6EE] to-[#F0EDE4] shadow-xl dark:border-[#3D4F2A]/60 dark:from-[#1A2212] dark:via-[#1F2914] dark:to-[#243019]">
+          <Card className="rounded-3xl border border-[#D6D2C4]/60 bg-gradient-to-br from-[#FAFAF5] via-[#F8F6EE] to-[#F0EDE4] shadow-xl dark:border-[#1f1f1f] dark:!bg-[#000000] dark:from-transparent dark:via-transparent dark:to-transparent">
             <CardHeader className="pb-3">
               <CardTitle className="flex items-center gap-2 text-lg font-semibold text-[#2D3A1A] dark:text-[#E8E4D9]">
-                <span className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-[#DCFCE7] text-[#16A34A] dark:bg-[#1F2914] dark:text-[#7A9E4A]">
+                <span className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-[#DCFCE7] text-[#16A34A] dark:bg-[#0f0f0f] dark:text-[#22c55e]">
                   <CalendarDays className="h-4 w-4" />
                 </span>
                 Book a Table Settings
@@ -304,7 +476,7 @@ export default function SettingsPage() {
             </CardHeader>
             <CardContent className="space-y-6">
               {/* Reservation Settings */}
-              <div className="rounded-2xl border border-[#D6D2C4]/60 bg-white/70 p-4 shadow-sm dark:border-[#3D4F2A]/60 dark:bg-[#111827]/50">
+              <div className="rounded-2xl border border-[#D6D2C4]/60 bg-white/70 p-4 shadow-sm dark:border-[#1f1f1f] dark:bg-[#000000]">
                 <div className="mb-3 flex items-center gap-2">
                   <Settings2 className="h-4 w-4 text-[#16A34A]" />
                   <p className="text-sm font-semibold text-[#2D3A1A] dark:text-[#E8E4D9]">
@@ -312,41 +484,75 @@ export default function SettingsPage() {
                   </p>
                 </div>
                 <div className="space-y-4">
-                  <div className="flex items-center justify-between rounded-xl bg-[#F6F4EA] px-3 py-2.5 text-sm dark:bg-[#1F2914]">
+                  <div className="flex items-center justify-between rounded-xl bg-[#F6F4EA] px-3 py-2.5 text-sm dark:bg-[#000000] dark:border dark:border-[#1f1f1f]">
                     <div className="space-y-0.5">
                       <p className="font-medium text-[#2D3A1A] dark:text-[#E8E4D9]">
                         Enable / Disable Table Booking
                       </p>
                       <p className="text-xs text-[#6B7B5A] dark:text-[#9CA88A]">
-                        Configure availability for online reservations (coming soon).
+                        Turn online table booking on or off for your restaurant.
                       </p>
                     </div>
-                    <Switch checked={true} disabled />
+                    <Switch
+                      checked={bookingEnabled}
+                      onCheckedChange={setBookingEnabled}
+                    />
                   </div>
 
                   <div className="grid gap-4 sm:grid-cols-2">
                     <div className="space-y-2">
                       <Label>Maximum Guests per Table</Label>
-                      <Input disabled placeholder="Coming soon" className="h-11 rounded-xl border-2 border-[#D6D2C4]/70 bg-muted/40 text-sm shadow-sm dark:border-[#3D4F2A]/70" />
+                      <Input
+                        type="number"
+                        min={1}
+                        value={maxGuestsPerTable}
+                        onChange={(e) => setMaxGuestsPerTable(e.target.value)}
+                        placeholder="e.g. 8"
+                        className="h-11 rounded-xl border-2 border-[#D6D2C4]/70 bg-white/80 text-sm shadow-sm transition-all focus-visible:border-[#22C55E] focus-visible:ring-[#22C55E]/20 dark:border-[#1f1f1f] dark:bg-[#0f0f0f] dark:text-white"
+                      />
                     </div>
                     <div className="space-y-2">
                       <Label>Minimum Guests per Table</Label>
-                      <Input disabled placeholder="Coming soon" className="h-11 rounded-xl border-2 border-[#D6D2C4]/70 bg-muted/40 text-sm shadow-sm dark:border-[#3D4F2A]/70" />
+                      <Input
+                        type="number"
+                        min={1}
+                        value={minGuestsPerTable}
+                        onChange={(e) => setMinGuestsPerTable(e.target.value)}
+                        placeholder="e.g. 1"
+                        className="h-11 rounded-xl border-2 border-[#D6D2C4]/70 bg-white/80 text-sm shadow-sm transition-all focus-visible:border-[#22C55E] focus-visible:ring-[#22C55E]/20 dark:border-[#1f1f1f] dark:bg-[#0f0f0f] dark:text-white"
+                      />
                     </div>
                     <div className="space-y-2">
-                      <Label>Advance Booking Limit</Label>
-                      <Input disabled placeholder="e.g. 7 days (coming soon)" className="h-11 rounded-xl border-2 border-[#D6D2C4]/70 bg-muted/40 text-sm shadow-sm dark:border-[#3D4F2A]/70" />
+                      <Label>Advance Booking Limit (days)</Label>
+                      <Input
+                        type="number"
+                        min={0}
+                        value={advanceBookingLimit}
+                        onChange={(e) => setAdvanceBookingLimit(e.target.value)}
+                        placeholder="e.g. 7"
+                        className="h-11 rounded-xl border-2 border-[#D6D2C4]/70 bg-white/80 text-sm shadow-sm transition-all focus-visible:border-[#22C55E] focus-visible:ring-[#22C55E]/20 dark:border-[#1f1f1f] dark:bg-[#0f0f0f] dark:text-white"
+                      />
                     </div>
                     <div className="space-y-2">
-                      <Label>Booking Time Interval</Label>
-                      <Input disabled placeholder="15 / 30 / 60 min (coming soon)" className="h-11 rounded-xl border-2 border-[#D6D2C4]/70 bg-muted/40 text-sm shadow-sm dark:border-[#3D4F2A]/70" />
+                      <Label>Booking Time Interval (minutes)</Label>
+                      <Input
+                        type="number"
+                        min={5}
+                        step={5}
+                        value={bookingIntervalMinutes}
+                        onChange={(e) =>
+                          setBookingIntervalMinutes(e.target.value)
+                        }
+                        placeholder="e.g. 30"
+                        className="h-11 rounded-xl border-2 border-[#D6D2C4]/70 bg-white/80 text-sm shadow-sm transition-all focus-visible:border-[#22C55E] focus-visible:ring-[#22C55E]/20 dark:border-[#1f1f1f] dark:bg-[#0f0f0f] dark:text-white"
+                      />
                     </div>
                   </div>
                 </div>
               </div>
 
               {/* Table Management */}
-              <div className="rounded-2xl border border-[#D6D2C4]/60 bg-white/70 p-4 shadow-sm dark:border-[#3D4F2A]/60 dark:bg-[#111827]/50">
+              <div className="rounded-2xl border border-[#D6D2C4]/60 bg-white/70 p-4 shadow-sm dark:border-[#1f1f1f] dark:bg-[#000000]">
                 <div className="mb-3 flex items-center gap-2">
                   <Briefcase className="h-4 w-4 text-[#16A34A]" />
                   <p className="text-sm font-semibold text-[#2D3A1A] dark:text-[#E8E4D9]">
@@ -356,24 +562,34 @@ export default function SettingsPage() {
                 <div className="grid gap-4 sm:grid-cols-2">
                   <div className="space-y-2">
                     <Label>Default Table Capacity</Label>
-                    <Input disabled placeholder="Coming soon" className="h-11 rounded-xl border-2 border-[#D6D2C4]/70 bg-muted/40 text-sm shadow-sm dark:border-[#3D4F2A]/70" />
+                    <Input
+                      type="number"
+                      min={1}
+                      value={defaultTableCapacity}
+                      onChange={(e) => setDefaultTableCapacity(e.target.value)}
+                      placeholder="e.g. 4"
+                      className="h-11 rounded-xl border-2 border-[#D6D2C4]/70 bg-white/80 text-sm shadow-sm transition-all focus-visible:border-[#22C55E] focus-visible:ring-[#22C55E]/20 dark:border-[#1f1f1f] dark:bg-[#0f0f0f] dark:text-white"
+                    />
                   </div>
-                  <div className="flex items-center justify-between rounded-xl bg-[#F6F4EA] px-3 py-2.5 text-sm dark:bg-[#1F2914]">
+                  <div className="flex items-center justify-between rounded-xl bg-[#F6F4EA] px-3 py-2.5 text-sm dark:bg-[#000000] dark:border dark:border-[#1f1f1f]">
                     <div className="space-y-0.5">
                       <p className="font-medium text-[#2D3A1A] dark:text-[#E8E4D9]">
                         Allow Multiple Reservations
                       </p>
                       <p className="text-xs text-[#6B7B5A] dark:text-[#9CA88A]">
-                        Allow multiple bookings per time slot (coming soon).
+                        Allow multiple bookings for the same time slot.
                       </p>
                     </div>
-                    <Switch checked={false} disabled />
+                    <Switch
+                      checked={allowMultipleReservations}
+                      onCheckedChange={setAllowMultipleReservations}
+                    />
                   </div>
                 </div>
               </div>
 
               {/* Booking Rules */}
-              <div className="rounded-2xl border border-[#D6D2C4]/60 bg-white/70 p-4 shadow-sm dark:border-[#3D4F2A]/60 dark:bg-[#111827]/50">
+              <div className="rounded-2xl border border-[#D6D2C4]/60 bg-white/70 p-4 shadow-sm dark:border-[#1f1f1f] dark:bg-[#000000]">
                 <div className="mb-3 flex items-center gap-2">
                   <Briefcase className="h-4 w-4 text-[#16A34A]" />
                   <p className="text-sm font-semibold text-[#2D3A1A] dark:text-[#E8E4D9]">
@@ -381,27 +597,40 @@ export default function SettingsPage() {
                   </p>
                 </div>
                 <div className="space-y-3">
-                  <div className="flex items-center justify-between rounded-xl bg-[#F6F4EA] px-3 py-2.5 text-sm dark:bg-[#1F2914]">
+                  <div className="flex items-center justify-between rounded-xl bg-[#F6F4EA] px-3 py-2.5 text-sm dark:bg-[#000000] dark:border dark:border-[#1f1f1f]">
                     <p className="font-medium text-[#2D3A1A] dark:text-[#E8E4D9]">
                       Auto Confirm Booking
                     </p>
-                    <Switch checked={false} disabled />
+                    <Switch
+                      checked={autoConfirmBooking}
+                      onCheckedChange={setAutoConfirmBooking}
+                    />
                   </div>
-                  <div className="flex items-center justify-between rounded-xl bg-[#F6F4EA] px-3 py-2.5 text-sm dark:bg-[#1F2914]">
+                  <div className="flex items-center justify-between rounded-xl bg-[#F6F4EA] px-3 py-2.5 text-sm dark:bg-[#000000] dark:border dark:border-[#1f1f1f]">
                     <p className="font-medium text-[#2D3A1A] dark:text-[#E8E4D9]">
                       Require Approval Before Confirmation
                     </p>
-                    <Switch checked={true} disabled />
+                    <Switch
+                      checked={requireApproval}
+                      onCheckedChange={setRequireApproval}
+                    />
                   </div>
                   <div className="space-y-2">
-                    <Label>Cancellation Time Limit</Label>
-                    <Input disabled placeholder="Coming soon" className="h-11 rounded-xl border-2 border-[#D6D2C4]/70 bg-muted/40 text-sm shadow-sm dark:border-[#3D4F2A]/70" />
+                    <Label>Cancellation Time Limit (minutes)</Label>
+                    <Input
+                      type="number"
+                      min={0}
+                      value={cancellationTimeLimit}
+                      onChange={(e) => setCancellationTimeLimit(e.target.value)}
+                      placeholder="e.g. 120"
+                      className="h-11 rounded-xl border-2 border-[#D6D2C4]/70 bg-white/80 text-sm shadow-sm transition-all focus-visible:border-[#22C55E] focus-visible:ring-[#22C55E]/20 dark:border-[#1f1f1f] dark:bg-[#0f0f0f] dark:text-white"
+                    />
                   </div>
                 </div>
               </div>
 
               {/* Notification Settings */}
-              <div className="rounded-2xl border border-[#D6D2C4]/60 bg-white/70 p-4 shadow-sm dark:border-[#3D4F2A]/60 dark:bg-[#111827]/50">
+              <div className="rounded-2xl border border-[#D6D2C4]/60 bg-white/70 p-4 shadow-sm dark:border-[#1f1f1f] dark:bg-[#000000]">
                 <div className="mb-3 flex items-center gap-2">
                   <Bell className="h-4 w-4 text-[#16A34A]" />
                   <p className="text-sm font-semibold text-[#2D3A1A] dark:text-[#E8E4D9]">
@@ -409,17 +638,23 @@ export default function SettingsPage() {
                   </p>
                 </div>
                 <div className="space-y-3">
-                  <div className="flex items-center justify-between rounded-xl bg-[#F6F4EA] px-3 py-2.5 text-sm dark:bg-[#1F2914]">
+                  <div className="flex items-center justify-between rounded-xl bg-[#F6F4EA] px-3 py-2.5 text-sm dark:bg-[#000000] dark:border dark:border-[#1f1f1f]">
                     <p className="font-medium text-[#2D3A1A] dark:text-[#E8E4D9]">
-                      Email Notification for new bookings
+                      Email Notification for New Bookings
                     </p>
-                    <Switch checked={true} disabled />
+                    <Switch
+                      checked={emailNotifyNewBookings}
+                      onCheckedChange={setEmailNotifyNewBookings}
+                    />
                   </div>
-                  <div className="flex items-center justify-between rounded-xl bg-[#F6F4EA] px-3 py-2.5 text-sm dark:bg-[#1F2914]">
+                  <div className="flex items-center justify-between rounded-xl bg-[#F6F4EA] px-3 py-2.5 text-sm dark:bg-[#000000] dark:border dark:border-[#1f1f1f]">
                     <p className="font-medium text-[#2D3A1A] dark:text-[#E8E4D9]">
-                      SMS notification (if available)
+                      SMS Notification for New Bookings
                     </p>
-                    <Switch checked={false} disabled />
+                    <Switch
+                      checked={smsNotifyNewBookings}
+                      onCheckedChange={setSmsNotifyNewBookings}
+                    />
                   </div>
                 </div>
               </div>

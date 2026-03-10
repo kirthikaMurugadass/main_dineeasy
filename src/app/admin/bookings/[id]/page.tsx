@@ -177,7 +177,7 @@ export default function BookingDetailsPage() {
       case "cancelled":
         return "bg-red-500/10 text-red-600 dark:text-red-400 border-red-500/20";
       case "completed":
-        return "bg-green-500/10 text-green-600 dark:text-green-400 border-green-500/20";
+        return "bg-green-500/10 text-green-600 dark:text-green-400 border-green-500/20 dark:bg-[#22c55e]/10 dark:text-[#22c55e] dark:border-[#22c55e]/30";
     }
   }
 
@@ -220,9 +220,9 @@ export default function BookingDetailsPage() {
             Back to Bookings
           </Button>
         </Link>
-        <Card>
+        <Card className="dark:border-[#1f1f1f] dark:bg-[#111111]">
           <CardContent className="flex flex-col items-center justify-center py-12">
-            <p className="text-muted-foreground">Booking not found</p>
+            <p className="text-muted-foreground dark:text-[#9ca3af]">Booking not found</p>
           </CardContent>
         </Card>
       </div>
@@ -230,15 +230,15 @@ export default function BookingDetailsPage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 dark:bg-[#000000]">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">
           <Link href="/admin/bookings">
-            <Button variant="ghost" size="icon">
+            <Button variant="ghost" size="icon" className="dark:bg-[#1a1a1a] dark:hover:bg-[#262626] dark:text-[#ffffff]">
               <ArrowLeft className="h-4 w-4" />
             </Button>
           </Link>
-          <PageTitle>Booking Details</PageTitle>
+          <PageTitle className="dark:text-[#ffffff]">Booking Details</PageTitle>
         </div>
         <Badge
           variant="outline"
@@ -249,62 +249,62 @@ export default function BookingDetailsPage() {
         </Badge>
       </div>
 
-      <div className="grid gap-6 md:grid-cols-2">
+      <div className="space-y-6 w-full max-w-full">
         {/* Booking Information */}
         <FadeIn>
-          <Card>
+          <Card className="dark:border-[#1f1f1f] dark:bg-[#111111] dark:p-6 rounded-2xl">
             <CardHeader>
-              <CardTitle>Booking Information</CardTitle>
+              <CardTitle className="dark:text-[#ffffff]">Booking Information</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               <div>
-                <p className="text-sm text-muted-foreground flex items-center gap-2">
-                  <User className="h-4 w-4" />
+                <p className="text-sm text-muted-foreground dark:text-[#bfbfbf] flex items-center gap-2">
+                  <User className="h-4 w-4 dark:text-[#22c55e]" />
                   Customer Name
                 </p>
-                <p className="text-lg font-semibold">{booking.customer_name}</p>
+                <p className="text-lg font-semibold dark:text-[#ffffff]">{booking.customer_name}</p>
               </div>
               <div>
-                <p className="text-sm text-muted-foreground flex items-center gap-2">
-                  <Phone className="h-4 w-4" />
+                <p className="text-sm text-muted-foreground dark:text-[#bfbfbf] flex items-center gap-2">
+                  <Phone className="h-4 w-4 dark:text-[#22c55e]" />
                   Phone Number
                 </p>
-                <p className="text-lg font-semibold">{booking.phone}</p>
+                <p className="text-lg font-semibold dark:text-[#ffffff]">{booking.phone}</p>
               </div>
               <div>
-                <p className="text-sm text-muted-foreground flex items-center gap-2">
-                  <Calendar className="h-4 w-4" />
+                <p className="text-sm text-muted-foreground dark:text-[#bfbfbf] flex items-center gap-2">
+                  <Calendar className="h-4 w-4 dark:text-[#22c55e]" />
                   Booking Date & Time
                 </p>
-                <p className="text-lg font-semibold">
+                <p className="text-lg font-semibold dark:text-[#ffffff]">
                   {formatDate(booking.booking_date)} at {booking.booking_time}
                 </p>
               </div>
               <div>
-                <p className="text-sm text-muted-foreground flex items-center gap-2">
-                  <Users className="h-4 w-4" />
+                <p className="text-sm text-muted-foreground dark:text-[#bfbfbf] flex items-center gap-2">
+                  <Users className="h-4 w-4 dark:text-[#22c55e]" />
                   Number of Guests
                 </p>
-                <p className="text-lg font-semibold">
+                <p className="text-lg font-semibold dark:text-[#ffffff]">
                   {booking.guest_count} {booking.guest_count === 1 ? "Guest" : "Guests"}
                 </p>
               </div>
               {booking.special_note && (
                 <div>
-                  <p className="text-sm text-muted-foreground flex items-center gap-2">
-                    <MessageSquare className="h-4 w-4" />
+                  <p className="text-sm text-muted-foreground dark:text-[#bfbfbf] flex items-center gap-2">
+                    <MessageSquare className="h-4 w-4 dark:text-[#22c55e]" />
                     Special Requests
                   </p>
-                  <p className="text-lg font-semibold mt-1">{booking.special_note}</p>
+                  <p className="text-lg font-semibold mt-1 dark:text-[#ffffff]">{booking.special_note}</p>
                 </div>
               )}
               <div>
-                <p className="text-sm text-muted-foreground">Requested At</p>
-                <p className="text-lg font-semibold">{formatDateTime(booking.created_at)}</p>
+                <p className="text-sm text-muted-foreground dark:text-[#bfbfbf]">Requested At</p>
+                <p className="text-lg font-semibold dark:text-[#ffffff]">{formatDateTime(booking.created_at)}</p>
               </div>
               <div>
-                <p className="text-sm text-muted-foreground">Booking ID</p>
-                <p className="text-sm font-mono text-muted-foreground">{booking.id}</p>
+                <p className="text-sm text-muted-foreground dark:text-[#bfbfbf]">Booking ID</p>
+                <p className="text-sm font-mono text-muted-foreground dark:text-[#9ca3af]">{booking.id}</p>
               </div>
             </CardContent>
           </Card>
@@ -312,41 +312,41 @@ export default function BookingDetailsPage() {
 
         {/* Status Management */}
         <FadeIn delay={0.1}>
-          <Card>
+          <Card className="dark:border-[#1f1f1f] dark:bg-[#111111] dark:p-6 rounded-2xl">
             <CardHeader>
-              <CardTitle>Status Management</CardTitle>
+              <CardTitle className="dark:text-[#ffffff]">Status Management</CardTitle>
             </CardHeader>
             <CardContent className="space-y-3">
               {booking.status !== "confirmed" && (
                 <Button
                   variant="outline"
-                  className="w-full justify-start"
+                  className="w-full justify-start dark:border-[#262626] dark:bg-[#1a1a1a] dark:text-[#ffffff] dark:hover:bg-[#262626]"
                   onClick={() => updateBookingStatus("confirmed")}
                   disabled={updatingStatus}
                 >
-                  <CheckCircle className="h-4 w-4 mr-2" />
+                  <CheckCircle className="h-4 w-4 mr-2 dark:text-[#22c55e]" />
                   Confirm Booking
                 </Button>
               )}
               {booking.status !== "cancelled" && (
                 <Button
                   variant="outline"
-                  className="w-full justify-start"
+                  className="w-full justify-start dark:border-[#262626] dark:bg-[#1a1a1a] dark:text-[#ffffff] dark:hover:bg-[#262626]"
                   onClick={() => updateBookingStatus("cancelled")}
                   disabled={updatingStatus}
                 >
-                  <XCircle className="h-4 w-4 mr-2" />
+                  <XCircle className="h-4 w-4 mr-2 dark:text-[#ef4444]" />
                   Cancel Booking
                 </Button>
               )}
               {booking.status !== "completed" && (
                 <Button
                   variant="outline"
-                  className="w-full justify-start"
+                  className="w-full justify-start dark:border-[#262626] dark:bg-[#1a1a1a] dark:text-[#ffffff] dark:hover:bg-[#262626]"
                   onClick={() => updateBookingStatus("completed")}
                   disabled={updatingStatus}
                 >
-                  <CheckCircle className="h-4 w-4 mr-2" />
+                  <CheckCircle className="h-4 w-4 mr-2 dark:text-[#22c55e]" />
                   Mark as Completed
                 </Button>
               )}

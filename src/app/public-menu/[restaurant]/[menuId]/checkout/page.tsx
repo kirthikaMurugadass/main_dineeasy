@@ -1,19 +1,33 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { motion } from "framer-motion";
-import { ArrowLeft, Loader2, CheckCircle2 } from "lucide-react";
+import { ArrowLeft, Loader2, CheckCircle2, MapPin } from "lucide-react";
 import { useCartStore } from "@/lib/stores/cart-store";
 import { useI18n } from "@/lib/i18n/context";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { toast } from "sonner";
 import type { Language } from "@/types/database";
 import { LocationPickerMap, type LatLng } from "@/components/checkout/location-picker-map";
+import {
+  countryCodes,
+  getCountryByCode,
+  validatePhoneNumber,
+  type CountryCode,
+} from "@/lib/data/country-codes";
+import { CountryFlag } from "@/components/ui/country-flag";
 
 function getDisplayTitle(
   titleRecord: Record<Language, string> | undefined,
@@ -43,7 +57,14 @@ export default function CheckoutPage({
   const [tableNumber, setTableNumber] = useState("");
   const [deliveryAddress, setDeliveryAddress] = useState("");
   const [phoneNumber, setPhoneNumber] = useState("");
+  const [phoneCountryCode, setPhoneCountryCode] = useState<string>("CH");
+  const [phoneValidationError, setPhoneValidationError] = useState<string>("");
   const [deliveryLocation, setDeliveryLocation] = useState<LatLng | null>(null);
+  const [locationDetails, setLocationDetails] = useState<{
+    state?: string;
+    country?: string;
+  } | null>(null);
+  const [geocodingLoading, setGeocodingLoading] = useState(false);
   const [loading, setLoading] = useState(false);
   const [mounted, setMounted] = useState(false);
   const [orderSuccess, setOrderSuccess] = useState(false);
@@ -67,6 +88,98 @@ export default function CheckoutPage({
     }
   }, [mounted, items.length, resolvedParams, router]);
 
+  // Geocode address when it changes
+  const geocodeAddress = useCallback(
+    async (address: string) => {
+      if (!address.trim() || orderType !== "takeaway") {
+        setDeliveryLocation(null);
+        setLocationDetails(null);
+        return;
+      }
+
+      setGeocodingLoading(true);
+      try {
+        // Use Nominatim (OpenStreetMap) geocoding API
+        const response = await fetch(
+          `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(
+            address
+          )}&limit=1&addressdetails=1`,
+          {
+            headers: {
+              "User-Agent": "DineEasy/1.0",
+            },
+          }
+        );
+
+        const data = await response.json();
+
+        if (data && data.length > 0) {
+          const result = data[0];
+          const lat = parseFloat(result.lat);
+          const lng = parseFloat(result.lon);
+
+          if (!isNaN(lat) && !isNaN(lng)) {
+            const newLocation: LatLng = { lat, lng };
+            setDeliveryLocation(newLocation);
+
+            // Extract location details
+            const addressParts = result.address || {};
+            setLocationDetails({
+              state: addressParts.state || addressParts.region || undefined,
+              country: addressParts.country || undefined,
+            });
+          }
+        } else {
+          setDeliveryLocation(null);
+          setLocationDetails(null);
+        }
+      } catch (error) {
+        console.error("Geocoding error:", error);
+        // Don't show error to user, just don't update location
+        setDeliveryLocation(null);
+        setLocationDetails(null);
+      } finally {
+        setGeocodingLoading(false);
+      }
+    },
+    [orderType]
+  );
+
+  // Debounced geocoding when address changes
+  useEffect(() => {
+    if (orderType !== "takeaway" || !deliveryAddress.trim()) {
+      setDeliveryLocation(null);
+      setLocationDetails(null);
+      return;
+    }
+
+    const timeoutId = setTimeout(() => {
+      geocodeAddress(deliveryAddress);
+    }, 500); // Wait 500ms after user stops typing
+
+    return () => clearTimeout(timeoutId);
+  }, [deliveryAddress, orderType, geocodeAddress]);
+
+  // Validate phone number when it changes
+  useEffect(() => {
+    if (orderType !== "takeaway") {
+      setPhoneValidationError("");
+      return;
+    }
+
+    if (!phoneNumber.trim()) {
+      setPhoneValidationError("");
+      return;
+    }
+
+    const validation = validatePhoneNumber(phoneNumber, phoneCountryCode);
+    if (!validation.valid) {
+      setPhoneValidationError(validation.message || "Invalid phone number");
+    } else {
+      setPhoneValidationError("");
+    }
+  }, [phoneNumber, phoneCountryCode, orderType]);
+
   const handleContinue = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -86,6 +199,20 @@ export default function CheckoutPage({
       return;
     }
 
+    if (orderType === "takeaway" && !phoneNumber.trim()) {
+      toast.error("Please enter your phone number");
+      return;
+    }
+
+    if (
+      orderType === "takeaway" &&
+      phoneNumber.trim() &&
+      phoneValidationError
+    ) {
+      toast.error(phoneValidationError);
+      return;
+    }
+
     if (!restaurantId) {
       toast.error("Restaurant information is missing");
       return;
@@ -99,7 +226,10 @@ export default function CheckoutPage({
         orderType,
         tableNumber: orderType === "dine_in" ? tableNumber.trim() : "",
         deliveryAddress: orderType === "takeaway" ? deliveryAddress.trim() : "",
-        phoneNumber: orderType === "takeaway" ? phoneNumber.trim() : "",
+        phoneNumber:
+          orderType === "takeaway"
+            ? `${getCountryByCode(phoneCountryCode)?.dialCode || ""}${phoneNumber.trim()}`
+            : "",
         deliveryLocation: orderType === "takeaway" ? deliveryLocation : null,
       };
       if (typeof window !== "undefined") {
@@ -234,7 +364,9 @@ export default function CheckoutPage({
                 if (newOrderType === "dine_in") {
                   setDeliveryAddress("");
                   setPhoneNumber("");
+                  setPhoneValidationError("");
                   setDeliveryLocation(null);
+                  setLocationDetails(null);
                 } else {
                   setTableNumber("");
                 }
@@ -298,20 +430,52 @@ export default function CheckoutPage({
             </div>
           )}
 
-          {/* Map (conditional for takeaway when address is being entered) */}
+          {/* Map Preview (conditional for takeaway when address is entered) */}
           {orderType === "takeaway" && deliveryAddress.trim().length > 0 && (
             <div className="space-y-2">
               <Label>
                 Delivery Location{" "}
-                <span className="text-muted-foreground">(Select on map)</span>
+                <span className="text-muted-foreground">
+                  {geocodingLoading ? "(Detecting location...)" : "(Auto-detected)"}
+                </span>
               </Label>
-              <LocationPickerMap
-                value={deliveryLocation}
-                onChange={setDeliveryLocation}
-              />
-              <p className="text-xs text-muted-foreground">
-                Tap on the map to drop a pin for the delivery location.
-              </p>
+              {deliveryLocation ? (
+                <>
+                  <LocationPickerMap
+                    value={deliveryLocation}
+                    onChange={setDeliveryLocation}
+                  />
+                  {locationDetails && (
+                    <div className="flex flex-wrap items-center gap-2 rounded-lg border border-border/60 bg-muted/30 p-3 text-sm">
+                      <MapPin className="h-4 w-4 text-muted-foreground" />
+                      {locationDetails.state && (
+                        <span className="text-muted-foreground">
+                          State: <span className="font-medium text-foreground">{locationDetails.state}</span>
+                        </span>
+                      )}
+                      {locationDetails.country && (
+                        <span className="text-muted-foreground">
+                          {locationDetails.state && "• "}Country:{" "}
+                          <span className="font-medium text-foreground">{locationDetails.country}</span>
+                        </span>
+                      )}
+                    </div>
+                  )}
+                  <p className="text-xs text-muted-foreground">
+                    Tap on the map to adjust the delivery location pin.
+                  </p>
+                </>
+              ) : geocodingLoading ? (
+                <div className="flex h-56 items-center justify-center rounded-2xl border border-border/60 bg-muted/30">
+                  <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+                </div>
+              ) : (
+                <div className="flex h-56 items-center justify-center rounded-2xl border border-border/60 bg-muted/30">
+                  <p className="text-sm text-muted-foreground">
+                    Enter a valid address to see the map preview
+                  </p>
+                </div>
+              )}
             </div>
           )}
 
@@ -319,16 +483,77 @@ export default function CheckoutPage({
           {orderType === "takeaway" && (
             <div className="space-y-2">
               <Label htmlFor="phoneNumber">
-                Phone Number <span className="text-muted-foreground">(Optional)</span>
+                Phone Number <span className="text-destructive">*</span>
               </Label>
-              <Input
-                id="phoneNumber"
-                type="tel"
-                value={phoneNumber}
-                onChange={(e) => setPhoneNumber(e.target.value)}
-                placeholder="Enter your phone number"
-                disabled={loading}
-              />
+              <div className="flex gap-2">
+                <Select
+                  value={phoneCountryCode}
+                  onValueChange={setPhoneCountryCode}
+                  disabled={loading}
+                >
+                  <SelectTrigger className="w-[180px]">
+                    <SelectValue placeholder="Select country">
+                      {getCountryByCode(phoneCountryCode) && (
+                        <span className="flex items-center gap-2">
+                          <CountryFlag
+                            code={phoneCountryCode}
+                            className="flex-shrink-0"
+                          />
+                          <span className="text-sm font-medium">
+                            {getCountryByCode(phoneCountryCode)?.dialCode}
+                          </span>
+                        </span>
+                      )}
+                    </SelectValue>
+                  </SelectTrigger>
+                  <SelectContent className="max-h-[300px] w-[280px]">
+                    {countryCodes.map((country) => (
+                      <SelectItem 
+                        key={country.code} 
+                        value={country.code}
+                        className="cursor-pointer py-2.5"
+                      >
+                        <span className="flex items-center gap-2.5 w-full">
+                          <CountryFlag
+                            code={country.code}
+                          />
+                          <span className="flex-1 text-left font-medium text-sm">
+                            {country.name}
+                          </span>
+                          <span className="text-muted-foreground text-sm font-normal">
+                            ({country.dialCode})
+                          </span>
+                        </span>
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <div className="flex-1">
+                  <Input
+                    id="phoneNumber"
+                    type="tel"
+                    value={phoneNumber}
+                    onChange={(e) => {
+                      // Only allow digits
+                      const value = e.target.value.replace(/\D/g, "");
+                      setPhoneNumber(value);
+                    }}
+                    placeholder="Enter phone number"
+                    required={orderType === "takeaway"}
+                    disabled={loading}
+                    className={
+                      phoneValidationError
+                        ? "border-destructive focus-visible:ring-destructive"
+                        : ""
+                    }
+                  />
+                  {phoneValidationError && (
+                    <p className="mt-1 text-xs text-destructive">
+                      {phoneValidationError}
+                    </p>
+                  )}
+                </div>
+              </div>
             </div>
           )}
 

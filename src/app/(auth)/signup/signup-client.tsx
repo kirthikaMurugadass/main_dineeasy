@@ -109,7 +109,7 @@ export function SignupClient({
 
   return (
     <AuthSplitPanel
-      imageSrc="/images/image2.jpg"
+      imageSrc="/images/sign3.jpg"
       imageOnLeft={true}
       leftHeading="Welcome Back!"
       leftSubtitle="To keep connected with us please login with your personal info"

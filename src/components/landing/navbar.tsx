@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { Menu, X, Moon, Sun, Monitor, Globe, ArrowUp } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -32,9 +32,13 @@ export function Navbar() {
   const [showScrollTop, setShowScrollTop] = useState(false);
   const [mounted, setMounted] = useState(false);
   const router = useRouter();
+  const pathname = usePathname();
   const { t, language, setLanguage, languages } = useI18n();
   const { theme, setTheme } = useTheme();
   const ThemeIcon = theme === "light" ? Sun : theme === "dark" ? Moon : Monitor;
+  
+  // Hide Sign In and Get Started buttons on auth pages
+  const isAuthPage = pathname === "/login" || pathname === "/signup";
 
   const handleLanguageChange = (langCode: string) => {
     setLanguage(langCode as typeof language);
@@ -61,24 +65,26 @@ export function Navbar() {
         animate={{ y: 0, opacity: 1 }}
         transition={{ duration: 0.3, ease: [0.25, 0.46, 0.45, 0.94] }}
         className={cn(
-          "fixed inset-x-0 top-0 z-[9999] border-b border-border/60 transition-all duration-300 ease-out",
+          "fixed inset-x-0 top-0 z-[9999] border-b transition-all duration-300 ease-out",
           scrolled
-            ? "bg-background/90 shadow-md backdrop-blur-md"
-            : "border-transparent bg-black/30 shadow-none backdrop-blur-md dark:bg-background/70"
+            ? "border-border/60 bg-background/90 shadow-md backdrop-blur-md"
+            : "border-transparent bg-transparent shadow-none backdrop-blur-sm"
         )}
       >
-        <div className="mx-auto flex h-16 w-full max-w-7xl items-center justify-between gap-3 px-4 sm:px-6 lg:h-[72px] lg:gap-8 lg:px-10 2xl:max-w-[90rem]">
-          {/* Left: Logo — always high contrast (AppLogo renders the link to avoid nested <a>) */}
-          <AppLogo
-            href="/"
-            variant="default"
-            size="md"
-            className="shrink-0 transition-transform duration-300 ease-out hover:rotate-3"
-            ariaLabel="DineEasy Home"
-          />
+        <div className="mx-auto grid h-16 w-full max-w-7xl grid-cols-3 items-center gap-3 px-4 sm:px-6 lg:h-[72px] lg:gap-8 lg:px-10 2xl:max-w-[90rem]">
+          {/* Left: Logo */}
+          <div className="flex items-center">
+            <AppLogo
+              href="/"
+              variant="default"
+              size="md"
+              className="shrink-0 transition-transform duration-300 ease-out hover:rotate-3"
+              ariaLabel="DineEasy Home"
+            />
+          </div>
 
           {/* Center: Nav links — desktop only */}
-          <nav className="hidden items-center gap-1 lg:gap-2 md:flex" aria-label="Main">
+          <nav className="hidden items-center justify-center gap-1 lg:gap-2 md:flex" aria-label="Main">
             {navLinks.map(({ key, href }) => (
               <Link
                 key={key}
@@ -87,17 +93,17 @@ export function Navbar() {
                   "group relative inline-flex items-center rounded-full px-4 py-2 text-sm font-medium transition-colors duration-300",
                   scrolled
                     ? "text-muted-foreground hover:text-foreground"
-                    : "text-white hover:text-[var(--sage-light)]"
+                    : "text-gray-700 hover:text-primary dark:text-gray-200 dark:hover:text-primary"
                 )}
               >
-                <span className="absolute inset-0 rounded-full bg-[var(--accent)]/70 opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
+                <span className="absolute inset-0 rounded-full bg-primary/10 opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
                 <span className="relative z-10">{t.landing.nav[key]}</span>
               </Link>
             ))}
           </nav>
 
           {/* Right: Language, Theme, Sign In, Get Started */}
-          <div className="flex shrink-0 items-center gap-1">
+          <div className="flex items-center justify-end gap-1">
             {mounted ? (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
@@ -108,7 +114,7 @@ export function Navbar() {
                       "h-9 w-9 rounded-full transition-colors",
                       scrolled
                         ? "text-foreground hover:bg-accent hover:text-foreground"
-                        : "text-white hover:bg-white/10 hover:text-white"
+                        : "text-gray-700 hover:bg-gray-100 hover:text-gray-900 dark:text-gray-200 dark:hover:bg-gray-800 dark:hover:text-white"
                     )}
                     title={t.landing.nav.selectLanguage}
                     aria-label={t.landing.nav.selectLanguage}
@@ -160,7 +166,7 @@ export function Navbar() {
                       "h-9 w-9 rounded-full transition-colors",
                       scrolled
                         ? "text-foreground hover:bg-accent hover:text-foreground"
-                        : "text-white hover:bg-white/10 hover:text-white"
+                        : "text-gray-700 hover:bg-gray-100 hover:text-gray-900 dark:text-gray-200 dark:hover:bg-gray-800 dark:hover:text-white"
                     )}
                     aria-label={t.landing.nav.theme}
                   >
@@ -193,28 +199,32 @@ export function Navbar() {
                 <ThemeIcon className="h-[18px] w-[18px]" />
               </Button>
             )}
-            <Link href="/login" className="hidden sm:block">
-              <Button
-                variant="ghost"
-                size="sm"
-                className={cn(
-                  "h-9 rounded-full px-4 text-sm font-medium transition-colors",
-                  scrolled
-                    ? "text-foreground hover:bg-accent hover:text-[var(--sage-dark)]"
-                    : "text-white hover:bg-white/10"
-                )}
-              >
-                {t.landing.nav.login}
-              </Button>
-            </Link>
-            <Link href="/signup" className="hidden sm:block">
-              <Button
-                size="sm"
-                className="h-9 rounded-full px-5 text-sm font-semibold shadow-lg shadow-primary/40 transition-all duration-300 hover:bg-primary/90 hover:shadow-xl hover:shadow-primary/50"
-              >
-                {t.landing.nav.cta}
-              </Button>
-            </Link>
+            {!isAuthPage && (
+              <>
+                <Link href="/login" className="hidden sm:block">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className={cn(
+                      "h-9 rounded-full px-4 text-sm font-medium transition-colors",
+                      scrolled
+                        ? "text-foreground hover:bg-accent hover:text-[var(--sage-dark)]"
+                        : "text-gray-700 hover:bg-gray-100 hover:text-gray-900 dark:text-gray-200 dark:hover:bg-gray-800 dark:hover:text-white"
+                    )}
+                  >
+                    {t.landing.nav.login}
+                  </Button>
+                </Link>
+                <Link href="/signup" className="hidden sm:block">
+                  <Button
+                    size="sm"
+                    className="h-9 rounded-full px-5 text-sm font-semibold shadow-lg shadow-primary/40 transition-all duration-300 hover:bg-primary/90 hover:shadow-xl hover:shadow-primary/50"
+                  >
+                    {t.landing.nav.cta}
+                  </Button>
+                </Link>
+              </>
+            )}
 
             {/* Mobile: hamburger */}
             <button
@@ -224,7 +234,7 @@ export function Navbar() {
                 "flex h-10 w-10 items-center justify-center rounded-lg md:hidden",
                 scrolled
                   ? "text-foreground hover:bg-muted"
-                  : "text-white hover:bg-white/10"
+                  : "text-gray-700 hover:bg-gray-100 hover:text-gray-900 dark:text-gray-200 dark:hover:bg-gray-800 dark:hover:text-white"
               )}
               aria-label={mobileOpen ? "Close menu" : "Open menu"}
               aria-expanded={mobileOpen}
@@ -316,18 +326,20 @@ export function Navbar() {
                     </Button>
                   ))}
                 </div>
-                <div className="mt-8 flex flex-col gap-3">
-                  <Link href="/login" onClick={() => setMobileOpen(false)}>
-                    <Button variant="outline" className="h-12 w-full rounded-xl font-medium">
-                      {t.landing.nav.login}
-                    </Button>
-                  </Link>
-                  <Link href="/signup" onClick={() => setMobileOpen(false)}>
-                    <Button className="h-12 w-full rounded-xl font-medium">
-                      {t.landing.nav.cta}
-                    </Button>
-                  </Link>
-                </div>
+                {!isAuthPage && (
+                  <div className="mt-8 flex flex-col gap-3">
+                    <Link href="/login" onClick={() => setMobileOpen(false)}>
+                      <Button variant="outline" className="h-12 w-full rounded-xl font-medium">
+                        {t.landing.nav.login}
+                      </Button>
+                    </Link>
+                    <Link href="/signup" onClick={() => setMobileOpen(false)}>
+                      <Button className="h-12 w-full rounded-xl font-medium">
+                        {t.landing.nav.cta}
+                      </Button>
+                    </Link>
+                  </div>
+                )}
               </nav>
             </motion.div>
           </>

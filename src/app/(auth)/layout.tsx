@@ -2,15 +2,15 @@
 
 import { motion, AnimatePresence } from "framer-motion";
 import { usePathname } from "next/navigation";
-import { AuthNavbar } from "@/components/auth/auth-navbar";
+import { Navbar } from "@/components/landing/navbar";
 
 export default function AuthLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const isLogin = pathname === "/login";
 
   return (
-    <div className="relative min-h-screen bg-gray-50">
-      <AuthNavbar />
+    <div className="relative min-h-screen bg-background dark:bg-[#000000]">
+      <Navbar />
       <div className="pt-20">
         <AnimatePresence mode="wait" initial={false}>
           <motion.div

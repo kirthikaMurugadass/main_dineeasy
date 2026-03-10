@@ -6,6 +6,7 @@ import { motion } from "framer-motion";
 import { Check, Crown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { useTheme } from "@/components/providers/theme-provider";
 
 const featuresFree = [
   "Menu management",
@@ -24,12 +25,21 @@ export function PricingSection() {
   const [billingCycle, setBillingCycle] = useState<"monthly" | "annual">(
     "monthly",
   );
+  const { resolvedTheme } = useTheme();
 
   const isAnnual = billingCycle === "annual";
 
   return (
-    <section className="relative overflow-hidden border-t border-border/70 bg-[radial-gradient(circle_at_15%_0%,rgba(91,122,47,0.10),transparent_48%),radial-gradient(circle_at_95%_10%,rgba(232,228,217,0.75),transparent_55%),linear-gradient(180deg,var(--warm),var(--section-alt))] py-16 sm:py-20 md:py-24 lg:py-28 2xl:py-32">
-      <div className="pointer-events-none absolute inset-0 -z-10">
+    <section 
+      id="pricing"
+      className={cn(
+        "relative overflow-hidden border-t border-border/70 py-16 sm:py-20 md:py-24 lg:py-28 2xl:py-32",
+        resolvedTheme === "dark" 
+          ? "bg-[#000000]" 
+          : "bg-[radial-gradient(circle_at_15%_0%,rgba(91,122,47,0.10),transparent_48%),radial-gradient(circle_at_95%_10%,rgba(232,228,217,0.75),transparent_55%),linear-gradient(180deg,var(--warm),var(--section-alt))]"
+      )}
+    >
+      <div className="pointer-events-none absolute inset-0 -z-10 dark:hidden">
         <div className="absolute left-[10%] top-10 h-72 w-72 rounded-full bg-primary/12 blur-3xl animate-parallax-bg" />
         <div
           className="absolute right-[8%] bottom-[-5rem] h-80 w-80 rounded-full bg-[var(--sage-light)]/40 blur-3xl animate-parallax-bg"
@@ -47,28 +57,31 @@ export function PricingSection() {
           <p className="text-xs font-semibold uppercase tracking-[0.25em] text-primary">
             Pricing
           </p>
-          <h2 className="mt-5 text-balance text-[clamp(2.2rem,3.4vw+0.6rem,3.1rem)] font-semibold leading-tight tracking-tight text-foreground">
+          <h2 className="mt-5 text-balance text-[clamp(2.2rem,3.4vw+0.6rem,3.1rem)] font-semibold leading-tight tracking-tight text-foreground dark:text-[#ffffff]">
             Simple pricing for busy restaurants.
           </h2>
-          <p className="mt-4 mx-auto max-w-2xl text-base text-muted-foreground sm:text-lg">
+          <p className="mt-4 mx-auto max-w-2xl text-base text-muted-foreground sm:text-lg dark:text-[#bfbfbf]">
             Start with the Free plan in minutes. When you&apos;re ready for full
             table booking and realtime coordination, upgrade to Pro with a
             single click.
           </p>
 
           <div className="mt-8 flex items-center justify-center">
-            <div className="relative inline-flex items-center gap-1 rounded-full bg-white/55 p-1 ring-1 ring-primary/15 backdrop-blur-xl shadow-soft">
+            <div className="relative inline-flex items-center rounded-full bg-white/55 p-1 ring-1 ring-primary/15 backdrop-blur-xl shadow-soft dark:bg-white/10 dark:ring-white/20">
               <motion.div
-                className="absolute inset-y-1 w-[92px] rounded-full bg-primary shadow-soft"
-                animate={{ x: isAnnual ? 98 : 0 }}
+                className="absolute inset-y-1 rounded-full bg-primary shadow-soft"
+                style={{ width: "calc(50% - 4px)" }}
+                animate={{ left: isAnnual ? "calc(50% + 2px)" : "4px" }}
                 transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
               />
               <button
                 type="button"
                 onClick={() => setBillingCycle("monthly")}
                 className={cn(
-                  "relative z-10 rounded-full px-4 py-1.5 text-xs font-semibold transition",
-                  !isAnnual ? "text-primary-foreground" : "text-muted-foreground"
+                  "relative z-10 flex flex-1 items-center justify-center rounded-full px-4 py-1.5 text-xs font-semibold transition-colors duration-200",
+                  !isAnnual 
+                    ? "text-white" 
+                    : "text-gray-700 hover:text-primary dark:text-gray-300 dark:hover:text-primary"
                 )}
               >
                 Monthly
@@ -77,8 +90,10 @@ export function PricingSection() {
                 type="button"
                 onClick={() => setBillingCycle("annual")}
                 className={cn(
-                  "relative z-10 inline-flex items-center gap-2 rounded-full px-4 py-1.5 text-xs font-semibold transition",
-                  isAnnual ? "text-primary-foreground" : "text-muted-foreground"
+                  "relative z-10 flex flex-1 items-center justify-center gap-2 rounded-full px-4 py-1.5 text-xs font-semibold transition-colors duration-200",
+                  isAnnual 
+                    ? "text-white" 
+                    : "text-gray-700 hover:text-primary dark:text-gray-300 dark:hover:text-primary"
                 )}
               >
                 Annual
@@ -86,7 +101,7 @@ export function PricingSection() {
             </div>
           </div>
 
-          <div className="mt-8 inline-flex items-center gap-2 rounded-full border border-border/70 bg-card/80 px-2 py-1 text-xs font-medium text-muted-foreground shadow-soft backdrop-blur">
+          <div className="mt-8 inline-flex items-center gap-2 rounded-full border border-border/70 bg-card/80 px-2 py-1 text-xs font-medium text-muted-foreground shadow-soft backdrop-blur dark:bg-[#111111] dark:border-[#1f1f1f] dark:text-[#bfbfbf]">
             <span className="rounded-full bg-primary/10 px-2 py-0.5 text-[11px] font-semibold uppercase tracking-[0.18em] text-primary">
               Flexible billing
             </span>
@@ -105,30 +120,30 @@ export function PricingSection() {
             whileHover={{ y: -5 }}
             className="h-full w-full max-w-[460px]"
           >
-            <div className="group relative flex h-full flex-col rounded-2xl border border-primary/18 bg-white/55 p-6 shadow-soft backdrop-blur-xl transition-all duration-300 hover:shadow-card">
-              <div className="pointer-events-none absolute inset-0 rounded-2xl bg-[radial-gradient(circle_at_20%_0%,rgba(232,228,217,0.75),transparent_60%)] opacity-80" />
-              <div className="mb-3">
-                <h3 className="text-base font-semibold text-foreground">Free</h3>
-                <p className="mt-1 text-xs text-muted-foreground">
+            <div className="group relative flex h-full flex-col rounded-2xl border border-primary/18 bg-white/55 p-6 shadow-soft backdrop-blur-xl transition-all duration-300 hover:shadow-card dark:bg-[#111111] dark:border-[#1f1f1f]">
+              <div className="pointer-events-none absolute inset-0 rounded-2xl bg-[radial-gradient(circle_at_20%_0%,rgba(232,228,217,0.75),transparent_60%)] opacity-80 dark:hidden" />
+              <div className="relative z-10 mb-3">
+                <h3 className="text-base font-semibold text-gray-900 dark:text-[#ffffff]">Free</h3>
+                <p className="mt-1 text-xs text-gray-600 dark:text-[#bfbfbf]">
                   Perfect to launch your digital menu.
                 </p>
               </div>
-              <div className="mt-2 flex items-baseline gap-1">
-                <span className="text-3xl font-semibold tracking-tight">₹0</span>
-                <span className="text-xs text-muted-foreground">/ forever</span>
+              <div className="relative z-10 mt-2 flex items-baseline gap-1">
+                <span className="text-3xl font-semibold tracking-tight text-gray-900 dark:text-[#ffffff]">₹0</span>
+                <span className="text-xs text-gray-600 dark:text-[#bfbfbf]">/ forever</span>
               </div>
-              <ul className="mt-5 flex-1 space-y-2 text-sm">
+              <ul className="relative z-10 mt-5 flex-1 space-y-2 text-sm">
                 {featuresFree.map((feature) => (
                   <li key={feature} className="flex items-start gap-2">
-                    <Check className="mt-0.5 h-4 w-4 text-primary/70" />
-                    <span className="text-muted-foreground">{feature}</span>
+                    <Check className="mt-0.5 h-4 w-4 text-primary flex-shrink-0" />
+                    <span className="text-gray-700 dark:text-[#bfbfbf]">{feature}</span>
                   </li>
                 ))}
               </ul>
-              <div className="mt-auto pt-6">
+              <div className="relative z-10 mt-auto pt-6">
                 <Button
                   asChild
-                className="h-11 w-full rounded-xl border border-primary/20 bg-white/55 text-sm font-semibold text-foreground shadow-soft backdrop-blur transition-all duration-300 hover:bg-white/70 hover:shadow-md"
+                className="h-11 w-full rounded-xl border border-primary/20 bg-white/55 text-sm font-semibold text-gray-900 shadow-soft backdrop-blur transition-all duration-300 hover:bg-white/70 hover:border-primary/30 hover:shadow-md dark:bg-[#121212] dark:text-[#ffffff] dark:border-white/20 dark:hover:bg-[#1a1a1a]"
                 >
                   <Link href="/signup?plan=free">Start Free</Link>
                 </Button>
@@ -145,34 +160,34 @@ export function PricingSection() {
             whileHover={{ y: -5 }}
             className="h-full w-full max-w-[460px]"
           >
-            <div className="group relative flex h-full flex-col rounded-2xl border border-primary/26 bg-white/60 p-6 shadow-card backdrop-blur-xl transition-all duration-300 hover:shadow-floating">
-              <div className="pointer-events-none absolute -inset-0.5 rounded-2xl bg-[radial-gradient(circle_at_20%_0%,rgba(91,122,47,0.18),transparent_60%),radial-gradient(circle_at_90%_20%,rgba(232,228,217,0.65),transparent_60%)] opacity-80" />
-              <div className="absolute right-4 top-4 inline-flex items-center gap-1 rounded-full border border-primary/18 bg-white/55 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.18em] text-foreground shadow-soft backdrop-blur">
+            <div className="group relative flex h-full flex-col rounded-2xl border border-primary/26 bg-white/60 p-6 shadow-card backdrop-blur-xl transition-all duration-300 hover:shadow-floating dark:bg-[#111111] dark:border-[#1f1f1f]">
+              <div className="pointer-events-none absolute -inset-0.5 rounded-2xl bg-[radial-gradient(circle_at_20%_0%,rgba(91,122,47,0.18),transparent_60%),radial-gradient(circle_at_90%_20%,rgba(232,228,217,0.65),transparent_60%)] opacity-80 dark:hidden" />
+              <div className="absolute right-4 top-4 inline-flex items-center gap-1 rounded-full border border-primary/18 bg-white/55 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.18em] text-foreground shadow-soft backdrop-blur dark:bg-[#121212] dark:text-[#ffffff] dark:border-white/20">
                 <Crown className="h-3 w-3" />
                 Most popular
               </div>
               <div className="mb-3">
-                <h3 className="text-base font-semibold text-foreground">Pro</h3>
-                <p className="mt-1 text-xs text-muted-foreground">
+                <h3 className="text-base font-semibold text-foreground dark:text-[#ffffff]">Pro</h3>
+                <p className="mt-1 text-xs text-muted-foreground dark:text-[#bfbfbf]">
                   Full booking system with realtime coordination.
                 </p>
               </div>
               <div className="mt-2 flex items-baseline gap-1">
-                <span className="text-3xl font-semibold tracking-tight text-foreground">
+                <span className="text-3xl font-semibold tracking-tight text-foreground dark:text-[#ffffff]">
                   {isAnnual ? "₹9,999" : "₹999"}
                 </span>
-                <span className="text-xs text-muted-foreground">
+                <span className="text-xs text-muted-foreground dark:text-[#bfbfbf]">
                   / {isAnnual ? "year" : "month"}
                 </span>
               </div>
-              <p className="mt-1 text-[11px] text-muted-foreground">
+              <p className="mt-1 text-[11px] text-muted-foreground dark:text-[#bfbfbf]">
                 Billed {isAnnual ? "once per year" : "monthly"}. Cancel anytime.
               </p>
               <ul className="mt-5 flex-1 space-y-2 text-sm">
                 {featuresPro.map((feature) => (
                   <li key={feature} className="flex items-start gap-2">
-                    <Check className="mt-0.5 h-4 w-4 text-primary/70" />
-                    <span className="text-muted-foreground">{feature}</span>
+                    <Check className="mt-0.5 h-4 w-4 text-primary flex-shrink-0" />
+                    <span className="text-muted-foreground dark:text-[#bfbfbf]">{feature}</span>
                   </li>
                 ))}
               </ul>

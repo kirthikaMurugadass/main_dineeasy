@@ -23,7 +23,7 @@ const steps = [
 export function WorkflowSection() {
   return (
     <section
-      id="workflow"
+      id="how-it-works"
       className="relative overflow-hidden border-t border-border/60 bg-background py-16 sm:py-20 md:py-24 lg:py-28 2xl:py-32"
     >
       {/* Ambient blur shapes */}

@@ -234,7 +234,7 @@ export default function BookingsPage() {
   function getStatusBadgeColor(status: Booking["status"]) {
     switch (status) {
       case "completed":
-        return "bg-[#5B7A2F]/10 text-[#5B7A2F] border-[#5B7A2F]/20 dark:bg-[#7A9E4A]/20 dark:text-[#7A9E4A] dark:border-[#7A9E4A]/30";
+        return "bg-[#5B7A2F]/10 text-[#5B7A2F] border-[#5B7A2F]/20 dark:bg-[#22c55e]/10 dark:text-[#22c55e] dark:border-[#22c55e]/30";
       case "confirmed":
         return "bg-blue-100 text-blue-700 border-blue-200 dark:bg-blue-900/30 dark:text-blue-400 dark:border-blue-800/30";
       case "pending":
@@ -314,16 +314,16 @@ export default function BookingsPage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 dark:bg-[#000000]">
       {/* Header with Title */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <div className="rounded-xl bg-gradient-to-br from-[#5B7A2F]/20 to-[#5B7A2F]/10 p-2 dark:from-[#7A9E4A]/20 dark:to-[#7A9E4A]/10">
-            <Calendar className="h-5 w-5 text-[#5B7A2F] dark:text-[#7A9E4A]" />
+          <div className="rounded-xl bg-[#22c55e]/20 p-2 dark:bg-[#22c55e]/20">
+            <Calendar className="h-5 w-5 text-[#5B7A2F] dark:text-[#22c55e]" />
           </div>
           <div>
-            <PageTitle>Bookings</PageTitle>
-            <p className="text-sm text-[#6B7B5A] dark:text-[#9CA88A] mt-0.5">
+            <PageTitle className="dark:text-[#ffffff]">Bookings</PageTitle>
+            <p className="text-sm text-[#6B7B5A] dark:text-[#9ca3af] mt-0.5">
               Manage table bookings and reservations
             </p>
           </div>
@@ -331,7 +331,7 @@ export default function BookingsPage() {
       </div>
 
       {/* Tabs and Date Filter */}
-      <Card className="rounded-2xl border border-[#D6D2C4]/50 bg-gradient-to-br from-[#FAFAF5] to-[#F0EDE4]/50 shadow-sm dark:border-[#3D4F2A]/50 dark:from-[#1A2212] dark:to-[#243019]/50">
+      <Card className="rounded-2xl border border-[#D6D2C4]/50 bg-card shadow-sm dark:border-[#1f1f1f] dark:bg-[#111111]">
         <CardContent className="p-6">
           <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             {/* Tab Navigation */}
@@ -341,8 +341,8 @@ export default function BookingsPage() {
                 className={cn(
                   "px-4 py-2 rounded-xl text-sm font-semibold transition-all duration-200",
                   getActiveTab() === "all"
-                    ? "bg-[#5B7A2F] text-white shadow-md dark:bg-[#7A9E4A]"
-                    : "bg-white/50 text-[#6B7B5A] hover:bg-[#E8E4D9]/50 dark:bg-[#243019]/50 dark:text-[#9CA88A] dark:hover:bg-[#2D3A1A]/50"
+                    ? "bg-primary text-white shadow-md dark:bg-primary"
+                    : "bg-white/50 text-[#6B7B5A] hover:bg-[#E8E4D9]/50 dark:bg-[#1a1a1a] dark:text-[#bfbfbf] dark:hover:bg-[#262626]"
                 )}
               >
                 All Bookings
@@ -352,7 +352,7 @@ export default function BookingsPage() {
                 className={cn(
                   "px-4 py-2 rounded-xl text-sm font-semibold transition-all duration-200",
                   getActiveTab() === "today"
-                    ? "bg-[#5B7A2F] text-white shadow-md dark:bg-[#7A9E4A]"
+                    ? "bg-primary text-white shadow-md dark:bg-primary"
                     : "bg-white/50 text-[#6B7B5A] hover:bg-[#E8E4D9]/50 dark:bg-[#243019]/50 dark:text-[#9CA88A] dark:hover:bg-[#2D3A1A]/50"
                 )}
               >
@@ -363,7 +363,7 @@ export default function BookingsPage() {
                 className={cn(
                   "px-4 py-2 rounded-xl text-sm font-semibold transition-all duration-200",
                   getActiveTab() === "upcoming"
-                    ? "bg-[#5B7A2F] text-white shadow-md dark:bg-[#7A9E4A]"
+                    ? "bg-primary text-white shadow-md dark:bg-primary"
                     : "bg-white/50 text-[#6B7B5A] hover:bg-[#E8E4D9]/50 dark:bg-[#243019]/50 dark:text-[#9CA88A] dark:hover:bg-[#2D3A1A]/50"
                 )}
               >
@@ -374,7 +374,7 @@ export default function BookingsPage() {
                 className={cn(
                   "px-4 py-2 rounded-xl text-sm font-semibold transition-all duration-200",
                   getActiveTab() === "pending"
-                    ? "bg-[#5B7A2F] text-white shadow-md dark:bg-[#7A9E4A]"
+                    ? "bg-primary text-white shadow-md dark:bg-primary"
                     : "bg-white/50 text-[#6B7B5A] hover:bg-[#E8E4D9]/50 dark:bg-[#243019]/50 dark:text-[#9CA88A] dark:hover:bg-[#2D3A1A]/50"
                 )}
               >
@@ -385,7 +385,7 @@ export default function BookingsPage() {
                 className={cn(
                   "px-4 py-2 rounded-xl text-sm font-semibold transition-all duration-200",
                   getActiveTab() === "confirmed"
-                    ? "bg-[#5B7A2F] text-white shadow-md dark:bg-[#7A9E4A]"
+                    ? "bg-primary text-white shadow-md dark:bg-primary"
                     : "bg-white/50 text-[#6B7B5A] hover:bg-[#E8E4D9]/50 dark:bg-[#243019]/50 dark:text-[#9CA88A] dark:hover:bg-[#2D3A1A]/50"
                 )}
               >
@@ -396,7 +396,7 @@ export default function BookingsPage() {
                 className={cn(
                   "px-4 py-2 rounded-xl text-sm font-semibold transition-all duration-200",
                   getActiveTab() === "completed"
-                    ? "bg-[#5B7A2F] text-white shadow-md dark:bg-[#7A9E4A]"
+                    ? "bg-primary text-white shadow-md dark:bg-primary"
                     : "bg-white/50 text-[#6B7B5A] hover:bg-[#E8E4D9]/50 dark:bg-[#243019]/50 dark:text-[#9CA88A] dark:hover:bg-[#2D3A1A]/50"
                 )}
               >
@@ -416,12 +416,12 @@ export default function BookingsPage() {
                       setSearchQuery(e.target.value);
                       setCurrentPage(1);
                     }}
-                    className="w-full rounded-xl border border-[#D6D2C4]/50 bg-white px-3 py-2 pl-10 text-sm text-[#2D3A1A] shadow-sm transition-all hover:border-[#5B7A2F]/50 focus:border-[#5B7A2F] focus:outline-none focus:ring-2 focus:ring-[#5B7A2F]/20 dark:border-[#3D4F2A]/50 dark:bg-[#243019] dark:text-[#E8E4D9] dark:hover:border-[#7A9E4A]/50 dark:focus:border-[#7A9E4A] sm:w-[200px]"
+                    className="w-full rounded-xl border border-[#D6D2C4]/50 bg-white px-3 py-2 pl-10 text-sm text-[#2D3A1A] shadow-sm transition-all hover:border-[#5B7A2F]/50 focus:border-[#5B7A2F] focus:outline-none focus:ring-2 focus:ring-[#5B7A2F]/20 dark:border-[#262626] dark:bg-[#0f0f0f] dark:text-[#ffffff] dark:placeholder:text-[#8a8a8a] dark:hover:border-[#22c55e]/50 dark:focus:border-[#22c55e] sm:w-[200px]"
                   />
-                  <User2 className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-[#6B7B5A] dark:text-[#9CA88A]" />
+                  <User2 className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-[#6B7B5A] dark:text-[#bfbfbf]" />
                 </div>
                 <div className="flex items-center gap-2">
-                  <Calendar className="h-4 w-4 text-[#6B7B5A] dark:text-[#9CA88A]" />
+                  <Calendar className="h-4 w-4 text-[#6B7B5A] dark:text-[#bfbfbf]" />
                   <input
                     type="date"
                     value={selectedDate}
@@ -429,7 +429,7 @@ export default function BookingsPage() {
                       setSelectedDate(e.target.value);
                       setCurrentPage(1);
                     }}
-                    className="rounded-xl border border-[#D6D2C4]/50 bg-white px-3 py-2 text-sm text-[#2D3A1A] shadow-sm transition-all hover:border-[#5B7A2F]/50 focus:border-[#5B7A2F] focus:outline-none focus:ring-2 focus:ring-[#5B7A2F]/20 dark:border-[#3D4F2A]/50 dark:bg-[#243019] dark:text-[#E8E4D9] dark:hover:border-[#7A9E4A]/50 dark:focus:border-[#7A9E4A]"
+                    className="rounded-xl border border-[#D6D2C4]/50 bg-white px-3 py-2 text-sm text-[#2D3A1A] shadow-sm transition-all hover:border-[#5B7A2F]/50 focus:border-[#5B7A2F] focus:outline-none focus:ring-2 focus:ring-[#5B7A2F]/20 dark:border-[#262626] dark:bg-[#0f0f0f] dark:text-[#ffffff] dark:placeholder:text-[#8a8a8a] dark:hover:border-[#22c55e]/50 dark:focus:border-[#22c55e]"
                   />
                   {selectedDate && (
                     <Button
@@ -439,7 +439,7 @@ export default function BookingsPage() {
                         setSelectedDate("");
                         setCurrentPage(1);
                       }}
-                      className="text-xs text-[#6B7B5A] hover:text-[#2D3A1A] dark:text-[#9CA88A] dark:hover:text-[#E8E4D9]"
+                      className="text-xs text-[#6B7B5A] hover:text-[#2D3A1A] dark:text-[#bfbfbf] dark:hover:text-[#ffffff]"
                     >
                       Clear
                     </Button>
@@ -454,24 +454,24 @@ export default function BookingsPage() {
       {/* Bookings Table */}
       {loading ? (
         <div className="flex items-center justify-center py-12">
-          <Loader2 className="h-6 w-6 animate-spin text-[#5B7A2F] dark:text-[#7A9E4A]" />
+          <Loader2 className="h-6 w-6 animate-spin text-[#5B7A2F] dark:text-[#22c55e]" />
         </div>
       ) : filteredBookings.length === 0 ? (
         <FadeIn>
-          <Card className="rounded-2xl border border-[#D6D2C4]/50 bg-gradient-to-br from-[#FAFAF5] to-[#F0EDE4]/50 shadow-sm dark:border-[#3D4F2A]/50 dark:from-[#1A2212] dark:to-[#243019]/50">
+          <Card className="rounded-2xl border border-[#D6D2C4]/50 bg-white shadow-sm dark:border-[#1f1f1f] dark:bg-[#111111]">
             <CardContent className="flex flex-col items-center justify-center py-12">
-              <p className="text-[#6B7B5A] dark:text-[#9CA88A]">No bookings yet</p>
+              <p className="text-[#6B7B5A] dark:text-[#9ca3af]">No bookings yet</p>
             </CardContent>
           </Card>
         </FadeIn>
       ) : (
-        <Card className="rounded-2xl border border-[#D6D2C4]/50 bg-gradient-to-br from-[#FAFAF5] to-[#F0EDE4]/50 shadow-sm dark:border-[#3D4F2A]/50 dark:from-[#1A2212] dark:to-[#243019]/50">
+        <Card className="rounded-2xl border border-[#D6D2C4]/50 bg-white shadow-sm dark:border-[#1f1f1f] dark:bg-[#111111]">
           <CardContent className="p-0">
             <div className="overflow-x-auto">
               <table className="w-full">
                 <thead>
-                  <tr className="border-b border-[#D6D2C4]/30 dark:border-[#3D4F2A]/30">
-                    <th className="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider text-[#6B7B5A] dark:text-[#9CA88A]">
+                  <tr className="border-b border-[#D6D2C4]/30 dark:border-[#262626] dark:bg-[#1a1a1a]">
+                    <th className="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider text-[#6B7B5A] dark:text-[#bfbfbf]">
                       Booking ID
                     </th>
                     <th className="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider text-[#6B7B5A] dark:text-[#9CA88A]">
@@ -494,47 +494,47 @@ export default function BookingsPage() {
                     </th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-[#D6D2C4]/20 dark:divide-[#3D4F2A]/20">
+                <tbody className="divide-y divide-[#D6D2C4]/20 dark:divide-y-0 dark:border-[#262626] dark:bg-[#111111]">
                   {paginatedBookings.map((booking, index) => (
                     <motion.tr
                       key={booking.id}
                       initial={{ opacity: 0, y: 10 }}
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ delay: index * 0.03 }}
-                      className="transition-colors hover:bg-[#E8E4D9]/30 dark:hover:bg-[#2D3A1A]/30"
+                      className="transition-colors hover:bg-[#E8E4D9]/30 dark:hover:bg-[#1a1a1a] dark:border-b dark:border-[#262626]"
                     >
                       <td className="px-6 py-4 whitespace-nowrap">
-                        <span className="text-sm font-medium text-[#2D3A1A] dark:text-[#E8E4D9]">
+                        <span className="text-sm font-medium text-[#2D3A1A] dark:text-[#ffffff]">
                           #{booking.id.slice(0, 8)}
                         </span>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="flex items-center gap-3">
-                          <div className="flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-br from-[#5B7A2F] to-[#7A9E4A] text-white font-semibold text-sm shadow-md">
+                          <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[#22c55e] text-white font-semibold text-sm shadow-md shrink-0">
                             {getAvatarInitial(booking.customer_name)}
                           </div>
-                          <span className="text-sm font-semibold text-[#2D3A1A] dark:text-[#E8E4D9]">
+                          <span className="text-sm font-semibold text-[#2D3A1A] dark:text-[#ffffff]">
                             {booking.customer_name}
                           </span>
                         </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
-                        <span className="text-sm text-[#6B7B5A] dark:text-[#9CA88A]">
+                        <span className="text-sm text-[#6B7B5A] dark:text-[#9ca3af]">
                           {booking.table_number ? `Table ${booking.table_number}` : "-"}
                         </span>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="flex flex-col">
-                          <span className="text-sm text-[#2D3A1A] dark:text-[#E8E4D9] font-medium">
+                          <span className="text-sm text-[#2D3A1A] dark:text-[#ffffff] font-medium">
                             {formatBookingDate(booking.booking_date)}
                           </span>
-                          <span className="text-xs text-[#6B7B5A] dark:text-[#9CA88A]">
+                          <span className="text-xs text-[#6B7B5A] dark:text-[#9ca3af]">
                             {formatTime(booking.booking_time)}
                           </span>
                         </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
-                        <span className="text-sm text-[#6B7B5A] dark:text-[#9CA88A]">
+                        <span className="text-sm text-[#6B7B5A] dark:text-[#9ca3af]">
                           {booking.guest_count} {booking.guest_count === 1 ? "Guest" : "Guests"}
                         </span>
                       </td>
@@ -553,7 +553,7 @@ export default function BookingsPage() {
                             <Button
                               variant="outline"
                               size="sm"
-                              className="rounded-xl border-[#D6D2C4]/50 bg-white/50 text-[#5B7A2F] hover:bg-[#5B7A2F] hover:text-white hover:border-[#5B7A2F] shadow-sm transition-all dark:border-[#3D4F2A]/50 dark:bg-[#243019]/50 dark:text-[#7A9E4A] dark:hover:bg-[#7A9E4A] dark:hover:text-[#1A2212]"
+                              className="rounded-xl border-[#D6D2C4]/50 bg-white/50 text-[#5B7A2F] hover:bg-[#5B7A2F] hover:text-white hover:border-[#5B7A2F] shadow-sm transition-all dark:border-[#262626] dark:bg-[#1a1a1a] dark:text-[#22c55e] dark:hover:bg-[#22c55e] dark:hover:text-[#000000]"
                             >
                               <Eye className="h-4 w-4" />
                             </Button>
@@ -564,16 +564,16 @@ export default function BookingsPage() {
                                 variant="ghost"
                                 size="icon"
                                 disabled={updatingStatus === booking.id}
-                                className="rounded-xl hover:bg-[#E8E4D9]/50 dark:hover:bg-[#2D3A1A]/50"
+                                className="rounded-xl hover:bg-[#E8E4D9]/50 dark:hover:bg-[#1a1a1a]"
                               >
                                 {updatingStatus === booking.id ? (
-                                  <Loader2 className="h-4 w-4 animate-spin text-[#5B7A2F] dark:text-[#7A9E4A]" />
+                                  <Loader2 className="h-4 w-4 animate-spin text-[#5B7A2F] dark:text-[#22c55e]" />
                                 ) : (
-                                  <MoreVertical className="h-4 w-4 text-[#6B7B5A] dark:text-[#9CA88A]" />
+                                  <MoreVertical className="h-4 w-4 text-[#6B7B5A] dark:text-[#bfbfbf]" />
                                 )}
                               </Button>
                             </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end" className="rounded-xl border-[#D6D2C4]/50 dark:border-[#3D4F2A]/50">
+                            <DropdownMenuContent align="end" className="rounded-xl border-[#D6D2C4]/50 dark:border-[#262626] dark:bg-[#111111]">
                               {booking.status !== "confirmed" && (
                                 <DropdownMenuItem
                                   onClick={() => updateBookingStatus(booking.id, "confirmed")}
@@ -610,9 +610,9 @@ export default function BookingsPage() {
 
             {/* Pagination */}
             {totalPages > 1 && (
-              <div className="border-t border-[#D6D2C4]/30 px-6 py-4 dark:border-[#3D4F2A]/30">
+              <div className="border-t border-[#D6D2C4]/30 px-6 py-4 dark:border-[#262626]">
                 <div className="flex items-center justify-between">
-                  <div className="text-sm text-[#6B7B5A] dark:text-[#9CA88A]">
+                  <div className="text-sm text-[#6B7B5A] dark:text-[#9ca3af]">
                     Showing {indexOfFirstBooking + 1} to {Math.min(indexOfLastBooking, filteredBookings.length)} of {filteredBookings.length} bookings
                   </div>
                   <div className="flex items-center gap-2">
@@ -621,7 +621,7 @@ export default function BookingsPage() {
                       size="sm"
                       onClick={() => paginate(currentPage - 1)}
                       disabled={currentPage === 1}
-                      className="rounded-xl border-[#D6D2C4]/50 bg-white/50 hover:bg-[#E8E4D9]/50 disabled:opacity-50 dark:border-[#3D4F2A]/50 dark:bg-[#243019]/50 dark:hover:bg-[#2D3A1A]/50"
+                      className="rounded-xl border-[#D6D2C4]/50 bg-white/50 hover:bg-[#E8E4D9]/50 disabled:opacity-50 dark:border-[#262626] dark:bg-[#1a1a1a] dark:text-[#ffffff] dark:hover:bg-[#262626]"
                     >
                       <ChevronLeft className="h-4 w-4" />
                       Previous
@@ -647,8 +647,8 @@ export default function BookingsPage() {
                             className={cn(
                               "rounded-xl",
                               currentPage === pageNum
-                                ? "bg-[#5B7A2F] text-white shadow-md dark:bg-[#7A9E4A]"
-                                : "border-[#D6D2C4]/50 bg-white/50 hover:bg-[#E8E4D9]/50 dark:border-[#3D4F2A]/50 dark:bg-[#243019]/50 dark:hover:bg-[#2D3A1A]/50"
+                                ? "bg-primary text-white shadow-md dark:bg-primary"
+                                : "border-[#D6D2C4]/50 bg-white/50 hover:bg-[#E8E4D9]/50 dark:border-[#262626] dark:bg-[#1a1a1a] dark:text-[#ffffff] dark:hover:bg-[#262626]"
                             )}
                           >
                             {pageNum}
@@ -661,7 +661,7 @@ export default function BookingsPage() {
                       size="sm"
                       onClick={() => paginate(currentPage + 1)}
                       disabled={currentPage === totalPages}
-                      className="rounded-xl border-[#D6D2C4]/50 bg-white/50 hover:bg-[#E8E4D9]/50 disabled:opacity-50 dark:border-[#3D4F2A]/50 dark:bg-[#243019]/50 dark:hover:bg-[#2D3A1A]/50"
+                      className="rounded-xl border-[#D6D2C4]/50 bg-white/50 hover:bg-[#E8E4D9]/50 disabled:opacity-50 dark:border-[#262626] dark:bg-[#1a1a1a] dark:text-[#ffffff] dark:hover:bg-[#262626]"
                     >
                       Next
                       <ChevronRight className="h-4 w-4" />

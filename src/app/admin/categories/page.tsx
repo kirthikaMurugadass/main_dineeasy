@@ -317,7 +317,7 @@ export default function CategoriesPage() {
               </a>
             )}
             <Link href="/admin/menu/category/new" className="w-full sm:w-auto">
-              <Button className="gap-2 bg-espresso text-warm hover:bg-espresso/90 dark:bg-espresso dark:text-slate-900 dark:hover:bg-espresso/90 w-full sm:w-auto">
+              <Button className="gap-2 bg-primary text-white hover:bg-primary/90 dark:bg-primary dark:text-white dark:hover:bg-primary/90 w-full sm:w-auto">
                 <Plus size={16} />
                 {t.admin.categories.addCategory}
               </Button>
