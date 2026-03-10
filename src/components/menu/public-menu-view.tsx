@@ -4,13 +4,14 @@ import { useState, useRef, useEffect, useCallback, useMemo } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
-import { Plus, Minus, ShoppingCart, ShoppingBag, Lock } from "lucide-react";
+import { Plus, Minus, ShoppingCart, ShoppingBag, Lock, Sun, Moon, Monitor } from "lucide-react";
 import type { PublicMenu, PublicRestaurantData, Language, ThemeConfig } from "@/types/database";
 import { defaultThemeConfig } from "@/types/database";
 import { GoogleFontsLoader } from "./google-fonts-loader";
 import { useI18n } from "@/lib/i18n/context";
 import { useCartStore } from "@/lib/stores/cart-store";
 import { createClient } from "@/lib/supabase/client";
+import { useTheme } from "@/components/providers/theme-provider";
 import {
   Dialog,
   DialogContent,
@@ -18,6 +19,13 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Button } from "@/components/ui/button";
 
 type ViewData = PublicMenu | (PublicRestaurantData & { menu?: { id: string; slug: string } });
 
@@ -122,6 +130,8 @@ function OrnamentalDivider({ accentColor, isDark }: { accentColor: string; isDar
 
 export function PublicMenuView({ data, restaurantId, menuId, initialLang }: Props) {
   const { t, setLanguage } = useI18n();
+  const { resolvedTheme, setTheme } = useTheme();
+  const ThemeIcon = resolvedTheme === "light" ? Sun : resolvedTheme === "dark" ? Moon : Monitor;
   const [lang, setLang] = useState<Language>(initialLang ?? "de");
   const [activeCategory, setActiveCategory] = useState(data.categories[0]?.id ?? "");
   const categoryRefs = useRef<Map<string, HTMLElement>>(new Map());
@@ -493,7 +503,7 @@ export function PublicMenuView({ data, restaurantId, menuId, initialLang }: Prop
           <div className="absolute inset-0" style={overlayStyle} />
         </div>
 
-        {/* Top bar: Logo + Name (left), Cart (right) */}
+        {/* Top bar: Logo + Name (left), Theme toggle + Cart (right) */}
         <div className="relative z-10 flex items-center justify-between px-4 pt-6 sm:px-8 sm:pt-8">
           <div className="flex items-center gap-3">
             {data.restaurant.logo_url && theme.showLogo && !logoImageFailed ? (
@@ -536,41 +546,85 @@ export function PublicMenuView({ data, restaurantId, menuId, initialLang }: Prop
               )}
             </div>
           </div>
-          
-          {/* Cart Button */}
-          {restaurantId && menuId && (
-            ordersEnabled ? (
-              <Link
-                href={`/public-menu/${data.restaurant.slug}/${menuId}/cart`}
-                className="relative flex items-center gap-2 rounded-full bg-white/10 backdrop-blur-sm px-4 py-2.5 text-white transition-all hover:bg-white/20"
-                style={{ textShadow: "0 2px 8px rgba(0,0,0,0.5)" }}
-              >
-                <ShoppingCart size={20} />
-                <span className="hidden sm:inline text-sm font-medium">Cart</span>
-                {mounted && getItemCount() > 0 && (
-                  <span
-                    className="absolute -right-1 -top-1 flex h-5 w-5 items-center justify-center rounded-full text-xs font-bold text-white"
-                    style={{
-                      backgroundColor: accentColor,
-                      color: "#1a1714",
-                    }}
+
+          <div className="flex items-center gap-2">
+            {/* Theme toggle */}
+            {mounted && (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-9 w-9 rounded-full bg-white/10 backdrop-blur-sm text-white transition-all hover:bg-white/20"
+                    style={{ textShadow: "0 2px 8px rgba(0,0,0,0.5)" }}
+                    aria-label="Toggle theme"
                   >
-                    {getItemCount()}
-                  </span>
+                    <ThemeIcon className="h-[18px] w-[18px]" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent
+                  align="end"
+                  className="z-[10000] min-w-[140px] rounded-xl border border-border bg-popover p-1 shadow-lg"
+                >
+                  <DropdownMenuItem
+                    onClick={() => setTheme("light")}
+                    className="rounded-lg py-2.5 text-foreground"
+                  >
+                    <Sun className="mr-3 h-[18px] w-[18px]" /> Light
+                  </DropdownMenuItem>
+                  <DropdownMenuItem
+                    onClick={() => setTheme("dark")}
+                    className="rounded-lg py-2.5 text-foreground"
+                  >
+                    <Moon className="mr-3 h-[18px] w-[18px]" /> Dark
+                  </DropdownMenuItem>
+                  <DropdownMenuItem
+                    onClick={() => setTheme("system")}
+                    className="rounded-lg py-2.5 text-foreground"
+                  >
+                    <Monitor className="mr-3 h-[18px] w-[18px]" /> System
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            )}
+
+            {/* Cart Button */}
+            {restaurantId && menuId && (
+              <>
+                {ordersEnabled ? (
+                  <Link
+                    href={`/public-menu/${data.restaurant.slug}/${menuId}/cart`}
+                    className="relative flex items-center gap-2 rounded-full bg-white/10 backdrop-blur-sm px-4 py-2.5 text-white transition-all hover:bg-white/20"
+                    style={{ textShadow: "0 2px 8px rgba(0,0,0,0.5)" }}
+                  >
+                    <ShoppingCart size={20} />
+                    <span className="hidden sm:inline text-sm font-medium">Cart</span>
+                    {mounted && getItemCount() > 0 && (
+                      <span
+                        className="absolute -right-1 -top-1 flex h-5 w-5 items-center justify-center rounded-full text-xs font-bold text-white"
+                        style={{
+                          backgroundColor: accentColor,
+                          color: "#1a1714",
+                        }}
+                      >
+                        {getItemCount()}
+                      </span>
+                    )}
+                  </Link>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={() => setOrdersModalOpen(true)}
+                    className="relative flex items-center gap-2 rounded-full bg-white/5 px-4 py-2.5 text-xs font-medium text-white/60 cursor-not-allowed"
+                    style={{ textShadow: "0 2px 8px rgba(0,0,0,0.5)" }}
+                  >
+                    <ShoppingCart size={18} className="opacity-70" />
+                    <span className="hidden sm:inline">Ordering disabled</span>
+                  </button>
                 )}
-              </Link>
-            ) : (
-              <button
-                type="button"
-                onClick={() => setOrdersModalOpen(true)}
-                className="relative flex items-center gap-2 rounded-full bg-white/5 px-4 py-2.5 text-xs font-medium text-white/60 cursor-not-allowed"
-                style={{ textShadow: "0 2px 8px rgba(0,0,0,0.5)" }}
-              >
-                <ShoppingCart size={18} className="opacity-70" />
-                <span className="hidden sm:inline">Ordering disabled</span>
-              </button>
-            )
-          )}
+              </>
+            )}
+          </div>
         </div>
 
         {/* Center: Customizable hero content */}

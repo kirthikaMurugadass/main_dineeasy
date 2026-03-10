@@ -534,7 +534,7 @@ export default function AppearancePage() {
           <Button
             onClick={handleSave}
             disabled={saving}
-            className="gap-2 bg-espresso text-warm hover:bg-espresso/90 dark:bg-espresso dark:text-slate-900 dark:hover:bg-espresso/90 w-full sm:w-auto justify-center"
+            className="gap-2 bg-primary text-white hover:bg-primary/90 dark:bg-primary dark:text-white dark:hover:bg-primary/90 w-full sm:w-auto justify-center"
           >
             {saving ? <Loader2 size={16} className="animate-spin" /> : <Save size={16} />}
             {t.admin.appearance.save}

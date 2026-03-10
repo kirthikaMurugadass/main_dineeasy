@@ -240,7 +240,7 @@ export default function OrderDetailsPage() {
       case "preparing":
         return "bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-500/20";
       case "completed":
-        return "bg-green-500/10 text-green-600 dark:text-green-400 border-green-500/20";
+        return "bg-green-500/10 text-green-600 dark:text-green-400 border-green-500/20 dark:bg-[#22c55e]/10 dark:text-[#22c55e] dark:border-[#22c55e]/30";
     }
   }
 
@@ -276,9 +276,9 @@ export default function OrderDetailsPage() {
             Back to Orders
           </Button>
         </Link>
-        <Card>
+        <Card className="dark:border-[#1f1f1f] dark:bg-[#111111]">
           <CardContent className="flex flex-col items-center justify-center py-12">
-            <p className="text-muted-foreground">Order not found</p>
+            <p className="text-muted-foreground dark:text-[#9ca3af]">Order not found</p>
           </CardContent>
         </Card>
       </div>
@@ -286,15 +286,15 @@ export default function OrderDetailsPage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 dark:bg-[#000000]">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">
           <Link href="/admin/orders">
-            <Button variant="ghost" size="icon">
+            <Button variant="ghost" size="icon" className="dark:bg-[#1a1a1a] dark:hover:bg-[#262626] dark:text-[#ffffff]">
               <ArrowLeft className="h-4 w-4" />
             </Button>
           </Link>
-          <PageTitle>Order Details</PageTitle>
+          <PageTitle className="dark:text-[#ffffff]">Order Details</PageTitle>
         </div>
         <Badge
           variant="outline"
@@ -305,49 +305,49 @@ export default function OrderDetailsPage() {
         </Badge>
       </div>
 
-      <div className="grid gap-6 md:grid-cols-2">
+      <div className="space-y-6 w-full max-w-full">
         {/* Order Information */}
         <FadeIn>
-          <Card>
+          <Card className="dark:border-[#1f1f1f] dark:bg-[#111111] dark:p-6 rounded-2xl">
             <CardHeader>
-              <CardTitle>Order Information</CardTitle>
+              <CardTitle className="dark:text-[#ffffff]">Order Information</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               <div>
-                <p className="text-sm text-muted-foreground">Customer Name</p>
-                <p className="text-lg font-semibold">{order.customer_name}</p>
+                <p className="text-sm text-muted-foreground dark:text-[#bfbfbf]">Customer Name</p>
+                <p className="text-lg font-semibold dark:text-[#ffffff]">{order.customer_name}</p>
               </div>
               <div>
-                <p className="text-sm text-muted-foreground">Order Type</p>
-                <p className="text-lg font-semibold">
+                <p className="text-sm text-muted-foreground dark:text-[#bfbfbf]">Order Type</p>
+                <p className="text-lg font-semibold dark:text-[#ffffff]">
                   {order.order_type === "dine_in" ? "Dine-in" : "Takeaway"}
                 </p>
               </div>
               {order.order_type === "dine_in" && order.table_number && (
                 <div>
-                  <p className="text-sm text-muted-foreground">Table Number</p>
-                  <p className="text-lg font-semibold">{order.table_number}</p>
+                  <p className="text-sm text-muted-foreground dark:text-[#bfbfbf]">Table Number</p>
+                  <p className="text-lg font-semibold dark:text-[#ffffff]">{order.table_number}</p>
                 </div>
               )}
               {order.order_type === "takeaway" && order.delivery_address && (
                 <div>
-                  <p className="text-sm text-muted-foreground">Delivery Address</p>
-                  <p className="text-lg font-semibold">{order.delivery_address}</p>
+                  <p className="text-sm text-muted-foreground dark:text-[#bfbfbf]">Delivery Address</p>
+                  <p className="text-lg font-semibold dark:text-[#ffffff]">{order.delivery_address}</p>
                 </div>
               )}
               {order.order_type === "takeaway" && order.phone_number && (
                 <div>
-                  <p className="text-sm text-muted-foreground">Phone Number</p>
-                  <p className="text-lg font-semibold">{order.phone_number}</p>
+                  <p className="text-sm text-muted-foreground dark:text-[#bfbfbf]">Phone Number</p>
+                  <p className="text-lg font-semibold dark:text-[#ffffff]">{order.phone_number}</p>
                 </div>
               )}
               <div>
-                <p className="text-sm text-muted-foreground">Placed At</p>
-                <p className="text-lg font-semibold">{formatDate(order.created_at)}</p>
+                <p className="text-sm text-muted-foreground dark:text-[#bfbfbf]">Placed At</p>
+                <p className="text-lg font-semibold dark:text-[#ffffff]">{formatDate(order.created_at)}</p>
               </div>
               <div>
-                <p className="text-sm text-muted-foreground">Order ID</p>
-                <p className="text-sm font-mono text-muted-foreground">{order.id}</p>
+                <p className="text-sm text-muted-foreground dark:text-[#bfbfbf]">Order ID</p>
+                <p className="text-sm font-mono text-muted-foreground dark:text-[#9ca3af]">{order.id}</p>
               </div>
             </CardContent>
           </Card>
@@ -355,41 +355,41 @@ export default function OrderDetailsPage() {
 
         {/* Status Management */}
         <FadeIn delay={0.1}>
-          <Card>
+          <Card className="dark:border-[#1f1f1f] dark:bg-[#111111] dark:p-6 rounded-2xl">
             <CardHeader>
-              <CardTitle>Status Management</CardTitle>
+              <CardTitle className="dark:text-[#ffffff]">Status Management</CardTitle>
             </CardHeader>
             <CardContent className="space-y-3">
               {order.status !== "pending" && (
                 <Button
                   variant="outline"
-                  className="w-full justify-start"
+                  className="w-full justify-start dark:border-[#262626] dark:bg-[#1a1a1a] dark:text-[#ffffff] dark:hover:bg-[#262626]"
                   onClick={() => updateOrderStatus("pending")}
                   disabled={updatingStatus}
                 >
-                  <Clock className="h-4 w-4 mr-2" />
+                  <Clock className="h-4 w-4 mr-2 dark:text-[#22c55e]" />
                   {t.admin.orders.markAsPending}
                 </Button>
               )}
               {order.status !== "preparing" && (
                 <Button
                   variant="outline"
-                  className="w-full justify-start"
+                  className="w-full justify-start dark:border-[#262626] dark:bg-[#1a1a1a] dark:text-[#ffffff] dark:hover:bg-[#262626]"
                   onClick={() => updateOrderStatus("preparing")}
                   disabled={updatingStatus}
                 >
-                  <ChefHat className="h-4 w-4 mr-2" />
+                  <ChefHat className="h-4 w-4 mr-2 dark:text-[#22c55e]" />
                   {t.admin.orders.markAsPreparing}
                 </Button>
               )}
               {order.status !== "completed" && (
                 <Button
                   variant="outline"
-                  className="w-full justify-start"
+                  className="w-full justify-start dark:border-[#262626] dark:bg-[#1a1a1a] dark:text-[#ffffff] dark:hover:bg-[#262626]"
                   onClick={() => updateOrderStatus("completed")}
                   disabled={updatingStatus}
                 >
-                  <CheckCircle className="h-4 w-4 mr-2" />
+                  <CheckCircle className="h-4 w-4 mr-2 dark:text-[#22c55e]" />
                   {t.admin.orders.markAsCompleted}
                 </Button>
               )}
@@ -400,16 +400,16 @@ export default function OrderDetailsPage() {
 
       {/* Order Items */}
       <FadeIn delay={0.2}>
-        <Card>
+        <Card className="dark:border-[#1f1f1f] dark:bg-[#111111] dark:p-6 rounded-2xl">
           <CardHeader>
-            <CardTitle>{t.admin.orders.items}</CardTitle>
+            <CardTitle className="dark:text-[#ffffff]">{t.admin.orders.items}</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
               {order.items.map((item) => (
                 <div
                   key={item.id}
-                  className="flex items-center gap-4 rounded-lg border border-border/60 p-4"
+                  className="flex items-center gap-4 rounded-lg border border-border/60 dark:border-[#262626] p-4 dark:bg-[#0f0f0f]"
                 >
                   {item.item_image_url && (
                     <div className="relative h-16 w-16 shrink-0 overflow-hidden rounded-lg">
@@ -424,21 +424,21 @@ export default function OrderDetailsPage() {
                     </div>
                   )}
                   <div className="flex-1">
-                    <p className="font-semibold">
+                    <p className="font-semibold dark:text-[#ffffff]">
                       {getDisplayTitle(item.item_title, language)}
                     </p>
-                    <p className="text-sm text-muted-foreground">
+                    <p className="text-sm text-muted-foreground dark:text-[#9ca3af]">
                       {item.quantity}x @ CHF {item.price.toFixed(2)}
                     </p>
                   </div>
-                  <p className="text-lg font-bold">
+                  <p className="text-lg font-bold dark:text-[#ffffff]">
                     CHF {(item.price * item.quantity).toFixed(2)}
                   </p>
                 </div>
               ))}
-              <div className="flex items-center justify-between border-t border-border pt-4">
-                <span className="text-lg font-semibold">{t.admin.orders.total}</span>
-                <span className="text-2xl font-bold">
+              <div className="flex items-center justify-between border-t border-border dark:border-[#262626] pt-4">
+                <span className="text-lg font-semibold dark:text-[#ffffff]">{t.admin.orders.total}</span>
+                <span className="text-2xl font-bold dark:text-[#ffffff]">
                   CHF {order.total.toFixed(2)}
                 </span>
               </div>

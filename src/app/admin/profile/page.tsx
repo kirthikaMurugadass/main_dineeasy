@@ -46,8 +46,8 @@ function FieldRow({
   value: string;
 }) {
   return (
-    <div className="flex items-start gap-3 rounded-2xl border border-[#D6D2C4]/60 bg-white/70 px-4 py-3 shadow-sm transition-all hover:shadow-md dark:border-[#3D4F2A]/60 dark:bg-[#111827]/50">
-      <div className="mt-0.5 flex h-9 w-9 items-center justify-center rounded-xl bg-[#DCFCE7] text-[#16A34A] dark:bg-[#1F2914] dark:text-[#7A9E4A]">
+    <div className="flex items-start gap-3 rounded-2xl border border-[#D6D2C4]/60 bg-white/70 px-4 py-3 shadow-sm transition-all hover:shadow-md dark:border-[#1f1f1f] dark:bg-[#000000]">
+      <div className="mt-0.5 flex h-9 w-9 items-center justify-center rounded-xl bg-[#DCFCE7] text-[#16A34A] dark:bg-[#0f0f0f] dark:text-[#22c55e]">
         <Icon className="h-4 w-4" />
       </div>
       <div className="min-w-0 flex-1">
@@ -82,8 +82,8 @@ function EditableFieldRow({
   inputType?: React.HTMLInputTypeAttribute;
 }) {
   return (
-    <div className="flex items-start gap-3 rounded-2xl border border-[#D6D2C4]/60 bg-white/70 px-4 py-3 shadow-sm transition-all hover:shadow-md dark:border-[#3D4F2A]/60 dark:bg-[#111827]/50">
-      <div className="mt-0.5 flex h-9 w-9 items-center justify-center rounded-xl bg-[#DCFCE7] text-[#16A34A] dark:bg-[#1F2914] dark:text-[#7A9E4A]">
+    <div className="flex items-start gap-3 rounded-2xl border border-[#D6D2C4]/60 bg-white/70 px-4 py-3 shadow-sm transition-all hover:shadow-md dark:border-[#1f1f1f] dark:bg-[#000000]">
+      <div className="mt-0.5 flex h-9 w-9 items-center justify-center rounded-xl bg-[#DCFCE7] text-[#16A34A] dark:bg-[#0f0f0f] dark:text-[#22c55e]">
         <Icon className="h-4 w-4" />
       </div>
       <div className="min-w-0 flex-1">
@@ -97,7 +97,7 @@ function EditableFieldRow({
             onChange={(e) => onChange?.(e.target.value)}
             disabled={disabled}
             placeholder={placeholder}
-            className="mt-2 h-11 rounded-xl border-2 border-[#D6D2C4]/70 bg-white/80 text-sm shadow-sm transition-all focus-visible:border-[#22C55E] focus-visible:ring-[#22C55E]/20 disabled:opacity-70 dark:border-[#3D4F2A]/70 dark:bg-[#111827]/60"
+            className="mt-2 h-11 rounded-xl border-2 border-[#D6D2C4]/70 bg-white/80 text-sm shadow-sm transition-all focus-visible:border-[#22C55E] focus-visible:ring-[#22C55E]/20 disabled:opacity-70 dark:border-[#1f1f1f] dark:bg-[#0f0f0f] dark:text-white"
           />
         ) : (
           <p className="mt-1 truncate text-sm font-semibold text-[#2D3A1A] dark:text-[#E8E4D9]">
@@ -271,7 +271,7 @@ export default function AdminProfilePage() {
           <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row sm:items-center">
             <Button
               variant="outline"
-              className="w-full rounded-full border-[#D6D2C4]/70 bg-white/70 text-[#2D3A1A] hover:bg-[#E8E4D9]/70 sm:w-auto dark:border-[#3D4F2A]/70 dark:bg-[#111827]/60 dark:text-[#E8E4D9] dark:hover:bg-[#1F2914]"
+              className="w-full rounded-full border-[#D6D2C4]/70 bg-white/70 text-[#2D3A1A] hover:bg-[#E8E4D9]/70 sm:w-auto dark:border-[#1f1f1f] dark:bg-[#0f0f0f] dark:text-[#E8E4D9] dark:hover:bg-[#1a1a1a]"
               onClick={() => {
                 if (isEditing) {
                   setIsEditing(false);
@@ -297,17 +297,17 @@ export default function AdminProfilePage() {
 
       <div className="grid gap-6 lg:grid-cols-2">
         <FadeIn delay={0.05}>
-          <Card className="rounded-3xl border border-[#D6D2C4]/60 bg-gradient-to-br from-[#FAFAF5] via-[#F8F6EE] to-[#F0EDE4] shadow-xl dark:border-[#3D4F2A]/60 dark:from-[#1A2212] dark:via-[#1F2914] dark:to-[#243019]">
+          <Card className="rounded-3xl border border-[#D6D2C4]/60 bg-gradient-to-br from-[#FAFAF5] via-[#F8F6EE] to-[#F0EDE4] shadow-xl dark:border-[#1f1f1f] dark:!bg-[#000000] dark:from-transparent dark:via-transparent dark:to-transparent">
             <CardHeader className="pb-3">
               <CardTitle className="flex items-center gap-2 text-lg font-semibold text-[#2D3A1A] dark:text-[#E8E4D9]">
-                <span className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-[#DCFCE7] text-[#16A34A] dark:bg-[#1F2914] dark:text-[#7A9E4A]">
+                <span className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-[#DCFCE7] text-[#16A34A] dark:bg-[#0f0f0f] dark:text-[#22c55e]">
                   <User className="h-4 w-4" />
                 </span>
                 Personal Information
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="flex items-center gap-4 rounded-2xl border border-[#D6D2C4]/60 bg-white/70 p-4 shadow-sm dark:border-[#3D4F2A]/60 dark:bg-[#111827]/50">
+              <div className="flex items-center gap-4 rounded-2xl border border-[#D6D2C4]/60 bg-white/70 p-4 shadow-sm dark:border-[#1f1f1f] dark:bg-[#000000]">
                 <Avatar size="lg" className="size-12 border border-[#D6D2C4]/60">
                   {profile.avatarUrl ? (
                     <AvatarImage src={profile.avatarUrl} alt={profile.fullName} />
@@ -364,10 +364,10 @@ export default function AdminProfilePage() {
         </FadeIn>
 
         <FadeIn delay={0.08}>
-          <Card className="rounded-3xl border border-[#D6D2C4]/60 bg-gradient-to-br from-[#FAFAF5] via-[#F8F6EE] to-[#F0EDE4] shadow-xl dark:border-[#3D4F2A]/60 dark:from-[#1A2212] dark:via-[#1F2914] dark:to-[#243019]">
+          <Card className="rounded-3xl border border-[#D6D2C4]/60 bg-gradient-to-br from-[#FAFAF5] via-[#F8F6EE] to-[#F0EDE4] shadow-xl dark:border-[#1f1f1f] dark:!bg-[#000000] dark:from-transparent dark:via-transparent dark:to-transparent">
             <CardHeader className="pb-3">
               <CardTitle className="flex items-center gap-2 text-lg font-semibold text-[#2D3A1A] dark:text-[#E8E4D9]">
-                <span className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-[#DCFCE7] text-[#16A34A] dark:bg-[#1F2914] dark:text-[#7A9E4A]">
+                <span className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-[#DCFCE7] text-[#16A34A] dark:bg-[#0f0f0f] dark:text-[#22c55e]">
                   <MapPin className="h-4 w-4" />
                 </span>
                 Address Information
@@ -420,10 +420,10 @@ export default function AdminProfilePage() {
       </div>
 
       <FadeIn delay={0.12}>
-        <Card className="rounded-3xl border border-[#D6D2C4]/60 bg-gradient-to-br from-[#FAFAF5] via-[#F8F6EE] to-[#F0EDE4] shadow-xl dark:border-[#3D4F2A]/60 dark:from-[#1A2212] dark:via-[#1F2914] dark:to-[#243019]">
+        <Card className="rounded-3xl border border-[#D6D2C4]/60 bg-gradient-to-br from-[#FAFAF5] via-[#F8F6EE] to-[#F0EDE4] shadow-xl dark:border-[#1f1f1f] dark:!bg-[#000000] dark:from-transparent dark:via-transparent dark:to-transparent">
           <CardHeader className="pb-3">
             <CardTitle className="flex items-center gap-2 text-lg font-semibold text-[#2D3A1A] dark:text-[#E8E4D9]">
-              <span className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-[#DCFCE7] text-[#16A34A] dark:bg-[#1F2914] dark:text-[#7A9E4A]">
+              <span className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-[#DCFCE7] text-[#16A34A] dark:bg-[#0f0f0f] dark:text-[#22c55e]">
                 <Shield className="h-4 w-4" />
               </span>
               Additional Information

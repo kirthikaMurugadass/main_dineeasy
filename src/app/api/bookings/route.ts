@@ -155,8 +155,9 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Send admin email notification asynchronously using relative URL (same host)
-    fetch("/api/bookings/notify", {
+    // Send admin email notification asynchronously (don't wait for it)
+    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || req.nextUrl.origin;
+    fetch(`${baseUrl}/api/bookings/notify`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({

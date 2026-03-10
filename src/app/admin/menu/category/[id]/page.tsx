@@ -133,7 +133,7 @@ function SortableItem({
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, x: -20 }}
-      className="group relative rounded-xl border border-border/60 bg-card/90 p-3 sm:p-4 shadow-sm transition-all duration-200 hover:border-primary/40 hover:shadow-md"
+      className="group relative rounded-xl border border-border/60 bg-white dark:bg-[#111111] p-3 sm:p-4 shadow-sm transition-all duration-200 hover:border-primary/40 hover:shadow-md hover:bg-white dark:hover:bg-[#111111]"
     >
       <div className="flex flex-col sm:flex-row sm:items-start gap-3 sm:gap-4">
         {/* Top Row: Drag Handle, Image, and Controls (Mobile) */}
@@ -195,13 +195,13 @@ function SortableItem({
               placeholder={t.admin.categories.menuItemNamePlaceholder}
               value={tr?.title ?? ""}
               onChange={(e) => updateTranslation("title", e.target.value)}
-              className="h-10 sm:h-11 text-sm font-medium border-border/60 focus-visible:ring-2 focus-visible:ring-primary/30 focus-visible:border-primary/60"
+              className="h-10 sm:h-11 text-sm font-medium text-foreground dark:text-foreground border-border/60 focus-visible:ring-2 focus-visible:ring-primary/30 focus-visible:border-primary/60"
             />
             <Textarea
               placeholder={t.admin.categories.menuItemDescriptionPlaceholder}
               value={tr?.description ?? ""}
               onChange={(e) => updateTranslation("description", e.target.value)}
-              className="min-h-[60px] text-xs resize-none border-border/60 focus-visible:ring-2 focus-visible:ring-primary/30 focus-visible:border-primary/60"
+              className="min-h-[60px] text-xs resize-none text-foreground dark:text-foreground border-border/60 focus-visible:ring-2 focus-visible:ring-primary/30 focus-visible:border-primary/60"
               maxLength={200}
             />
           </div>
@@ -906,7 +906,7 @@ export default function CategoryDetailPage() {
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ duration: 0.5 }}
-      className="space-y-6"
+      className="space-y-6 dark:bg-[#000000]"
     >
       {/* Breadcrumbs */}
       <FadeIn>
@@ -947,21 +947,21 @@ export default function CategoryDetailPage() {
               <Button 
                 variant="ghost" 
                 size="icon" 
-                className="h-10 w-10 rounded-xl border border-[#D6D2C4]/50 bg-white/50 hover:bg-[#E8E4D9]/50 dark:border-[#3D4F2A]/50 dark:bg-[#243019]/50 dark:hover:bg-[#2D3A1A]/50"
+                className="h-10 w-10 rounded-xl border border-[#D6D2C4]/50 bg-white/50 hover:bg-[#E8E4D9]/50 dark:border-[#262626] dark:bg-[#1a1a1a] dark:hover:bg-[#262626]"
               >
-                <ArrowLeft size={18} className="text-[#2D3A1A] dark:text-[#E8E4D9]" />
+                <ArrowLeft size={18} className="text-[#2D3A1A] dark:text-[#ffffff]" />
               </Button>
             </motion.div>
           </Link>
           <div className="flex items-center gap-3">
-            <div className="rounded-xl bg-gradient-to-br from-[#5B7A2F]/20 to-[#5B7A2F]/10 p-2.5 dark:from-[#7A9E4A]/20 dark:to-[#7A9E4A]/10">
-              <Plus className="h-5 w-5 text-[#5B7A2F] dark:text-[#7A9E4A]" />
+            <div className="rounded-xl bg-[#22c55e]/20 p-2.5 dark:bg-[#22c55e]/20">
+              <Plus className="h-5 w-5 text-[#5B7A2F] dark:text-[#22c55e]" />
             </div>
             <div>
-              <h1 className="text-2xl font-bold text-[#2D3A1A] dark:text-[#E8E4D9]">
+              <h1 className="text-2xl font-bold text-[#2D3A1A] dark:text-[#ffffff]">
                 {isNew ? "Add New Category" : t.admin.categories.editCategory}
               </h1>
-              <p className="text-sm text-[#6B7B5A] dark:text-[#9CA88A] mt-0.5">
+              <p className="text-sm text-[#6B7B5A] dark:text-[#9ca3af] mt-0.5">
                 {isNew ? "Create and organize categories for your menu" : t.admin.categories.editCategorySubtitle}
               </p>
             </div>
@@ -972,9 +972,9 @@ export default function CategoryDetailPage() {
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
-              className="flex items-center gap-2 text-sm text-[#6B7B5A] dark:text-[#9CA88A]"
+              className="flex items-center gap-2 text-sm text-[#6B7B5A] dark:text-[#9ca3af]"
             >
-              <Loader2 className="h-4 w-4 animate-spin text-[#5B7A2F] dark:text-[#7A9E4A]" />
+              <Loader2 className="h-4 w-4 animate-spin text-[#5B7A2F] dark:text-[#22c55e]" />
               <span className="hidden sm:inline">{t.admin.categories.saving}</span>
             </motion.div>
           )}
@@ -982,7 +982,7 @@ export default function CategoryDetailPage() {
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
-              className="flex items-center gap-2 text-sm text-[#5B7A2F] dark:text-[#7A9E4A]"
+              className="flex items-center gap-2 text-sm text-[#5B7A2F] dark:text-[#22c55e]"
             >
               <CheckCircle2 className="h-4 w-4" />
               <span className="hidden sm:inline">{t.admin.categories.draftSaved}</span>
@@ -995,7 +995,7 @@ export default function CategoryDetailPage() {
             <Button
               onClick={handleSave}
               disabled={saving}
-              className="rounded-full bg-gradient-to-r from-[#22C55E] to-[#16A34A] text-white shadow-lg hover:shadow-xl transition-all hover:from-[#16A34A] hover:to-[#15803D] disabled:opacity-50 px-6"
+              className="rounded-full bg-[#22c55e] text-white shadow-lg hover:shadow-xl transition-all hover:bg-[#16a34a] disabled:opacity-50 px-6"
               size="lg"
             >
               {saving ? (
@@ -1042,19 +1042,19 @@ export default function CategoryDetailPage() {
                       className="space-y-6"
                     >
                       {/* Category Details Card */}
-                      <Card className="rounded-3xl border border-[#D6D2C4]/50 bg-gradient-to-br from-[#FAFAF5] to-[#F0EDE4]/50 shadow-xl dark:border-[#3D4F2A]/50 dark:from-[#1A2212] dark:to-[#243019]/50">
-                        <CardHeader className="pb-4">
-                          <CardTitle className="text-xl font-bold text-[#2D3A1A] dark:text-[#E8E4D9] flex items-center gap-2">
-                            <div className="rounded-xl bg-gradient-to-br from-[#5B7A2F]/20 to-[#5B7A2F]/10 p-2 dark:from-[#7A9E4A]/20 dark:to-[#7A9E4A]/10">
-                              <Edit2 className="h-5 w-5 text-[#5B7A2F] dark:text-[#7A9E4A]" />
+                      <Card className="rounded-2xl border border-[#D6D2C4]/50 bg-white shadow-xl dark:border-[#1f1f1f] dark:bg-[#111111] dark:p-6">
+                        <CardHeader className="pb-4 dark:pb-6">
+                          <CardTitle className="text-xl font-bold text-[#2D3A1A] dark:text-[#ffffff] flex items-center gap-2">
+                            <div className="rounded-xl bg-[#22c55e]/20 p-2 dark:bg-[#22c55e]/20">
+                              <Edit2 className="h-5 w-5 text-[#5B7A2F] dark:text-[#22c55e]" />
                             </div>
                             {t.admin.categories.detailsTitle}
                           </CardTitle>
-                          <p className="text-sm text-[#6B7B5A] dark:text-[#9CA88A] mt-1">
+                          <p className="text-sm text-[#6B7B5A] dark:text-[#9ca3af] mt-1">
                             {t.admin.categories.detailsSubtitle}
                           </p>
                         </CardHeader>
-                        <CardContent className="space-y-6">
+                        <CardContent className="space-y-6 dark:space-y-6">
                             {/* Category Name */}
                             <motion.div
                               initial={{ opacity: 0, y: 10 }}
@@ -1063,10 +1063,10 @@ export default function CategoryDetailPage() {
                               className="space-y-2"
                             >
                               <div className="flex items-center justify-between">
-                                <Label className="text-sm font-semibold text-[#2D3A1A] dark:text-[#E8E4D9]">
+                                <Label className="text-sm font-semibold text-[#2D3A1A] dark:text-[#bfbfbf]">
                                   {t.admin.categories.nameLabel}
                                 </Label>
-                                <span className="text-xs text-[#6B7B5A] dark:text-[#9CA88A]">
+                                <span className="text-xs text-[#6B7B5A] dark:text-[#8a8a8a]">
                                   {catTr?.title?.length || 0}/50
                                 </span>
                               </div>
@@ -1093,11 +1093,11 @@ export default function CategoryDetailPage() {
                                     validateField("title", value);
                                   }}
                                   placeholder={t.admin.categories.namePlaceholder}
-                                  className={`h-12 rounded-xl border-2 pr-10 text-sm transition-all ${
+                                  className={`h-12 rounded-xl border pr-10 text-sm transition-all dark:text-[#ffffff] dark:placeholder:text-[#8a8a8a] ${
                                     validationErrors.title
                                       ? "border-red-300 focus-visible:border-red-500 focus-visible:ring-red-500/20"
-                                      : "border-[#D6D2C4]/50 focus-visible:border-[#5B7A2F] focus-visible:ring-[#5B7A2F]/20 dark:border-[#3D4F2A]/50 dark:focus-visible:border-[#7A9E4A]"
-                                  } bg-white/50 dark:bg-[#243019]/50`}
+                                      : "border-[#D6D2C4]/50 focus-visible:border-[#5B7A2F] focus-visible:ring-[#5B7A2F]/20 dark:border-[#262626] dark:focus-visible:border-[#22c55e] dark:focus-visible:ring-[#22c55e]/20"
+                                  } bg-white/50 dark:bg-[#0f0f0f]`}
                                   maxLength={50}
                                 />
                                 {catTr?.title && (
@@ -1134,14 +1134,14 @@ export default function CategoryDetailPage() {
                               className="space-y-2"
                             >
                               <div className="flex items-center justify-between gap-2">
-                                <Label className="text-sm font-semibold text-[#2D3A1A] dark:text-[#E8E4D9]">
+                                <Label className="text-sm font-semibold text-[#2D3A1A] dark:text-[#bfbfbf]">
                                   {t.admin.categories.urlSlugLabel}
                                 </Label>
                                 <Button
                                   variant="outline"
                                   size="sm"
                                   onClick={() => setSlugEditable(!slugEditable)}
-                                  className="h-8 px-3 text-xs rounded-xl border-[#D6D2C4]/50 bg-white/50 hover:bg-[#E8E4D9]/50 dark:border-[#3D4F2A]/50 dark:bg-[#243019]/50 dark:hover:bg-[#2D3A1A]/50"
+                                  className="h-8 px-3 text-xs rounded-xl border-[#D6D2C4]/50 bg-white/50 hover:bg-[#E8E4D9]/50 dark:border-[#262626] dark:bg-[#0f0f0f] dark:hover:bg-[#1a1a1a] dark:text-[#ffffff]"
                                 >
                                   {slugEditable ? (
                                     <>
@@ -1168,9 +1168,9 @@ export default function CategoryDetailPage() {
                                 }}
                                 placeholder={t.admin.categories.urlSlugPlaceholder}
                                 disabled={!slugEditable}
-                                className="h-11 font-mono text-sm rounded-xl border-2 border-[#D6D2C4]/50 bg-white/50 focus-visible:border-[#5B7A2F] focus-visible:ring-[#5B7A2F]/20 dark:border-[#3D4F2A]/50 dark:bg-[#243019]/50 dark:focus-visible:border-[#7A9E4A]"
+                                className="h-11 font-mono text-sm rounded-xl border border-[#D6D2C4]/50 bg-white/50 focus-visible:border-[#5B7A2F] focus-visible:ring-[#5B7A2F]/20 dark:border-[#262626] dark:bg-[#0f0f0f] dark:text-[#ffffff] dark:placeholder:text-[#8a8a8a] dark:focus-visible:border-[#22c55e] dark:focus-visible:ring-[#22c55e]/20"
                               />
-                              <p className="text-xs text-[#6B7B5A] dark:text-[#9CA88A]">
+                              <p className="text-xs text-[#6B7B5A] dark:text-[#8a8a8a]">
                                 {t.admin.categories.urlSlugHelper}
                               </p>
                             </motion.div>
@@ -1183,10 +1183,10 @@ export default function CategoryDetailPage() {
                               className="space-y-2"
                             >
                               <div className="flex items-center justify-between">
-                                <Label className="text-sm font-semibold text-[#2D3A1A] dark:text-[#E8E4D9]">
+                                <Label className="text-sm font-semibold text-[#2D3A1A] dark:text-[#bfbfbf]">
                                   {t.admin.categories.descriptionLabel}
                                 </Label>
-                                <span className="text-xs text-[#6B7B5A] dark:text-[#9CA88A]">
+                                <span className="text-xs text-[#6B7B5A] dark:text-[#8a8a8a]">
                                   {catTr?.description?.length || 0}/200
                                 </span>
                               </div>
@@ -1202,7 +1202,7 @@ export default function CategoryDetailPage() {
                                   setCategoryTranslations(updated);
                                 }}
                                 placeholder={t.admin.categories.descriptionPlaceholder}
-                                className="min-h-[120px] resize-none rounded-xl border-2 border-[#D6D2C4]/50 bg-white/50 focus-visible:border-[#5B7A2F] focus-visible:ring-[#5B7A2F]/20 transition-all dark:border-[#3D4F2A]/50 dark:bg-[#243019]/50 dark:focus-visible:border-[#7A9E4A]"
+                                className="min-h-[120px] resize-none rounded-xl border border-[#D6D2C4]/50 bg-white/50 focus-visible:border-[#5B7A2F] focus-visible:ring-[#5B7A2F]/20 transition-all dark:border-[#262626] dark:bg-[#0f0f0f] dark:text-[#ffffff] dark:placeholder:text-[#8a8a8a] dark:focus-visible:border-[#22c55e] dark:focus-visible:ring-[#22c55e]/20"
                                 maxLength={200}
                               />
                             </motion.div>
@@ -1215,16 +1215,16 @@ export default function CategoryDetailPage() {
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ delay: 0.25 }}
                       >
-                        <Card className="rounded-3xl border border-[#D6D2C4]/50 bg-gradient-to-br from-[#FAFAF5] to-[#F0EDE4]/50 shadow-xl dark:border-[#3D4F2A]/50 dark:from-[#1A2212] dark:to-[#243019]/50">
-                          <CardHeader className="pb-4">
-                            <CardTitle className="text-xl font-bold text-[#2D3A1A] dark:text-[#E8E4D9] flex items-center gap-2">
-                              <div className="rounded-xl bg-gradient-to-br from-[#5B7A2F]/20 to-[#5B7A2F]/10 p-2 dark:from-[#7A9E4A]/20 dark:to-[#7A9E4A]/10">
-                                <ImageIcon className="h-5 w-5 text-[#5B7A2F] dark:text-[#7A9E4A]" />
+                        <Card className="rounded-2xl border border-[#D6D2C4]/50 bg-white shadow-xl dark:border-[#1f1f1f] dark:bg-[#111111] dark:p-6">
+                          <CardHeader className="pb-4 dark:pb-6">
+                            <CardTitle className="text-xl font-bold text-[#2D3A1A] dark:text-[#ffffff] flex items-center gap-2">
+                              <div className="rounded-xl bg-[#22c55e]/20 p-2 dark:bg-[#22c55e]/20">
+                                <ImageIcon className="h-5 w-5 text-[#5B7A2F] dark:text-[#22c55e]" />
                               </div>
                               {t.admin.categories.imageTitle}
                             </CardTitle>
                           </CardHeader>
-                          <CardContent>
+                          <CardContent className="dark:pt-0">
                             <motion.div
                               onDragOver={(e) => {
                                 e.preventDefault();
@@ -1242,8 +1242,8 @@ export default function CategoryDetailPage() {
                               whileHover={{ scale: 1.01 }}
                               className={`relative border-2 border-dashed rounded-2xl p-12 transition-all ${
                                 isDragging
-                                  ? "border-[#22C55E] bg-[#DCFCE7]/50 dark:bg-[#7A9E4A]/10"
-                                  : "border-[#D6D2C4]/50 hover:border-[#5B7A2F]/50 hover:bg-[#DCFCE7]/20 dark:border-[#3D4F2A]/50 dark:hover:border-[#7A9E4A]/50 dark:hover:bg-[#7A9E4A]/10"
+                                  ? "border-[#22C55E] bg-[#DCFCE7]/50 dark:border-[#22c55e] dark:bg-[#22c55e]/10"
+                                  : "border-[#D6D2C4]/50 hover:border-[#5B7A2F]/50 hover:bg-[#DCFCE7]/20 dark:border-[#1f1f1f] dark:hover:border-[#22c55e]/50 dark:hover:bg-[#22c55e]/10"
                               }`}
                             >
                               {categoryImagePreview ? (
@@ -1279,14 +1279,14 @@ export default function CategoryDetailPage() {
                                     initial={{ scale: 0 }}
                                     animate={{ scale: 1 }}
                                     transition={{ delay: 0.1, type: "spring" }}
-                                    className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-gradient-to-br from-[#DCFCE7] to-[#BBF7D0] dark:from-[#7A9E4A]/20 dark:to-[#7A9E4A]/10"
+                                    className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-[#DCFCE7] dark:bg-[#22c55e]/20"
                                   >
-                                    <Upload className="h-8 w-8 text-[#22C55E] dark:text-[#7A9E4A]" />
+                                    <Upload className="h-8 w-8 text-[#22C55E] dark:text-[#22c55e]" />
                                   </motion.div>
-                                  <p className="text-base font-semibold mb-2 text-[#2D3A1A] dark:text-[#E8E4D9]">
+                                  <p className="text-base font-semibold mb-2 text-[#2D3A1A] dark:text-[#ffffff]">
                                     Upload category image
                                   </p>
-                                  <p className="text-sm text-[#6B7B5A] dark:text-[#9CA88A] mb-6">
+                                  <p className="text-sm text-[#6B7B5A] dark:text-[#bfbfbf] mb-6">
                                     Drag and drop an image here, or click to browse
                                   </p>
                                   <label>
@@ -1305,7 +1305,7 @@ export default function CategoryDetailPage() {
                                     >
                                       <Button
                                         type="button"
-                                        className="rounded-full bg-gradient-to-r from-[#22C55E] to-[#16A34A] text-white shadow-lg hover:shadow-xl hover:from-[#16A34A] hover:to-[#15803D] px-6"
+                                        className="rounded-full bg-[#22c55e] text-white shadow-lg hover:shadow-xl hover:bg-[#16a34a] px-6"
                                       >
                                         <Upload className="h-4 w-4 mr-2" />
                                         {t.admin.categories.uploadImageButton}
@@ -1384,7 +1384,7 @@ export default function CategoryDetailPage() {
                           <Button
                             variant="outline"
                             onClick={addItem}
-                            className="gap-2 border-dashed border-2 border-border/60 hover:border-primary/40 hover:bg-primary/5 transition-all w-full sm:w-auto"
+                            className="gap-2 border-dashed border-2 border-border/60 hover:border-primary/40 hover:bg-primary/5 text-foreground dark:text-foreground hover:text-foreground dark:hover:text-foreground transition-all w-full sm:w-auto"
                             size="lg"
                           >
                             <Plus size={18} />
@@ -1403,22 +1403,22 @@ export default function CategoryDetailPage() {
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ delay: 0.35 }}
                     >
-                      <Card className="mt-4 rounded-3xl border border-[#D6D2C4]/50 bg-gradient-to-br from-[#FAFAF5] to-[#F0EDE4]/50 shadow-xl dark:border-[#3D4F2A]/50 dark:from-[#1A2212] dark:to-[#243019]/50">
-                        <CardHeader className="pb-4">
-                          <CardTitle className="text-xl font-bold text-[#2D3A1A] dark:text-[#E8E4D9] flex items-center gap-2">
-                            <div className="rounded-xl bg-gradient-to-br from-[#5B7A2F]/20 to-[#5B7A2F]/10 p-2 dark:from-[#7A9E4A]/20 dark:to-[#7A9E4A]/10">
-                              <CheckCircle2 className="h-5 w-5 text-[#5B7A2F] dark:text-[#7A9E4A]" />
+                      <Card className="mt-4 rounded-2xl border border-[#D6D2C4]/50 bg-white shadow-xl dark:border-[#1f1f1f] dark:bg-[#111111] dark:p-6">
+                        <CardHeader className="pb-4 dark:pb-6">
+                          <CardTitle className="text-xl font-bold text-[#2D3A1A] dark:text-[#ffffff] flex items-center gap-2">
+                            <div className="rounded-xl bg-[#22c55e]/20 p-2 dark:bg-[#22c55e]/20">
+                              <CheckCircle2 className="h-5 w-5 text-[#5B7A2F] dark:text-[#22c55e]" />
                             </div>
                             {t.admin.categories.settingsTitle}
                           </CardTitle>
                         </CardHeader>
-                        <CardContent className="space-y-6">
-                          <div className="flex items-center justify-between p-4 rounded-xl bg-white/50 dark:bg-[#243019]/50 border border-[#D6D2C4]/30 dark:border-[#3D4F2A]/30">
+                        <CardContent className="space-y-6 dark:space-y-6 dark:pt-0">
+                          <div className="flex items-center justify-between p-4 rounded-xl bg-white/50 dark:bg-[#111111] border border-[#D6D2C4]/30 dark:border-[#1f1f1f]">
                             <div className="space-y-1">
-                              <Label className="text-sm font-semibold text-[#2D3A1A] dark:text-[#E8E4D9]">
+                              <Label className="text-sm font-semibold text-[#2D3A1A] dark:text-[#bfbfbf]">
                                 {t.admin.categories.statusLabel}
                               </Label>
-                              <p className="text-xs text-[#6B7B5A] dark:text-[#9CA88A]">
+                              <p className="text-xs text-[#6B7B5A] dark:text-[#8a8a8a]">
                                 {categoryActive
                                   ? t.admin.categories.statusActiveHint
                                   : t.admin.categories.statusInactiveHint}
@@ -1430,12 +1430,12 @@ export default function CategoryDetailPage() {
                               className="data-[state=checked]:bg-[#22C55E]"
                             />
                           </div>
-                          <div className="flex items-center justify-between p-4 rounded-xl bg-white/50 dark:bg-[#243019]/50 border border-[#D6D2C4]/30 dark:border-[#3D4F2A]/30">
+                          <div className="flex items-center justify-between p-4 rounded-xl bg-white/50 dark:bg-[#111111] border border-[#D6D2C4]/30 dark:border-[#1f1f1f]">
                             <div className="space-y-1">
-                              <Label className="text-sm font-semibold text-[#2D3A1A] dark:text-[#E8E4D9]">
+                              <Label className="text-sm font-semibold text-[#2D3A1A] dark:text-[#bfbfbf]">
                                 {t.admin.categories.visibilityLabel}
                               </Label>
-                              <p className="text-xs text-[#6B7B5A] dark:text-[#9CA88A]">
+                              <p className="text-xs text-[#6B7B5A] dark:text-[#8a8a8a]">
                                 {categoryVisible
                                   ? t.admin.categories.visibilityPublic
                                   : t.admin.categories.visibilityPrivate}
@@ -1447,12 +1447,12 @@ export default function CategoryDetailPage() {
                               className="data-[state=checked]:bg-[#22C55E]"
                             />
                           </div>
-                          <div className="space-y-3 p-4 rounded-xl bg-white/50 dark:bg-[#243019]/50 border border-[#D6D2C4]/30 dark:border-[#3D4F2A]/30">
+                          <div className="space-y-3 p-4 rounded-xl bg-white/50 dark:bg-[#111111] border border-[#D6D2C4]/30 dark:border-[#1f1f1f]">
                             <div className="flex items-center justify-between">
-                              <Label className="text-sm font-semibold text-[#2D3A1A] dark:text-[#E8E4D9]">
+                              <Label className="text-sm font-semibold text-[#2D3A1A] dark:text-[#bfbfbf]">
                                 {t.admin.categories.displayOrderLabel}
                               </Label>
-                              <span className="text-sm font-mono font-bold text-[#5B7A2F] dark:text-[#7A9E4A] bg-[#DCFCE7]/50 dark:bg-[#7A9E4A]/10 px-3 py-1 rounded-lg">
+                              <span className="text-sm font-mono font-bold text-[#5B7A2F] dark:text-[#22c55e] bg-[#DCFCE7]/50 dark:bg-[#22c55e]/10 dark:border dark:border-[#22c55e]/20 px-3 py-1 rounded-lg">
                                 {displayOrder}
                               </span>
                             </div>
@@ -1464,7 +1464,7 @@ export default function CategoryDetailPage() {
                               step={1}
                               className="w-full"
                             />
-                            <p className="text-xs text-[#6B7B5A] dark:text-[#9CA88A]">
+                            <p className="text-xs text-[#6B7B5A] dark:text-[#8a8a8a]">
                               {t.admin.categories.displayOrderHint}
                             </p>
                           </div>

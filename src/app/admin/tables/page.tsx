@@ -296,17 +296,17 @@ export default function TablesPage() {
   }, [previewTables]);
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 dark:bg-[#000000]">
       {/* Page Header */}
       <FadeIn>
-        <div className="flex items-center justify-between rounded-2xl border border-[#D6D2C4]/50 bg-gradient-to-br from-[#FAFAF5] to-[#F0EDE4]/60 px-4 py-4 shadow-sm dark:border-[#3D4F2A]/50 dark:from-[#1A2212] dark:to-[#243019]/60">
+        <div className="flex items-center justify-between rounded-2xl border border-[#D6D2C4]/50 bg-white px-4 py-4 shadow-sm dark:border-[#1f1f1f] dark:bg-[#111111]">
           <div className="flex items-center gap-3">
-            <div className="rounded-2xl bg-gradient-to-br from-[#DCFCE7] to-[#BBF7D0] p-2.5 shadow-sm dark:from-[#3D4F2A] dark:to-[#4A5B33]">
-              <Table2 className="h-5 w-5 text-[#22C55E]" />
+            <div className="rounded-2xl bg-[#22c55e]/20 p-2.5 shadow-sm dark:bg-[#22c55e]/20">
+              <Table2 className="h-5 w-5 text-[#22C55E] dark:text-[#22c55e]" />
             </div>
             <div>
-              <PageTitle>Create Table</PageTitle>
-              <p className="text-sm text-[#6B7B5A] dark:text-[#9CA88A] mt-0.5">
+              <PageTitle className="dark:text-[#ffffff]">Create Table</PageTitle>
+              <p className="text-sm text-[#6B7B5A] dark:text-[#9ca3af] mt-0.5">
                 Add and manage restaurant tables
               </p>
             </div>
@@ -318,26 +318,26 @@ export default function TablesPage() {
       <div className="grid gap-6 lg:grid-cols-[minmax(0,1.6fr)_minmax(0,1.2fr)]">
         {/* Create Table Form Card */}
         <FadeIn delay={0.05}>
-          <Card className="rounded-3xl border border-[#D6D2C4]/60 bg-gradient-to-br from-[#FAFAF5] via-[#F8F6EE] to-[#F0EDE4] shadow-xl dark:border-[#3D4F2A]/60 dark:from-[#1A2212] dark:via-[#1F2914] dark:to-[#243019]">
+          <Card className="rounded-2xl border border-[#D6D2C4]/50 bg-white shadow-xl dark:border-[#1f1f1f] dark:bg-[#111111] dark:p-6">
             <CardHeader className="pb-4">
-              <CardTitle className="text-lg font-semibold text-[#2D3A1A] dark:text-[#E8E4D9]">
+              <CardTitle className="text-lg font-semibold text-[#2D3A1A] dark:text-[#ffffff]">
                 Create Table
               </CardTitle>
             </CardHeader>
             <CardContent>
               <form onSubmit={handleAddTable} className="space-y-6">
                 {/* Table Information */}
-                <div className="space-y-3 rounded-2xl bg-white/70 p-4 shadow-sm dark:bg-[#111827]/40">
+                <div className="space-y-3 rounded-2xl bg-white/70 p-4 shadow-sm dark:bg-[#0f0f0f] dark:border dark:border-[#262626]">
                   <div className="flex items-center gap-2 pb-1">
-                    <span className="flex h-7 w-7 items-center justify-center rounded-full bg-[#DCFCE7] text-[#16A34A] text-xs font-semibold">
+                    <span className="flex h-7 w-7 items-center justify-center rounded-full bg-[#22c55e]/20 text-[#16A34A] text-xs font-semibold dark:text-[#22c55e]">
                       1
                     </span>
-                    <p className="text-sm font-semibold text-[#2D3A1A] dark:text-[#E8E4D9]">
+                    <p className="text-sm font-semibold text-[#2D3A1A] dark:text-[#ffffff]">
                       Table Information
                     </p>
                   </div>
                   <div className="space-y-2">
-                    <label className="text-sm font-medium text-[#2D3A1A] dark:text-[#E8E4D9]">
+                    <label className="text-sm font-medium text-[#2D3A1A] dark:text-[#bfbfbf]">
                       Table Name
                     </label>
                     <Input
@@ -345,35 +345,35 @@ export default function TablesPage() {
                       onChange={(e) => setTableName(e.target.value)}
                       placeholder="e.g. T1, Window 3, Booth A"
                       disabled={adding}
-                      className="h-11 rounded-xl border-2 border-[#D6D2C4]/70 bg-white/80 text-sm shadow-sm transition-all focus-visible:border-[#22C55E] focus-visible:ring-[#22C55E]/20 dark:border-[#3D4F2A]/70 dark:bg-[#111827]/60"
+                      className="h-11 rounded-xl border-2 border-[#D6D2C4]/70 bg-white/80 text-sm shadow-sm transition-all focus-visible:border-[#22C55E] focus-visible:ring-[#22C55E]/20 dark:border-[#262626] dark:bg-[#0f0f0f] dark:text-[#ffffff] dark:placeholder:text-[#8a8a8a] dark:focus-visible:border-[#22c55e]"
                     />
                   </div>
                   <div className="space-y-2">
-                    <label className="text-sm font-medium text-[#2D3A1A] dark:text-[#E8E4D9]">
-                      Section <span className="text-xs text-[#9CA88A]">(optional)</span>
+                    <label className="text-sm font-medium text-[#2D3A1A] dark:text-[#bfbfbf]">
+                      Section <span className="text-xs text-[#9ca3af]">(optional)</span>
                     </label>
                     <Input
                       value={section}
                       onChange={(e) => setSection(e.target.value)}
                       placeholder="e.g. Terrace, Window, Garden"
                       disabled={adding}
-                      className="h-11 rounded-xl border-2 border-[#D6D2C4]/70 bg-white/80 text-sm shadow-sm transition-all focus-visible:border-[#22C55E] focus-visible:ring-[#22C55E]/20 dark:border-[#3D4F2A]/70 dark:bg-[#111827]/60"
+                      className="h-11 rounded-xl border-2 border-[#D6D2C4]/70 bg-white/80 text-sm shadow-sm transition-all focus-visible:border-[#22C55E] focus-visible:ring-[#22C55E]/20 dark:border-[#262626] dark:bg-[#0f0f0f] dark:text-[#ffffff] dark:placeholder:text-[#8a8a8a] dark:focus-visible:border-[#22c55e]"
                     />
                   </div>
                 </div>
 
                 {/* Seating Details */}
-                <div className="space-y-3 rounded-2xl bg-white/70 p-4 shadow-sm dark:bg-[#111827]/40">
+                <div className="space-y-3 rounded-2xl bg-white/70 p-4 shadow-sm dark:bg-[#0f0f0f] dark:border dark:border-[#262626]">
                   <div className="flex items-center gap-2 pb-1">
-                    <span className="flex h-7 w-7 items-center justify-center rounded-full bg-[#DCFCE7] text-[#16A34A] text-xs font-semibold">
+                    <span className="flex h-7 w-7 items-center justify-center rounded-full bg-[#22c55e]/20 text-[#16A34A] text-xs font-semibold dark:text-[#22c55e]">
                       2
                     </span>
-                    <p className="text-sm font-semibold text-[#2D3A1A] dark:text-[#E8E4D9]">
+                    <p className="text-sm font-semibold text-[#2D3A1A] dark:text-[#ffffff]">
                       Seating Details
                     </p>
                   </div>
                   <div className="space-y-2">
-                    <label className="text-sm font-medium text-[#2D3A1A] dark:text-[#E8E4D9]">
+                    <label className="text-sm font-medium text-[#2D3A1A] dark:text-[#bfbfbf]">
                       Seating Capacity
                     </label>
                     <Input
@@ -382,30 +382,30 @@ export default function TablesPage() {
                       value={capacity}
                       onChange={(e) => setCapacity(e.target.value)}
                       disabled={adding}
-                      className="h-11 rounded-xl border-2 border-[#D6D2C4]/70 bg-white/80 text-sm shadow-sm transition-all focus-visible:border-[#22C55E] focus-visible:ring-[#22C55E]/20 dark:border-[#3D4F2A]/70 dark:bg-[#111827]/60"
+                      className="h-11 rounded-xl border-2 border-[#D6D2C4]/70 bg-white/80 text-sm shadow-sm transition-all focus-visible:border-[#22C55E] focus-visible:ring-[#22C55E]/20 dark:border-[#262626] dark:bg-[#0f0f0f] dark:text-[#ffffff] dark:placeholder:text-[#8a8a8a] dark:focus-visible:border-[#22c55e]"
                     />
-                    <p className="text-xs text-[#6B7B5A] dark:text-[#9CA88A]">
+                    <p className="text-xs text-[#6B7B5A] dark:text-[#9ca3af]">
                       Choose how many guests this table can comfortably seat.
                     </p>
                   </div>
                 </div>
 
                 {/* Table Settings */}
-                <div className="space-y-3 rounded-2xl bg-white/70 p-4 shadow-sm dark:bg-[#111827]/40">
+                <div className="space-y-3 rounded-2xl bg-white/70 p-4 shadow-sm dark:bg-[#0f0f0f] dark:border dark:border-[#262626]">
                   <div className="flex items-center gap-2 pb-1">
-                    <span className="flex h-7 w-7 items-center justify-center rounded-full bg-[#DCFCE7] text-[#16A34A] text-xs font-semibold">
+                    <span className="flex h-7 w-7 items-center justify-center rounded-full bg-[#22c55e]/20 text-[#16A34A] text-xs font-semibold dark:text-[#22c55e]">
                       3
                     </span>
-                    <p className="text-sm font-semibold text-[#2D3A1A] dark:text-[#E8E4D9]">
+                    <p className="text-sm font-semibold text-[#2D3A1A] dark:text-[#ffffff]">
                       Table Settings
                     </p>
                   </div>
-                  <div className="flex items-center justify-between rounded-xl bg-[#F6F4EA] px-3 py-2.5 text-sm dark:bg-[#1F2914]">
+                  <div className="flex items-center justify-between rounded-xl bg-[#F6F4EA] px-3 py-2.5 text-sm dark:bg-[#1a1a1a] dark:border dark:border-[#262626]">
                     <div className="space-y-0.5">
-                      <p className="font-medium text-[#2D3A1A] dark:text-[#E8E4D9]">
+                      <p className="font-medium text-[#2D3A1A] dark:text-[#ffffff]">
                         Active status
                       </p>
-                      <p className="text-xs text-[#6B7B5A] dark:text-[#9CA88A]">
+                      <p className="text-xs text-[#6B7B5A] dark:text-[#9ca3af]">
                         {isActive ? "Table will be available for bookings and walk-ins." : "Table will be hidden from booking options."}
                       </p>
                     </div>
@@ -422,7 +422,7 @@ export default function TablesPage() {
                   <Button
                     type="button"
                     variant="outline"
-                    className="w-full rounded-full border-[#D6D2C4]/70 bg-white/70 text-[#2D3A1A] hover:bg-[#E8E4D9]/70 sm:w-auto dark:border-[#3D4F2A]/70 dark:bg-[#111827]/60 dark:text-[#E8E4D9] dark:hover:bg-[#1F2914]"
+                    className="w-full rounded-full border-[#D6D2C4]/70 bg-white/70 text-[#2D3A1A] hover:bg-[#E8E4D9]/70 sm:w-auto dark:border-[#262626] dark:bg-[#1a1a1a] dark:text-[#ffffff] dark:hover:bg-[#262626]"
                     disabled={adding}
                     onClick={() => {
                       setTableName("");
@@ -435,7 +435,7 @@ export default function TablesPage() {
                   </Button>
                   <Button
                     type="submit"
-                    className="w-full rounded-full bg-gradient-to-r from-[#22C55E] to-[#16A34A] text-white shadow-lg transition-all hover:shadow-xl hover:from-[#16A34A] hover:to-[#15803D] disabled:opacity-60 sm:w-auto"
+                    className="w-full rounded-full bg-[#22C55E] text-white shadow-lg transition-all hover:bg-[#16A34A] disabled:opacity-60 sm:w-auto dark:bg-[#22c55e] dark:hover:bg-[#16a34a]"
                     disabled={adding || !restaurantId}
                   >
                     {adding ? (
@@ -455,10 +455,10 @@ export default function TablesPage() {
 
         {/* Live Table Preview - Visual Layout */}
         <FadeIn delay={0.1}>
-          <Card className="rounded-3xl border border-[#D6D2C4]/60 bg-gradient-to-br from-[#FAFAF5] to-[#F0EDE4] shadow-xl dark:border-[#3D4F2A]/60 dark:from-[#1A2212] dark:to-[#243019]">
+          <Card className="rounded-2xl border border-[#D6D2C4]/50 bg-white shadow-xl dark:border-[#1f1f1f] dark:bg-[#111111] dark:p-6">
             <CardHeader className="pb-3">
-              <CardTitle className="text-sm font-semibold text-[#2D3A1A] dark:text-[#E8E4D9] flex items-center gap-2">
-                <span className="inline-flex h-7 w-7 items-center justify-center rounded-full bg-[#DCFCE7] text-[#16A34A]">
+              <CardTitle className="text-sm font-semibold text-[#2D3A1A] dark:text-[#ffffff] flex items-center gap-2">
+                <span className="inline-flex h-7 w-7 items-center justify-center rounded-full bg-[#22c55e]/20 text-[#16A34A] dark:text-[#22c55e]">
                   <Table2 className="h-4 w-4" />
                 </span>
                 Table Preview
@@ -473,9 +473,9 @@ export default function TablesPage() {
                     // so we render all active tables as "Available" (green).
                     const isInactive = !table.is_active;
                     const cardClasses = isInactive
-                      ? "bg-gray-100 border-gray-300 text-gray-500 opacity-70"
-                      : "bg-white border-[#22C55E] text-[#2D3A1A]";
-                    const dotClasses = isInactive ? "bg-gray-400" : "bg-[#22C55E]";
+                      ? "bg-gray-100 border-gray-300 text-gray-500 opacity-70 dark:bg-[#1a1a1a] dark:border-[#262626] dark:text-[#9ca3af]"
+                      : "bg-white border-[#22C55E] text-[#2D3A1A] dark:bg-[#1a1a1a] dark:border-[#22c55e] dark:text-[#ffffff]";
+                    const dotClasses = isInactive ? "bg-gray-400 dark:bg-[#9ca3af]" : "bg-[#22C55E]";
 
                     return (
                       <div
@@ -483,11 +483,11 @@ export default function TablesPage() {
                         className={`relative flex h-20 flex-col items-center justify-center rounded-md border-2 px-1 py-1 shadow-sm ${cardClasses}`}
                       >
                         {/* Table name (top) */}
-                        <div className="text-[13px] font-bold">{table.table_name}</div>
+                        <div className="text-[13px] font-bold dark:text-[#ffffff]">{table.table_name}</div>
                         {/* Status dot (middle) */}
                         <div className={`mt-1 h-1.5 w-1.5 rounded-full ${dotClasses}`} />
                         {/* Capacity (bottom) */}
-                        <div className="mt-auto text-[10px] font-medium leading-tight text-[#6B7B5A]">
+                        <div className="mt-auto text-[10px] font-medium leading-tight text-[#6B7B5A] dark:text-[#9ca3af]">
                           Capacity: {table.capacity}{" "}
                           {table.capacity === 1 ? "Person" : "Persons"}
                         </div>
@@ -498,18 +498,18 @@ export default function TablesPage() {
               </div>
 
               {/* Legend (same as booking page) */}
-              <div className="flex flex-wrap items-center justify-center gap-6 rounded-2xl border border-[#D6D2C4]/60 bg-gradient-to-b from-white to-[#F7F4EA] px-6 py-4 shadow-sm">
+              <div className="flex flex-wrap items-center justify-center gap-6 rounded-2xl border border-[#D6D2C4]/60 bg-white px-6 py-4 shadow-sm dark:border-[#262626] dark:bg-[#0f0f0f]">
                 <div className="flex items-center gap-2">
                   <div className="h-2 w-2 rounded-full bg-[#22C55E]" />
-                  <span className="text-sm text-[#6B7B5A]">Available</span>
+                  <span className="text-sm text-[#6B7B5A] dark:text-[#9ca3af]">Available</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <div className="h-2 w-2 rounded-full bg-[#F97316]" />
-                  <span className="text-sm text-[#6B7B5A]">Occupied</span>
+                  <span className="text-sm text-[#6B7B5A] dark:text-[#9ca3af]">Occupied</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <div className="h-2 w-2 rounded-full bg-[#3B82F6]" />
-                  <span className="text-sm text-[#6B7B5A]">Reserved</span>
+                  <span className="text-sm text-[#6B7B5A] dark:text-[#9ca3af]">Reserved</span>
                 </div>
               </div>
             </CardContent>
@@ -520,9 +520,9 @@ export default function TablesPage() {
       {/* Edit Table Form */}
       {editingTable && (
         <FadeIn delay={0.15}>
-          <Card className="rounded-3xl border border-[#D6D2C4]/60 bg-gradient-to-br from-[#FAFAF5] to-[#F0EDE4] shadow-md dark:border-[#3D4F2A]/60 dark:from-[#1A2212] dark:to-[#243019]">
+          <Card className="rounded-2xl border border-[#D6D2C4]/50 bg-white shadow-md dark:border-[#1f1f1f] dark:bg-[#111111] dark:p-6">
             <CardHeader className="pb-3">
-              <CardTitle className="text-lg font-semibold text-[#2D3A1A] dark:text-[#E8E4D9]">
+              <CardTitle className="text-lg font-semibold text-[#2D3A1A] dark:text-[#ffffff]">
                 Edit Table
               </CardTitle>
             </CardHeader>
@@ -530,18 +530,18 @@ export default function TablesPage() {
               <form onSubmit={handleSaveEdit} className="space-y-5">
                 <div className="grid gap-4 md:grid-cols-3">
                   <div className="space-y-2 md:col-span-2">
-                    <label className="text-sm font-medium text-[#2D3A1A] dark:text-[#E8E4D9]">
+                    <label className="text-sm font-medium text-[#2D3A1A] dark:text-[#bfbfbf]">
                       Table Name
                     </label>
                     <Input
                       value={editingName}
                       onChange={(e) => setEditingName(e.target.value)}
                       disabled={savingEdit}
-                      className="h-10 rounded-xl border-2 border-[#D6D2C4]/70 bg-white/80 text-sm shadow-sm transition-all focus-visible:border-[#22C55E] focus-visible:ring-[#22C55E]/20 dark:border-[#3D4F2A]/70 dark:bg-[#111827]/60"
+                      className="h-10 rounded-xl border-2 border-[#D6D2C4]/70 bg-white/80 text-sm shadow-sm transition-all focus-visible:border-[#22C55E] focus-visible:ring-[#22C55E]/20 dark:border-[#262626] dark:bg-[#0f0f0f] dark:text-[#ffffff] dark:placeholder:text-[#8a8a8a] dark:focus-visible:border-[#22c55e]"
                     />
                   </div>
                   <div className="space-y-2">
-                    <label className="text-sm font-medium text-[#2D3A1A] dark:text-[#E8E4D9]">
+                    <label className="text-sm font-medium text-[#2D3A1A] dark:text-[#bfbfbf]">
                       Capacity
                     </label>
                     <Input
@@ -550,24 +550,24 @@ export default function TablesPage() {
                       value={editingCapacity}
                       onChange={(e) => setEditingCapacity(e.target.value)}
                       disabled={savingEdit}
-                      className="h-10 rounded-xl border-2 border-[#D6D2C4]/70 bg-white/80 text-sm shadow-sm transition-all focus-visible:border-[#22C55E] focus-visible:ring-[#22C55E]/20 dark:border-[#3D4F2A]/70 dark:bg-[#111827]/60"
+                      className="h-10 rounded-xl border-2 border-[#D6D2C4]/70 bg-white/80 text-sm shadow-sm transition-all focus-visible:border-[#22C55E] focus-visible:ring-[#22C55E]/20 dark:border-[#262626] dark:bg-[#0f0f0f] dark:text-[#ffffff] dark:placeholder:text-[#8a8a8a] dark:focus-visible:border-[#22c55e]"
                     />
                   </div>
                 </div>
                 <div className="grid gap-4 md:grid-cols-[minmax(0,1.4fr)_minmax(0,0.8fr)] items-center">
                   <div className="space-y-2">
-                    <label className="text-sm font-medium text-[#2D3A1A] dark:text-[#E8E4D9]">
-                      Section <span className="text-xs text-[#9CA88A]">(optional)</span>
+                    <label className="text-sm font-medium text-[#2D3A1A] dark:text-[#bfbfbf]">
+                      Section <span className="text-xs text-[#9ca3af]">(optional)</span>
                     </label>
                     <Input
                       value={editingSection}
                       onChange={(e) => setEditingSection(e.target.value)}
                       disabled={savingEdit}
-                      className="h-10 rounded-xl border-2 border-[#D6D2C4]/70 bg-white/80 text-sm shadow-sm transition-all focus-visible:border-[#22C55E] focus-visible:ring-[#22C55E]/20 dark:border-[#3D4F2A]/70 dark:bg-[#111827]/60"
+                      className="h-10 rounded-xl border-2 border-[#D6D2C4]/70 bg-white/80 text-sm shadow-sm transition-all focus-visible:border-[#22C55E] focus-visible:ring-[#22C55E]/20 dark:border-[#262626] dark:bg-[#0f0f0f] dark:text-[#ffffff] dark:placeholder:text-[#8a8a8a] dark:focus-visible:border-[#22c55e]"
                     />
                   </div>
-                  <div className="flex items-center justify-between rounded-xl bg-[#F6F4EA] px-3 py-2.5 text-sm dark:bg-[#1F2914]">
-                    <span className="text-sm font-medium text-[#2D3A1A] dark:text-[#E8E4D9]">
+                  <div className="flex items-center justify-between rounded-xl bg-[#F6F4EA] px-3 py-2.5 text-sm dark:bg-[#1a1a1a] dark:border dark:border-[#262626]">
+                    <span className="text-sm font-medium text-[#2D3A1A] dark:text-[#ffffff]">
                       Active
                     </span>
                     <Switch
@@ -583,14 +583,14 @@ export default function TablesPage() {
                     variant="outline"
                     onClick={() => setEditingTable(null)}
                     disabled={savingEdit}
-                    className="rounded-full border-[#D6D2C4]/70 bg-white/70 hover:bg-[#E8E4D9]/70 dark:border-[#3D4F2A]/70 dark:bg-[#111827]/60 dark:hover:bg-[#1F2914]"
+                    className="rounded-full border-[#D6D2C4]/70 bg-white/70 hover:bg-[#E8E4D9]/70 dark:border-[#262626] dark:bg-[#1a1a1a] dark:text-[#ffffff] dark:hover:bg-[#262626]"
                   >
                     Cancel
                   </Button>
                   <Button
                     type="submit"
                     disabled={savingEdit}
-                    className="rounded-full bg-gradient-to-r from-[#22C55E] to-[#16A34A] text-white shadow-lg hover:shadow-xl hover:from-[#16A34A] hover:to-[#15803D] disabled:opacity-60"
+                    className="rounded-full bg-[#22C55E] text-white shadow-lg hover:bg-[#16A34A] disabled:opacity-60 dark:bg-[#22c55e] dark:hover:bg-[#16a34a]"
                   >
                     {savingEdit ? (
                       <>
@@ -610,23 +610,23 @@ export default function TablesPage() {
 
       {/* Table List */}
       <FadeIn delay={0.1}>
-        <Card className="rounded-3xl border border-[#D6D2C4]/60 bg-gradient-to-br from-[#FAFAF5] to-[#F0EDE4] shadow-md dark:border-[#3D4F2A]/60 dark:from-[#1A2212] dark:to-[#243019]">
+        <Card className="rounded-2xl border border-[#D6D2C4]/50 bg-white shadow-md dark:border-[#1f1f1f] dark:bg-[#111111] dark:p-6">
           <CardHeader className="pb-3">
-            <CardTitle className="text-lg font-semibold text-[#2D3A1A] dark:text-[#E8E4D9]">
+            <CardTitle className="text-lg font-semibold text-[#2D3A1A] dark:text-[#ffffff]">
               All Tables
             </CardTitle>
           </CardHeader>
           <CardContent>
             {loading ? (
               <div className="flex items-center justify-center py-8">
-                <Loader2 className="h-5 w-5 animate-spin text-[#5B7A2F] dark:text-[#7A9E4A]" />
+                <Loader2 className="h-5 w-5 animate-spin text-[#5B7A2F] dark:text-[#22c55e]" />
               </div>
             ) : tables.length === 0 ? (
               <div className="flex flex-col items-center justify-center gap-2 py-8 text-center">
-                <p className="text-sm font-medium text-[#2D3A1A] dark:text-[#E5E7EB]">
+                <p className="text-sm font-medium text-[#2D3A1A] dark:text-[#ffffff]">
                   No tables yet
                 </p>
-                <p className="max-w-md text-xs text-[#6B7B5A] dark:text-[#9CA88A]">
+                <p className="max-w-md text-xs text-[#6B7B5A] dark:text-[#9ca3af]">
                   Start by creating your first table using the form above to organize your floor layout.
                 </p>
               </div>
@@ -635,24 +635,24 @@ export default function TablesPage() {
                 {tables.map((table) => (
                   <div
                     key={table.id}
-                    className="flex items-center justify-between rounded-2xl border border-[#D6D2C4]/70 bg-white/80 px-4 py-3 text-sm shadow-sm transition-all hover:-translate-y-0.5 hover:border-[#22C55E]/60 hover:shadow-md dark:border-[#3D4F2A]/70 dark:bg-[#111827]/70"
+                    className="flex items-center justify-between rounded-2xl border border-[#D6D2C4]/70 bg-white/80 px-4 py-3 text-sm shadow-sm transition-all hover:-translate-y-0.5 hover:border-[#22C55E]/60 hover:shadow-md dark:border-[#262626] dark:bg-[#0f0f0f] dark:hover:border-[#22c55e]"
                   >
                     <div className="flex flex-col gap-0.5">
                       <div className="flex items-center gap-2">
-                        <span className="font-semibold text-[#2D3A1A] dark:text-[#E5E7EB]">
+                        <span className="font-semibold text-[#2D3A1A] dark:text-[#ffffff]">
                           {table.table_name}
                         </span>
                         <span
                           className={`rounded-full px-2 py-0.5 text-[11px] font-medium ${
                             table.is_active
-                              ? "bg-[#DCFCE7] text-[#166534] dark:bg-[#14532D] dark:text-[#BBF7D0]"
-                              : "bg-zinc-100 text-zinc-600 dark:bg-zinc-800 dark:text-zinc-300"
+                              ? "bg-[#DCFCE7] text-[#166534] dark:bg-[#22c55e]/20 dark:text-[#22c55e]"
+                              : "bg-zinc-100 text-zinc-600 dark:bg-[#1a1a1a] dark:text-[#9ca3af]"
                           }`}
                         >
                           {table.is_active ? "Active" : "Inactive"}
                         </span>
                       </div>
-                      <div className="flex flex-wrap gap-3 text-xs text-[#6B7280] dark:text-[#9CA88A]">
+                      <div className="flex flex-wrap gap-3 text-xs text-[#6B7280] dark:text-[#9ca3af]">
                         <span>Capacity: {table.capacity} seats</span>
                         {table.section && <span>Section: {table.section}</span>}
                       </div>
@@ -662,7 +662,7 @@ export default function TablesPage() {
                         variant="outline"
                         size="icon"
                         onClick={() => startEdit(table)}
-                        className="rounded-full border-[#D6D2C4]/70 bg-white/70 hover:bg-[#E8E4D9]/70 dark:border-[#3D4F2A]/70 dark:bg-[#111827]/60 dark:hover:bg-[#1F2914]"
+                        className="rounded-full border-[#D6D2C4]/70 bg-white/70 hover:bg-[#E8E4D9]/70 dark:border-[#262626] dark:bg-[#1a1a1a] dark:text-[#ffffff] dark:hover:bg-[#262626]"
                       >
                         <Pencil className="h-4 w-4" />
                       </Button>
@@ -671,7 +671,7 @@ export default function TablesPage() {
                         size="icon"
                         onClick={() => handleDelete(table.id)}
                         disabled={deletingId === table.id}
-                        className="rounded-full border-[#D6D2C4]/70 bg-white/70 hover:bg-red-50 dark:border-[#3F1F1F] dark:bg-[#111827]/60 dark:hover:bg-[#1F2933]"
+                        className="rounded-full border-[#D6D2C4]/70 bg-white/70 hover:bg-red-50 dark:border-[#262626] dark:bg-[#1a1a1a] dark:hover:bg-[#262626]"
                       >
                         {deletingId === table.id ? (
                           <Loader2 className="h-4 w-4 animate-spin" />

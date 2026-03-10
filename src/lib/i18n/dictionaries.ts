@@ -202,7 +202,7 @@ const en: Dictionary = {
     hero: {
       badge: "For modern restaurants",
       title: "Next-Gen Digital Menu Platform",
-      titleAccent: "for Modern Restaurants.",
+      titleAccent: "for Modern Restaurants",
       subtitle:
         "Create beautiful QR menus, manage categories, track performance, and deliver a premium dining experience — all in one powerful dashboard.",
       cta: "Get Started",

@@ -362,7 +362,7 @@ export default function OrdersPage() {
   const getStatusBadgeColor = (status: Order["status"]) => {
     switch (status) {
       case "completed":
-        return "bg-[#5B7A2F]/10 text-[#5B7A2F] border-[#5B7A2F]/20 dark:bg-[#7A9E4A]/20 dark:text-[#7A9E4A] dark:border-[#7A9E4A]/30";
+        return "bg-[#5B7A2F]/10 text-[#5B7A2F] border-[#5B7A2F]/20 dark:bg-[#22c55e]/10 dark:text-[#22c55e] dark:border-[#22c55e]/30";
       case "pending":
         return "bg-yellow-100 text-yellow-700 border-yellow-200 dark:bg-yellow-900/30 dark:text-yellow-400 dark:border-yellow-800/30";
       case "preparing":
@@ -378,14 +378,14 @@ export default function OrdersPage() {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 dark:bg-[#000000]">
       {/* Header with Title */}
       <div className="flex items-center justify-between">
         <PageTitle>{t.admin.orders.title}</PageTitle>
       </div>
 
       {/* Tabs and Date Filter */}
-      <Card className="rounded-2xl border border-[#D6D2C4]/50 bg-gradient-to-br from-[#FAFAF5] to-[#F0EDE4]/50 shadow-sm dark:border-[#3D4F2A]/50 dark:from-[#1A2212] dark:to-[#243019]/50">
+      <Card className="rounded-2xl border border-[#D6D2C4]/50 bg-card shadow-sm dark:border-[#1f1f1f] dark:bg-[#111111]">
         <CardContent className="p-6">
           <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             {/* Tab Navigation */}
@@ -394,8 +394,8 @@ export default function OrdersPage() {
                 onClick={() => handleTabChange("all")}
                 className={`px-4 py-2 rounded-xl text-sm font-semibold transition-all duration-200 ${
                   getActiveTab() === "all"
-                    ? "bg-[#5B7A2F] text-white shadow-md dark:bg-[#7A9E4A]"
-                    : "bg-white/50 text-[#6B7B5A] hover:bg-[#E8E4D9]/50 dark:bg-[#243019]/50 dark:text-[#9CA88A] dark:hover:bg-[#2D3A1A]/50"
+                    ? "bg-primary text-white shadow-md dark:bg-primary"
+                    : "bg-white/50 text-[#6B7B5A] hover:bg-[#E8E4D9]/50 dark:bg-[#1a1a1a] dark:text-[#bfbfbf] dark:hover:bg-[#262626]"
                 }`}
               >
                 All Orders
@@ -404,7 +404,7 @@ export default function OrdersPage() {
                 onClick={() => handleTabChange("pending")}
                 className={`px-4 py-2 rounded-xl text-sm font-semibold transition-all duration-200 ${
                   getActiveTab() === "pending"
-                    ? "bg-[#5B7A2F] text-white shadow-md dark:bg-[#7A9E4A]"
+                    ? "bg-primary text-white shadow-md dark:bg-primary"
                     : "bg-white/50 text-[#6B7B5A] hover:bg-[#E8E4D9]/50 dark:bg-[#243019]/50 dark:text-[#9CA88A] dark:hover:bg-[#2D3A1A]/50"
                 }`}
               >
@@ -414,7 +414,7 @@ export default function OrdersPage() {
                 onClick={() => handleTabChange("completed")}
                 className={`px-4 py-2 rounded-xl text-sm font-semibold transition-all duration-200 ${
                   getActiveTab() === "completed"
-                    ? "bg-[#5B7A2F] text-white shadow-md dark:bg-[#7A9E4A]"
+                    ? "bg-primary text-white shadow-md dark:bg-primary"
                     : "bg-white/50 text-[#6B7B5A] hover:bg-[#E8E4D9]/50 dark:bg-[#243019]/50 dark:text-[#9CA88A] dark:hover:bg-[#2D3A1A]/50"
                 }`}
               >
@@ -425,7 +425,7 @@ export default function OrdersPage() {
             {/* Date Selector */}
             {mounted && (
               <div className="flex w-full items-center gap-2 sm:w-auto">
-                <Calendar className="h-4 w-4 text-[#6B7B5A] dark:text-[#9CA88A]" />
+                <Calendar className="h-4 w-4 text-[#6B7B5A] dark:text-[#bfbfbf]" />
                 <input
                   type="date"
                   value={selectedDate}
@@ -433,7 +433,7 @@ export default function OrdersPage() {
                     setSelectedDate(e.target.value);
                     setCurrentPage(1);
                   }}
-                  className="rounded-xl border border-[#D6D2C4]/50 bg-white px-3 py-2 text-sm text-[#2D3A1A] shadow-sm transition-all hover:border-[#5B7A2F]/50 focus:border-[#5B7A2F] focus:outline-none focus:ring-2 focus:ring-[#5B7A2F]/20 dark:border-[#3D4F2A]/50 dark:bg-[#243019] dark:text-[#E8E4D9] dark:hover:border-[#7A9E4A]/50 dark:focus:border-[#7A9E4A]"
+                  className="rounded-xl border border-[#D6D2C4]/50 bg-white px-3 py-2 text-sm text-[#2D3A1A] shadow-sm transition-all hover:border-[#5B7A2F]/50 focus:border-[#5B7A2F] focus:outline-none focus:ring-2 focus:ring-[#5B7A2F]/20 dark:border-[#262626] dark:bg-[#0f0f0f] dark:text-[#ffffff] dark:placeholder:text-[#8a8a8a] dark:hover:border-[#22c55e]/50 dark:focus:border-[#22c55e]"
                 />
                 {selectedDate && (
                   <Button
@@ -443,7 +443,7 @@ export default function OrdersPage() {
                       setSelectedDate("");
                       setCurrentPage(1);
                     }}
-                    className="text-xs text-[#6B7B5A] hover:text-[#2D3A1A] dark:text-[#9CA88A] dark:hover:text-[#E8E4D9]"
+                    className="text-xs text-[#6B7B5A] hover:text-[#2D3A1A] dark:text-[#bfbfbf] dark:hover:text-[#ffffff]"
                   >
                     Clear
                   </Button>
@@ -457,94 +457,94 @@ export default function OrdersPage() {
       {/* Orders Table */}
       {loading ? (
         <div className="flex items-center justify-center py-12">
-          <Loader2 className="h-6 w-6 animate-spin text-[#5B7A2F] dark:text-[#7A9E4A]" />
+          <Loader2 className="h-6 w-6 animate-spin text-[#5B7A2F] dark:text-[#22c55e]" />
         </div>
       ) : orders.length === 0 ? (
         <FadeIn>
-          <Card className="rounded-2xl border border-[#D6D2C4]/50 bg-gradient-to-br from-[#FAFAF5] to-[#F0EDE4]/50 shadow-sm dark:border-[#3D4F2A]/50 dark:from-[#1A2212] dark:to-[#243019]/50">
+          <Card className="rounded-2xl border border-[#D6D2C4]/50 bg-white shadow-sm dark:border-[#1f1f1f] dark:bg-[#111111]">
             <CardContent className="flex flex-col items-center justify-center py-12">
-              <p className="text-[#6B7B5A] dark:text-[#9CA88A]">{t.admin.orders.noOrders}</p>
+              <p className="text-[#6B7B5A] dark:text-[#9ca3af]">{t.admin.orders.noOrders}</p>
             </CardContent>
           </Card>
         </FadeIn>
       ) : (
-        <Card className="rounded-2xl border border-[#D6D2C4]/50 bg-gradient-to-br from-[#FAFAF5] to-[#F0EDE4]/50 shadow-sm dark:border-[#3D4F2A]/50 dark:from-[#1A2212] dark:to-[#243019]/50">
+        <Card className="rounded-2xl border border-[#D6D2C4]/50 bg-white shadow-sm dark:border-[#1f1f1f] dark:bg-[#111111]">
           <CardContent className="p-0">
             <div className="overflow-x-auto">
-              <table className="w-full">
+              <table className="w-full min-w-full">
                 <thead>
-                  <tr className="border-b border-[#D6D2C4]/30 dark:border-[#3D4F2A]/30">
-                    <th className="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider text-[#6B7B5A] dark:text-[#9CA88A]">
+                  <tr className="border-b border-[#D6D2C4]/30 dark:border-[#262626] dark:bg-[#1a1a1a]">
+                    <th className="px-4 py-4 text-left text-xs font-bold uppercase tracking-wider text-[#6B7B5A] dark:text-[#bfbfbf] min-w-[120px]">
                       Order ID
                     </th>
-                    <th className="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider text-[#6B7B5A] dark:text-[#9CA88A]">
+                    <th className="px-4 py-4 text-left text-xs font-bold uppercase tracking-wider text-[#6B7B5A] dark:text-[#bfbfbf] min-w-[180px]">
                       Customer Name
                     </th>
-                    <th className="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider text-[#6B7B5A] dark:text-[#9CA88A]">
+                    <th className="px-4 py-4 text-left text-xs font-bold uppercase tracking-wider text-[#6B7B5A] dark:text-[#bfbfbf] min-w-[100px]">
                       Type
                     </th>
-                    <th className="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider text-[#6B7B5A] dark:text-[#9CA88A]">
+                    <th className="px-4 py-4 text-left text-xs font-bold uppercase tracking-wider text-[#6B7B5A] dark:text-[#bfbfbf] min-w-[200px]">
                       Address
                     </th>
-                    <th className="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider text-[#6B7B5A] dark:text-[#9CA88A]">
+                    <th className="px-4 py-4 text-left text-xs font-bold uppercase tracking-wider text-[#6B7B5A] dark:text-[#bfbfbf] min-w-[140px]">
                       Date
                     </th>
-                    <th className="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider text-[#6B7B5A] dark:text-[#9CA88A]">
+                    <th className="px-4 py-4 text-left text-xs font-bold uppercase tracking-wider text-[#6B7B5A] dark:text-[#bfbfbf] min-w-[100px]">
                       Price
                     </th>
-                    <th className="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider text-[#6B7B5A] dark:text-[#9CA88A]">
+                    <th className="px-4 py-4 text-left text-xs font-bold uppercase tracking-wider text-[#6B7B5A] dark:text-[#bfbfbf] min-w-[120px]">
                       Status
                     </th>
-                    <th className="px-6 py-4 text-right text-xs font-bold uppercase tracking-wider text-[#6B7B5A] dark:text-[#9CA88A]">
+                    <th className="px-4 py-4 text-right text-xs font-bold uppercase tracking-wider text-[#6B7B5A] dark:text-[#bfbfbf] min-w-[120px]">
                       Action
                     </th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-[#D6D2C4]/20 dark:divide-[#3D4F2A]/20">
+                <tbody className="divide-y divide-[#D6D2C4]/20 dark:divide-y-0 dark:border-[#262626] dark:bg-[#111111]">
                   {paginatedOrders.map((order, index) => (
                     <motion.tr
                       key={order.id}
                       initial={{ opacity: 0, y: 10 }}
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ delay: index * 0.03 }}
-                      className="transition-colors hover:bg-[#E8E4D9]/30 dark:hover:bg-[#2D3A1A]/30"
+                      className="transition-colors hover:bg-[#E8E4D9]/30 dark:hover:bg-[#1a1a1a] dark:border-b dark:border-[#262626]"
                     >
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <span className="text-sm font-medium text-[#2D3A1A] dark:text-[#E8E4D9]">
+                      <td className="px-4 py-4 whitespace-nowrap">
+                        <span className="text-sm font-medium text-[#2D3A1A] dark:text-[#ffffff]">
                           #{order.id.slice(0, 8)}
                         </span>
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
+                      <td className="px-4 py-4 whitespace-nowrap">
                         <div className="flex items-center gap-3">
-                          <div className="flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-br from-[#5B7A2F] to-[#7A9E4A] text-white font-semibold text-sm shadow-md">
+                          <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[#22c55e] text-white font-semibold text-sm shadow-md shrink-0">
                             {getAvatarInitial(order.customer_name)}
                           </div>
-                          <span className="text-sm font-semibold text-[#2D3A1A] dark:text-[#E8E4D9]">
+                          <span className="text-sm font-semibold text-[#2D3A1A] dark:text-[#ffffff]">
                             {order.customer_name}
                           </span>
                         </div>
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <span className="inline-flex items-center rounded-full bg-white/70 px-3 py-1 text-xs font-semibold text-[#5B7A2F] shadow-sm dark:bg-[#243019]/70 dark:text-[#7A9E4A]">
+                      <td className="px-4 py-4 whitespace-nowrap">
+                        <span className="inline-flex items-center rounded-full bg-white/70 px-3 py-1 text-xs font-semibold text-[#5B7A2F] shadow-sm dark:bg-[#22c55e]/20 dark:text-[#22c55e] dark:border dark:border-[#22c55e]/30">
                           {order.order_type === "dine_in" ? "Dine-in" : "Takeaway"}
                         </span>
                       </td>
-                      <td className="px-6 py-4">
-                        <span className="text-sm text-[#6B7B5A] dark:text-[#9CA88A] max-w-xs truncate block" title={getAddressText(order)}>
+                      <td className="px-4 py-4">
+                        <span className="text-sm text-[#6B7B5A] dark:text-[#9ca3af] max-w-[200px] truncate block" title={getAddressText(order)}>
                           {getAddressText(order)}
                         </span>
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <span className="text-sm text-[#6B7B5A] dark:text-[#9CA88A]">
+                      <td className="px-4 py-4 whitespace-nowrap">
+                        <span className="text-sm text-[#6B7B5A] dark:text-[#9ca3af]">
                           {formatDate(order.created_at)}
                         </span>
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <span className="text-sm font-bold text-[#2D3A1A] dark:text-[#E8E4D9]">
+                      <td className="px-4 py-4 whitespace-nowrap">
+                        <span className="text-sm font-bold text-[#2D3A1A] dark:text-[#ffffff]">
                           CHF {order.total.toFixed(2)}
                         </span>
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
+                      <td className="px-4 py-4 whitespace-nowrap">
                         <Badge
                           variant="outline"
                           className={`flex w-fit items-center gap-1.5 border ${getStatusBadgeColor(order.status)}`}
@@ -553,13 +553,13 @@ export default function OrdersPage() {
                           <span className="capitalize">{order.status}</span>
                         </Badge>
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-right">
+                      <td className="px-4 py-4 whitespace-nowrap text-right">
                         <div className="flex items-center justify-end gap-2">
                           <Link href={`/admin/orders/${order.id}`}>
                             <Button
                               variant="outline"
                               size="sm"
-                              className="rounded-xl border-[#D6D2C4]/50 bg-white/50 text-[#5B7A2F] hover:bg-[#5B7A2F] hover:text-white hover:border-[#5B7A2F] shadow-sm transition-all dark:border-[#3D4F2A]/50 dark:bg-[#243019]/50 dark:text-[#7A9E4A] dark:hover:bg-[#7A9E4A] dark:hover:text-[#1A2212]"
+                              className="rounded-xl border-[#D6D2C4]/50 bg-white/50 text-[#5B7A2F] hover:bg-[#5B7A2F] hover:text-white hover:border-[#5B7A2F] shadow-sm transition-all dark:border-[#262626] dark:bg-[#1a1a1a] dark:text-[#22c55e] dark:hover:bg-[#22c55e] dark:hover:text-[#000000]"
                             >
                               <Eye className="h-4 w-4" />
                             </Button>
@@ -570,16 +570,16 @@ export default function OrdersPage() {
                                 variant="ghost"
                                 size="icon"
                                 disabled={updatingStatus === order.id}
-                                className="rounded-xl hover:bg-[#E8E4D9]/50 dark:hover:bg-[#2D3A1A]/50"
+                                className="rounded-xl hover:bg-[#E8E4D9]/50 dark:hover:bg-[#1a1a1a]"
                               >
                                 {updatingStatus === order.id ? (
-                                  <Loader2 className="h-4 w-4 animate-spin text-[#5B7A2F] dark:text-[#7A9E4A]" />
+                                  <Loader2 className="h-4 w-4 animate-spin text-[#5B7A2F] dark:text-[#22c55e]" />
                                 ) : (
-                                  <MoreVertical className="h-4 w-4 text-[#6B7B5A] dark:text-[#9CA88A]" />
+                                  <MoreVertical className="h-4 w-4 text-[#6B7B5A] dark:text-[#bfbfbf]" />
                                 )}
                               </Button>
                             </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end" className="rounded-xl border-[#D6D2C4]/50 dark:border-[#3D4F2A]/50">
+                            <DropdownMenuContent align="end" className="rounded-xl border-[#D6D2C4]/50 dark:border-[#262626] dark:bg-[#111111]">
                               {order.status !== "pending" && (
                                 <DropdownMenuItem
                                   onClick={() =>
@@ -622,9 +622,9 @@ export default function OrdersPage() {
 
             {/* Pagination */}
             {totalPages > 1 && (
-              <div className="border-t border-[#D6D2C4]/30 px-6 py-4 dark:border-[#3D4F2A]/30">
+              <div className="border-t border-[#D6D2C4]/30 px-6 py-4 dark:border-[#262626]">
                 <div className="flex items-center justify-between">
-                  <div className="text-sm text-[#6B7B5A] dark:text-[#9CA88A]">
+                  <div className="text-sm text-[#6B7B5A] dark:text-[#9ca3af]">
                     Showing {startIndex + 1} to {Math.min(endIndex, orders.length)} of {orders.length} orders
                   </div>
                   <div className="flex items-center gap-2">
@@ -633,7 +633,7 @@ export default function OrdersPage() {
                       size="sm"
                       onClick={() => setCurrentPage((prev) => Math.max(1, prev - 1))}
                       disabled={currentPage === 1}
-                      className="rounded-xl border-[#D6D2C4]/50 bg-white/50 hover:bg-[#E8E4D9]/50 disabled:opacity-50 dark:border-[#3D4F2A]/50 dark:bg-[#243019]/50 dark:hover:bg-[#2D3A1A]/50"
+                      className="rounded-xl border-[#D6D2C4]/50 bg-white/50 hover:bg-[#E8E4D9]/50 disabled:opacity-50 dark:border-[#262626] dark:bg-[#1a1a1a] dark:text-[#ffffff] dark:hover:bg-[#262626]"
                     >
                       <ChevronLeft className="h-4 w-4" />
                       Previous
@@ -658,8 +658,8 @@ export default function OrdersPage() {
                             onClick={() => setCurrentPage(pageNum)}
                             className={`rounded-xl ${
                               currentPage === pageNum
-                                ? "bg-[#5B7A2F] text-white shadow-md dark:bg-[#7A9E4A]"
-                                : "border-[#D6D2C4]/50 bg-white/50 hover:bg-[#E8E4D9]/50 dark:border-[#3D4F2A]/50 dark:bg-[#243019]/50 dark:hover:bg-[#2D3A1A]/50"
+                                ? "bg-primary text-white shadow-md dark:bg-primary"
+                                : "border-[#D6D2C4]/50 bg-white/50 hover:bg-[#E8E4D9]/50 dark:border-[#262626] dark:bg-[#1a1a1a] dark:text-[#ffffff] dark:hover:bg-[#262626]"
                             }`}
                           >
                             {pageNum}
@@ -672,7 +672,7 @@ export default function OrdersPage() {
                       size="sm"
                       onClick={() => setCurrentPage((prev) => Math.min(totalPages, prev + 1))}
                       disabled={currentPage === totalPages}
-                      className="rounded-xl border-[#D6D2C4]/50 bg-white/50 hover:bg-[#E8E4D9]/50 disabled:opacity-50 dark:border-[#3D4F2A]/50 dark:bg-[#243019]/50 dark:hover:bg-[#2D3A1A]/50"
+                      className="rounded-xl border-[#D6D2C4]/50 bg-white/50 hover:bg-[#E8E4D9]/50 disabled:opacity-50 dark:border-[#262626] dark:bg-[#1a1a1a] dark:text-[#ffffff] dark:hover:bg-[#262626]"
                     >
                       Next
                       <ChevronRight className="h-4 w-4" />

@@ -303,9 +303,21 @@ export default function QRPage() {
               <div className="space-y-6">
                 {/* Restaurant info */}
                 <div className="flex items-center gap-3 rounded-lg border border-border/50 bg-muted/30 p-4">
-                  <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-espresso text-warm font-sans font-semibold text-lg">
-                    {restaurantName.charAt(0)}
-                  </div>
+                  {logoUrl ? (
+                    <div className="flex h-10 w-10 items-center justify-center overflow-hidden rounded-xl bg-white">
+                      {/* Restaurant logo avatar */}
+                      {/* Using plain img to avoid adding Next.js Image in client route */}
+                      <img
+                        src={logoUrl}
+                        alt={restaurantName}
+                        className="h-full w-full object-cover"
+                      />
+                    </div>
+                  ) : (
+                    <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-espresso text-warm font-sans font-semibold text-lg">
+                      {restaurantName.charAt(0)}
+                    </div>
+                  )}
                   <div>
                     <p className="font-semibold">{restaurantName}</p>
                     <p className="text-xs text-muted-foreground font-mono break-all">
@@ -401,7 +413,7 @@ export default function QRPage() {
                 <div className="flex gap-3">
                   <Button
                     onClick={downloadPNG}
-                    className="gap-2 bg-espresso text-warm hover:bg-espresso/90 dark:bg-espresso dark:text-slate-900 dark:hover:bg-espresso/90"
+                    className="gap-2 bg-primary text-white hover:bg-primary/90 dark:bg-primary dark:text-white dark:hover:bg-primary/90"
                   >
                     <Download size={14} />
                     PNG
@@ -488,7 +500,7 @@ export default function QRPage() {
                 <div className="flex gap-3">
                   <Button
                     onClick={downloadBookTablePNG}
-                    className="gap-2 bg-espresso text-warm hover:bg-espresso/90 dark:bg-espresso dark:text-slate-900 dark:hover:bg-espresso/90"
+                    className="gap-2 bg-primary text-white hover:bg-primary/90 dark:bg-primary dark:text-white dark:hover:bg-primary/90"
                   >
                     <Download size={14} />
                     PNG

@@ -23,12 +23,12 @@ export default function LandingPage() {
         <HeroFeatureBar />
         <MenuCardsSection />
         <StorySection />
+        <FinalCtaSection />
         <WorkflowSection />
         {/* <EcosystemSection /> */}
         <PricingSection />
         {/* <SpotlightSection /> */}
         <TrustSection />
-        <FinalCtaSection />
         <Footer />
       </main>
     

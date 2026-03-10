@@ -99,8 +99,9 @@ const fragment = /* glsl */ `
       }
       gl_FragColor = vec4(vColor + 0.2 * sin(uv.yxx + uTime + vRandom.y * 6.28), 1.0);
     } else {
-      float circle = smoothstep(0.5, 0.4, d) * 1.0;
-      gl_FragColor = vec4(vColor + 0.2 * sin(uv.yxx + uTime + vRandom.y * 6.28), circle);
+      float circle = smoothstep(0.5, 0.3, d);
+      vec3 finalColor = vColor + 0.15 * sin(uv.yxx + uTime + vRandom.y * 6.28);
+      gl_FragColor = vec4(finalColor, circle * 0.9);
     }
   }
 `;
@@ -263,6 +264,7 @@ const Particles: React.FC<ParticlesProps> = ({
     <div
       ref={containerRef}
       className={`pointer-events-none w-full h-full ${className ?? ""}`}
+      style={{ width: '100%', height: '100%' }}
     />
   );
 };
