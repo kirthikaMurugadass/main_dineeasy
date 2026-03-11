@@ -3,34 +3,43 @@
 import Image from "next/image";
 import { ChevronRight, QrCode, ListTree, Clock3 } from "lucide-react";
 import { useScrollReveal } from "@/hooks/useScrollReveal";
+import { useI18n } from "@/lib/i18n/context";
 import { cn } from "@/lib/utils";
 
-const cards = [
-  {
-    icon: QrCode,
-    title: "QR code menu access",
-    body: "Replace printed menus with branded QR codes on every table so guests can instantly open your live menu.",
-    cta: "See QR menu flow",
-  },
-  {
-    icon: ListTree,
-    title: "Smart menu categories",
-    body: "Group dishes by course, dietary needs, or specials so browsing feels natural on any phone.",
-    cta: "Organise your menu",
-  },
-  {
-    icon: Clock3,
-    title: "Real-time updates",
-    body: "Hide sold-out items, update prices, and launch promos in seconds—no re-printing or PDFs.",
-    cta: "Manage items live",
-  },
-] as const;
-
 export function MenuCardsSection() {
+  const { t } = useI18n();
   const { ref: sectionRef, isVisible: sectionVisible } =
     useScrollReveal<HTMLElement>();
   const { ref: cardsRef, isVisible: cardsVisible } =
     useScrollReveal<HTMLDivElement>();
+
+  type CardWithIcon = {
+    title: string;
+    body: string;
+    cta: string;
+    icon: typeof QrCode;
+  };
+
+  const cards: CardWithIcon[] = (t.home?.menuCards?.cards || [
+    {
+      title: "QR code menu access",
+      body: "Replace printed menus with branded QR codes on every table so guests can instantly open your live menu.",
+      cta: "See QR menu flow",
+    },
+    {
+      title: "Smart menu categories",
+      body: "Group dishes by course, dietary needs, or specials so browsing feels natural on any phone.",
+      cta: "Organise your menu",
+    },
+    {
+      title: "Real-time updates",
+      body: "Hide sold-out items, update prices, and launch promos in seconds—no re-printing or PDFs.",
+      cta: "Manage items live",
+    },
+  ]).map((card: { title: string; body: string; cta: string }, index: number) => {
+    const icons: typeof QrCode[] = [QrCode, ListTree, Clock3];
+    return { ...card, icon: icons[index] };
+  });
 
   return (
     <section
@@ -46,15 +55,13 @@ export function MenuCardsSection() {
         <div className="grid gap-8 sm:gap-10 lg:grid-cols-[minmax(0,1.1fr)_minmax(0,0.9fr)] lg:items-center lg:gap-14">
           <div className="space-y-5">
             <p className="text-center text-xs font-semibold uppercase tracking-[0.25em] text-primary lg:text-left">
-              QR-powered journey
+              {t.home?.menuCards?.badge || "QR-powered journey"}
             </p>
             <h2 className="text-center text-[clamp(1.8rem,3vw+0.5rem,2.4rem)] font-semibold leading-tight tracking-tight text-foreground lg:text-left">
-              From scan to paid in a single digital flow.
+              {t.home?.menuCards?.title || "From scan to paid in a single digital flow."}
             </h2>
             <p className="mx-auto max-w-lg text-sm leading-relaxed text-muted-foreground lg:mx-0">
-              DineEasy connects each table to a live, mobile-first menu. Guests
-              scan a QR code, browse categories, place orders, and come back
-              again—all without installing an app.
+              {t.home?.menuCards?.description || "DineEasy connects each table to a live, mobile-first menu. Guests scan a QR code, browse categories, place orders, and come back again—all without installing an app."}
             </p>
           </div>
 

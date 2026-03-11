@@ -71,10 +71,12 @@ export default function OrderDetailsPage() {
 
   useEffect(() => {
     if (!subscriptionLoading && !isPro) {
-      toast.error("Orders feature is available only in Pro plan.");
+      toast.error(
+        t.order?.messages?.proOnly || "Orders feature is available only in Pro plan."
+      );
       router.replace("/admin");
     }
-  }, [isPro, subscriptionLoading, router]);
+  }, [isPro, subscriptionLoading, router, t.order]);
 
   useEffect(() => {
     async function loadOrder() {
@@ -114,7 +116,7 @@ export default function OrderDetailsPage() {
           .single();
 
         if (orderError || !orderData) {
-          toast.error("Order not found");
+          toast.error(t.order?.detail?.notFound || "Order not found");
           router.push("/admin/orders");
           return;
         }
@@ -190,7 +192,9 @@ export default function OrderDetailsPage() {
         });
       } catch (error) {
         console.error("Error loading order:", error);
-        toast.error("Failed to load order");
+        toast.error(
+          t.order?.messages?.loadError || "Failed to load order"
+        );
       } finally {
         setLoading(false);
       }
@@ -294,7 +298,9 @@ export default function OrderDetailsPage() {
               <ArrowLeft className="h-4 w-4" />
             </Button>
           </Link>
-          <PageTitle className="dark:text-[#ffffff]">Order Details</PageTitle>
+          <PageTitle className="dark:text-[#ffffff]">
+            {t.order?.detail?.title || "Order Details"}
+          </PageTitle>
         </div>
         <Badge
           variant="outline"
@@ -310,43 +316,59 @@ export default function OrderDetailsPage() {
         <FadeIn>
           <Card className="dark:border-[#1f1f1f] dark:bg-[#111111] dark:p-6 rounded-2xl">
             <CardHeader>
-              <CardTitle className="dark:text-[#ffffff]">Order Information</CardTitle>
+              <CardTitle className="dark:text-[#ffffff]">
+                {t.order?.detail?.infoCardTitle || "Order Information"}
+              </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               <div>
-                <p className="text-sm text-muted-foreground dark:text-[#bfbfbf]">Customer Name</p>
+                <p className="text-sm text-muted-foreground dark:text-[#bfbfbf]">
+                  {t.order?.detail?.customerName || "Customer Name"}
+                </p>
                 <p className="text-lg font-semibold dark:text-[#ffffff]">{order.customer_name}</p>
               </div>
               <div>
-                <p className="text-sm text-muted-foreground dark:text-[#bfbfbf]">Order Type</p>
+                <p className="text-sm text-muted-foreground dark:text-[#bfbfbf]">
+                  {t.order?.detail?.orderType || "Order Type"}
+                </p>
                 <p className="text-lg font-semibold dark:text-[#ffffff]">
                   {order.order_type === "dine_in" ? "Dine-in" : "Takeaway"}
                 </p>
               </div>
               {order.order_type === "dine_in" && order.table_number && (
                 <div>
-                  <p className="text-sm text-muted-foreground dark:text-[#bfbfbf]">Table Number</p>
+                  <p className="text-sm text-muted-foreground dark:text-[#bfbfbf]">
+                    {t.order?.detail?.tableNumber || "Table Number"}
+                  </p>
                   <p className="text-lg font-semibold dark:text-[#ffffff]">{order.table_number}</p>
                 </div>
               )}
               {order.order_type === "takeaway" && order.delivery_address && (
                 <div>
-                  <p className="text-sm text-muted-foreground dark:text-[#bfbfbf]">Delivery Address</p>
+                  <p className="text-sm text-muted-foreground dark:text-[#bfbfbf]">
+                    {t.order?.detail?.deliveryAddress || "Delivery Address"}
+                  </p>
                   <p className="text-lg font-semibold dark:text-[#ffffff]">{order.delivery_address}</p>
                 </div>
               )}
               {order.order_type === "takeaway" && order.phone_number && (
                 <div>
-                  <p className="text-sm text-muted-foreground dark:text-[#bfbfbf]">Phone Number</p>
+                  <p className="text-sm text-muted-foreground dark:text-[#bfbfbf]">
+                    {t.order?.detail?.phoneNumber || "Phone Number"}
+                  </p>
                   <p className="text-lg font-semibold dark:text-[#ffffff]">{order.phone_number}</p>
                 </div>
               )}
               <div>
-                <p className="text-sm text-muted-foreground dark:text-[#bfbfbf]">Placed At</p>
+                <p className="text-sm text-muted-foreground dark:text-[#bfbfbf]">
+                  {t.order?.detail?.placedAt || "Placed At"}
+                </p>
                 <p className="text-lg font-semibold dark:text-[#ffffff]">{formatDate(order.created_at)}</p>
               </div>
               <div>
-                <p className="text-sm text-muted-foreground dark:text-[#bfbfbf]">Order ID</p>
+                <p className="text-sm text-muted-foreground dark:text-[#bfbfbf]">
+                  {t.order?.detail?.orderId || "Order ID"}
+                </p>
                 <p className="text-sm font-mono text-muted-foreground dark:text-[#9ca3af]">{order.id}</p>
               </div>
             </CardContent>
@@ -357,7 +379,9 @@ export default function OrderDetailsPage() {
         <FadeIn delay={0.1}>
           <Card className="dark:border-[#1f1f1f] dark:bg-[#111111] dark:p-6 rounded-2xl">
             <CardHeader>
-              <CardTitle className="dark:text-[#ffffff]">Status Management</CardTitle>
+              <CardTitle className="dark:text-[#ffffff]">
+                {t.order?.detail?.statusManagement || "Status Management"}
+              </CardTitle>
             </CardHeader>
             <CardContent className="space-y-3">
               {order.status !== "pending" && (
@@ -368,7 +392,7 @@ export default function OrderDetailsPage() {
                   disabled={updatingStatus}
                 >
                   <Clock className="h-4 w-4 mr-2 dark:text-[#22c55e]" />
-                  {t.admin.orders.markAsPending}
+                  {t.order?.actions?.markAsPending || t.admin.orders.markAsPending}
                 </Button>
               )}
               {order.status !== "preparing" && (
@@ -379,7 +403,7 @@ export default function OrderDetailsPage() {
                   disabled={updatingStatus}
                 >
                   <ChefHat className="h-4 w-4 mr-2 dark:text-[#22c55e]" />
-                  {t.admin.orders.markAsPreparing}
+                  {t.order?.actions?.markAsPreparing || t.admin.orders.markAsPreparing}
                 </Button>
               )}
               {order.status !== "completed" && (
@@ -390,7 +414,7 @@ export default function OrderDetailsPage() {
                   disabled={updatingStatus}
                 >
                   <CheckCircle className="h-4 w-4 mr-2 dark:text-[#22c55e]" />
-                  {t.admin.orders.markAsCompleted}
+                  {t.order?.actions?.markAsCompleted || t.admin.orders.markAsCompleted}
                 </Button>
               )}
             </CardContent>
@@ -402,7 +426,9 @@ export default function OrderDetailsPage() {
       <FadeIn delay={0.2}>
         <Card className="dark:border-[#1f1f1f] dark:bg-[#111111] dark:p-6 rounded-2xl">
           <CardHeader>
-            <CardTitle className="dark:text-[#ffffff]">{t.admin.orders.items}</CardTitle>
+            <CardTitle className="dark:text-[#ffffff]">
+              {t.order?.detail?.itemsTitle || t.admin.orders.items}
+            </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
@@ -428,18 +454,24 @@ export default function OrderDetailsPage() {
                       {getDisplayTitle(item.item_title, language)}
                     </p>
                     <p className="text-sm text-muted-foreground dark:text-[#9ca3af]">
-                      {item.quantity}x @ CHF {item.price.toFixed(2)}
+                      {item.quantity}x @ {(t.order?.labels?.currency || "CHF") +
+                        " " +
+                        item.price.toFixed(2)}
                     </p>
                   </div>
                   <p className="text-lg font-bold dark:text-[#ffffff]">
-                    CHF {(item.price * item.quantity).toFixed(2)}
+                    {(t.order?.labels?.currency || "CHF") +
+                      " " +
+                      (item.price * item.quantity).toFixed(2)}
                   </p>
                 </div>
               ))}
               <div className="flex items-center justify-between border-t border-border dark:border-[#262626] pt-4">
-                <span className="text-lg font-semibold dark:text-[#ffffff]">{t.admin.orders.total}</span>
+                <span className="text-lg font-semibold dark:text-[#ffffff]">
+                  {t.order?.detail?.totalLabel || t.admin.orders.total}
+                </span>
                 <span className="text-2xl font-bold dark:text-[#ffffff]">
-                  CHF {order.total.toFixed(2)}
+                  {(t.order?.labels?.currency || "CHF") + " " + order.total.toFixed(2)}
                 </span>
               </div>
             </div>

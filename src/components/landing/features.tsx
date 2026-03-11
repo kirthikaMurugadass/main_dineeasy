@@ -12,9 +12,9 @@ export function Features() {
   const prefersReduced = useReducedMotion();
 
   const blocks = [
-    { feature: t.landing.features.qr, variant: "scan" as const },
-    { feature: t.landing.features.multilang, variant: "order" as const },
-    { feature: t.landing.features.themes, variant: "booking" as const },
+    { feature: t.home?.features?.qr || t.landing?.features?.qr || { title: "QR menu access", description: "Guests scan a table QR to instantly open your digital menu—no app required." }, variant: "scan" as const },
+    { feature: t.home?.features?.multilang || t.landing?.features?.multilang || { title: "Instant food ordering", description: "Let guests order directly from their phone with a fast, modern cart and checkout." }, variant: "order" as const },
+    { feature: t.home?.features?.themes || t.landing?.features?.themes || { title: "Table booking via QR", description: "Allow guests to reserve tables or join a waitlist from the same QR flow." }, variant: "booking" as const },
   ];
 
   function DeviceFrame({
@@ -188,19 +188,19 @@ export function Features() {
         <div className="mx-auto max-w-3xl text-center">
           <FadeIn>
             <p className="mb-4 text-sm tracking-widest text-green-700 dark:text-primary">
-              {t.landing.features.label}
+              {t.home?.features?.label || t.landing?.features?.label || "Features"}
             </p>
           </FadeIn>
           <FadeIn delay={0.08}>
             <h2 className="text-balance text-[clamp(2.25rem,3.6vw+0.6rem,3.4rem)] font-bold leading-tight tracking-tight text-foreground">
               <span className="bg-[linear-gradient(90deg,var(--foreground),rgba(122,158,74,0.95))] bg-clip-text text-transparent">
-                {t.landing.features.title}
+                {t.home?.features?.title || t.landing?.features?.title || "Everything your café & restaurant needs"}
               </span>
             </h2>
           </FadeIn>
           <FadeIn delay={0.16}>
             <p className="mt-4 text-base text-muted-foreground sm:text-lg">
-              {t.landing.features.subtitle}
+              {t.home?.features?.subtitle || t.landing?.features?.subtitle || "Powerful features, beautifully simple"}
             </p>
           </FadeIn>
         </div>

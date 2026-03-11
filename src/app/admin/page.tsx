@@ -748,51 +748,51 @@ export default function AdminDashboard() {
     const orderDate = new Date(date);
     const diffMs = now.getTime() - orderDate.getTime();
     const diffMins = Math.floor(diffMs / 60000);
-    if (diffMins < 1) return "Just now";
-    if (diffMins < 60) return `${diffMins}m ago`;
+    if (diffMins < 1) return t.dashboard?.liveOrderActivity?.timeAgo?.justNow || t.dashboard.liveOrderActivity?.timeAgo?.justNow || "Just now";
+    if (diffMins < 60) return `${diffMins}${t.dashboard?.liveOrderActivity?.timeAgo?.minutesAgo || t.dashboard.liveOrderActivity?.timeAgo?.minutesAgo || "m ago"}`;
     const diffHours = Math.floor(diffMins / 60);
-    if (diffHours < 24) return `${diffHours}h ago`;
+    if (diffHours < 24) return `${diffHours}${t.dashboard?.liveOrderActivity?.timeAgo?.hoursAgo || t.dashboard.liveOrderActivity?.timeAgo?.hoursAgo || "h ago"}`;
     return orderDate.toLocaleDateString();
   }
 
   const quickActions = [
-    { label: "Manage Menu", icon: UtensilsCrossed, href: "/admin/categories", pro: false },
-    { label: "View Orders", icon: ShoppingCart, href: "/admin/orders", pro: true },
-    { label: "Manage Tables", icon: Table, href: "/admin/tables", pro: true },
-    { label: "View Bookings", icon: Calendar, href: "/admin/bookings", pro: true },
-    { label: "Analytics", icon: BarChart3, href: "/admin/analytics", pro: false },
-    { label: "Appearance", icon: Palette, href: "/admin/appearance", pro: false },
-    { label: "QR Code", icon: QrCode, href: "/admin/qr", pro: false },
+    { label: t.dashboard?.quickActions?.manageMenu || t.dashboard.quickActions?.manageMenu || "Manage Menu", icon: UtensilsCrossed, href: "/admin/categories", pro: false },
+    { label: t.dashboard?.quickActions?.viewOrders || t.dashboard.quickActions?.viewOrders || "View Orders", icon: ShoppingCart, href: "/admin/orders", pro: true },
+    { label: t.dashboard?.quickActions?.manageTables || t.dashboard.quickActions?.manageTables || "Manage Tables", icon: Table, href: "/admin/tables", pro: true },
+    { label: t.dashboard?.quickActions?.viewBookings || t.dashboard.quickActions?.viewBookings || "View Bookings", icon: Calendar, href: "/admin/bookings", pro: true },
+    { label: t.dashboard?.quickActions?.analytics || t.dashboard.quickActions?.analytics || "Analytics", icon: BarChart3, href: "/admin/analytics", pro: false },
+    { label: t.dashboard?.quickActions?.appearance || t.dashboard.quickActions?.appearance || "Appearance", icon: Palette, href: "/admin/appearance", pro: false },
+    { label: t.dashboard?.quickActions?.qrCode || t.dashboard.quickActions?.qrCode || "QR Code", icon: QrCode, href: "/admin/qr", pro: false },
   ];
 
   const overviewCards = isPro
     ? [
         {
-          title: "Today's Revenue",
+          title: t.dashboard?.statistics?.todaysRevenue || t.dashboard.statistics?.todaysRevenue || "Today's Revenue",
           value: stats.todayRevenue,
           change: 0, // Can calculate from previous day
           icon: DollarSign,
         },
         {
-          title: "Pending Orders",
+          title: t.dashboard?.statistics?.pendingOrders || t.dashboard.statistics?.pendingOrders || "Pending Orders",
           value: stats.pendingOrders,
           change: 0,
           icon: Clock,
         },
         {
-          title: "Total Orders Today",
+          title: t.dashboard?.statistics?.totalOrdersToday || t.dashboard.statistics?.totalOrdersToday || "Total Orders Today",
           value: stats.totalOrdersToday,
           change: 0,
           icon: ShoppingCart,
         },
         {
-          title: "Tables Occupied",
+          title: t.dashboard?.statistics?.tablesOccupied || t.dashboard.statistics?.tablesOccupied || "Tables Occupied",
           value: stats.tablesOccupied,
           change: 0,
           icon: Table,
         },
         {
-          title: "Tables Available",
+          title: t.dashboard?.statistics?.tablesAvailable || t.dashboard.statistics?.tablesAvailable || "Tables Available",
           value: stats.tablesAvailable,
           change: 0,
           icon: CheckCircle,
@@ -800,13 +800,13 @@ export default function AdminDashboard() {
       ]
     : [
         {
-          title: "Total Categories",
+          title: t.dashboard?.statistics?.totalCategories || t.dashboard.statistics?.totalCategories || t.dashboard.totalCategories || "Total Categories",
           value: stats.totalCategories,
           change: 0,
           icon: UtensilsCrossed,
         },
         {
-          title: "Active Categories",
+          title: t.dashboard?.statistics?.activeCategories || t.dashboard.statistics?.activeCategories || t.dashboard.activeCategories || "Active Categories",
           value: stats.activeCategories,
           change: 0,
           icon: UtensilsCrossed,
@@ -909,10 +909,10 @@ export default function AdminDashboard() {
               </motion.div>
               <div>
                 <p className="text-xl font-bold text-gray-900 dark:text-white">
-                  Upgrade to Pro to unlock advanced analytics
+                  {t.dashboard?.upgrade?.title || "Upgrade to Pro to unlock advanced analytics"}
                 </p>
                 <p className="mt-1.5 text-sm font-medium text-gray-600 dark:text-gray-300">
-                  Get real-time orders, table management, and booking notifications with Pro.
+                  {t.dashboard?.upgrade?.description || "Get real-time orders, table management, and booking notifications with Pro."}
                 </p>
               </div>
             </div>
@@ -921,7 +921,7 @@ export default function AdminDashboard() {
                 className="shrink-0 rounded-xl bg-gradient-to-r from-green-600 to-green-500 text-white shadow-lg transition-all hover:shadow-xl hover:from-green-700 hover:to-green-600 dark:from-green-500 dark:to-green-600"
                 onClick={() => setUpgradeModalOpen(true)}
               >
-                Upgrade to Pro
+                {t.dashboard?.upgrade?.button || "Upgrade to Pro"}
               </Button>
             </motion.div>
           </div>
@@ -931,7 +931,7 @@ export default function AdminDashboard() {
       <Dialog open={upgradeModalOpen} onOpenChange={setUpgradeModalOpen}>
         <DialogContent className="max-w-md">
           <DialogHeader>
-            <DialogTitle>Upgrade to Pro</DialogTitle>
+            <DialogTitle>{t.dashboard?.upgrade?.dialogTitle || "Upgrade to Pro"}</DialogTitle>
           </DialogHeader>
           <ProCheckoutForm
             compact
@@ -951,7 +951,7 @@ export default function AdminDashboard() {
       >
         <div className="flex items-center justify-between">
           <h2 className="text-2xl font-bold text-foreground dark:text-[#ffffff]">
-            Live Business Overview
+            {t.dashboard?.liveBusinessOverview || "Live Business Overview"}
           </h2>
           <div className="flex items-center gap-2 text-sm text-muted-foreground dark:text-[#9ca3af]">
             <motion.div
@@ -959,7 +959,7 @@ export default function AdminDashboard() {
               transition={{ duration: 2, repeat: Infinity }}
               className="h-2 w-2 rounded-full bg-primary"
             />
-            <span className="font-medium">Live</span>
+            <span className="font-medium">{t.dashboard?.live || "Live"}</span>
           </div>
         </div>
 
@@ -1013,7 +1013,7 @@ export default function AdminDashboard() {
                   <div className="absolute inset-0 flex items-center justify-center bg-black/50 rounded-2xl">
                     <div className="flex items-center gap-2 text-white">
                       <Lock className="h-4 w-4" />
-                      <span className="text-sm font-semibold">Pro Feature</span>
+                      <span className="text-sm font-semibold">{t.dashboard?.upgrade?.proFeature || "Pro Feature"}</span>
                     </div>
                   </div>
                 )}
@@ -1040,7 +1040,7 @@ export default function AdminDashboard() {
                     <div className="rounded-xl bg-primary/10 p-2 dark:bg-primary/10">
                       <Activity className="h-5 w-5 text-primary" />
                   </div>
-                  Live Order Activity
+                  {t.dashboard?.liveOrderActivity?.title || "Live Order Activity"}
                 </CardTitle>
                 <motion.div
                   animate={{ scale: [1, 1.2, 1] }}
@@ -1048,7 +1048,7 @@ export default function AdminDashboard() {
                     className="flex items-center gap-2 text-xs font-medium text-muted-foreground dark:text-[#9ca3af]"
                 >
                     <div className="h-2 w-2 rounded-full bg-primary" />
-                  Real-time
+                  {t.dashboard?.realtime || t.dashboard?.liveOrderActivity?.realtime || "Real-time"}
                 </motion.div>
               </div>
             </CardHeader>
@@ -1056,11 +1056,11 @@ export default function AdminDashboard() {
               <div className="space-y-3 max-h-96 overflow-y-auto pr-2">
                   {loading ? (
                     <div className="text-center py-8 text-muted-foreground">
-                      Loading orders...
+                      {t.dashboard?.liveOrderActivity?.loading || "Loading orders..."}
                     </div>
                   ) : orders.length === 0 ? (
                     <div className="text-center py-8 text-muted-foreground">
-                      No orders yet
+                      {t.dashboard?.liveOrderActivity?.noOrders || "No orders yet"}
                     </div>
                   ) : (
                     orders.map((order, i) => {
@@ -1088,12 +1088,12 @@ export default function AdminDashboard() {
                     </div>
                     <div className="flex-1">
                             <p className="font-semibold text-foreground dark:text-[#ffffff]">
-                              {itemNames || "Order items"}
+                              {itemNames || (t.dashboard?.liveOrderActivity?.orderItems || "Order items")}
                             </p>
                             <p className="text-sm text-muted-foreground dark:text-[#9ca3af]">
                               {order.customer_name}
                               {order.table_number
-                                ? ` • Table T-${order.table_number.toString().padStart(2, "0")}`
+                                ? ` • ${t.dashboard?.liveOrderActivity?.table || "Table"} T-${order.table_number.toString().padStart(2, "0")}`
                                 : ""}{" "}
                               • {formatTimeAgo(order.created_at)}
                             </p>
@@ -1107,8 +1107,11 @@ export default function AdminDashboard() {
                                 : "bg-primary/20 text-primary dark:bg-primary/30 dark:text-primary"
                             }`}
                           >
-                            {order.status.charAt(0).toUpperCase() +
-                              order.status.slice(1)}
+                            {order.status === "pending" 
+                              ? (t.dashboard?.status?.pending || "Pending")
+                              : order.status === "preparing"
+                              ? (t.dashboard?.status?.preparing || "Preparing")
+                              : (t.dashboard?.status?.completed || "Completed")}
                     </div>
                   </motion.div>
                       );
@@ -1131,24 +1134,23 @@ export default function AdminDashboard() {
                   <div className="rounded-xl bg-primary/10 p-2 dark:bg-primary/10">
                     <Activity className="h-5 w-5 text-primary" />
                   </div>
-                  Live Order Activity
+                  {t.dashboard?.liveOrderActivity?.title || "Live Order Activity"}
                 </CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="flex flex-col items-center justify-center py-12 gap-4">
                   <Lock className="h-12 w-12 text-muted-foreground" />
                   <p className="text-lg font-semibold text-foreground">
-                    Pro Feature
+                    {t.dashboard?.upgrade?.proFeature || "Pro Feature"}
                   </p>
                   <p className="text-sm text-muted-foreground text-center">
-                    Upgrade to Pro to view real-time orders and manage your
-                    restaurant operations.
+                    {t.dashboard?.upgrade?.proFeatureDescription || "Upgrade to Pro to view real-time orders and manage your restaurant operations."}
                   </p>
                   <Button
                     onClick={() => setUpgradeModalOpen(true)}
                     className="mt-2"
                   >
-                    Upgrade to Pro
+                    {t.dashboard?.upgrade?.button || "Upgrade to Pro"}
                   </Button>
                 </div>
               </CardContent>
@@ -1168,7 +1170,7 @@ export default function AdminDashboard() {
                 <div className="rounded-xl bg-primary/10 p-2 dark:bg-primary/10">
                   <Zap className="h-5 w-5 text-primary" />
                 </div>
-                Quick Actions
+                {t.dashboard?.quickActions?.title || t.dashboard.quickActions || "Quick Actions"}
               </CardTitle>
             </CardHeader>
             <CardContent>
@@ -1232,18 +1234,18 @@ export default function AdminDashboard() {
                   <div className="rounded-xl bg-primary/10 p-2 dark:bg-primary/10">
                     <Table className="h-5 w-5 text-primary" />
                 </div>
-                Table Status
+                {t.dashboard?.tableStatus?.title || "Table Status"}
               </CardTitle>
             </CardHeader>
             <CardContent>
               <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
                   {loading ? (
                     <div className="col-span-full text-center py-8 text-muted-foreground">
-                      Loading tables...
+                      {t.dashboard?.tableStatus?.loading || "Loading tables..."}
                     </div>
                   ) : tables.length === 0 ? (
                     <div className="col-span-full text-center py-8 text-muted-foreground">
-                      No tables configured. Add tables in the Tables section.
+                      {t.dashboard?.tableStatus?.noTables || "No tables configured. Add tables in the Tables section."}
                     </div>
                   ) : (
                     tables.map((table, i) => (
@@ -1283,19 +1285,19 @@ export default function AdminDashboard() {
                 <div className="flex items-center gap-2">
                     <div className="h-2 w-2 rounded-full bg-primary" />
                     <span className="text-muted-foreground dark:text-[#9ca3af]">
-                      Available
+                      {t.dashboard?.tableStatus?.available || "Available"}
                     </span>
                 </div>
                 <div className="flex items-center gap-2">
                     <div className="h-2 w-2 rounded-full bg-red-500" />
                     <span className="text-muted-foreground dark:text-[#9ca3af]">
-                      Occupied
+                      {t.dashboard?.tableStatus?.occupied || "Occupied"}
                     </span>
                 </div>
                 <div className="flex items-center gap-2">
                   <div className="h-2 w-2 rounded-full bg-blue-500" />
                     <span className="text-muted-foreground dark:text-[#9ca3af]">
-                      Reserved
+                      {t.dashboard?.tableStatus?.reserved || "Reserved"}
                     </span>
                 </div>
               </div>
@@ -1314,24 +1316,23 @@ export default function AdminDashboard() {
                   <div className="rounded-xl bg-primary/10 p-2 dark:bg-primary/10">
                     <Table className="h-5 w-5 text-primary" />
                   </div>
-                  Table Status
+                  {t.dashboard?.tableStatus?.title || "Table Status"}
                 </CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="flex flex-col items-center justify-center py-12 gap-4">
                   <Lock className="h-12 w-12 text-muted-foreground" />
                   <p className="text-lg font-semibold text-foreground">
-                    Pro Feature
+                    {t.dashboard?.upgrade?.proFeature || "Pro Feature"}
                   </p>
                   <p className="text-sm text-muted-foreground text-center">
-                    Upgrade to Pro to manage tables and view real-time table
-                    status.
+                    {t.dashboard?.upgrade?.proFeatureTables || "Upgrade to Pro to manage tables and view real-time table status."}
                   </p>
                   <Button
                     onClick={() => setUpgradeModalOpen(true)}
                     className="mt-2"
                   >
-                    Upgrade to Pro
+                    {t.dashboard?.upgrade?.button || "Upgrade to Pro"}
                   </Button>
                 </div>
               </CardContent>
@@ -1356,7 +1357,7 @@ export default function AdminDashboard() {
                   <div className="rounded-xl bg-primary/10 p-2 dark:bg-primary/10">
                     <TrendingUp className="h-5 w-5 text-primary" />
                 </div>
-                  Revenue Analytics
+                  {t.dashboard?.revenueAnalytics?.title || "Revenue Analytics"}
               </CardTitle>
                 <div className="flex items-center gap-2">
                   <Button
@@ -1365,7 +1366,7 @@ export default function AdminDashboard() {
                     onClick={() => setRevenueView("day")}
                     className="h-7 text-xs"
                   >
-                    Daily
+                    {t.dashboard?.revenueAnalytics?.daily || "Daily"}
                   </Button>
                   <Button
                     variant={revenueView === "month" ? "default" : "outline"}
@@ -1373,7 +1374,7 @@ export default function AdminDashboard() {
                     onClick={() => setRevenueView("month")}
                     className="h-7 text-xs"
                   >
-                    Monthly
+                    {t.dashboard?.revenueAnalytics?.monthly || "Monthly"}
                   </Button>
                 </div>
               </div>
@@ -1403,7 +1404,7 @@ export default function AdminDashboard() {
                     <div className="rounded-xl bg-primary/10 p-2 dark:bg-primary/10">
                       <ShoppingCart className="h-5 w-5 text-primary" />
                 </div>
-                    Orders
+                    {t.dashboard?.orders?.title || "Orders"}
               </CardTitle>
                   <motion.div
                     animate={{ scale: [1, 1.2, 1] }}
@@ -1411,7 +1412,7 @@ export default function AdminDashboard() {
                     className="flex items-center gap-2 text-xs font-medium text-muted-foreground dark:text-[#9ca3af]"
                   >
                     <div className="h-2 w-2 rounded-full bg-primary" />
-                    Live
+                    {t.dashboard?.live || "Live"}
                   </motion.div>
                       </div>
                 <div className="flex items-center gap-2">
@@ -1421,7 +1422,7 @@ export default function AdminDashboard() {
                     onClick={() => setOrdersView("day")}
                     className="h-7 text-xs"
                   >
-                    Today
+                    {t.dashboard?.orders?.today || "Today"}
                   </Button>
                   <Button
                     variant={ordersView === "month" ? "default" : "outline"}
@@ -1429,7 +1430,7 @@ export default function AdminDashboard() {
                     onClick={() => setOrdersView("month")}
                     className="h-7 text-xs"
                   >
-                    Month
+                    {t.dashboard?.orders?.month || "Month"}
                   </Button>
                       </div>
               </CardHeader>
@@ -1455,23 +1456,23 @@ export default function AdminDashboard() {
                   <div className="rounded-xl bg-primary/10 p-2 dark:bg-primary/10">
                     <ShoppingCart className="h-5 w-5 text-primary" />
               </div>
-                  Orders
+                  {t.dashboard?.orders?.title || "Orders"}
             </CardTitle>
           </CardHeader>
           <CardContent>
                 <div className="flex flex-col items-center justify-center py-12 gap-4">
                   <Lock className="h-12 w-12 text-muted-foreground" />
                   <p className="text-lg font-semibold text-foreground">
-                    Pro Feature
+                    {t.dashboard?.upgrade?.proFeature || "Pro Feature"}
                   </p>
                   <p className="text-sm text-muted-foreground text-center">
-                    Upgrade to Pro to view real-time orders graph.
+                    {t.dashboard?.upgrade?.proFeatureOrders || "Upgrade to Pro to view real-time orders graph."}
                   </p>
                   <Button
                     onClick={() => setUpgradeModalOpen(true)}
                     className="mt-2"
                   >
-                    Upgrade to Pro
+                    {t.dashboard?.upgrade?.button || "Upgrade to Pro"}
                   </Button>
                 </div>
               </CardContent>
@@ -1494,7 +1495,7 @@ export default function AdminDashboard() {
                   <div className="rounded-xl bg-primary/10 p-2 dark:bg-primary/10">
                     <Calendar className="h-5 w-5 text-primary" />
                       </div>
-                  Table Bookings Analytics
+                  {t.dashboard?.tableBookings?.title || "Table Bookings Analytics"}
                 </CardTitle>
                         <motion.div
                           animate={{ scale: [1, 1.2, 1] }}
@@ -1502,7 +1503,7 @@ export default function AdminDashboard() {
                   className="flex items-center gap-2 text-xs font-medium text-muted-foreground dark:text-[#9ca3af]"
                 >
                   <div className="h-2 w-2 rounded-full bg-primary" />
-                  Live
+                  {t.dashboard?.live || "Live"}
                 </motion.div>
                     </div>
               <div className="flex items-center gap-2">
@@ -1512,7 +1513,7 @@ export default function AdminDashboard() {
                   onClick={() => setBookingsView("day")}
                   className="h-7 text-xs"
                 >
-                  Today
+                  {t.dashboard?.tableBookings?.today || "Today"}
                 </Button>
                 <Button
                   variant={bookingsView === "month" ? "default" : "outline"}
@@ -1520,7 +1521,7 @@ export default function AdminDashboard() {
                   onClick={() => setBookingsView("month")}
                   className="h-7 text-xs"
                 >
-                  Month
+                  {t.dashboard?.tableBookings?.month || "Month"}
                 </Button>
                     </div>
             </CardHeader>
@@ -1548,10 +1549,12 @@ function RevenueChart({
   data: Array<{ hour?: string; day?: string; revenue: number }>;
   view: "day" | "month";
 }) {
+  const { t } = useI18n();
+  
   if (!data || data.length === 0) {
     return (
       <div className="flex items-center justify-center h-full text-muted-foreground">
-        No data available
+        {t.dashboard?.revenueAnalytics?.noData || "No data available"}
       </div>
     );
 }
@@ -1662,10 +1665,14 @@ function OrdersChart({
   data: Array<{ hour?: string; day?: string; count: number }>;
   view: "day" | "month";
 }) {
+  const { t } = useI18n();
+  
   if (!data || data.length === 0) {
     return (
       <div className="flex items-center justify-center h-full text-muted-foreground">
-        {view === "day" ? "No orders today" : "No orders this month"}
+        {view === "day" 
+          ? (t.dashboard?.orders?.noOrdersToday || "No orders today")
+          : (t.dashboard?.orders?.noOrdersMonth || "No orders this month")}
       </div>
     );
   }
@@ -1771,10 +1778,14 @@ function BookingsChart({
   data: Array<{ hour?: string; day?: string; count: number }>;
   view: "day" | "month";
 }) {
+  const { t } = useI18n();
+  
   if (!data || data.length === 0) {
     return (
       <div className="flex items-center justify-center h-full text-muted-foreground">
-        {view === "day" ? "No bookings today" : "No bookings this month"}
+        {view === "day" 
+          ? (t.dashboard?.tableBookings?.noBookingsToday || "No bookings today")
+          : (t.dashboard?.tableBookings?.noBookingsMonth || "No bookings this month")}
       </div>
     );
   }
@@ -1880,6 +1891,7 @@ function TablesChart({
   occupied: number;
   available: number;
 }) {
+  const { t } = useI18n();
   const total = occupied + available;
   const occupiedPercent = total > 0 ? (occupied / total) * 100 : 0;
   const availablePercent = total > 0 ? (available / total) * 100 : 0;
@@ -1945,7 +1957,7 @@ function TablesChart({
             {total}
           </div>
           <div className="text-xs text-muted-foreground dark:text-[#9ca3af]">
-            Total Tables
+            {t.dashboard?.tableStatus?.totalTables || "Total Tables"}
           </div>
         </div>
       </div>
@@ -1955,13 +1967,13 @@ function TablesChart({
         <div className="flex items-center gap-2">
           <div className="h-4 w-4 rounded-full bg-red-500" />
           <span className="text-sm text-foreground dark:text-[#ffffff]">
-            Occupied: {occupied}
+            {t.dashboard?.tableStatus?.occupied || "Occupied"}: {occupied}
           </span>
         </div>
         <div className="flex items-center gap-2">
           <div className="h-4 w-4 rounded-full bg-primary" />
           <span className="text-sm text-foreground dark:text-[#ffffff]">
-            Available: {available}
+            {t.dashboard?.tableStatus?.available || "Available"}: {available}
           </span>
         </div>
       </div>

@@ -1,0 +1,203 @@
+{
+  "title": "Bookings",
+  "description": "Manage table bookings and reservations",
+  "tabs": {
+    "all": "All Bookings",
+    "today": "Today",
+    "upcoming": "Upcoming",
+    "pending": "Pending",
+    "confirmed": "Confirmed",
+    "completed": "Completed"
+  },
+  "filters": {
+    "searchPlaceholder": "Search by customer name...",
+    "clear": "Clear"
+  },
+  "tableHeaders": {
+    "bookingId": "Booking ID",
+    "customer": "Customer Name",
+    "table": "Table",
+    "dateTime": "Date & Time",
+    "guests": "Guests",
+    "status": "Status",
+    "actions": "Action"
+  },
+  "labels": {
+    "tableLabel": "Table",
+    "guestSingular": "Guest",
+    "guestPlural": "Guests"
+  },
+  "status": {
+    "pending": "Pending",
+    "confirmed": "Confirmed",
+    "cancelled": "Cancelled",
+    "completed": "Completed"
+  },
+  "messages": {
+    "noBookings": "No bookings yet",
+    "loadError": "Failed to load bookings",
+    "proOnly": "Bookings are available on the Pro plan.",
+    "notFound": "Booking not found"
+  },
+  "actions": {
+    "viewDetails": "View booking",
+    "confirm": "Confirm",
+    "cancel": "Cancel",
+    "markCompleted": "Mark Completed",
+    "confirmBooking": "Confirm Booking",
+    "cancelBooking": "Cancel Booking"
+  },
+  "detail": {
+    "title": "Booking Details",
+    "backToBookings": "Back to Bookings",
+    "infoCardTitle": "Booking Information",
+    "statusManagement": "Status Management",
+    "customerName": "Customer Name",
+    "phoneNumber": "Phone Number",
+    "dateTime": "Booking Date & Time",
+    "guestCount": "Number of Guests",
+    "specialRequests": "Special Requests",
+    "requestedAt": "Requested At",
+    "bookingId": "Booking ID"
+  },
+  "toasts": {
+    "statusUpdated": "Booking status updated",
+    "statusUpdateError": "Failed to update booking status"
+  },
+  "pagination": {
+    "showing": "Showing",
+    "to": "to",
+    "of": "of",
+    "bookings": "bookings",
+    "previous": "Previous",
+    "next": "Next"
+  },
+  "publicFlow": {
+    "steps": {
+      "step1Of4": "Step 1 of 4",
+      "step2Of4": "Step 2 of 4",
+      "step3Of4": "Step 3 of 4",
+      "step4Of4": "Step 4 of 4",
+      "bookYourTable": "Book Your Table",
+      "bookATable": "Book a Table",
+      "orderSummary": "Order Summary",
+      "tableBookedSuccess": "Table Booked Successfully! 🎉"
+    },
+    "intro": {
+      "restaurantReservation": "Restaurant reservation",
+      "premiumDining": "PREMIUM DINING",
+      "headline": "Reserve an Unforgettable Dining Experience",
+      "subheadline": "Pick a date and time, choose your party size, and we'll help you find the best table for your visit.",
+      "findTableTitle": "Find a Table",
+      "findTableSubtitle": "Select your preferred date, time, and guests.",
+      "nextStepHint": "You'll enter your name and contact details in the next step.",
+      "premiumDiningTitle": "Premium Dining",
+      "premiumDiningHeading": "A premium dining moment - curated for you",
+      "premiumDiningDescription": "Enjoy an elevated dining experience with warm hospitality, thoughtfully crafted dishes, and a calm ambience - perfect for celebrations or a quiet evening out."
+    },
+    "sections": {
+      "guestInformation": "Guest Information",
+      "visitDetails": "Visit Details",
+      "hours": "Hours",
+      "location": "Location",
+      "contact": "Contact",
+      "orderDetails": "Order Details",
+      "reservationDetails": "Reservation Details",
+      "customerInformation": "Customer Information",
+      "reservationInfo": "Reservation Info",
+      "orderedItems": "Ordered Items",
+      "billing": "Billing"
+    },
+    "fields": {
+      "date": "Date",
+      "time": "Time",
+      "guests": "Guests",
+      "fullName": "Full Name",
+      "phoneNumber": "Phone Number",
+      "email": "Email",
+      "dateToCome": "Date to Come",
+      "timeToCome": "Time to Come",
+      "numberOfGuests": "Number of Guests",
+      "specialNotes": "Special Notes",
+      "tableNumber": "Table Number",
+      "customerName": "Customer",
+      "reservationId": "Reservation ID",
+      "bookingTime": "Booking Time",
+      "selectedTable": "Selected Table",
+      "capacity": "Capacity",
+      "subtotal": "Subtotal",
+      "tax": "Tax (10%)",
+      "totalPrice": "Total Price"
+    },
+    "labels": {
+      "optional": "optional",
+      "personSingular": "person",
+      "personPlural": "persons",
+      "at": "at",
+      "notAvailable": "N/A",
+      "tableReservationFee": "Table reservation fee"
+    },
+    "placeholders": {
+      "select": "Select",
+      "selectCountry": "Select country",
+      "selectTime": "Select time",
+      "fullName": "John Doe",
+      "email": "you@example.com",
+      "specialRequests": "Any special requests or dietary requirements..."
+    },
+    "status": {
+      "available": "Available",
+      "occupied": "Occupied",
+      "reserved": "Reserved"
+    },
+    "actions": {
+      "findTable": "Find Table",
+      "nextSelectTable": "Next: Select Table",
+      "continueToSelectTable": "Continue to Select Table",
+      "continue": "Continue",
+      "confirmBooking": "Confirm Booking",
+      "processing": "Processing...",
+      "backToMenu": "Back to menu",
+      "backToHome": "Back to Home",
+      "viewReservation": "View Reservation"
+    },
+    "validation": {
+      "nameRequired": "Please enter your name",
+      "phoneRequired": "Please enter your phone number",
+      "invalidPhone": "Invalid phone number",
+      "emailRequired": "Please enter your email",
+      "invalidEmail": "Please enter a valid email address",
+      "dateRequired": "Please select a date",
+      "timeRequired": "Please select a time",
+      "guestsRequired": "Please select number of guests",
+      "futureDateRequired": "Please select a future date",
+      "selectTableRequired": "Please select a table to continue."
+    },
+    "messages": {
+      "restaurantNotFound": "Restaurant not found",
+      "restaurantInfoMissing": "Restaurant information is missing",
+      "onlineBookingUnavailableTitle": "Online bookings are not available",
+      "onlineBookingUnavailable": "This restaurant does not currently accept online table bookings. Please contact the restaurant directly to make a reservation.",
+      "startBookingAgain": "Please start your booking again.",
+      "invalidBookingData": "Invalid booking data. Please start again.",
+      "startBookingError": "Failed to start booking",
+      "failedLoadTables": "Failed to load tables",
+      "failedLoadTableSelection": "Failed to load table selection",
+      "tableAlreadyBooked": "This table is already booked for the selected time.",
+      "tableHeldByAnother": "This table is temporarily held by another guest.",
+      "failedSelectTableRetry": "Failed to select table. Please try again.",
+      "failedSelectTable": "Failed to select table.",
+      "tableSelectedConfirmBooking": "Table selected. Please confirm your booking.",
+      "lockVerifyError": "Could not verify table lock. Please try again.",
+      "tableHoldExpired": "Your table hold has expired. Please select a table again.",
+      "failedCreateBooking": "Failed to create booking",
+      "bookingRequestSent": "Booking request sent! We will confirm shortly.",
+      "failedConfirmBooking": "Failed to confirm booking",
+      "noTablesConfigured": "No tables configured yet. Please contact the restaurant.",
+      "reservationConfirmed": "Your table reservation has been confirmed.",
+      "setOpeningClosingHours": "Set opening and closing hours in Admin Settings",
+      "setAddress": "Set restaurant address in Admin Settings",
+      "setContactPhone": "Set contact phone in Admin Settings"
+    }
+  }
+}

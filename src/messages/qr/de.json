@@ -1,0 +1,29 @@
+{
+  "title": "QR-Codes",
+  "description": "Die permanenten QR-Codes deines Restaurants",
+  "loading": "Wird geladen...",
+  "qrColor": "QR-Farbe",
+  "background": "Hintergrund",
+  "urlDescription": "Diese URL laedt das standardmaessig aktive Menue deines Restaurants",
+  "urlDescriptionMenu": "Diese URL laedt das spezifische Menue deines Restaurants",
+  "menuQrCode": "Menue-QR-Code",
+  "menuQrCodeUrl": "Menue-QR-Code-URL",
+  "scanToViewMenu": "Scannen, um das Menue zu sehen",
+  "bookTableQrCode": "Tischreservierungs-QR-Code",
+  "bookTableQrCodeUrl": "Tischreservierungs-QR-Code-URL",
+  "customersScanToBook": "Kunden scannen diesen QR-Code, um einen Tisch zu reservieren",
+  "scanToBookTable": "Scannen, um einen Tisch zu reservieren",
+  "printAction": "Drucken",
+  "printTitle": "QR-Code",
+  "toasts": {
+    "generateError": "QR-Code konnte nicht erstellt werden",
+    "generateBookTableError": "Tischreservierungs-QR-Code konnte nicht erstellt werden",
+    "urlCopied": "URL kopiert!",
+    "bookTableUrlCopied": "Tischreservierungs-URL kopiert!",
+    "menuPngDownloaded": "Menue-QR-Code als PNG heruntergeladen!",
+    "menuSvgDownloaded": "Menue-QR-Code als SVG heruntergeladen!",
+    "svgGenerateError": "SVG konnte nicht erstellt werden",
+    "bookTablePngDownloaded": "Tischreservierungs-QR-Code als PNG heruntergeladen!",
+    "bookTableSvgDownloaded": "Tischreservierungs-QR-Code als SVG heruntergeladen!"
+  }
+}

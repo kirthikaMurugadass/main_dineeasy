@@ -1,0 +1,10 @@
+{
+  "title": "Analytics",
+  "description": "View business insights and performance metrics",
+  "totalOrders": "Total Orders",
+  "todayOrders": "Today's Orders",
+  "mostOrderedItems": "Most Ordered Items",
+  "noItemsYet": "No items ordered yet",
+  "orders": "orders",
+  "order": "order"
+}

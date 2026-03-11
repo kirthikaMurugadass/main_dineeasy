@@ -7,27 +7,29 @@ import { Check, Crown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useTheme } from "@/components/providers/theme-provider";
-
-const featuresFree = [
-  "Menu management",
-  "Public menu page",
-  "Basic dashboard",
-];
-
-const featuresPro = [
-  "Menu management",
-  "Table booking",
-  "Real-time table selection",
-  "Booking notifications",
-];
+import { useI18n } from "@/lib/i18n/context";
 
 export function PricingSection() {
+  const { t } = useI18n();
   const [billingCycle, setBillingCycle] = useState<"monthly" | "annual">(
     "monthly",
   );
   const { resolvedTheme } = useTheme();
 
   const isAnnual = billingCycle === "annual";
+  
+  const featuresFree = t.home?.pricing?.free?.features || [
+    "Menu management",
+    "Public menu page",
+    "Basic dashboard",
+  ];
+
+  const featuresPro = t.home?.pricing?.pro?.features || [
+    "Menu management",
+    "Table booking",
+    "Real-time table selection",
+    "Booking notifications",
+  ];
 
   return (
     <section 
@@ -55,15 +57,13 @@ export function PricingSection() {
         {/* 1️⃣ Top Area (Centered) */}
         <div className="mx-auto max-w-3xl text-center">
           <p className="text-xs font-semibold uppercase tracking-[0.25em] text-primary">
-            Pricing
+            {t.home?.pricing?.badge || "Pricing"}
           </p>
           <h2 className="mt-5 text-balance text-[clamp(2.2rem,3.4vw+0.6rem,3.1rem)] font-semibold leading-tight tracking-tight text-foreground dark:text-[#ffffff]">
-            Simple pricing for busy restaurants.
+            {t.home?.pricing?.title || "Simple pricing for busy restaurants."}
           </h2>
           <p className="mt-4 mx-auto max-w-2xl text-base text-muted-foreground sm:text-lg dark:text-[#bfbfbf]">
-            Start with the Free plan in minutes. When you&apos;re ready for full
-            table booking and realtime coordination, upgrade to Pro with a
-            single click.
+            {t.home?.pricing?.description || "Start with the Free plan in minutes. When you're ready for full table booking and realtime coordination, upgrade to Pro with a single click."}
           </p>
 
           <div className="mt-8 flex items-center justify-center">
@@ -84,7 +84,7 @@ export function PricingSection() {
                     : "text-gray-700 hover:text-primary dark:text-gray-300 dark:hover:text-primary"
                 )}
               >
-                Monthly
+                {t.home?.pricing?.monthly || "Monthly"}
               </button>
               <button
                 type="button"
@@ -96,16 +96,16 @@ export function PricingSection() {
                     : "text-gray-700 hover:text-primary dark:text-gray-300 dark:hover:text-primary"
                 )}
               >
-                Annual
+                {t.home?.pricing?.annual || "Annual"}
               </button>
             </div>
           </div>
 
           <div className="mt-8 inline-flex items-center gap-2 rounded-full border border-border/70 bg-card/80 px-2 py-1 text-xs font-medium text-muted-foreground shadow-soft backdrop-blur dark:bg-[#111111] dark:border-[#1f1f1f] dark:text-[#bfbfbf]">
             <span className="rounded-full bg-primary/10 px-2 py-0.5 text-[11px] font-semibold uppercase tracking-[0.18em] text-primary">
-              Flexible billing
+              {t.home?.pricing?.flexibleBilling || "Flexible billing"}
             </span>
-            <span>Switch between monthly and annual anytime.</span>
+            <span>{t.home?.pricing?.flexibleBillingNote || "Switch between monthly and annual anytime."}</span>
           </div>
         </div>
 
@@ -123,17 +123,17 @@ export function PricingSection() {
             <div className="group relative flex h-full flex-col rounded-2xl border border-primary/18 bg-white/55 p-6 shadow-soft backdrop-blur-xl transition-all duration-300 hover:shadow-card dark:bg-[#111111] dark:border-[#1f1f1f]">
               <div className="pointer-events-none absolute inset-0 rounded-2xl bg-[radial-gradient(circle_at_20%_0%,rgba(232,228,217,0.75),transparent_60%)] opacity-80 dark:hidden" />
               <div className="relative z-10 mb-3">
-                <h3 className="text-base font-semibold text-gray-900 dark:text-[#ffffff]">Free</h3>
+                <h3 className="text-base font-semibold text-gray-900 dark:text-[#ffffff]">{t.home?.pricing?.free?.title || "Free"}</h3>
                 <p className="mt-1 text-xs text-gray-600 dark:text-[#bfbfbf]">
-                  Perfect to launch your digital menu.
+                  {t.home?.pricing?.free?.description || "Perfect to launch your digital menu."}
                 </p>
               </div>
               <div className="relative z-10 mt-2 flex items-baseline gap-1">
-                <span className="text-3xl font-semibold tracking-tight text-gray-900 dark:text-[#ffffff]">₹0</span>
-                <span className="text-xs text-gray-600 dark:text-[#bfbfbf]">/ forever</span>
+                <span className="text-3xl font-semibold tracking-tight text-gray-900 dark:text-[#ffffff]">{t.home?.pricing?.free?.price || "₹0"}</span>
+                <span className="text-xs text-gray-600 dark:text-[#bfbfbf]">{t.home?.pricing?.free?.period || "/ forever"}</span>
               </div>
               <ul className="relative z-10 mt-5 flex-1 space-y-2 text-sm">
-                {featuresFree.map((feature) => (
+                {featuresFree.map((feature: string) => (
                   <li key={feature} className="flex items-start gap-2">
                     <Check className="mt-0.5 h-4 w-4 text-primary flex-shrink-0" />
                     <span className="text-gray-700 dark:text-[#bfbfbf]">{feature}</span>
@@ -145,7 +145,7 @@ export function PricingSection() {
                   asChild
                 className="h-11 w-full rounded-xl border border-primary/20 bg-white/55 text-sm font-semibold text-gray-900 shadow-soft backdrop-blur transition-all duration-300 hover:bg-white/70 hover:border-primary/30 hover:shadow-md dark:bg-[#121212] dark:text-[#ffffff] dark:border-white/20 dark:hover:bg-[#1a1a1a]"
                 >
-                  <Link href="/signup?plan=free">Start Free</Link>
+                  <Link href="/signup?plan=free">{t.home?.pricing?.free?.cta || "Start Free"}</Link>
                 </Button>
               </div>
             </div>
@@ -164,27 +164,27 @@ export function PricingSection() {
               <div className="pointer-events-none absolute -inset-0.5 rounded-2xl bg-[radial-gradient(circle_at_20%_0%,rgba(91,122,47,0.18),transparent_60%),radial-gradient(circle_at_90%_20%,rgba(232,228,217,0.65),transparent_60%)] opacity-80 dark:hidden" />
               <div className="absolute right-4 top-4 inline-flex items-center gap-1 rounded-full border border-primary/18 bg-white/55 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.18em] text-foreground shadow-soft backdrop-blur dark:bg-[#121212] dark:text-[#ffffff] dark:border-white/20">
                 <Crown className="h-3 w-3" />
-                Most popular
+                {t.home?.pricing?.pro?.mostPopular || "Most popular"}
               </div>
               <div className="mb-3">
-                <h3 className="text-base font-semibold text-foreground dark:text-[#ffffff]">Pro</h3>
+                <h3 className="text-base font-semibold text-foreground dark:text-[#ffffff]">{t.home?.pricing?.pro?.title || "Pro"}</h3>
                 <p className="mt-1 text-xs text-muted-foreground dark:text-[#bfbfbf]">
-                  Full booking system with realtime coordination.
+                  {t.home?.pricing?.pro?.description || "Full booking system with realtime coordination."}
                 </p>
               </div>
               <div className="mt-2 flex items-baseline gap-1">
                 <span className="text-3xl font-semibold tracking-tight text-foreground dark:text-[#ffffff]">
-                  {isAnnual ? "₹9,999" : "₹999"}
+                  {isAnnual ? (t.home?.pricing?.pro?.priceAnnual || "₹9,999") : (t.home?.pricing?.pro?.priceMonthly || "₹999")}
                 </span>
                 <span className="text-xs text-muted-foreground dark:text-[#bfbfbf]">
-                  / {isAnnual ? "year" : "month"}
+                  {isAnnual ? (t.home?.pricing?.pro?.periodAnnual || "/ year") : (t.home?.pricing?.pro?.periodMonthly || "/ month")}
                 </span>
               </div>
               <p className="mt-1 text-[11px] text-muted-foreground dark:text-[#bfbfbf]">
-                Billed {isAnnual ? "once per year" : "monthly"}. Cancel anytime.
+                {isAnnual ? (t.home?.pricing?.pro?.billedAnnual || "Billed once per year. Cancel anytime.") : (t.home?.pricing?.pro?.billedMonthly || "Billed monthly. Cancel anytime.")}
               </p>
               <ul className="mt-5 flex-1 space-y-2 text-sm">
-                {featuresPro.map((feature) => (
+                {featuresPro.map((feature: string) => (
                   <li key={feature} className="flex items-start gap-2">
                     <Check className="mt-0.5 h-4 w-4 text-primary flex-shrink-0" />
                     <span className="text-muted-foreground dark:text-[#bfbfbf]">{feature}</span>
@@ -197,7 +197,7 @@ export function PricingSection() {
                   className="h-11 w-full rounded-xl bg-primary text-sm font-semibold text-primary-foreground shadow-lg shadow-primary/20 transition-all duration-300 hover:scale-[1.01] hover:bg-primary/90 hover:shadow-xl hover:shadow-primary/25"
                 >
                   <Link href={`/signup?plan=pro&billing=${billingCycle}`}>
-                    Upgrade to Pro
+                    {t.home?.pricing?.pro?.cta || "Upgrade to Pro"}
                   </Link>
                 </Button>
               </div>

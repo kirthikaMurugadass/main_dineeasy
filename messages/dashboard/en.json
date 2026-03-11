@@ -1,0 +1,26 @@
+{
+  "title": "Dashboard",
+  "welcome": "Welcome back",
+  "totalCategories": "Total Categories",
+  "activeCategories": "Active Categories",
+  "quickCreate": "Create New Menu",
+  "recentActivity": "Recent Activity",
+  "quickActions": "Quick Actions",
+  "analytics": "Analytics",
+  "noMenu": "No menu found",
+  "createMenu": "Create Menu",
+  "viewPublic": "View Public Menu",
+  "noRecentActivity": "No recent activity",
+  "smartInsights": "Smart Dashboard Insights",
+  "addCategory": "Add Category",
+  "generateQr": "Generate QR",
+  "manageMenu": "Manage Menu",
+  "viewAnalytics": "View Analytics",
+  "categoryGrowth": "Category Growth",
+  "qrActivity": "QR Code Activity",
+  "activity": {
+    "categoryAdded": "Category added",
+    "qrGenerated": "QR code generated",
+    "menuUpdated": "Menu updated"
+  }
+}

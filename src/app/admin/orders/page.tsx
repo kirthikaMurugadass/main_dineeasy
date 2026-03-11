@@ -180,13 +180,14 @@ export default function OrdersPage() {
       setCurrentPage(1); // Reset to first page when filters change
     } catch (error: any) {
       console.error("Error loading orders:", error);
-      const errorMessage = error?.message || "Failed to load orders";
+      const errorMessage =
+        error?.message || t.order?.messages?.loadError || "Failed to load orders";
       toast.error(errorMessage);
       setOrders([]);
     } finally {
       setLoading(false);
     }
-  }, [statusFilter, selectedDate]);
+  }, [statusFilter, selectedDate, t.order]);
 
   useEffect(() => {
     setMounted(true);
@@ -294,11 +295,13 @@ export default function OrdersPage() {
 
       if (error) throw error;
 
-      toast.success("Order status updated");
+      toast.success(t.order?.toasts?.statusUpdated || "Order status updated");
       // Orders will auto-update via realtime subscription
     } catch (error) {
       console.error("Error updating order status:", error);
-      toast.error("Failed to update order status");
+      toast.error(
+        t.order?.toasts?.statusUpdateError || "Failed to update order status"
+      );
     } finally {
       setUpdatingStatus(null);
     }
@@ -328,7 +331,7 @@ export default function OrdersPage() {
 
   function formatDate(dateString: string) {
     const date = new Date(dateString);
-    return new Intl.DateTimeFormat("en-US", {
+    return new Intl.DateTimeFormat(language || "en-US", {
       month: "short",
       day: "numeric",
       hour: "2-digit",
@@ -338,10 +341,12 @@ export default function OrdersPage() {
 
   useEffect(() => {
     if (!subscriptionLoading && !isPro) {
-      toast.error("Orders feature is available only in Pro plan.");
+      toast.error(
+        t.order?.messages?.proOnly || "Orders feature is available only in Pro plan."
+      );
       router.replace("/admin");
     }
-  }, [isPro, subscriptionLoading, router]);
+  }, [isPro, subscriptionLoading, router, t.order]);
 
   if (!isPro) {
     return null;
@@ -350,12 +355,12 @@ export default function OrdersPage() {
   // Get address display text
   const getAddressText = (order: Order) => {
     if (order.order_type === "dine_in" && order.table_number) {
-      return `Table ${order.table_number}`;
+      return `${t.order?.labels?.table || "Table"} ${order.table_number}`;
     }
     if (order.order_type === "takeaway" && order.delivery_address) {
       return order.delivery_address;
     }
-    return "-";
+    return t.order?.labels?.addressDash || "-";
   };
 
   // Get status badge color
@@ -381,7 +386,7 @@ export default function OrdersPage() {
     <div className="space-y-6 dark:bg-[#000000]">
       {/* Header with Title */}
       <div className="flex items-center justify-between">
-        <PageTitle>{t.admin.orders.title}</PageTitle>
+        <PageTitle>{t.order?.title || t.admin.orders.title}</PageTitle>
       </div>
 
       {/* Tabs and Date Filter */}
@@ -398,7 +403,7 @@ export default function OrdersPage() {
                     : "bg-white/50 text-[#6B7B5A] hover:bg-[#E8E4D9]/50 dark:bg-[#1a1a1a] dark:text-[#bfbfbf] dark:hover:bg-[#262626]"
                 }`}
               >
-                All Orders
+                {t.order?.tabs?.all || "All Orders"}
               </button>
               <button
                 onClick={() => handleTabChange("pending")}
@@ -408,7 +413,7 @@ export default function OrdersPage() {
                     : "bg-white/50 text-[#6B7B5A] hover:bg-[#E8E4D9]/50 dark:bg-[#243019]/50 dark:text-[#9CA88A] dark:hover:bg-[#2D3A1A]/50"
                 }`}
               >
-                Pending
+                {t.order?.tabs?.pending || "Pending"}
               </button>
               <button
                 onClick={() => handleTabChange("completed")}
@@ -418,7 +423,7 @@ export default function OrdersPage() {
                     : "bg-white/50 text-[#6B7B5A] hover:bg-[#E8E4D9]/50 dark:bg-[#243019]/50 dark:text-[#9CA88A] dark:hover:bg-[#2D3A1A]/50"
                 }`}
               >
-                Completed
+                {t.order?.tabs?.completed || "Completed"}
               </button>
             </div>
 
@@ -445,7 +450,7 @@ export default function OrdersPage() {
                     }}
                     className="text-xs text-[#6B7B5A] hover:text-[#2D3A1A] dark:text-[#bfbfbf] dark:hover:text-[#ffffff]"
                   >
-                    Clear
+                    {t.order?.filters?.clear || "Clear"}
                   </Button>
                 )}
               </div>
@@ -463,7 +468,10 @@ export default function OrdersPage() {
         <FadeIn>
           <Card className="rounded-2xl border border-[#D6D2C4]/50 bg-white shadow-sm dark:border-[#1f1f1f] dark:bg-[#111111]">
             <CardContent className="flex flex-col items-center justify-center py-12">
-              <p className="text-[#6B7B5A] dark:text-[#9ca3af]">{t.admin.orders.noOrders}</p>
+              <p className="text-[#6B7B5A] dark:text-[#9ca3af]">
+                {t.order?.messages?.noOrders || t.admin.orders.noOrders}
+              </p>
+
             </CardContent>
           </Card>
         </FadeIn>
@@ -475,28 +483,28 @@ export default function OrdersPage() {
                 <thead>
                   <tr className="border-b border-[#D6D2C4]/30 dark:border-[#262626] dark:bg-[#1a1a1a]">
                     <th className="px-4 py-4 text-left text-xs font-bold uppercase tracking-wider text-[#6B7B5A] dark:text-[#bfbfbf] min-w-[120px]">
-                      Order ID
+                      {t.order?.tableHeaders?.orderId || "Order ID"}
                     </th>
                     <th className="px-4 py-4 text-left text-xs font-bold uppercase tracking-wider text-[#6B7B5A] dark:text-[#bfbfbf] min-w-[180px]">
-                      Customer Name
+                      {t.order?.tableHeaders?.customer || "Customer Name"}
                     </th>
                     <th className="px-4 py-4 text-left text-xs font-bold uppercase tracking-wider text-[#6B7B5A] dark:text-[#bfbfbf] min-w-[100px]">
-                      Type
+                      {t.order?.tableHeaders?.type || "Type"}
                     </th>
                     <th className="px-4 py-4 text-left text-xs font-bold uppercase tracking-wider text-[#6B7B5A] dark:text-[#bfbfbf] min-w-[200px]">
-                      Address
+                      {t.order?.tableHeaders?.address || "Address"}
                     </th>
                     <th className="px-4 py-4 text-left text-xs font-bold uppercase tracking-wider text-[#6B7B5A] dark:text-[#bfbfbf] min-w-[140px]">
-                      Date
+                      {t.order?.tableHeaders?.date || "Date"}
                     </th>
                     <th className="px-4 py-4 text-left text-xs font-bold uppercase tracking-wider text-[#6B7B5A] dark:text-[#bfbfbf] min-w-[100px]">
-                      Price
+                      {t.order?.tableHeaders?.total || "Price"}
                     </th>
                     <th className="px-4 py-4 text-left text-xs font-bold uppercase tracking-wider text-[#6B7B5A] dark:text-[#bfbfbf] min-w-[120px]">
-                      Status
+                      {t.order?.tableHeaders?.status || "Status"}
                     </th>
                     <th className="px-4 py-4 text-right text-xs font-bold uppercase tracking-wider text-[#6B7B5A] dark:text-[#bfbfbf] min-w-[120px]">
-                      Action
+                      {t.order?.tableHeaders?.actions || "Action"}
                     </th>
                   </tr>
                 </thead>
@@ -526,7 +534,9 @@ export default function OrdersPage() {
                       </td>
                       <td className="px-4 py-4 whitespace-nowrap">
                         <span className="inline-flex items-center rounded-full bg-white/70 px-3 py-1 text-xs font-semibold text-[#5B7A2F] shadow-sm dark:bg-[#22c55e]/20 dark:text-[#22c55e] dark:border dark:border-[#22c55e]/30">
-                          {order.order_type === "dine_in" ? "Dine-in" : "Takeaway"}
+                          {order.order_type === "dine_in"
+                            ? t.order?.type?.dineIn || "Dine-in"
+                            : t.order?.type?.takeaway || "Takeaway"}
                         </span>
                       </td>
                       <td className="px-4 py-4">
@@ -541,7 +551,9 @@ export default function OrdersPage() {
                       </td>
                       <td className="px-4 py-4 whitespace-nowrap">
                         <span className="text-sm font-bold text-[#2D3A1A] dark:text-[#ffffff]">
-                          CHF {order.total.toFixed(2)}
+                          {(t.order?.labels?.currency || "CHF") +
+                            " " +
+                            order.total.toFixed(2)}
                         </span>
                       </td>
                       <td className="px-4 py-4 whitespace-nowrap">
@@ -550,7 +562,13 @@ export default function OrdersPage() {
                           className={`flex w-fit items-center gap-1.5 border ${getStatusBadgeColor(order.status)}`}
                         >
                           {getStatusIcon(order.status)}
-                          <span className="capitalize">{order.status}</span>
+                          <span className="capitalize">
+                            {order.status === "pending"
+                              ? t.order?.status?.pending || "Pending"
+                              : order.status === "preparing"
+                              ? t.order?.status?.preparing || "Preparing"
+                              : t.order?.status?.completed || "Completed"}
+                          </span>
                         </Badge>
                       </td>
                       <td className="px-4 py-4 whitespace-nowrap text-right">
@@ -559,7 +577,7 @@ export default function OrdersPage() {
                             <Button
                               variant="outline"
                               size="sm"
-                              className="rounded-xl border-[#D6D2C4]/50 bg-white/50 text-[#5B7A2F] hover:bg-[#5B7A2F] hover:text-white hover:border-[#5B7A2F] shadow-sm transition-all dark:border-[#262626] dark:bg-[#1a1a1a] dark:text-[#22c55e] dark:hover:bg-[#22c55e] dark:hover:text-[#000000]"
+                              className="rounded-xl border-[#D6D2C4]/50 bg-white/50 text-[#5B7A2F] hover:bg-[#22c55e] hover:text-[#000000] hover:border-[#22c55e] shadow-sm transition-all dark:border-[#262626] dark:bg-[#1a1a1a] dark:text-[#22c55e] dark:hover:bg-[#22c55e] dark:hover:text-[#000000]"
                             >
                               <Eye className="h-4 w-4" />
                             </Button>
@@ -587,7 +605,8 @@ export default function OrdersPage() {
                                   }
                                   className="rounded-lg"
                                 >
-                                  {t.admin.orders.markAsPending}
+                                  {t.order?.actions?.markAsPending ||
+                                    t.admin.orders.markAsPending}
                                 </DropdownMenuItem>
                               )}
                               {order.status !== "preparing" && (
@@ -597,7 +616,8 @@ export default function OrdersPage() {
                                   }
                                   className="rounded-lg"
                                 >
-                                  {t.admin.orders.markAsPreparing}
+                                  {t.order?.actions?.markAsPreparing ||
+                                    t.admin.orders.markAsPreparing}
                                 </DropdownMenuItem>
                               )}
                               {order.status !== "completed" && (
@@ -607,7 +627,8 @@ export default function OrdersPage() {
                                   }
                                   className="rounded-lg"
                                 >
-                                  {t.admin.orders.markAsCompleted}
+                                  {t.order?.actions?.markAsCompleted ||
+                                    t.admin.orders.markAsCompleted}
                                 </DropdownMenuItem>
                               )}
                             </DropdownMenuContent>
@@ -625,7 +646,13 @@ export default function OrdersPage() {
               <div className="border-t border-[#D6D2C4]/30 px-6 py-4 dark:border-[#262626]">
                 <div className="flex items-center justify-between">
                   <div className="text-sm text-[#6B7B5A] dark:text-[#9ca3af]">
-                    Showing {startIndex + 1} to {Math.min(endIndex, orders.length)} of {orders.length} orders
+                    {t.order?.pagination?.showing || "Showing"}{" "}
+                    {startIndex + 1}{" "}
+                    {t.order?.pagination?.to || "to"}{" "}
+                    {Math.min(endIndex, orders.length)}{" "}
+                    {t.order?.pagination?.of || "of"}{" "}
+                    {orders.length}{" "}
+                    {t.order?.pagination?.orders || "orders"}
                   </div>
                   <div className="flex items-center gap-2">
                     <Button
@@ -636,7 +663,7 @@ export default function OrdersPage() {
                       className="rounded-xl border-[#D6D2C4]/50 bg-white/50 hover:bg-[#E8E4D9]/50 disabled:opacity-50 dark:border-[#262626] dark:bg-[#1a1a1a] dark:text-[#ffffff] dark:hover:bg-[#262626]"
                     >
                       <ChevronLeft className="h-4 w-4" />
-                      Previous
+                      {t.order?.pagination?.previous || "Previous"}
                     </Button>
                     <div className="flex items-center gap-1">
                       {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
@@ -674,7 +701,7 @@ export default function OrdersPage() {
                       disabled={currentPage === totalPages}
                       className="rounded-xl border-[#D6D2C4]/50 bg-white/50 hover:bg-[#E8E4D9]/50 disabled:opacity-50 dark:border-[#262626] dark:bg-[#1a1a1a] dark:text-[#ffffff] dark:hover:bg-[#262626]"
                     >
-                      Next
+                      {t.order?.pagination?.next || "Next"}
                       <ChevronRight className="h-4 w-4" />
                     </Button>
                   </div>

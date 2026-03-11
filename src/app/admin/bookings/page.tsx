@@ -39,7 +39,7 @@ interface Booking {
 
 export default function BookingsPage() {
   const router = useRouter();
-  const { t } = useI18n();
+  const { t, language } = useI18n();
   const { resetBookingNotification } = useBookingNotification();
   const { isPro, loading: subscriptionLoading } = useSubscription();
   const [bookings, setBookings] = useState<Booking[]>([]);
@@ -91,13 +91,14 @@ export default function BookingsPage() {
       setBookings(filteredBookings);
     } catch (error: any) {
       console.error("Error loading bookings:", error);
-      const errorMessage = error?.message || "Failed to load bookings";
+      const errorMessage =
+        error?.message || t.booking?.messages?.loadError || "Failed to load bookings";
       toast.error(errorMessage);
       setBookings([]);
     } finally {
       setLoading(false);
     }
-  }, [statusFilter, selectedDate, searchQuery]);
+  }, [statusFilter, selectedDate, searchQuery, t.booking]);
 
   useEffect(() => {
     setMounted(true);
@@ -107,10 +108,10 @@ export default function BookingsPage() {
   useEffect(() => {
     if (!subscriptionLoading && !isPro) {
       // Route-level protection: redirect Free plan users away from bookings
-      toast.error("Bookings are available on the Pro plan.");
+      toast.error(t.booking?.messages?.proOnly || "Bookings are available on the Pro plan.");
       router.replace("/admin");
     }
-  }, [isPro, subscriptionLoading, router]);
+  }, [isPro, subscriptionLoading, router, t.booking]);
 
   useEffect(() => {
     async function init() {
@@ -190,7 +191,7 @@ export default function BookingsPage() {
 
       if (error) throw error;
 
-      toast.success("Booking status updated");
+      toast.success(t.booking?.toasts?.statusUpdated || "Booking status updated");
 
       // Optimistically update local state
       setBookings((prev) =>
@@ -212,7 +213,9 @@ export default function BookingsPage() {
       }
     } catch (error) {
       console.error("Error updating booking status:", error);
-      toast.error("Failed to update booking status");
+      toast.error(
+        t.booking?.toasts?.statusUpdateError || "Failed to update booking status"
+      );
     } finally {
       setUpdatingStatus(null);
     }
@@ -261,7 +264,7 @@ export default function BookingsPage() {
 
   function formatBookingDate(dateString: string) {
     const date = new Date(dateString);
-    return new Intl.DateTimeFormat("en-US", {
+    return new Intl.DateTimeFormat(language || "en-US", {
       month: "short",
       day: "numeric",
       year: "numeric",
@@ -322,9 +325,11 @@ export default function BookingsPage() {
             <Calendar className="h-5 w-5 text-[#5B7A2F] dark:text-[#22c55e]" />
           </div>
           <div>
-            <PageTitle className="dark:text-[#ffffff]">Bookings</PageTitle>
+            <PageTitle className="dark:text-[#ffffff]">
+              {t.booking?.title || "Bookings"}
+            </PageTitle>
             <p className="text-sm text-[#6B7B5A] dark:text-[#9ca3af] mt-0.5">
-              Manage table bookings and reservations
+              {t.booking?.description || "Manage table bookings and reservations"}
             </p>
           </div>
         </div>
@@ -345,7 +350,7 @@ export default function BookingsPage() {
                     : "bg-white/50 text-[#6B7B5A] hover:bg-[#E8E4D9]/50 dark:bg-[#1a1a1a] dark:text-[#bfbfbf] dark:hover:bg-[#262626]"
                 )}
               >
-                All Bookings
+                {t.booking?.tabs?.all || "All Bookings"}
               </button>
               <button
                 onClick={() => handleTabChange("today")}
@@ -356,7 +361,7 @@ export default function BookingsPage() {
                     : "bg-white/50 text-[#6B7B5A] hover:bg-[#E8E4D9]/50 dark:bg-[#243019]/50 dark:text-[#9CA88A] dark:hover:bg-[#2D3A1A]/50"
                 )}
               >
-                Today
+                {t.booking?.tabs?.today || "Today"}
               </button>
               <button
                 onClick={() => handleTabChange("upcoming")}
@@ -367,7 +372,7 @@ export default function BookingsPage() {
                     : "bg-white/50 text-[#6B7B5A] hover:bg-[#E8E4D9]/50 dark:bg-[#243019]/50 dark:text-[#9CA88A] dark:hover:bg-[#2D3A1A]/50"
                 )}
               >
-                Upcoming
+                {t.booking?.tabs?.upcoming || "Upcoming"}
               </button>
               <button
                 onClick={() => handleTabChange("pending")}
@@ -378,7 +383,7 @@ export default function BookingsPage() {
                     : "bg-white/50 text-[#6B7B5A] hover:bg-[#E8E4D9]/50 dark:bg-[#243019]/50 dark:text-[#9CA88A] dark:hover:bg-[#2D3A1A]/50"
                 )}
               >
-                Pending
+                {t.booking?.tabs?.pending || "Pending"}
               </button>
               <button
                 onClick={() => handleTabChange("confirmed")}
@@ -389,7 +394,7 @@ export default function BookingsPage() {
                     : "bg-white/50 text-[#6B7B5A] hover:bg-[#E8E4D9]/50 dark:bg-[#243019]/50 dark:text-[#9CA88A] dark:hover:bg-[#2D3A1A]/50"
                 )}
               >
-                Confirmed
+                {t.booking?.tabs?.confirmed || "Confirmed"}
               </button>
               <button
                 onClick={() => handleTabChange("completed")}
@@ -400,7 +405,7 @@ export default function BookingsPage() {
                     : "bg-white/50 text-[#6B7B5A] hover:bg-[#E8E4D9]/50 dark:bg-[#243019]/50 dark:text-[#9CA88A] dark:hover:bg-[#2D3A1A]/50"
                 )}
               >
-                Completed
+                {t.booking?.tabs?.completed || "Completed"}
               </button>
             </div>
 
@@ -410,7 +415,10 @@ export default function BookingsPage() {
                 <div className="relative w-full sm:w-auto">
                   <input
                     type="text"
-                    placeholder="Search by customer name..."
+                    placeholder={
+                      t.booking?.filters?.searchPlaceholder ||
+                      "Search by customer name..."
+                    }
                     value={searchQuery}
                     onChange={(e) => {
                       setSearchQuery(e.target.value);
@@ -441,7 +449,7 @@ export default function BookingsPage() {
                       }}
                       className="text-xs text-[#6B7B5A] hover:text-[#2D3A1A] dark:text-[#bfbfbf] dark:hover:text-[#ffffff]"
                     >
-                      Clear
+                      {t.booking?.filters?.clear || "Clear"}
                     </Button>
                   )}
                 </div>
@@ -460,7 +468,9 @@ export default function BookingsPage() {
         <FadeIn>
           <Card className="rounded-2xl border border-[#D6D2C4]/50 bg-white shadow-sm dark:border-[#1f1f1f] dark:bg-[#111111]">
             <CardContent className="flex flex-col items-center justify-center py-12">
-              <p className="text-[#6B7B5A] dark:text-[#9ca3af]">No bookings yet</p>
+              <p className="text-[#6B7B5A] dark:text-[#9ca3af]">
+                {t.booking?.messages?.noBookings || "No bookings yet"}
+              </p>
             </CardContent>
           </Card>
         </FadeIn>
@@ -472,25 +482,25 @@ export default function BookingsPage() {
                 <thead>
                   <tr className="border-b border-[#D6D2C4]/30 dark:border-[#262626] dark:bg-[#1a1a1a]">
                     <th className="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider text-[#6B7B5A] dark:text-[#bfbfbf]">
-                      Booking ID
+                      {t.booking?.tableHeaders?.bookingId || "Booking ID"}
                     </th>
                     <th className="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider text-[#6B7B5A] dark:text-[#9CA88A]">
-                      Customer Name
+                      {t.booking?.tableHeaders?.customer || "Customer Name"}
                     </th>
                     <th className="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider text-[#6B7B5A] dark:text-[#9CA88A]">
-                      Table
+                      {t.booking?.tableHeaders?.table || "Table"}
                     </th>
                     <th className="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider text-[#6B7B5A] dark:text-[#9CA88A]">
-                      Date & Time
+                      {t.booking?.tableHeaders?.dateTime || "Date & Time"}
                     </th>
                     <th className="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider text-[#6B7B5A] dark:text-[#9CA88A]">
-                      Guests
+                      {t.booking?.tableHeaders?.guests || "Guests"}
                     </th>
                     <th className="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider text-[#6B7B5A] dark:text-[#9CA88A]">
-                      Status
+                      {t.booking?.tableHeaders?.status || "Status"}
                     </th>
                     <th className="px-6 py-4 text-right text-xs font-bold uppercase tracking-wider text-[#6B7B5A] dark:text-[#9CA88A]">
-                      Action
+                      {t.booking?.tableHeaders?.actions || "Action"}
                     </th>
                   </tr>
                 </thead>
@@ -520,7 +530,11 @@ export default function BookingsPage() {
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <span className="text-sm text-[#6B7B5A] dark:text-[#9ca3af]">
-                          {booking.table_number ? `Table ${booking.table_number}` : "-"}
+                          {booking.table_number
+                            ? `${t.booking?.labels?.tableLabel || "Table"} ${
+                                booking.table_number
+                              }`
+                            : "-"}
                         </span>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
@@ -535,7 +549,10 @@ export default function BookingsPage() {
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <span className="text-sm text-[#6B7B5A] dark:text-[#9ca3af]">
-                          {booking.guest_count} {booking.guest_count === 1 ? "Guest" : "Guests"}
+                          {booking.guest_count}{" "}
+                          {booking.guest_count === 1
+                            ? t.booking?.labels?.guestSingular || "Guest"
+                            : t.booking?.labels?.guestPlural || "Guests"}
                         </span>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
@@ -544,7 +561,15 @@ export default function BookingsPage() {
                           className={`flex w-fit items-center gap-1.5 border ${getStatusBadgeColor(booking.status)}`}
                         >
                           {getStatusIcon(booking.status)}
-                          <span className="capitalize">{booking.status}</span>
+                          <span className="capitalize">
+                            {booking.status === "pending"
+                              ? t.booking?.status?.pending || "Pending"
+                              : booking.status === "confirmed"
+                              ? t.booking?.status?.confirmed || "Confirmed"
+                              : booking.status === "cancelled"
+                              ? t.booking?.status?.cancelled || "Cancelled"
+                              : t.booking?.status?.completed || "Completed"}
+                          </span>
                         </Badge>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-right">
@@ -553,7 +578,7 @@ export default function BookingsPage() {
                             <Button
                               variant="outline"
                               size="sm"
-                              className="rounded-xl border-[#D6D2C4]/50 bg-white/50 text-[#5B7A2F] hover:bg-[#5B7A2F] hover:text-white hover:border-[#5B7A2F] shadow-sm transition-all dark:border-[#262626] dark:bg-[#1a1a1a] dark:text-[#22c55e] dark:hover:bg-[#22c55e] dark:hover:text-[#000000]"
+                              className="rounded-xl border-[#D6D2C4]/50 bg-white/50 text-[#5B7A2F] hover:bg-[#22c55e] hover:text-[#000000] hover:border-[#22c55e] shadow-sm transition-all dark:border-[#262626] dark:bg-[#1a1a1a] dark:text-[#22c55e] dark:hover:bg-[#22c55e] dark:hover:text-[#000000]"
                             >
                               <Eye className="h-4 w-4" />
                             </Button>
@@ -579,7 +604,7 @@ export default function BookingsPage() {
                                   onClick={() => updateBookingStatus(booking.id, "confirmed")}
                                   className="rounded-lg"
                                 >
-                                  Confirm
+                                  {t.booking?.actions?.confirm || "Confirm"}
                                 </DropdownMenuItem>
                               )}
                               {booking.status !== "cancelled" && (
@@ -587,7 +612,7 @@ export default function BookingsPage() {
                                   onClick={() => updateBookingStatus(booking.id, "cancelled")}
                                   className="rounded-lg"
                                 >
-                                  Cancel
+                                  {t.booking?.actions?.cancel || "Cancel"}
                                 </DropdownMenuItem>
                               )}
                               {booking.status !== "completed" && (
@@ -595,7 +620,7 @@ export default function BookingsPage() {
                                   onClick={() => updateBookingStatus(booking.id, "completed")}
                                   className="rounded-lg"
                                 >
-                                  Mark Completed
+                                  {t.booking?.actions?.markCompleted || "Mark Completed"}
                                 </DropdownMenuItem>
                               )}
                             </DropdownMenuContent>
@@ -613,7 +638,13 @@ export default function BookingsPage() {
               <div className="border-t border-[#D6D2C4]/30 px-6 py-4 dark:border-[#262626]">
                 <div className="flex items-center justify-between">
                   <div className="text-sm text-[#6B7B5A] dark:text-[#9ca3af]">
-                    Showing {indexOfFirstBooking + 1} to {Math.min(indexOfLastBooking, filteredBookings.length)} of {filteredBookings.length} bookings
+                    {t.booking?.pagination?.showing || "Showing"}{" "}
+                    {indexOfFirstBooking + 1}{" "}
+                    {t.booking?.pagination?.to || "to"}{" "}
+                    {Math.min(indexOfLastBooking, filteredBookings.length)}{" "}
+                    {t.booking?.pagination?.of || "of"}{" "}
+                    {filteredBookings.length}{" "}
+                    {t.booking?.pagination?.bookings || "bookings"}
                   </div>
                   <div className="flex items-center gap-2">
                     <Button
@@ -624,7 +655,7 @@ export default function BookingsPage() {
                       className="rounded-xl border-[#D6D2C4]/50 bg-white/50 hover:bg-[#E8E4D9]/50 disabled:opacity-50 dark:border-[#262626] dark:bg-[#1a1a1a] dark:text-[#ffffff] dark:hover:bg-[#262626]"
                     >
                       <ChevronLeft className="h-4 w-4" />
-                      Previous
+                      {t.booking?.pagination?.previous || "Previous"}
                     </Button>
                     <div className="flex items-center gap-1">
                       {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
@@ -663,7 +694,7 @@ export default function BookingsPage() {
                       disabled={currentPage === totalPages}
                       className="rounded-xl border-[#D6D2C4]/50 bg-white/50 hover:bg-[#E8E4D9]/50 disabled:opacity-50 dark:border-[#262626] dark:bg-[#1a1a1a] dark:text-[#ffffff] dark:hover:bg-[#262626]"
                     >
-                      Next
+                      {t.booking?.pagination?.next || "Next"}
                       <ChevronRight className="h-4 w-4" />
                     </Button>
                   </div>

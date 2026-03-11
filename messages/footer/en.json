@@ -1,0 +1,22 @@
+{
+  "tagline": "Digital menus for cafés & restaurants",
+  "product": "Product",
+  "company": "Company",
+  "legal": "Legal",
+  "links": {
+    "features": "Features",
+    "pricing": "Pricing",
+    "demo": "Demo",
+    "changelog": "Changelog",
+    "about": "About",
+    "blog": "Blog",
+    "contact": "Contact",
+    "careers": "Careers",
+    "privacy": "Privacy",
+    "terms": "Terms",
+    "imprint": "Imprint",
+    "cookies": "Cookies"
+  },
+  "copyright": "© {year} DineEasy. Made with ♥ in Switzerland.",
+  "pricesNote": "All prices in CHF."
+}

@@ -1,0 +1,122 @@
+{
+  "title": "Einstellungen",
+  "description": "Verwalte dein Restaurantprofil und dein Konto",
+  "save": "Speichern",
+  "saved": "Einstellungen gespeichert!",
+  "error": "Einstellungen konnten nicht gespeichert werden",
+  "restaurantName": "Restaurantname",
+  "restaurantNamePlaceholder": "Mein Cafe oder Restaurant",
+  "urlSlug": "URL-Slug",
+  "urlSlugPlaceholder": "mein-cafe",
+  "urlDescription": "Dein Menu ist unter: dineeasy.app/",
+  "profile": {
+    "title": "Eigentümerprofil",
+    "description": "Profildetails und Kontoinformationen des Eigentümers",
+    "actions": {
+      "editProfile": "Profil bearbeiten",
+      "saveChanges": "Änderungen speichern",
+      "saving": "Speichern..."
+    },
+    "sections": {
+      "personalInformation": "Persönliche Informationen",
+      "addressInformation": "Adressinformationen",
+      "additionalInformation": "Weitere Informationen"
+    },
+    "fields": {
+      "fullName": "Vollständiger Name",
+      "emailAddress": "E-Mail-Adresse",
+      "phoneNumber": "Telefonnummer",
+      "profilePictureUrl": "Profilbild-URL",
+      "streetAddress": "Straße und Hausnummer",
+      "city": "Stadt",
+      "state": "Bundesland",
+      "country": "Land",
+      "postalCode": "Postleitzahl",
+      "role": "Rolle",
+      "accountCreatedDate": "Konto erstellt am"
+    },
+    "placeholders": {
+      "fullName": "Ihr vollständiger Name",
+      "phoneNumber": "+49 000 000000",
+      "profilePictureUrl": "https://...",
+      "streetAddress": "Straße und Hausnummer",
+      "city": "Stadt",
+      "state": "Bundesland",
+      "country": "Land",
+      "postalCode": "Postleitzahl"
+    },
+    "toasts": {
+      "updated": "Profil aktualisiert",
+      "updateError": "Profil konnte nicht aktualisiert werden"
+    },
+    "defaults": {
+      "owner": "Eigentümer"
+    }
+  },
+  "page": {
+    "sections": {
+      "restaurantSettings": "Restaurant-Einstellungen",
+      "restaurantBasicInfo": "Grundinformationen zum Restaurant",
+      "restaurantAddress": "Restaurantadresse",
+      "businessDetails": "Geschäftsdetails",
+      "bookATableSettings": "Tischreservierungs-Einstellungen",
+      "reservationSettings": "Reservierungs-Einstellungen",
+      "tableManagement": "Tischverwaltung",
+      "bookingRules": "Reservierungsregeln",
+      "notificationSettings": "Benachrichtigungs-Einstellungen"
+    },
+    "fields": {
+      "restaurantDescription": "Restaurantbeschreibung",
+      "contactPhone": "Kontakttelefon",
+      "contactEmail": "Kontakt-E-Mail",
+      "streetAddress": "Straße und Hausnummer",
+      "city": "Stadt",
+      "state": "Bundesland",
+      "country": "Land",
+      "postalCode": "Postleitzahl",
+      "openingHours": "Öffnungszeiten",
+      "closingHours": "Schließzeit",
+      "timeZone": "Zeitzone",
+      "currency": "Währung",
+      "maxGuestsPerTable": "Maximale Gäste pro Tisch",
+      "minGuestsPerTable": "Minimale Gäste pro Tisch",
+      "advanceBookingLimit": "Vorlaufzeit für Reservierungen (Tage)",
+      "bookingTimeInterval": "Reservierungsintervall (Minuten)",
+      "defaultTableCapacity": "Standard-Tischkapazität",
+      "cancellationTimeLimit": "Stornierungsfrist (Minuten)"
+    },
+    "labels": {
+      "defaultEmailFromOwner": "Standard-E-Mail aus deinem Eigentümerkonto:"
+    },
+    "toggles": {
+      "enableDisableTableBooking": "Tischreservierung aktivieren / deaktivieren",
+      "enableDisableTableBookingHint": "Aktiviere oder deaktiviere Online-Tischreservierungen für dein Restaurant.",
+      "allowMultipleReservations": "Mehrere Reservierungen erlauben",
+      "allowMultipleReservationsHint": "Erlaube mehrere Buchungen für denselben Zeitslot.",
+      "autoConfirmBooking": "Buchung automatisch bestätigen",
+      "requireApprovalBeforeConfirmation": "Freigabe vor Bestätigung erforderlich",
+      "emailNotificationNewBookings": "E-Mail-Benachrichtigung bei neuen Reservierungen",
+      "smsNotificationNewBookings": "SMS-Benachrichtigung bei neuen Reservierungen"
+    },
+    "placeholders": {
+      "restaurantDescription": "Füge eine kurze Beschreibung deines Restaurants hinzu",
+      "contactPhone": "+49 000 000000",
+      "contactEmail": "du@beispiel.de",
+      "streetAddress": "Straße und Hausnummer",
+      "city": "Stadt",
+      "state": "Bundesland",
+      "country": "Land",
+      "postalCode": "Postleitzahl",
+      "openingHours": "z. B. 09:00",
+      "closingHours": "z. B. 22:00",
+      "timeZone": "z. B. Europe/Berlin",
+      "currency": "z. B. EUR",
+      "maxGuestsPerTable": "z. B. 8",
+      "minGuestsPerTable": "z. B. 1",
+      "advanceBookingLimit": "z. B. 7",
+      "bookingTimeInterval": "z. B. 30",
+      "defaultTableCapacity": "z. B. 4",
+      "cancellationTimeLimit": "z. B. 120"
+    }
+  }
+}

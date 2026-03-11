@@ -1,0 +1,122 @@
+{
+  "title": "Parametres",
+  "description": "Gerez le profil de votre restaurant et votre compte",
+  "save": "Enregistrer",
+  "saved": "Parametres enregistres !",
+  "error": "Echec de l'enregistrement des parametres",
+  "restaurantName": "Nom du restaurant",
+  "restaurantNamePlaceholder": "Mon cafe ou restaurant",
+  "urlSlug": "Slug URL",
+  "urlSlugPlaceholder": "mon-cafe",
+  "urlDescription": "Votre menu sera disponible sur : dineeasy.app/",
+  "profile": {
+    "title": "Profil du propriétaire",
+    "description": "Détails du profil du propriétaire et informations du compte",
+    "actions": {
+      "editProfile": "Modifier le profil",
+      "saveChanges": "Enregistrer les modifications",
+      "saving": "Enregistrement..."
+    },
+    "sections": {
+      "personalInformation": "Informations personnelles",
+      "addressInformation": "Informations d'adresse",
+      "additionalInformation": "Informations supplémentaires"
+    },
+    "fields": {
+      "fullName": "Nom complet",
+      "emailAddress": "Adresse e-mail",
+      "phoneNumber": "Numéro de téléphone",
+      "profilePictureUrl": "URL de la photo de profil",
+      "streetAddress": "Adresse",
+      "city": "Ville",
+      "state": "Région",
+      "country": "Pays",
+      "postalCode": "Code postal",
+      "role": "Rôle",
+      "accountCreatedDate": "Date de création du compte"
+    },
+    "placeholders": {
+      "fullName": "Votre nom complet",
+      "phoneNumber": "+33 0 00 00 00 00",
+      "profilePictureUrl": "https://...",
+      "streetAddress": "Adresse",
+      "city": "Ville",
+      "state": "Région",
+      "country": "Pays",
+      "postalCode": "Code postal"
+    },
+    "toasts": {
+      "updated": "Profil mis à jour",
+      "updateError": "Échec de la mise à jour du profil"
+    },
+    "defaults": {
+      "owner": "Propriétaire"
+    }
+  },
+  "page": {
+    "sections": {
+      "restaurantSettings": "Parametres du restaurant",
+      "restaurantBasicInfo": "Informations de base du restaurant",
+      "restaurantAddress": "Adresse du restaurant",
+      "businessDetails": "Details de l'activite",
+      "bookATableSettings": "Parametres de reservation de table",
+      "reservationSettings": "Parametres de reservation",
+      "tableManagement": "Gestion des tables",
+      "bookingRules": "Regles de reservation",
+      "notificationSettings": "Parametres de notification"
+    },
+    "fields": {
+      "restaurantDescription": "Description du restaurant",
+      "contactPhone": "Telephone de contact",
+      "contactEmail": "E-mail de contact",
+      "streetAddress": "Adresse",
+      "city": "Ville",
+      "state": "Region",
+      "country": "Pays",
+      "postalCode": "Code postal",
+      "openingHours": "Heures d'ouverture",
+      "closingHours": "Heures de fermeture",
+      "timeZone": "Fuseau horaire",
+      "currency": "Devise",
+      "maxGuestsPerTable": "Nombre maximum de convives par table",
+      "minGuestsPerTable": "Nombre minimum de convives par table",
+      "advanceBookingLimit": "Delai de reservation a l'avance (jours)",
+      "bookingTimeInterval": "Intervalle de reservation (minutes)",
+      "defaultTableCapacity": "Capacite de table par defaut",
+      "cancellationTimeLimit": "Limite de temps d'annulation (minutes)"
+    },
+    "labels": {
+      "defaultEmailFromOwner": "E-mail par defaut depuis votre compte proprietaire :"
+    },
+    "toggles": {
+      "enableDisableTableBooking": "Activer / desactiver la reservation de table",
+      "enableDisableTableBookingHint": "Activez ou desactivez la reservation de table en ligne pour votre restaurant.",
+      "allowMultipleReservations": "Autoriser plusieurs reservations",
+      "allowMultipleReservationsHint": "Autoriser plusieurs reservations pour le meme creneau horaire.",
+      "autoConfirmBooking": "Confirmer automatiquement les reservations",
+      "requireApprovalBeforeConfirmation": "Exiger une approbation avant confirmation",
+      "emailNotificationNewBookings": "Notification e-mail pour les nouvelles reservations",
+      "smsNotificationNewBookings": "Notification SMS pour les nouvelles reservations"
+    },
+    "placeholders": {
+      "restaurantDescription": "Ajoutez une courte description de votre restaurant",
+      "contactPhone": "+33 0 00 00 00 00",
+      "contactEmail": "vous@exemple.fr",
+      "streetAddress": "Adresse et numero",
+      "city": "Ville",
+      "state": "Region",
+      "country": "Pays",
+      "postalCode": "Code postal",
+      "openingHours": "ex. 09:00",
+      "closingHours": "ex. 22:00",
+      "timeZone": "ex. Europe/Paris",
+      "currency": "ex. EUR",
+      "maxGuestsPerTable": "ex. 8",
+      "minGuestsPerTable": "ex. 1",
+      "advanceBookingLimit": "ex. 7",
+      "bookingTimeInterval": "ex. 30",
+      "defaultTableCapacity": "ex. 4",
+      "cancellationTimeLimit": "ex. 120"
+    }
+  }
+}

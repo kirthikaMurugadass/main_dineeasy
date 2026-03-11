@@ -1,0 +1,27 @@
+{
+  "language": "Langue",
+  "currency": "CHF",
+  "poweredBy": "Propulsé par DineEasy",
+  "untitled": "Sans titre",
+  "menuSection": "Section du menu",
+  "selectLanguage": "Choisir la langue",
+  "public": {
+    "heroTitle": "Notre Menu",
+    "heroSubtitle": "DÉLICIEUX & EXCEPTIONNEL",
+    "menuViewOnly": "Menu uniquement",
+    "switchLanguage": "Changer de langue",
+    "toggleTheme": "Changer le thème",
+    "themeLight": "Clair",
+    "themeDark": "Sombre",
+    "themeSystem": "Système",
+    "cart": "Panier",
+    "orderingDisabled": "Commande désactivée",
+    "decreaseQuantity": "Diminuer la quantité",
+    "increaseQuantity": "Augmenter la quantité",
+    "add": "Ajouter",
+    "addOrderingDisabled": "Ajouter (commande désactivée)",
+    "viewCart": "Voir le panier",
+    "orderingNotAvailableTitle": "Commande non disponible",
+    "orderingNotAvailableDescription": "La commande en ligne est disponible uniquement avec l'offre Pro. Vous pouvez toujours consulter le menu complet."
+  }
+}

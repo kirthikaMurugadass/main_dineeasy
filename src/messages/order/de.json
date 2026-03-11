@@ -1,0 +1,188 @@
+{
+  "title": "Bestellungen",
+  "description": "Kundenbestellungen anzeigen und verwalten",
+  "tabs": {
+    "all": "Alle Bestellungen",
+    "pending": "Ausstehend",
+    "completed": "Abgeschlossen"
+  },
+  "tableHeaders": {
+    "orderId": "Bestell-ID",
+    "customer": "Kundenname",
+    "type": "Art",
+    "address": "Adresse",
+    "date": "Datum",
+    "total": "Gesamt",
+    "status": "Status",
+    "actions": "Aktion"
+  },
+  "type": {
+    "dineIn": "Vor Ort",
+    "takeaway": "Take-away"
+  },
+  "status": {
+    "pending": "Ausstehend",
+    "preparing": "In Vorbereitung",
+    "completed": "Abgeschlossen"
+  },
+  "labels": {
+    "table": "Tisch",
+    "unknownItem": "Unbekannter Artikel",
+    "addressDash": "-",
+    "currency": "CHF"
+  },
+  "filters": {
+    "datePlaceholder": "Datum auswählen",
+    "clear": "Zurücksetzen"
+  },
+  "messages": {
+    "noOrders": "Keine Bestellungen gefunden",
+    "loadError": "Bestellungen konnten nicht geladen werden",
+    "proOnly": "Die Bestellfunktion ist nur im Pro-Tarif verfügbar."
+  },
+  "actions": {
+    "viewDetails": "Details anzeigen",
+    "markAsPending": "Als ausstehend markieren",
+    "markAsPreparing": "Als in Vorbereitung markieren",
+    "markAsCompleted": "Als abgeschlossen markieren"
+  },
+  "toasts": {
+    "statusUpdated": "Bestellstatus aktualisiert",
+    "statusUpdateError": "Bestellstatus konnte nicht aktualisiert werden"
+  },
+  "pagination": {
+    "showing": "Zeige",
+    "to": "bis",
+    "of": "von",
+    "orders": "Bestellungen",
+    "previous": "Zurück",
+    "next": "Weiter"
+  },
+  "detail": {
+    "title": "Bestelldetails",
+    "backToOrders": "Zurück zu den Bestellungen",
+    "notFound": "Bestellung nicht gefunden",
+    "infoCardTitle": "Bestellinformationen",
+    "customerName": "Kundenname",
+    "orderType": "Bestellart",
+    "tableNumber": "Tischnummer",
+    "deliveryAddress": "Lieferadresse",
+    "phoneNumber": "Telefonnummer",
+    "placedAt": "Bestellt am",
+    "orderId": "Bestell-ID",
+    "statusManagement": "Statusverwaltung",
+    "itemsTitle": "Artikel",
+    "quantityPrice": "{quantity}x @ {currency} {price}",
+    "totalLabel": "Gesamt",
+    "totalPrefix": "",
+    "orderNotFound": "Bestellung nicht gefunden"
+  },
+  "public": {
+    "cart": {
+      "title": "Dein Warenkorb",
+      "emptyTitle": "Dein Warenkorb ist leer",
+      "emptyDescription": "Füge Artikel aus der Speisekarte hinzu, um zu starten",
+      "backToMenu": "Zurück zum Menü",
+      "itemSingular": "Artikel",
+      "itemPlural": "Artikel",
+      "each": "pro Stück",
+      "removeItem": "Artikel entfernen",
+      "decreaseQuantity": "Menge verringern",
+      "increaseQuantity": "Menge erhöhen",
+      "total": "Gesamt",
+      "proceedToCheckout": "Zur Kasse"
+    },
+    "checkout": {
+      "title": "Kasse",
+      "description": "Bitte gib deine Daten ein, um die Bestellung abzuschließen",
+      "sections": {
+        "orderSummary": "Bestellübersicht"
+      },
+      "fields": {
+        "total": "Gesamt",
+        "yourName": "Dein Name",
+        "orderType": "Bestellart",
+        "tableNumber": "Tischnummer",
+        "deliveryAddress": "Lieferadresse",
+        "deliveryLocation": "Lieferstandort",
+        "state": "Bundesland/Kanton",
+        "country": "Land",
+        "phoneNumber": "Telefonnummer"
+      },
+      "orderTypes": {
+        "dineIn": "Vor Ort",
+        "takeaway": "Takeaway"
+      },
+      "placeholders": {
+        "yourName": "Gib deinen Namen ein",
+        "tableNumber": "Tischnummer eingeben",
+        "deliveryAddress": "Lieferadresse eingeben",
+        "selectCountry": "Land auswählen",
+        "phoneNumber": "Telefonnummer eingeben"
+      },
+      "labels": {
+        "detectingLocation": "Standort wird erkannt...",
+        "autoDetected": "Automatisch erkannt"
+      },
+      "validation": {
+        "nameRequired": "Bitte gib deinen Namen ein",
+        "tableNumberRequired": "Bitte gib eine Tischnummer ein",
+        "deliveryAddressRequired": "Bitte gib eine Lieferadresse ein",
+        "phoneRequired": "Bitte gib deine Telefonnummer ein",
+        "invalidPhone": "Ungültige Telefonnummer"
+      },
+      "actions": {
+        "pleaseWait": "Bitte warten...",
+        "continue": "Weiter",
+        "returnToMenu": "Zurück zum Menü"
+      },
+      "messages": {
+        "restaurantInfoMissing": "Restaurantinformationen fehlen",
+        "continueFailed": "Weiterleitung fehlgeschlagen. Bitte erneut versuchen.",
+        "adjustPin": "Tippe auf die Karte, um den Lieferpunkt anzupassen.",
+        "enterValidAddress": "Gib eine gültige Adresse ein, um die Kartenansicht zu sehen"
+      },
+      "success": {
+        "title": "Bestellung erfolgreich aufgegeben!",
+        "description": "Weiterleitung zum Menü in wenigen Sekunden..."
+      }
+    },
+    "summary": {
+      "title": "Bestellübersicht",
+      "description": "Prüfe deine Angaben vor dem Absenden",
+      "sections": {
+        "orderedItems": "Bestellte Artikel"
+      },
+      "fields": {
+        "customerName": "Kundenname",
+        "orderType": "Bestellart",
+        "tableNumber": "Tischnummer",
+        "address": "Adresse",
+        "mapLocation": "Kartenposition",
+        "totalAmount": "Gesamtbetrag"
+      },
+      "orderTypes": {
+        "dineIn": "Vor Ort",
+        "takeaway": "Takeaway"
+      },
+      "actions": {
+        "placeOrder": "Bestellung aufgeben",
+        "placingOrder": "Bestellung wird aufgegeben...",
+        "returnToMenu": "Zurück zum Menü"
+      },
+      "messages": {
+        "restaurantInfoMissing": "Restaurantinformationen fehlen",
+        "missingCustomerName": "Kundenname fehlt. Bitte gehe zurück.",
+        "failedPlaceOrder": "Bestellung konnte nicht aufgegeben werden"
+      },
+      "toasts": {
+        "orderPlaced": "Bestellung erfolgreich aufgegeben"
+      },
+      "success": {
+        "title": "Bestellung erfolgreich aufgegeben",
+        "description": "Weiterleitung zurück zum Menü..."
+      }
+    }
+  }
+}
+

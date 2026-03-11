@@ -18,6 +18,7 @@ import { toast } from "sonner";
 
 export default function QRPage() {
   const { t } = useI18n();
+  const qrT = t.qr;
   const router = useRouter();
   const [restaurantName, setRestaurantName] = useState("");
   const [restaurantSlug, setRestaurantSlug] = useState("");
@@ -117,7 +118,7 @@ export default function QRPage() {
       setQrDataUrl(dataUrl);
     } catch (err) {
       console.error(err);
-      toast.error("Failed to generate QR code");
+      toast.error(qrT?.toasts?.generateError || "Failed to generate QR code");
     }
   }, [getQrUrl, logoUrl, qrColor, bgColor, restaurantSlug]);
 
@@ -152,7 +153,10 @@ export default function QRPage() {
       setBookTableQrDataUrl(dataUrl);
     } catch (err) {
       console.error(err);
-      toast.error("Failed to generate Book Table QR code");
+      toast.error(
+        qrT?.toasts?.generateBookTableError ||
+          "Failed to generate Book Table QR code"
+      );
     }
   }, [getBookTableQrUrl, logoUrl, qrColor, bgColor, restaurantSlug]);
 
@@ -168,7 +172,7 @@ export default function QRPage() {
     if (!url) return;
     await navigator.clipboard.writeText(url);
     setCopied(true);
-    toast.success("URL copied!");
+    toast.success(qrT?.toasts?.urlCopied || "URL copied!");
     setTimeout(() => setCopied(false), 2000);
   }
 
@@ -177,7 +181,9 @@ export default function QRPage() {
     if (!url) return;
     await navigator.clipboard.writeText(url);
     setBookTableCopied(true);
-    toast.success("Book Table URL copied!");
+    toast.success(
+      qrT?.toasts?.bookTableUrlCopied || "Book Table URL copied!"
+    );
     setTimeout(() => setBookTableCopied(false), 2000);
   }
 
@@ -187,7 +193,9 @@ export default function QRPage() {
     link.download = `qr-menu-${restaurantSlug}.png`;
     link.href = qrDataUrl;
     link.click();
-    toast.success("Menu QR code downloaded as PNG!");
+    toast.success(
+      qrT?.toasts?.menuPngDownloaded || "Menu QR code downloaded as PNG!"
+    );
   }
 
   async function downloadSVG() {
@@ -211,10 +219,12 @@ export default function QRPage() {
       link.download = `qr-menu-${restaurantSlug}.svg`;
       link.href = URL.createObjectURL(blob);
       link.click();
-      toast.success("Menu QR code downloaded as SVG!");
+      toast.success(
+        qrT?.toasts?.menuSvgDownloaded || "Menu QR code downloaded as SVG!"
+      );
     } catch (err) {
       console.error(err);
-      toast.error("Failed to generate SVG");
+      toast.error(qrT?.toasts?.svgGenerateError || "Failed to generate SVG");
     }
   }
 
@@ -224,7 +234,10 @@ export default function QRPage() {
     link.download = `qr-book-table-${restaurantSlug}.png`;
     link.href = bookTableQrDataUrl;
     link.click();
-    toast.success("Book Table QR code downloaded as PNG!");
+    toast.success(
+      qrT?.toasts?.bookTablePngDownloaded ||
+        "Book Table QR code downloaded as PNG!"
+    );
   }
 
   async function downloadBookTableSVG() {
@@ -248,10 +261,13 @@ export default function QRPage() {
       link.download = `qr-book-table-${restaurantSlug}.svg`;
       link.href = URL.createObjectURL(blob);
       link.click();
-      toast.success("Book Table QR code downloaded as SVG!");
+      toast.success(
+        qrT?.toasts?.bookTableSvgDownloaded ||
+          "Book Table QR code downloaded as SVG!"
+      );
     } catch (err) {
       console.error(err);
-      toast.error("Failed to generate SVG");
+      toast.error(qrT?.toasts?.svgGenerateError || "Failed to generate SVG");
     }
   }
 
@@ -260,11 +276,11 @@ export default function QRPage() {
     if (w && qrDataUrl) {
       w.document.write(`
         <html>
-          <head><title>QR Code — ${restaurantName}</title></head>
+          <head><title>${qrT?.printTitle || "QR Code"} — ${restaurantName}</title></head>
           <body style="display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;margin:0;font-family:system-ui,sans-serif;">
             <img src="${qrDataUrl}" style="width:100%;max-width:500px;" />
             <p style="margin-top:24px;font-size:18px;font-weight:600;color:#333;">${restaurantName}</p>
-            <p style="margin-top:4px;font-size:13px;color:#888;">Scan to view our digital menu</p>
+            <p style="margin-top:4px;font-size:13px;color:#888;">${qrT?.scanToViewMenu || "Scan to view menu"}</p>
           </body>
         </html>
       `);
@@ -285,9 +301,9 @@ export default function QRPage() {
     <div className="space-y-8">
       <FadeIn>
         <PageTitle
-          description={t.admin.qr.description}
+          description={qrT?.description || "Your restaurant QR codes"}
         >
-          {t.admin.qr.title}
+          {qrT?.title || "QR Codes"}
         </PageTitle>
       </FadeIn>
 
@@ -295,7 +311,9 @@ export default function QRPage() {
       <FadeIn delay={0.1}>
         <Card className="border-border/50 mb-8">
           <CardHeader>
-            <CardTitle className="text-lg">Menu QR Code</CardTitle>
+            <CardTitle className="text-lg">
+              {qrT?.menuQrCode || "Menu QR Code"}
+            </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="grid gap-8 lg:grid-cols-2">
@@ -321,14 +339,14 @@ export default function QRPage() {
                   <div>
                     <p className="font-semibold">{restaurantName}</p>
                     <p className="text-xs text-muted-foreground font-mono break-all">
-                      {getQrUrl() || t.admin.qr.loading}
+                      {getQrUrl() || qrT?.loading || "Loading..."}
                     </p>
                   </div>
                 </div>
 
                 {/* QR URL display */}
                 <div className="space-y-2">
-                  <Label>Menu QR Code URL</Label>
+                  <Label>{qrT?.menuQrCodeUrl || "Menu QR Code URL"}</Label>
                   <div className="flex gap-2">
                     <Input
                       value={getQrUrl()}
@@ -341,15 +359,15 @@ export default function QRPage() {
                   </div>
                   <p className="text-xs text-muted-foreground">
                     {menuId
-                      ? t.admin.qr.urlDescriptionMenu
-                      : t.admin.qr.urlDescription}
+                      ? qrT?.urlDescriptionMenu
+                      : qrT?.urlDescription}
                   </p>
                 </div>
 
                 {/* Color customization */}
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <Label>{t.admin.qr.qrColor}</Label>
+                    <Label>{qrT?.qrColor || "QR Color"}</Label>
                     <div className="flex gap-2">
                       <input
                         type="color"
@@ -365,7 +383,7 @@ export default function QRPage() {
                     </div>
                   </div>
                   <div className="space-y-2">
-                    <Label>{t.admin.qr.background}</Label>
+                    <Label>{qrT?.background || "Background"}</Label>
                     <div className="flex gap-2">
                       <input
                         type="color"
@@ -390,14 +408,14 @@ export default function QRPage() {
                     <div className="rounded-2xl bg-white p-8 shadow-premium">
                       <img
                         src={qrDataUrl}
-                        alt="Menu QR Code"
+                        alt={qrT?.menuQrCode || "Menu QR Code"}
                         className="h-64 w-64"
                       />
                       <p className="mt-3 text-center text-sm font-semibold text-gray-700">
                         {restaurantName}
                       </p>
                       <p className="text-center text-xs text-gray-400">
-                        Scan to view menu
+                        {qrT?.scanToViewMenu || "Scan to view menu"}
                       </p>
                     </div>
                   </HoverScale>
@@ -405,7 +423,7 @@ export default function QRPage() {
                   <div className="flex h-64 w-64 flex-col items-center justify-center rounded-2xl bg-muted gap-2">
                     <Store size={24} className="text-muted-foreground" />
                     <p className="text-sm text-muted-foreground">
-                      {t.admin.qr.loading}
+                      {qrT?.loading || "Loading..."}
                     </p>
                   </div>
                 )}
@@ -432,7 +450,7 @@ export default function QRPage() {
                     className="gap-2"
                   >
                     <Printer size={14} />
-                    <span>Print</span>
+                    <span>{qrT?.printAction || "Print"}</span>
                   </Button>
                 </div>
               </div>
@@ -445,7 +463,9 @@ export default function QRPage() {
       <FadeIn delay={0.2}>
         <Card className="border-border/50">
           <CardHeader>
-            <CardTitle className="text-lg">Book a Table QR Code</CardTitle>
+            <CardTitle className="text-lg">
+              {qrT?.bookTableQrCode || "Book a Table QR Code"}
+            </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="grid gap-8 lg:grid-cols-2">
@@ -453,7 +473,9 @@ export default function QRPage() {
               <div className="space-y-6">
                 {/* QR URL display */}
                 <div className="space-y-2">
-                  <Label>Book Table QR Code URL</Label>
+                  <Label>
+                    {qrT?.bookTableQrCodeUrl || "Book Table QR Code URL"}
+                  </Label>
                   <div className="flex gap-2">
                     <Input
                       value={getBookTableQrUrl()}
@@ -465,7 +487,8 @@ export default function QRPage() {
                     </Button>
                   </div>
                   <p className="text-xs text-muted-foreground">
-                    Customers scan this QR code to book a table
+                    {qrT?.customersScanToBook ||
+                      "Customers scan this QR code to book a table"}
                   </p>
                 </div>
               </div>
@@ -477,14 +500,14 @@ export default function QRPage() {
                     <div className="rounded-2xl bg-white p-8 shadow-premium">
                       <img
                         src={bookTableQrDataUrl}
-                        alt="Book Table QR Code"
+                        alt={qrT?.bookTableQrCode || "Book Table QR Code"}
                         className="h-64 w-64"
                       />
                       <p className="mt-3 text-center text-sm font-semibold text-gray-700">
                         {restaurantName}
                       </p>
                       <p className="text-center text-xs text-gray-400">
-                        Scan to book a table
+                        {qrT?.scanToBookTable || "Scan to book a table"}
                       </p>
                     </div>
                   </HoverScale>
@@ -492,7 +515,7 @@ export default function QRPage() {
                   <div className="flex h-64 w-64 flex-col items-center justify-center rounded-2xl bg-muted gap-2">
                     <Store size={24} className="text-muted-foreground" />
                     <p className="text-sm text-muted-foreground">
-                      {t.admin.qr.loading}
+                      {qrT?.loading || "Loading..."}
                     </p>
                   </div>
                 )}

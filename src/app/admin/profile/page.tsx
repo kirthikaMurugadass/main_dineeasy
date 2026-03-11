@@ -21,6 +21,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
+import { useI18n } from "@/lib/i18n/context";
 
 type OwnerProfile = {
   fullName: string;
@@ -111,6 +112,7 @@ function EditableFieldRow({
 
 export default function AdminProfilePage() {
   const router = useRouter();
+  const { t, language } = useI18n();
   const [loading, setLoading] = useState(true);
   const [profile, setProfile] = useState<OwnerProfile | null>(null);
   const [saving, setSaving] = useState(false);
@@ -151,13 +153,7 @@ export default function AdminProfilePage() {
 
       const phone = meta.phone || user.phone || "";
 
-      const createdAt = user.created_at
-        ? new Date(user.created_at).toLocaleDateString(undefined, {
-            year: "numeric",
-            month: "short",
-            day: "2-digit",
-          })
-        : "";
+      const createdAt = user.created_at || "";
 
       setProfile({
         fullName,
@@ -169,7 +165,7 @@ export default function AdminProfilePage() {
         state: meta.state || "",
         country: meta.country || "",
         postalCode: meta.postal_code || meta.postalCode || "",
-        role: meta.role || "Owner",
+        role: meta.role || (t.settings?.profile?.defaults?.owner as string) || "Owner",
         createdAt,
       });
       setLoading(false);
@@ -189,6 +185,15 @@ export default function AdminProfilePage() {
       .toUpperCase();
     return chars || "OW";
   }, [profile?.fullName]);
+
+  const formattedCreatedAt = useMemo(() => {
+    if (!profile?.createdAt) return "—";
+    return new Intl.DateTimeFormat(language || "en-US", {
+      year: "numeric",
+      month: "short",
+      day: "2-digit",
+    }).format(new Date(profile.createdAt));
+  }, [profile?.createdAt, language]);
 
   if (loading) {
     return (
@@ -251,10 +256,18 @@ export default function AdminProfilePage() {
           : prev
       );
 
-      toast.success("Profile updated");
+      toast.success(
+        t.settings?.profile?.toasts?.updated ||
+          t.settings?.saved ||
+          "Profile updated"
+      );
       setIsEditing(false);
     } catch (err: any) {
-      toast.error(err?.message || "Failed to update profile");
+      toast.error(
+        err?.message ||
+          t.settings?.profile?.toasts?.updateError ||
+          "Failed to update profile"
+      );
     } finally {
       setSaving(false);
     }
@@ -264,8 +277,13 @@ export default function AdminProfilePage() {
     <div className="space-y-8">
       <FadeIn>
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-          <PageTitle description="Owner profile details and account information">
-            Owner Profile
+          <PageTitle
+            description={
+              t.settings?.profile?.description ||
+              "Owner profile details and account information"
+            }
+          >
+            {t.settings?.profile?.title || "Owner Profile"}
           </PageTitle>
 
           <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row sm:items-center">
@@ -282,14 +300,16 @@ export default function AdminProfilePage() {
               disabled={saving}
             >
               <Pencil className="mr-2 h-4 w-4" />
-              Edit Profile
+              {t.settings?.profile?.actions?.editProfile || "Edit Profile"}
             </Button>
             <Button
               className="w-full rounded-full bg-gradient-to-r from-[#22C55E] to-[#16A34A] text-white shadow-lg transition-all hover:shadow-xl hover:from-[#16A34A] hover:to-[#15803D] disabled:opacity-60 sm:w-auto"
               onClick={handleSaveProfile}
               disabled={!isEditing || saving || !editFullName.trim()}
             >
-              {saving ? "Saving..." : "Save Changes"}
+              {saving
+                ? t.settings?.profile?.actions?.saving || "Saving..."
+                : t.settings?.profile?.actions?.saveChanges || "Save Changes"}
             </Button>
           </div>
         </div>
@@ -303,7 +323,8 @@ export default function AdminProfilePage() {
                 <span className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-[#DCFCE7] text-[#16A34A] dark:bg-[#0f0f0f] dark:text-[#22c55e]">
                   <User className="h-4 w-4" />
                 </span>
-                Personal Information
+                {t.settings?.profile?.sections?.personalInformation ||
+                  "Personal Information"}
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
@@ -328,15 +349,17 @@ export default function AdminProfilePage() {
 
               <EditableFieldRow
                 icon={User}
-                label="Full Name"
+                label={t.settings?.profile?.fields?.fullName || "Full Name"}
                 value={isEditing ? editFullName : profile.fullName}
                 isEditing={isEditing}
                 onChange={setEditFullName}
-                placeholder="Your full name"
+                placeholder={
+                  t.settings?.profile?.placeholders?.fullName || "Your full name"
+                }
               />
               <EditableFieldRow
                 icon={Mail}
-                label="Email Address"
+                label={t.settings?.profile?.fields?.emailAddress || "Email Address"}
                 value={profile.email}
                 isEditing={isEditing}
                 disabled
@@ -344,20 +367,29 @@ export default function AdminProfilePage() {
               />
               <EditableFieldRow
                 icon={Phone}
-                label="Phone Number"
+                label={t.settings?.profile?.fields?.phoneNumber || "Phone Number"}
                 value={isEditing ? editPhone : profile.phone}
                 isEditing={isEditing}
                 onChange={setEditPhone}
-                placeholder="+1 555 000 0000"
+                placeholder={
+                  t.settings?.profile?.placeholders?.phoneNumber ||
+                  "+1 555 000 0000"
+                }
                 inputType="tel"
               />
               <EditableFieldRow
                 icon={User}
-                label="Profile Picture URL"
+                label={
+                  t.settings?.profile?.fields?.profilePictureUrl ||
+                  "Profile Picture URL"
+                }
                 value={isEditing ? editAvatarUrl : profile.avatarUrl || ""}
                 isEditing={isEditing}
                 onChange={setEditAvatarUrl}
-                placeholder="https://..."
+                placeholder={
+                  t.settings?.profile?.placeholders?.profilePictureUrl ||
+                  "https://..."
+                }
               />
             </CardContent>
           </Card>
@@ -370,49 +402,59 @@ export default function AdminProfilePage() {
                 <span className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-[#DCFCE7] text-[#16A34A] dark:bg-[#0f0f0f] dark:text-[#22c55e]">
                   <MapPin className="h-4 w-4" />
                 </span>
-                Address Information
+                {t.settings?.profile?.sections?.addressInformation ||
+                  "Address Information"}
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               <EditableFieldRow
                 icon={MapPin}
-                label="Street Address"
+                label={
+                  t.settings?.profile?.fields?.streetAddress || "Street Address"
+                }
                 value={isEditing ? editStreet : profile.streetAddress}
                 isEditing={isEditing}
                 onChange={setEditStreet}
-                placeholder="Street address"
+                placeholder={
+                  t.settings?.profile?.placeholders?.streetAddress ||
+                  "Street address"
+                }
               />
               <EditableFieldRow
                 icon={MapPin}
-                label="City"
+                label={t.settings?.profile?.fields?.city || "City"}
                 value={isEditing ? editCity : profile.city}
                 isEditing={isEditing}
                 onChange={setEditCity}
-                placeholder="City"
+                placeholder={t.settings?.profile?.placeholders?.city || "City"}
               />
               <EditableFieldRow
                 icon={MapPin}
-                label="State"
+                label={t.settings?.profile?.fields?.state || "State"}
                 value={isEditing ? editState : profile.state}
                 isEditing={isEditing}
                 onChange={setEditState}
-                placeholder="State"
+                placeholder={t.settings?.profile?.placeholders?.state || "State"}
               />
               <EditableFieldRow
                 icon={MapPin}
-                label="Country"
+                label={t.settings?.profile?.fields?.country || "Country"}
                 value={isEditing ? editCountry : profile.country}
                 isEditing={isEditing}
                 onChange={setEditCountry}
-                placeholder="Country"
+                placeholder={
+                  t.settings?.profile?.placeholders?.country || "Country"
+                }
               />
               <EditableFieldRow
                 icon={MapPin}
-                label="Postal Code"
+                label={t.settings?.profile?.fields?.postalCode || "Postal Code"}
                 value={isEditing ? editPostal : profile.postalCode}
                 isEditing={isEditing}
                 onChange={setEditPostal}
-                placeholder="Postal code"
+                placeholder={
+                  t.settings?.profile?.placeholders?.postalCode || "Postal code"
+                }
               />
             </CardContent>
           </Card>
@@ -426,12 +468,24 @@ export default function AdminProfilePage() {
               <span className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-[#DCFCE7] text-[#16A34A] dark:bg-[#0f0f0f] dark:text-[#22c55e]">
                 <Shield className="h-4 w-4" />
               </span>
-              Additional Information
+              {t.settings?.profile?.sections?.additionalInformation ||
+                "Additional Information"}
             </CardTitle>
           </CardHeader>
           <CardContent className="grid gap-4 md:grid-cols-2">
-            <FieldRow icon={Shield} label="Role" value={profile.role} />
-            <FieldRow icon={Calendar} label="Account Created Date" value={profile.createdAt} />
+            <FieldRow
+              icon={Shield}
+              label={t.settings?.profile?.fields?.role || "Role"}
+              value={profile.role}
+            />
+            <FieldRow
+              icon={Calendar}
+              label={
+                t.settings?.profile?.fields?.accountCreatedDate ||
+                "Account Created Date"
+              }
+              value={formattedCreatedAt}
+            />
           </CardContent>
         </Card>
       </FadeIn>

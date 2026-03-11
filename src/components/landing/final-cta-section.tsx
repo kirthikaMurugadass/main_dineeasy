@@ -4,8 +4,11 @@ import Link from "next/link";
 import { motion } from "framer-motion";
 import { FadeIn } from "@/components/motion";
 import { Button } from "@/components/ui/button";
+import { useI18n } from "@/lib/i18n/context";
 
 export function FinalCtaSection() {
+  const { t } = useI18n();
+  
   return (
     <section
       id="pricing"
@@ -15,13 +18,12 @@ export function FinalCtaSection() {
         <div className="w-full text-center">
               <FadeIn>
             <h2 className="text-balance font-sans text-[clamp(1.9rem,3vw+0.6rem,2.75rem)] font-semibold leading-[1.15] tracking-tight text-gray-900 dark:text-white">
-                  Ready to bring QR-first dining to your restaurant?
+                  {t.home?.finalCta?.title || "Ready to bring QR-first dining to your restaurant?"}
                 </h2>
               </FadeIn>
               <FadeIn delay={0.12}>
             <p className="mx-auto mt-4 max-w-2xl text-balance text-sm leading-relaxed text-gray-600 sm:text-base dark:text-gray-300">
-                  Launch your digital menu with DineEasy in minutes. Start free, connect your tables, and
-                  let guests scan, browse, and order from anywhere in your space.
+                  {t.home?.finalCta?.description || "Launch your digital menu with DineEasy in minutes. Start free, connect your tables, and let guests scan, browse, and order from anywhere in your space."}
                 </p>
               </FadeIn>
 
@@ -37,7 +39,7 @@ export function FinalCtaSection() {
                         size="lg"
                     className="h-12 rounded-full bg-primary px-8 text-base font-semibold text-primary-foreground shadow-lg shadow-primary/25 transition-all duration-300 hover:bg-primary/90 hover:shadow-xl hover:shadow-primary/35"
                       >
-                        Get started with DineEasy
+                        {t.home?.finalCta?.button || "Get started with DineEasy"}
                       </Button>
                     </motion.div>
                   </Link>

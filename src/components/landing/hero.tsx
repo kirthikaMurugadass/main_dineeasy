@@ -64,7 +64,7 @@ export function Hero() {
               "delay-100"
             )}
           >
-            For Modern Restaurants
+            {t.home?.hero?.badge || t.landing?.hero?.badge || "For Modern Restaurants"}
           </p>
 
           {/* Heading */}
@@ -76,10 +76,10 @@ export function Hero() {
               "delay-200"
             )}
           >
-            {t.landing.hero.title}
-            {t.landing.hero.titleAccent && (
+            {t.home?.hero?.title || t.landing?.hero?.title || "Next-Gen Digital Menu Platform"}
+            {(t.home?.hero?.titleAccent || t.landing?.hero?.titleAccent) && (
               <span className="mt-2 block bg-gradient-to-r from-primary via-primary/80 to-primary bg-clip-text text-transparent">
-                {t.landing.hero.titleAccent}
+                {t.home?.hero?.titleAccent || t.landing?.hero?.titleAccent}
               </span>
             )}
           </h1>
@@ -93,7 +93,7 @@ export function Hero() {
               "delay-300"
             )}
           >
-            {t.landing.hero.subtitle}
+            {t.home?.hero?.subtitle || t.landing?.hero?.subtitle || "Create beautiful QR menus, manage categories, track performance, and deliver a premium dining experience — all in one powerful dashboard."}
           </p>
 
           {/* Buttons */}
@@ -110,7 +110,7 @@ export function Hero() {
                 size="lg"
                 className="group h-12 rounded-full bg-primary px-8 text-sm font-semibold text-primary-foreground shadow-lg shadow-primary/40 transition-all duration-300 hover:-translate-y-0.5 hover:bg-primary/90 hover:shadow-xl hover:shadow-primary/50"
               >
-                {t.landing.hero.cta}
+                {t.home?.hero?.cta || t.landing?.hero?.cta || "Get Started"}
                 <ArrowRight className="ml-2 h-4 w-4 transition-transform duration-300 group-hover:translate-x-1" />
               </Button>
             </Link>
@@ -120,7 +120,7 @@ export function Hero() {
                 variant="outline"
                 className="h-12 rounded-full border-primary bg-transparent px-7 text-sm font-medium text-primary shadow-soft transition-all duration-300 hover:bg-primary hover:text-primary-foreground"
               >
-                {t.landing.hero.ctaSecondary}
+                {t.home?.hero?.ctaSecondary || t.landing?.hero?.ctaSecondary || "Live Demo"}
               </Button>
             </Link>
           </div>
