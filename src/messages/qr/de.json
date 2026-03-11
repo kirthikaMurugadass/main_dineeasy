@@ -15,6 +15,10 @@
   "scanToBookTable": "Scannen, um einen Tisch zu reservieren",
   "printAction": "Drucken",
   "printTitle": "QR-Code",
+  "pro": {
+    "bookingQrRequired": "Upgrade auf Pro, um den Tischreservierungs-QR zu aktivieren.",
+    "upgradeAction": "Auf Pro upgraden"
+  },
   "toasts": {
     "generateError": "QR-Code konnte nicht erstellt werden",
     "generateBookTableError": "Tischreservierungs-QR-Code konnte nicht erstellt werden",

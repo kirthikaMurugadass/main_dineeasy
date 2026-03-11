@@ -25,6 +25,10 @@
   "scanToBookTable": "Scan to book a table",
   "printAction": "Print",
   "printTitle": "QR Code",
+  "pro": {
+    "bookingQrRequired": "Upgrade to Pro to enable Table Booking QR.",
+    "upgradeAction": "Upgrade to Pro"
+  },
   "toasts": {
     "generateError": "Failed to generate QR code",
     "generateBookTableError": "Failed to generate Book Table QR code",
