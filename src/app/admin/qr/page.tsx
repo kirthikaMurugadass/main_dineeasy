@@ -15,11 +15,13 @@ import { createClient } from "@/lib/supabase/client";
 import { getSubdomainUrl } from "@/lib/subdomain";
 import { generateQRWithLogoPNG, generateQRWithLogoSVG } from "@/lib/qr-with-logo";
 import { toast } from "sonner";
+import { useSubscription } from "@/contexts/subscription-context";
 
 export default function QRPage() {
   const { t } = useI18n();
   const qrT = t.qr;
   const router = useRouter();
+  const { isPro, loading: subscriptionLoading } = useSubscription();
   const [restaurantName, setRestaurantName] = useState("");
   const [restaurantSlug, setRestaurantSlug] = useState("");
   const [menuId, setMenuId] = useState<string | null>(null);
@@ -31,6 +33,9 @@ export default function QRPage() {
   const [copied, setCopied] = useState(false);
   const [bookTableCopied, setBookTableCopied] = useState(false);
   const [loading, setLoading] = useState(true);
+  const proUpgradeMessage =
+    qrT?.pro?.bookingQrRequired ||
+    "Upgrade to Pro to enable Table Booking QR.";
 
   useEffect(() => {
     async function load() {
@@ -163,9 +168,13 @@ export default function QRPage() {
   useEffect(() => {
     if (!loading && restaurantSlug) {
       generateQR();
-      generateBookTableQR();
+      if (isPro) {
+        generateBookTableQR();
+      } else {
+        setBookTableQrDataUrl("");
+      }
     }
-  }, [generateQR, generateBookTableQR, loading, restaurantSlug, logoUrl]);
+  }, [generateQR, generateBookTableQR, isPro, loading, restaurantSlug, logoUrl]);
 
   async function copyUrl() {
     const url = getQrUrl();
@@ -177,6 +186,10 @@ export default function QRPage() {
   }
 
   async function copyBookTableUrl() {
+    if (!isPro) {
+      toast.error(proUpgradeMessage);
+      return;
+    }
     const url = getBookTableQrUrl();
     if (!url) return;
     await navigator.clipboard.writeText(url);
@@ -229,6 +242,10 @@ export default function QRPage() {
   }
 
   function downloadBookTablePNG() {
+    if (!isPro) {
+      toast.error(proUpgradeMessage);
+      return;
+    }
     if (!bookTableQrDataUrl) return;
     const link = document.createElement("a");
     link.download = `qr-book-table-${restaurantSlug}.png`;
@@ -241,6 +258,10 @@ export default function QRPage() {
   }
 
   async function downloadBookTableSVG() {
+    if (!isPro) {
+      toast.error(proUpgradeMessage);
+      return;
+    }
     const url = getBookTableQrUrl();
     if (!url) return;
 
@@ -289,7 +310,7 @@ export default function QRPage() {
     }
   }
 
-  if (loading) {
+  if (loading || subscriptionLoading) {
     return (
       <div className="flex h-[60vh] items-center justify-center">
         <div className="h-8 w-8 animate-spin rounded-full border-2 border-gold border-t-transparent" />
@@ -459,88 +480,109 @@ export default function QRPage() {
         </Card>
       </FadeIn>
 
-      {/* Book Table QR Section */}
+      {/* Book Table QR Section (Pro only) */}
       <FadeIn delay={0.2}>
-        <Card className="border-border/50">
-          <CardHeader>
-            <CardTitle className="text-lg">
-              {qrT?.bookTableQrCode || "Book a Table QR Code"}
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="grid gap-8 lg:grid-cols-2">
-              {/* Settings */}
-              <div className="space-y-6">
-                {/* QR URL display */}
-                <div className="space-y-2">
-                  <Label>
-                    {qrT?.bookTableQrCodeUrl || "Book Table QR Code URL"}
-                  </Label>
-                  <div className="flex gap-2">
-                    <Input
-                      value={getBookTableQrUrl()}
-                      readOnly
-                      className="font-mono text-xs"
-                    />
-                    <Button variant="outline" size="icon" onClick={copyBookTableUrl}>
-                      {bookTableCopied ? <Check size={16} /> : <Copy size={16} />}
-                    </Button>
-                  </div>
-                  <p className="text-xs text-muted-foreground">
-                    {qrT?.customersScanToBook ||
-                      "Customers scan this QR code to book a table"}
-                  </p>
-                </div>
-              </div>
-
-              {/* Preview & Download */}
-              <div className="flex flex-col items-center space-y-6">
-                {bookTableQrDataUrl ? (
-                  <HoverScale>
-                    <div className="rounded-2xl bg-white p-8 shadow-premium">
-                      <img
-                        src={bookTableQrDataUrl}
-                        alt={qrT?.bookTableQrCode || "Book Table QR Code"}
-                        className="h-64 w-64"
+        {isPro ? (
+          <Card className="border-border/50">
+            <CardHeader>
+              <CardTitle className="text-lg">
+                {qrT?.bookTableQrCode || "Book a Table QR Code"}
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="grid gap-8 lg:grid-cols-2">
+                {/* Settings */}
+                <div className="space-y-6">
+                  {/* QR URL display */}
+                  <div className="space-y-2">
+                    <Label>
+                      {qrT?.bookTableQrCodeUrl || "Book Table QR Code URL"}
+                    </Label>
+                    <div className="flex gap-2">
+                      <Input
+                        value={getBookTableQrUrl()}
+                        readOnly
+                        className="font-mono text-xs"
                       />
-                      <p className="mt-3 text-center text-sm font-semibold text-gray-700">
-                        {restaurantName}
-                      </p>
-                      <p className="text-center text-xs text-gray-400">
-                        {qrT?.scanToBookTable || "Scan to book a table"}
-                      </p>
+                      <Button variant="outline" size="icon" onClick={copyBookTableUrl}>
+                        {bookTableCopied ? <Check size={16} /> : <Copy size={16} />}
+                      </Button>
                     </div>
-                  </HoverScale>
-                ) : (
-                  <div className="flex h-64 w-64 flex-col items-center justify-center rounded-2xl bg-muted gap-2">
-                    <Store size={24} className="text-muted-foreground" />
-                    <p className="text-sm text-muted-foreground">
-                      {qrT?.loading || "Loading..."}
+                    <p className="text-xs text-muted-foreground">
+                      {qrT?.customersScanToBook ||
+                        "Customers scan this QR code to book a table"}
                     </p>
                   </div>
-                )}
+                </div>
 
-                <div className="flex gap-3">
-                  <Button
-                    onClick={downloadBookTablePNG}
-                    className="gap-2 bg-primary text-white hover:bg-primary/90 dark:bg-primary dark:text-white dark:hover:bg-primary/90"
-                  >
-                    <Download size={14} />
-                    PNG
-                  </Button>
-                  <Button
-                    onClick={downloadBookTableSVG}
-                    variant="outline"
-                    className="gap-2"
-                  >
-                    <Download size={14} />
-                    <span>SVG</span>
-                  </Button>
+                {/* Preview & Download */}
+                <div className="flex flex-col items-center space-y-6">
+                  {bookTableQrDataUrl ? (
+                    <HoverScale>
+                      <div className="rounded-2xl bg-white p-8 shadow-premium">
+                        <img
+                          src={bookTableQrDataUrl}
+                          alt={qrT?.bookTableQrCode || "Book Table QR Code"}
+                          className="h-64 w-64"
+                        />
+                        <p className="mt-3 text-center text-sm font-semibold text-gray-700">
+                          {restaurantName}
+                        </p>
+                        <p className="text-center text-xs text-gray-400">
+                          {qrT?.scanToBookTable || "Scan to book a table"}
+                        </p>
+                      </div>
+                    </HoverScale>
+                  ) : (
+                    <div className="flex h-64 w-64 flex-col items-center justify-center rounded-2xl bg-muted gap-2">
+                      <Store size={24} className="text-muted-foreground" />
+                      <p className="text-sm text-muted-foreground">
+                        {qrT?.loading || "Loading..."}
+                      </p>
+                    </div>
+                  )}
+
+                  <div className="flex gap-3">
+                    <Button
+                      onClick={downloadBookTablePNG}
+                      className="gap-2 bg-primary text-white hover:bg-primary/90 dark:bg-primary dark:text-white dark:hover:bg-primary/90"
+                    >
+                      <Download size={14} />
+                      PNG
+                    </Button>
+                    <Button
+                      onClick={downloadBookTableSVG}
+                      variant="outline"
+                      className="gap-2"
+                    >
+                      <Download size={14} />
+                      <span>SVG</span>
+                    </Button>
+                  </div>
                 </div>
               </div>
-            </div>
-          </CardContent>
-        </Card>
+            </CardContent>
+          </Card>
+        ) : (
+          <Card className="border-border/50">
+            <CardHeader>
+              <CardTitle className="text-lg">
+                {qrT?.bookTableQrCode || "Book a Table QR Code"}
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-sm text-muted-foreground">{proUpgradeMessage}</p>
+              <Button
+                type="button"
+                variant="outline"
+                className="mt-4"
+                onClick={() => router.push("/admin/checkout")}
+              >
+                {qrT?.pro?.upgradeAction || "Upgrade to Pro"}
+              </Button>
+            </CardContent>
+          </Card>
+        )}
       </FadeIn>
     </div>
   );

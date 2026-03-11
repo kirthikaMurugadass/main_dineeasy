@@ -15,6 +15,10 @@
   "scanToBookTable": "Scannez pour reserver une table",
   "printAction": "Imprimer",
   "printTitle": "Code QR",
+  "pro": {
+    "bookingQrRequired": "Passez a Pro pour activer le QR de reservation de table.",
+    "upgradeAction": "Passer a Pro"
+  },
   "toasts": {
     "generateError": "Echec de la generation du code QR",
     "generateBookTableError": "Echec de la generation du code QR de reservation de table",
