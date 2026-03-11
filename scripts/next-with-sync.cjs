@@ -7,6 +7,28 @@ function isNumericChunk(fileName) {
   return /^\d+\.js$/.test(fileName);
 }
 
+function removeServerRootNumericChunks(projectRoot) {
+  const serverDir = path.join(projectRoot, ".next", "server");
+  if (!fs.existsSync(serverDir)) return;
+
+  let entries;
+  try {
+    entries = fs.readdirSync(serverDir, { withFileTypes: true });
+  } catch {
+    return;
+  }
+
+  for (const ent of entries) {
+    if (!ent.isFile()) continue;
+    if (!isNumericChunk(ent.name)) continue;
+    try {
+      fs.unlinkSync(path.join(serverDir, ent.name));
+    } catch {
+      // ignore transient file locks during rebuilds
+    }
+  }
+}
+
 function syncServerChunksOnce(projectRoot) {
   const serverDir = path.join(projectRoot, ".next", "server");
   const chunksDir = path.join(serverDir, "chunks");
@@ -73,8 +95,14 @@ function main() {
     ? (cleanedNodeOptions.includes(preloadArg) ? cleanedNodeOptions : `${cleanedNodeOptions} ${preloadArg}`.trim())
     : cleanedNodeOptions;
 
-  // sync once before start (useful for `next start` or as a fallback)
-  syncServerChunksOnce(projectRoot);
+  // sync once before start only when the preload hook is NOT active.
+  // On Windows with the hook, copied root chunks can become stale and trigger
+  // runtime errors like "Cannot read properties of undefined (reading 'call')".
+  if (hasPreloadHook) {
+    removeServerRootNumericChunks(projectRoot);
+  } else {
+    syncServerChunksOnce(projectRoot);
+  }
 
   const nextBin = require.resolve("next/dist/bin/next");
   const child = spawn(process.execPath, [nextBin, mode, ...restArgs], {

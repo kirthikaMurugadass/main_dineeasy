@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useRef } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
@@ -64,6 +64,8 @@ import {
   deleteItemImage,
   uploadCategoryImage,
   deleteCategoryImage,
+  validateImageFile,
+  UploadError,
 } from "@/lib/upload";
 import {
   Breadcrumb,
@@ -90,6 +92,12 @@ interface EditableItem {
   _pendingFile?: File;
   _deleteImage?: boolean;
 }
+
+const CATEGORY_CROP_ASPECT = 16 / 5;
+const CATEGORY_CROP_OUTPUT_WIDTH = 1600;
+const CATEGORY_CROP_OUTPUT_HEIGHT = Math.round(
+  CATEGORY_CROP_OUTPUT_WIDTH / CATEGORY_CROP_ASPECT
+);
 
 function SortableItem({
   item,
@@ -296,11 +304,40 @@ export default function CategoryDetailPage() {
   const [restaurantId, setRestaurantId] = useState("");
   const [autoSaveStatus, setAutoSaveStatus] = useState<"saved" | "saving" | "unsaved">("unsaved");
   const [validationErrors, setValidationErrors] = useState<Record<string, string>>({});
+  const categoryImageInputRef = useRef<HTMLInputElement | null>(null);
+  const cropFrameRef = useRef<HTMLDivElement | null>(null);
+  const cropImageRef = useRef<HTMLImageElement | null>(null);
+  const cropSourceObjectUrlRef = useRef<string | null>(null);
+  const cropDragStartRef = useRef<{
+    pointerX: number;
+    pointerY: number;
+    startX: number;
+    startY: number;
+  } | null>(null);
+  const [cropModalOpen, setCropModalOpen] = useState(false);
+  const [cropSourceUrl, setCropSourceUrl] = useState<string | null>(null);
+  const [cropSourceMime, setCropSourceMime] = useState<string>("image/jpeg");
+  const [cropSourceName, setCropSourceName] = useState<string>("category-image");
+  const [cropNaturalSize, setCropNaturalSize] = useState({ width: 1, height: 1 });
+  const [cropZoom, setCropZoom] = useState(1);
+  const [cropOffsetX, setCropOffsetX] = useState(0);
+  const [cropOffsetY, setCropOffsetY] = useState(0);
+  const [cropDragging, setCropDragging] = useState(false);
+  const [cropApplying, setCropApplying] = useState(false);
 
   const sensors = useSensors(
     useSensor(PointerSensor),
     useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates })
   );
+
+  useEffect(() => {
+    return () => {
+      if (cropSourceObjectUrlRef.current) {
+        URL.revokeObjectURL(cropSourceObjectUrlRef.current);
+        cropSourceObjectUrlRef.current = null;
+      }
+    };
+  }, []);
 
   // Keep item/category language tab in sync with global UI language
   useEffect(() => {
@@ -611,17 +648,165 @@ export default function CategoryDetailPage() {
 
   // Handle image upload
   function handleImageUpload(file: File) {
-    if (!file.type.startsWith("image/")) {
-      toast.error("Please upload an image file");
+    if (!file) return;
+    try {
+      validateImageFile(file);
+    } catch (error) {
+      const message =
+        error instanceof UploadError
+          ? error.message
+          : t.admin.categories.imageUploadError;
+      toast.error(message);
       return;
     }
-    // No file size limit - allow any size
-    setCategoryImageFile(file);
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      setCategoryImagePreview(e.target?.result as string);
-    };
-    reader.readAsDataURL(file);
+
+    if (cropSourceObjectUrlRef.current) {
+      URL.revokeObjectURL(cropSourceObjectUrlRef.current);
+      cropSourceObjectUrlRef.current = null;
+    }
+
+    const objectUrl = URL.createObjectURL(file);
+    cropSourceObjectUrlRef.current = objectUrl;
+    setCropSourceUrl(objectUrl);
+    setCropSourceMime(file.type || "image/jpeg");
+    setCropSourceName(file.name || "category-image");
+    setCropNaturalSize({ width: 1, height: 1 });
+    setCropZoom(1);
+    setCropOffsetX(0);
+    setCropOffsetY(0);
+    setCropModalOpen(true);
+  }
+
+  function closeCropModal() {
+    setCropModalOpen(false);
+    setCropDragging(false);
+    cropDragStartRef.current = null;
+    if (cropSourceObjectUrlRef.current) {
+      URL.revokeObjectURL(cropSourceObjectUrlRef.current);
+      cropSourceObjectUrlRef.current = null;
+    }
+    setCropSourceUrl(null);
+  }
+
+  const getCropBounds = useCallback(
+    (nextZoom: number) => {
+      const frame = cropFrameRef.current;
+      if (!frame) return { maxX: 0, maxY: 0 };
+      const frameW = frame.clientWidth;
+      const frameH = frame.clientHeight;
+      const baseScale = Math.max(
+        frameW / cropNaturalSize.width,
+        frameH / cropNaturalSize.height
+      );
+      const displayW = cropNaturalSize.width * baseScale * nextZoom;
+      const displayH = cropNaturalSize.height * baseScale * nextZoom;
+      return {
+        maxX: Math.max((displayW - frameW) / 2, 0),
+        maxY: Math.max((displayH - frameH) / 2, 0),
+      };
+    },
+    [cropNaturalSize.height, cropNaturalSize.width]
+  );
+
+  const clampCropOffset = useCallback(
+    (x: number, y: number, nextZoom = cropZoom) => {
+      const { maxX, maxY } = getCropBounds(nextZoom);
+      return {
+        x: Math.min(Math.max(x, -maxX), maxX),
+        y: Math.min(Math.max(y, -maxY), maxY),
+      };
+    },
+    [cropZoom, getCropBounds]
+  );
+
+  async function applyCrop() {
+    if (!cropFrameRef.current || !cropImageRef.current) return;
+    setCropApplying(true);
+    try {
+      const frame = cropFrameRef.current;
+      const frameW = frame.clientWidth;
+      const frameH = frame.clientHeight;
+      const imageEl = cropImageRef.current;
+      const naturalW = imageEl.naturalWidth;
+      const naturalH = imageEl.naturalHeight;
+
+      if (!naturalW || !naturalH) {
+        toast.error("Failed to crop image");
+        return;
+      }
+
+      const baseScale = Math.max(frameW / naturalW, frameH / naturalH);
+      const displayW = naturalW * baseScale * cropZoom;
+      const displayH = naturalH * baseScale * cropZoom;
+      const left = (frameW - displayW) / 2 + cropOffsetX;
+      const top = (frameH - displayH) / 2 + cropOffsetY;
+
+      const srcX = ((0 - left) / displayW) * naturalW;
+      const srcY = ((0 - top) / displayH) * naturalH;
+      const srcW = (frameW / displayW) * naturalW;
+      const srcH = (frameH / displayH) * naturalH;
+
+      const canvas = document.createElement("canvas");
+      canvas.width = CATEGORY_CROP_OUTPUT_WIDTH;
+      canvas.height = CATEGORY_CROP_OUTPUT_HEIGHT;
+      const ctx = canvas.getContext("2d");
+      if (!ctx) {
+        toast.error("Failed to crop image");
+        return;
+      }
+
+      ctx.drawImage(
+        imageEl,
+        Math.max(0, srcX),
+        Math.max(0, srcY),
+        Math.min(naturalW - Math.max(0, srcX), srcW),
+        Math.min(naturalH - Math.max(0, srcY), srcH),
+        0,
+        0,
+        CATEGORY_CROP_OUTPUT_WIDTH,
+        CATEGORY_CROP_OUTPUT_HEIGHT
+      );
+
+      const outputType =
+        cropSourceMime === "image/png" || cropSourceMime === "image/webp"
+          ? cropSourceMime
+          : "image/jpeg";
+      const blob = await new Promise<Blob | null>((resolve) =>
+        canvas.toBlob(resolve, outputType, 0.92)
+      );
+
+      if (!blob) {
+        toast.error("Failed to crop image");
+        return;
+      }
+
+      const extMap: Record<string, string> = {
+        "image/jpeg": "jpg",
+        "image/png": "png",
+        "image/webp": "webp",
+      };
+      const ext = extMap[outputType] || "jpg";
+      const baseName = (cropSourceName || "category-image").replace(/\.[^/.]+$/, "");
+      const croppedFile = new File([blob], `${baseName}-cropped.${ext}`, {
+        type: outputType,
+      });
+
+      setCategoryImageFile(croppedFile);
+      setCategoryImageDelete(false);
+
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        setCategoryImagePreview(e.target?.result as string);
+      };
+      reader.readAsDataURL(croppedFile);
+
+      closeCropModal();
+    } catch (error) {
+      console.error("Category image crop failed:", error);
+      toast.error("Failed to crop image");
+    } finally {
+      setCropApplying(false);
+    }
   }
 
   // Auto-save draft functionality
@@ -677,7 +862,9 @@ export default function CategoryDetailPage() {
   }
 
   async function handleSave() {
-    if (isNew && !menuId) {
+    let resolvedMenuId = menuId;
+
+    if (isNew && !resolvedMenuId) {
       // Need to get menu first (or create it)
       const supabase = createClient();
       const {
@@ -700,16 +887,17 @@ export default function CategoryDetailPage() {
       setRestaurantId(restaurant.id);
 
       // Ensure menu exists (auto-create if needed)
-      const menuId = await ensureMenuExists(restaurant.id);
-      if (!menuId) {
-      toast.error(t.admin.categories.initError);
+      const ensuredMenuId = await ensureMenuExists(restaurant.id);
+      if (!ensuredMenuId) {
+        toast.error(t.admin.categories.initError);
         return;
       }
 
-      setMenuId(menuId);
+      resolvedMenuId = ensuredMenuId;
+      setMenuId(ensuredMenuId);
     }
 
-    if (!menuId) {
+    if (!resolvedMenuId) {
       toast.error("Menu not found");
       return;
     }
@@ -741,7 +929,7 @@ export default function CategoryDetailPage() {
         const { data: newCat, error: catError } = await supabase
           .from("categories")
           .insert({
-            menu_id: menuId,
+            menu_id: resolvedMenuId,
             sort_order: 0,
             is_active: categoryActive,
             image_url: null,
@@ -877,7 +1065,7 @@ export default function CategoryDetailPage() {
         await fetch("/api/revalidate", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ menuId, restaurantSlug: restaurantForRevalidate.slug }),
+          body: JSON.stringify({ menuId: resolvedMenuId, restaurantSlug: restaurantForRevalidate.slug }),
         }).catch(() => {});
       }
 
@@ -1235,7 +1423,7 @@ export default function CategoryDetailPage() {
                                 e.preventDefault();
                                 setIsDragging(false);
                                 const file = e.dataTransfer.files[0];
-                                if (file && file.type.startsWith("image/")) {
+                                if (file) {
                                   handleImageUpload(file);
                                 }
                               }}
@@ -1246,32 +1434,45 @@ export default function CategoryDetailPage() {
                                   : "border-[#D6D2C4]/50 hover:border-[#5B7A2F]/50 hover:bg-[#DCFCE7]/20 dark:border-[#1f1f1f] dark:hover:border-[#22c55e]/50 dark:hover:bg-[#22c55e]/10"
                               }`}
                             >
+                              <input
+                                ref={categoryImageInputRef}
+                                type="file"
+                                accept=".jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp"
+                                className="hidden"
+                                onChange={(e) => {
+                                  const file = e.target.files?.[0];
+                                  if (file) {
+                                    handleImageUpload(file);
+                                  }
+                                  // Allow selecting the same file again.
+                                  e.currentTarget.value = "";
+                                }}
+                              />
                               {categoryImagePreview ? (
-                                <div className="relative">
+                                <div className="space-y-4">
                                   <motion.img
                                     initial={{ opacity: 0, scale: 0.9 }}
                                     animate={{ opacity: 1, scale: 1 }}
                                     src={categoryImagePreview}
                                     alt="Category preview"
-                                    className="w-full h-64 object-cover rounded-xl shadow-lg"
+                                    className="w-full h-64 object-cover rounded-xl shadow-lg pointer-events-none select-none"
                                   />
-                                  <motion.div
-                                    whileHover={{ scale: 1.1 }}
-                                    whileTap={{ scale: 0.9 }}
-                                  >
-                                    <Button
-                                      variant="destructive"
-                                      size="icon"
-                                      className="absolute top-3 right-3 rounded-full shadow-lg"
-                                      onClick={() => {
-                                        setCategoryImagePreview(null);
-                                        setCategoryImageFile(null);
-                                        if (categoryImage) setCategoryImageDelete(true);
-                                      }}
+                                  <div className="flex justify-center">
+                                    <motion.div
+                                      whileHover={{ scale: 1.03 }}
+                                      whileTap={{ scale: 0.97 }}
                                     >
-                                      <X className="h-4 w-4" />
-                                    </Button>
-                                  </motion.div>
+                                      <Button
+                                        type="button"
+                                        variant="outline"
+                                        onClick={() => categoryImageInputRef.current?.click()}
+                                        className="rounded-full border-[#D6D2C4]/70 bg-white/70 px-6 text-[#2D3A1A] hover:bg-[#E8E4D9]/70 dark:border-[#262626] dark:bg-[#1a1a1a] dark:text-[#ffffff] dark:hover:bg-[#262626]"
+                                      >
+                                        <Upload className="h-4 w-4 mr-2" />
+                                        Replace Image
+                                      </Button>
+                                    </motion.div>
+                                  </div>
                                 </div>
                               ) : (
                                 <div className="text-center">
@@ -1289,35 +1490,186 @@ export default function CategoryDetailPage() {
                                   <p className="text-sm text-[#6B7B5A] dark:text-[#bfbfbf] mb-6">
                                     Drag and drop an image here, or click to browse
                                   </p>
-                                  <label>
-                                    <input
-                                      type="file"
-                                      accept="image/*"
-                                      className="hidden"
-                                      onChange={(e) => {
-                                        const file = e.target.files?.[0];
-                                        if (file) handleImageUpload(file);
-                                      }}
-                                    />
-                                    <motion.div
-                                      whileHover={{ scale: 1.05 }}
-                                      whileTap={{ scale: 0.95 }}
+                                  <motion.div
+                                    whileHover={{ scale: 1.05 }}
+                                    whileTap={{ scale: 0.95 }}
+                                  >
+                                    <Button
+                                      type="button"
+                                      onClick={() => categoryImageInputRef.current?.click()}
+                                      className="rounded-full bg-[#22c55e] text-white shadow-lg hover:shadow-xl hover:bg-[#16a34a] px-6"
                                     >
-                                      <Button
-                                        type="button"
-                                        className="rounded-full bg-[#22c55e] text-white shadow-lg hover:shadow-xl hover:bg-[#16a34a] px-6"
-                                      >
-                                        <Upload className="h-4 w-4 mr-2" />
-                                        {t.admin.categories.uploadImageButton}
-                                      </Button>
-                                    </motion.div>
-                                  </label>
+                                      <Upload className="h-4 w-4 mr-2" />
+                                      {t.admin.categories.uploadImageButton}
+                                    </Button>
+                                  </motion.div>
                                 </div>
                               )}
                             </motion.div>
                           </CardContent>
                         </Card>
                       </motion.div>
+
+                      <AnimatePresence>
+                        {cropModalOpen && cropSourceUrl ? (
+                          <motion.div
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            exit={{ opacity: 0 }}
+                            className="fixed inset-0 z-[100] flex items-center justify-center bg-black/70 p-3 sm:p-6"
+                            onClick={closeCropModal}
+                          >
+                            <motion.div
+                              initial={{ scale: 0.96, opacity: 0 }}
+                              animate={{ scale: 1, opacity: 1 }}
+                              exit={{ scale: 0.96, opacity: 0 }}
+                              className="w-full max-w-4xl rounded-2xl border border-[#D6D2C4]/50 bg-white p-4 shadow-2xl dark:border-[#262626] dark:bg-[#0f0f0f] sm:p-6"
+                              onClick={(e) => e.stopPropagation()}
+                            >
+                              <div className="mb-4 flex items-center justify-between">
+                                <h3 className="text-base font-semibold text-[#2D3A1A] dark:text-white">
+                                  Crop category image
+                                </h3>
+                                <Button
+                                  type="button"
+                                  variant="ghost"
+                                  size="icon"
+                                  onClick={closeCropModal}
+                                  className="rounded-full"
+                                >
+                                  <X className="h-4 w-4" />
+                                </Button>
+                              </div>
+
+                              <div className="space-y-4">
+                                <div
+                                  ref={cropFrameRef}
+                                  className="relative mx-auto w-full max-w-3xl overflow-hidden rounded-xl border border-[#D6D2C4]/60 bg-black/70"
+                                  style={{ aspectRatio: `${CATEGORY_CROP_ASPECT}` }}
+                                  onPointerDown={(e) => {
+                                    const frame = cropFrameRef.current;
+                                    if (!frame) return;
+                                    frame.setPointerCapture(e.pointerId);
+                                    setCropDragging(true);
+                                    cropDragStartRef.current = {
+                                      pointerX: e.clientX,
+                                      pointerY: e.clientY,
+                                      startX: cropOffsetX,
+                                      startY: cropOffsetY,
+                                    };
+                                  }}
+                                  onPointerMove={(e) => {
+                                    if (!cropDragging || !cropDragStartRef.current) return;
+                                    const dx = e.clientX - cropDragStartRef.current.pointerX;
+                                    const dy = e.clientY - cropDragStartRef.current.pointerY;
+                                    const next = clampCropOffset(
+                                      cropDragStartRef.current.startX + dx,
+                                      cropDragStartRef.current.startY + dy
+                                    );
+                                    setCropOffsetX(next.x);
+                                    setCropOffsetY(next.y);
+                                  }}
+                                  onPointerUp={(e) => {
+                                    const frame = cropFrameRef.current;
+                                    if (frame?.hasPointerCapture(e.pointerId)) {
+                                      frame.releasePointerCapture(e.pointerId);
+                                    }
+                                    setCropDragging(false);
+                                    cropDragStartRef.current = null;
+                                  }}
+                                  onPointerCancel={() => {
+                                    setCropDragging(false);
+                                    cropDragStartRef.current = null;
+                                  }}
+                                >
+                                  <img
+                                    ref={cropImageRef}
+                                    src={cropSourceUrl}
+                                    alt="Crop source"
+                                    draggable={false}
+                                    onLoad={(e) => {
+                                      const img = e.currentTarget;
+                                      setCropNaturalSize({
+                                        width: img.naturalWidth || 1,
+                                        height: img.naturalHeight || 1,
+                                      });
+                                      setCropOffsetX(0);
+                                      setCropOffsetY(0);
+                                      setCropZoom(1);
+                                    }}
+                                    className="pointer-events-none absolute left-1/2 top-1/2 select-none"
+                                    style={{
+                                      transform: `translate(calc(-50% + ${cropOffsetX}px), calc(-50% + ${cropOffsetY}px)) scale(${cropZoom})`,
+                                      width: "100%",
+                                      height: "100%",
+                                      objectFit: "cover",
+                                    }}
+                                  />
+                                </div>
+
+                                <div className="rounded-xl border border-[#D6D2C4]/50 bg-white/50 p-3 dark:border-[#262626] dark:bg-[#111111]">
+                                  <div className="mb-2 flex items-center justify-between">
+                                    <span className="text-sm font-medium text-[#2D3A1A] dark:text-white">
+                                      Zoom
+                                    </span>
+                                    <span className="text-xs text-[#6B7B5A] dark:text-[#9ca3af]">
+                                      {cropZoom.toFixed(2)}x
+                                    </span>
+                                  </div>
+                                  <input
+                                    type="range"
+                                    min={1}
+                                    max={3}
+                                    step={0.01}
+                                    value={cropZoom}
+                                    onChange={(e) => {
+                                      const nextZoom = Number(e.target.value);
+                                      setCropZoom(nextZoom);
+                                      const next = clampCropOffset(
+                                        cropOffsetX,
+                                        cropOffsetY,
+                                        nextZoom
+                                      );
+                                      setCropOffsetX(next.x);
+                                      setCropOffsetY(next.y);
+                                    }}
+                                    className="w-full"
+                                  />
+                                  <p className="mt-2 text-xs text-[#6B7B5A] dark:text-[#9ca3af]">
+                                    Drag image to adjust crop area, then apply.
+                                  </p>
+                                </div>
+
+                                <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
+                                  <Button
+                                    type="button"
+                                    variant="outline"
+                                    onClick={closeCropModal}
+                                    className="rounded-full"
+                                  >
+                                    Cancel
+                                  </Button>
+                                  <Button
+                                    type="button"
+                                    onClick={applyCrop}
+                                    disabled={cropApplying}
+                                    className="rounded-full bg-[#22c55e] text-white hover:bg-[#16a34a]"
+                                  >
+                                    {cropApplying ? (
+                                      <>
+                                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                        Applying...
+                                      </>
+                                    ) : (
+                                      "Apply Crop"
+                                    )}
+                                  </Button>
+                                </div>
+                              </div>
+                            </motion.div>
+                          </motion.div>
+                        ) : null}
+                      </AnimatePresence>
                     </motion.div>
                   </div>
 
