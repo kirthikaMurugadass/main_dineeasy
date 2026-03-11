@@ -77,8 +77,8 @@ const extractionGuide = {
 };
 
 fs.writeFileSync(
-  path.join(__dirname, '../messages/EXTRACTION_GUIDE.json'),
+  path.join(__dirname, '../src/messages/EXTRACTION_GUIDE.json'),
   JSON.stringify(extractionGuide, null, 2)
 );
 
-console.log('Created extraction guide at messages/EXTRACTION_GUIDE.json');
+console.log('Created extraction guide at src/messages/EXTRACTION_GUIDE.json');
