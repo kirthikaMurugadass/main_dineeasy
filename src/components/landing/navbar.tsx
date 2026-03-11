@@ -58,6 +58,18 @@ export function Navbar() {
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
+  useEffect(() => {
+    if (typeof document === "undefined") return;
+    document.body.style.overflow = mobileOpen ? "hidden" : "";
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [mobileOpen]);
+
+  useEffect(() => {
+    setMobileOpen(false);
+  }, [pathname]);
+
   return (
     <>
       <motion.header
@@ -71,14 +83,14 @@ export function Navbar() {
             : "border-transparent bg-transparent shadow-none backdrop-blur-sm"
         )}
       >
-        <div className="mx-auto grid h-16 w-full max-w-7xl grid-cols-3 items-center gap-3 px-4 sm:px-6 lg:h-[72px] lg:gap-8 lg:px-10 2xl:max-w-[90rem]">
+        <div className="mx-auto flex h-16 w-full max-w-7xl items-center justify-between gap-2 px-3 sm:px-6 md:grid md:grid-cols-[auto_1fr_auto] md:gap-4 lg:h-[72px] lg:gap-8 lg:px-10 2xl:max-w-[90rem]">
           {/* Left: Logo */}
-          <div className="flex items-center">
+          <div className="flex min-w-0 items-center">
             <AppLogo
               href="/"
               variant="default"
               size="md"
-              className="shrink-0 transition-transform duration-300 ease-out hover:rotate-3"
+              className="max-w-full shrink-0 transition-transform duration-300 ease-out hover:rotate-3"
               ariaLabel="DineEasy Home"
             />
           </div>
@@ -103,7 +115,7 @@ export function Navbar() {
           </nav>
 
           {/* Right: Language, Theme, Sign In, Get Started */}
-          <div className="flex items-center justify-end gap-1">
+          <div className="flex shrink-0 items-center justify-end gap-1 sm:gap-1.5">
             {mounted ? (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
@@ -231,7 +243,7 @@ export function Navbar() {
               type="button"
               onClick={() => setMobileOpen(!mobileOpen)}
               className={cn(
-                "flex h-10 w-10 items-center justify-center rounded-lg md:hidden",
+                "flex h-10 w-10 items-center justify-center rounded-full md:hidden",
                 scrolled
                   ? "text-foreground hover:bg-muted"
                   : "text-gray-700 hover:bg-gray-100 hover:text-gray-900 dark:text-gray-200 dark:hover:bg-gray-800 dark:hover:text-white"
@@ -254,7 +266,7 @@ export function Navbar() {
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               transition={{ duration: 0.2 }}
-              className="fixed inset-0 z-40 bg-background/80 backdrop-blur-sm md:hidden"
+              className="fixed inset-0 z-[10000] bg-background/80 backdrop-blur-sm md:hidden"
               aria-hidden
               onClick={() => setMobileOpen(false)}
             />
@@ -263,7 +275,7 @@ export function Navbar() {
               animate={{ x: 0 }}
               exit={{ x: "100%" }}
               transition={{ type: "spring", damping: 30, stiffness: 300 }}
-              className="fixed right-0 top-0 z-50 flex h-full w-full max-w-sm flex-col border-l border-border bg-background shadow-xl md:hidden"
+              className="fixed right-0 top-0 z-[10001] flex h-full w-full max-w-sm flex-col border-l border-border bg-background shadow-xl md:hidden"
             >
               <div className="flex h-16 items-center justify-between border-b border-border px-6">
                 <AppLogo href="/" variant="default" size="sm" />
