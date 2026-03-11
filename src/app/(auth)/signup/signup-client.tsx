@@ -43,15 +43,15 @@ export function SignupClient({
     lastSubmitRef.current = now;
 
     if (!email || !password || !confirmPassword) {
-      toast.error(t.auth.signup.errors.emptyFields);
+      toast.error(t.auth?.signup?.errors?.emptyFields || t.auth.signup.errors.emptyFields || "Please fill in all fields");
       return;
     }
     if (password !== confirmPassword) {
-      toast.error(t.auth.signup.errors.passwordMismatch);
+      toast.error(t.auth?.signup?.errors?.passwordMismatch || t.auth.signup.errors.passwordMismatch || "Passwords do not match");
       return;
     }
     if (password.length < 6) {
-      toast.error(t.auth.signup.errors.passwordTooShort);
+      toast.error(t.auth?.signup?.errors?.passwordTooShort || t.auth.signup.errors.passwordTooShort || "Password must be at least 6 characters long");
       return;
     }
 
@@ -70,11 +70,11 @@ export function SignupClient({
       if (error) throw error;
 
       if (data.user) {
-        toast.success(t.auth.signup.success);
+        toast.success(t.auth?.signup?.success || t.auth.signup.success || "Account created successfully! Signing you in...");
         const { error: signInError } =
           await supabase.auth.signInWithPassword({ email, password });
         if (signInError) {
-          toast.error(t.auth.signup.signInAfterSignup);
+          toast.error(t.auth?.signup?.signInAfterSignup || t.auth.signup.signInAfterSignup || "Account created but sign in failed. Please try logging in.");
           router.push("/login");
           return;
         }
@@ -93,12 +93,11 @@ export function SignupClient({
       let errorMessage: string;
 
       if (message.toLowerCase().includes("rate limit")) {
-        errorMessage =
-          "Too many signup attempts. Please wait a few minutes and try again.";
+        errorMessage = (t.auth?.signup?.errors as any)?.rateLimit || t.auth.signup.errors.genericError || "Too many signup attempts. Please wait a few minutes and try again.";
       } else if (message === "User already registered") {
-        errorMessage = t.auth.signup.errors.userExists;
+        errorMessage = t.auth?.signup?.errors?.userExists || t.auth.signup.errors.userExists || "An account with this email already exists. Please sign in instead.";
       } else {
-        errorMessage = message || t.auth.signup.errors.genericError;
+        errorMessage = message || t.auth?.signup?.errors?.genericError || t.auth.signup.errors.genericError || "Failed to create account. Please try again.";
       }
 
       toast.error(errorMessage);
@@ -111,12 +110,12 @@ export function SignupClient({
     <AuthSplitPanel
       imageSrc="/images/sign3.jpg"
       imageOnLeft={true}
-      leftHeading="Welcome Back!"
-      leftSubtitle="To keep connected with us please login with your personal info"
-      leftButtonText="SIGN IN"
+      leftHeading={t.auth?.signup?.panelGreeting || t.auth.signup.panelGreeting || "Welcome Back!"}
+      leftSubtitle={t.auth?.signup?.panelDescription || t.auth.signup.panelDescription || "To keep connected with us please login with your personal info"}
+      leftButtonText={t.auth?.signup?.panelButton || t.auth.signup.panelButton || "SIGN IN"}
       leftButtonHref="/login"
-      formTitle="Create Account"
-      formSubtitle="or use your email for registration"
+      formTitle={t.auth?.signup?.title || t.auth.signup.title || "Create Account"}
+      formSubtitle={t.auth?.signup?.subtitle || t.auth.signup.subtitle || "Start your digital menu journey"}
     >
       <form onSubmit={handleSignup} className="space-y-5">
         <motion.div
@@ -126,7 +125,7 @@ export function SignupClient({
           className="space-y-2"
         >
           <Label htmlFor="name" className="text-sm font-medium text-foreground">
-            Name
+            {(t.auth?.signup as any)?.nameLabel || "Name"}
           </Label>
           <div className="relative">
             <User
@@ -138,7 +137,7 @@ export function SignupClient({
             <Input
               id="name"
               type="text"
-              placeholder="Your name"
+              placeholder={(t.auth?.signup as any)?.namePlaceholder || "Your name"}
               value={name}
               onChange={(e) => setName(e.target.value)}
               onFocus={() => setFocusedField("name")}
@@ -161,7 +160,7 @@ export function SignupClient({
           className="space-y-2"
         >
           <Label htmlFor="email" className="text-sm font-medium text-foreground">
-            {t.auth.signup.emailLabel}
+            {t.auth?.signup?.emailLabel || t.auth.signup.emailLabel || "Email address"}
           </Label>
           <div className="relative">
             <Mail
@@ -173,7 +172,7 @@ export function SignupClient({
             <Input
               id="email"
               type="email"
-              placeholder="you@restaurant.ch"
+              placeholder={t.auth?.signup?.emailPlaceholder || t.auth.signup.emailPlaceholder || "you@restaurant.ch"}
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               onFocus={() => setFocusedField("email")}
@@ -197,7 +196,7 @@ export function SignupClient({
           className="space-y-2"
         >
           <Label htmlFor="password" className="text-sm font-medium text-foreground">
-            {t.auth.signup.passwordLabel}
+            {t.auth?.signup?.passwordLabel || t.auth.signup.passwordLabel || "Password"}
           </Label>
           <div className="relative">
             <Lock
@@ -208,7 +207,7 @@ export function SignupClient({
             />
             <PasswordInput
               id="password"
-              placeholder="Enter your password"
+              placeholder={t.auth?.signup?.passwordPlaceholder || t.auth.signup.passwordPlaceholder || "Create a password"}
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               onFocus={() => setFocusedField("password")}
@@ -236,7 +235,7 @@ export function SignupClient({
             htmlFor="confirmPassword"
             className="text-sm font-medium text-foreground"
           >
-            {t.auth.signup.confirmPasswordLabel}
+            {t.auth?.signup?.confirmPasswordLabel || t.auth.signup.confirmPasswordLabel || "Confirm Password"}
           </Label>
           <div className="relative">
             <Lock
@@ -247,7 +246,7 @@ export function SignupClient({
             />
             <PasswordInput
               id="confirmPassword"
-              placeholder="Confirm your password"
+              placeholder={t.auth?.signup?.confirmPasswordPlaceholder || t.auth.signup.confirmPasswordPlaceholder || "Confirm your password"}
               value={confirmPassword}
               onChange={(e) => setConfirmPassword(e.target.value)}
               onFocus={() => setFocusedField("confirmPassword")}
@@ -280,7 +279,7 @@ export function SignupClient({
                 className="flex items-center justify-center gap-2"
               >
                 <Loader2 size={18} className="animate-spin" />
-                {t.auth.signup.submitButton}...
+                {t.auth?.signup?.submitButton || t.auth.signup.submitButton || "Create Account"}...
               </motion.span>
             ) : (
               <motion.span
@@ -289,19 +288,19 @@ export function SignupClient({
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
               >
-                {t.auth.signup.submitButton}
+                {t.auth?.signup?.submitButton || t.auth.signup.submitButton || "Create Account"}
               </motion.span>
             )}
           </AnimatePresence>
         </Button>
 
         <p className="text-center text-sm text-muted-foreground">
-          {t.auth.signup.haveAccount}{" "}
+          {t.auth?.signup?.haveAccount || t.auth.signup.haveAccount || "Already have an account?"}{" "}
           <Link
             href="/login"
             className="font-medium text-primary underline-offset-2 transition-colors duration-300 hover:text-primary/80"
           >
-            {t.auth.signup.signInLink}
+            {t.auth?.signup?.signInLink || t.auth.signup.signInLink || "Sign in"}
           </Link>
         </p>
       </form>

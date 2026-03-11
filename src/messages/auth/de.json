@@ -1,0 +1,54 @@
+{
+  "login": {
+    "title": "Anmelden",
+    "subtitle": "oder verwenden Sie Ihre E-Mail zum Anmelden",
+    "emailLabel": "E-Mail-Adresse",
+    "passwordLabel": "Passwort",
+    "emailPlaceholder": "sie@restaurant.ch",
+    "passwordPlaceholder": "Geben Sie Ihr Passwort ein",
+    "submitButton": "Anmelden",
+    "forgotPassword": "Passwort vergessen?",
+    "noAccount": "Noch kein Konto?",
+    "signUpLink": "Registrieren",
+    "errors": {
+      "emptyFields": "Bitte geben Sie E-Mail und Passwort ein",
+      "invalidCredentials": "Ungültige E-Mail oder Passwort. Bitte versuchen Sie es erneut.",
+      "genericError": "Anmeldung fehlgeschlagen. Bitte versuchen Sie es erneut.",
+      "connectionError": "Server nicht erreichbar. Bitte überprüfen Sie Ihre Verbindung und versuchen Sie es erneut.",
+      "sessionError": "Sitzung konnte nicht erstellt werden. Bitte versuchen Sie es erneut."
+    },
+    "success": "Willkommen zurück!",
+    "panelGreeting": "Hallo, Freund!",
+    "panelDescription": "Geben Sie Ihre persönlichen Daten ein und beginnen Sie Ihre Reise mit uns",
+    "panelButton": "REGISTRIEREN"
+  },
+  "signup": {
+    "title": "Konto erstellen",
+    "subtitle": "Starten Sie Ihre digitale Menü-Reise",
+    "nameLabel": "Name",
+    "namePlaceholder": "Ihr Name",
+    "emailLabel": "E-Mail-Adresse",
+    "passwordLabel": "Passwort",
+    "confirmPasswordLabel": "Passwort bestätigen",
+    "emailPlaceholder": "sie@restaurant.ch",
+    "passwordPlaceholder": "Passwort erstellen",
+    "confirmPasswordPlaceholder": "Passwort bestätigen",
+    "submitButton": "Konto erstellen",
+    "haveAccount": "Bereits ein Konto?",
+    "signInLink": "Anmelden",
+    "errors": {
+      "emptyFields": "Bitte füllen Sie alle Felder aus",
+      "passwordMismatch": "Passwörter stimmen nicht überein",
+      "passwordTooShort": "Passwort muss mindestens 6 Zeichen lang sein",
+      "userExists": "Ein Konto mit dieser E-Mail existiert bereits. Bitte melden Sie sich stattdessen an.",
+      "genericError": "Konto konnte nicht erstellt werden. Bitte versuchen Sie es erneut.",
+      "rateLimit": "Zu viele Registrierungsversuche. Bitte warten Sie einige Minuten und versuchen Sie es erneut."
+    },
+    "success": "Konto erfolgreich erstellt! Sie werden angemeldet...",
+    "signInAfterSignup": "Konto erstellt, aber Anmeldung fehlgeschlagen. Bitte versuchen Sie sich anzumelden.",
+    "signInFailed": "Konto erstellt, aber Anmeldung fehlgeschlagen. Bitte versuchen Sie sich anzumelden.",
+    "panelGreeting": "Willkommen zurück!",
+    "panelDescription": "Um mit uns verbunden zu bleiben, melden Sie sich bitte mit Ihren persönlichen Daten an",
+    "panelButton": "ANMELDEN"
+  }
+}

@@ -31,15 +31,16 @@ import { CountryFlag } from "@/components/ui/country-flag";
 
 function getDisplayTitle(
   titleRecord: Record<Language, string> | undefined,
-  lang: Language
+  lang: Language,
+  fallback = "Unknown Item"
 ): string {
-  if (!titleRecord) return "Unknown Item";
+  if (!titleRecord) return fallback;
   const order: Language[] = [lang, "de", "en", "fr", "it"];
   for (const l of order) {
     const v = titleRecord[l];
     if (v && String(v).trim()) return v.trim();
   }
-  return "Unknown Item";
+  return fallback;
 }
 
 export default function CheckoutPage({
@@ -69,7 +70,8 @@ export default function CheckoutPage({
   const [mounted, setMounted] = useState(false);
   const [orderSuccess, setOrderSuccess] = useState(false);
   const { items, getTotal, clearCart, restaurantId } = useCartStore();
-  const { language } = useI18n();
+  const { t, language } = useI18n();
+  const checkoutT = (t.order as any)?.public?.checkout;
 
   useEffect(() => {
     setMounted(true);
@@ -174,7 +176,7 @@ export default function CheckoutPage({
 
     const validation = validatePhoneNumber(phoneNumber, phoneCountryCode);
     if (!validation.valid) {
-      setPhoneValidationError(validation.message || "Invalid phone number");
+      setPhoneValidationError(validation.message || (checkoutT?.validation?.invalidPhone || "Invalid phone number"));
     } else {
       setPhoneValidationError("");
     }
@@ -185,22 +187,22 @@ export default function CheckoutPage({
 
     // Validation
     if (!customerName.trim()) {
-      toast.error("Please enter your name");
+      toast.error(checkoutT?.validation?.nameRequired || "Please enter your name");
       return;
     }
 
     if (orderType === "dine_in" && !tableNumber.trim()) {
-      toast.error("Please enter a table number");
+      toast.error(checkoutT?.validation?.tableNumberRequired || "Please enter a table number");
       return;
     }
 
     if (orderType === "takeaway" && !deliveryAddress.trim()) {
-      toast.error("Please enter a delivery address");
+      toast.error(checkoutT?.validation?.deliveryAddressRequired || "Please enter a delivery address");
       return;
     }
 
     if (orderType === "takeaway" && !phoneNumber.trim()) {
-      toast.error("Please enter your phone number");
+      toast.error(checkoutT?.validation?.phoneRequired || "Please enter your phone number");
       return;
     }
 
@@ -214,7 +216,7 @@ export default function CheckoutPage({
     }
 
     if (!restaurantId) {
-      toast.error("Restaurant information is missing");
+      toast.error(checkoutT?.messages?.restaurantInfoMissing || "Restaurant information is missing");
       return;
     }
 
@@ -241,7 +243,7 @@ export default function CheckoutPage({
       );
     } catch (error) {
       console.error("Checkout continue error:", error);
-      toast.error("Failed to continue. Please try again.");
+      toast.error(checkoutT?.messages?.continueFailed || "Failed to continue. Please try again.");
     }
   };
 
@@ -263,15 +265,15 @@ export default function CheckoutPage({
           className="text-center"
         >
           <CheckCircle2 className="mx-auto mb-4 h-16 w-16 text-green-500" />
-          <h1 className="mb-2 text-3xl font-bold">Order placed successfully!</h1>
+          <h1 className="mb-2 text-3xl font-bold">{checkoutT?.success?.title || "Order placed successfully!"}</h1>
           <p className="mb-6 text-muted-foreground">
-            Redirecting to menu in a few seconds...
+            {checkoutT?.success?.description || "Redirecting to menu in a few seconds..."}
           </p>
           {resolvedParams && (
             <Link
               href={`/public-menu/${resolvedParams.restaurant}/${resolvedParams.menuId}`}
             >
-              <Button variant="outline">Return to Menu</Button>
+              <Button variant="outline">{checkoutT?.actions?.returnToMenu || "Return to Menu"}</Button>
             </Link>
           )}
         </motion.div>
@@ -293,9 +295,9 @@ export default function CheckoutPage({
               <ArrowLeft className="h-5 w-5" />
             </Button>
           </Link>
-          <h1 className="text-2xl font-bold sm:text-3xl">Checkout</h1>
+          <h1 className="text-2xl font-bold sm:text-3xl">{checkoutT?.title || "Checkout"}</h1>
           <p className="mt-2 text-muted-foreground">
-            Please provide your details to complete your order
+            {checkoutT?.description || "Please provide your details to complete your order"}
           </p>
         </div>
 
@@ -305,7 +307,7 @@ export default function CheckoutPage({
           animate={{ opacity: 1, y: 0 }}
           className="mb-8 rounded-2xl border border-border/60 bg-card p-4 shadow-sm sm:p-6"
         >
-          <h2 className="mb-4 text-lg font-semibold">Order Summary</h2>
+          <h2 className="mb-4 text-lg font-semibold">{checkoutT?.sections?.orderSummary || "Order Summary"}</h2>
           <div className="space-y-2">
             {items.map((item) => (
               <div
@@ -313,17 +315,17 @@ export default function CheckoutPage({
                 className="flex items-center justify-between text-sm"
               >
                 <span className="text-muted-foreground">
-                  {item.quantity}x {getDisplayTitle(item.title, language)}
+                  {item.quantity}x {getDisplayTitle(item.title, language, t.order?.labels?.unknownItem || "Unknown Item")}
                 </span>
                 <span className="font-medium">
-                  CHF {(item.price * item.quantity).toFixed(2)}
+                  {(t.menu?.currency || "CHF")} {(item.price * item.quantity).toFixed(2)}
                 </span>
               </div>
             ))}
           </div>
           <div className="mt-4 flex items-center justify-between gap-3 border-t border-border pt-4">
-            <span className="text-lg font-semibold">Total</span>
-            <span className="text-xl font-bold">CHF {total.toFixed(2)}</span>
+            <span className="text-lg font-semibold">{checkoutT?.fields?.total || "Total"}</span>
+            <span className="text-xl font-bold">{(t.menu?.currency || "CHF")} {total.toFixed(2)}</span>
           </div>
         </motion.div>
 
@@ -338,13 +340,13 @@ export default function CheckoutPage({
           {/* Customer Name */}
           <div className="space-y-2">
             <Label htmlFor="customerName">
-              Your Name <span className="text-destructive">*</span>
+              {(checkoutT?.fields?.yourName || "Your Name")} <span className="text-destructive">*</span>
             </Label>
             <Input
               id="customerName"
               value={customerName}
               onChange={(e) => setCustomerName(e.target.value)}
-              placeholder="Enter your name"
+              placeholder={checkoutT?.placeholders?.yourName || "Enter your name"}
               required
               disabled={loading}
             />
@@ -353,7 +355,7 @@ export default function CheckoutPage({
           {/* Order Type */}
           <div className="space-y-4">
             <Label>
-              Order Type <span className="text-destructive">*</span>
+              {(checkoutT?.fields?.orderType || "Order Type")} <span className="text-destructive">*</span>
             </Label>
             <RadioGroup
               value={orderType}
@@ -379,7 +381,7 @@ export default function CheckoutPage({
                   htmlFor="dine_in"
                   className="cursor-pointer font-normal"
                 >
-                  Dine-in
+                  {checkoutT?.orderTypes?.dineIn || "Dine-in"}
                 </Label>
               </div>
               <div className="flex items-center space-x-2">
@@ -388,7 +390,7 @@ export default function CheckoutPage({
                   htmlFor="takeaway"
                   className="cursor-pointer font-normal"
                 >
-                  Takeaway
+                  {checkoutT?.orderTypes?.takeaway || "Takeaway"}
                 </Label>
               </div>
             </RadioGroup>
@@ -398,7 +400,7 @@ export default function CheckoutPage({
           {orderType === "dine_in" && (
             <div className="space-y-2">
               <Label htmlFor="tableNumber">
-                Table Number <span className="text-destructive">*</span>
+                {(checkoutT?.fields?.tableNumber || "Table Number")} <span className="text-destructive">*</span>
               </Label>
               <Input
                 id="tableNumber"
@@ -406,7 +408,7 @@ export default function CheckoutPage({
                 min="1"
                 value={tableNumber}
                 onChange={(e) => setTableNumber(e.target.value)}
-                placeholder="Enter table number"
+                placeholder={checkoutT?.placeholders?.tableNumber || "Enter table number"}
                 required={orderType === "dine_in"}
                 disabled={loading}
               />
@@ -417,13 +419,13 @@ export default function CheckoutPage({
           {orderType === "takeaway" && (
             <div className="space-y-2">
               <Label htmlFor="deliveryAddress">
-                Delivery Address <span className="text-destructive">*</span>
+                {(checkoutT?.fields?.deliveryAddress || "Delivery Address")} <span className="text-destructive">*</span>
               </Label>
               <Input
                 id="deliveryAddress"
                 value={deliveryAddress}
                 onChange={(e) => setDeliveryAddress(e.target.value)}
-                placeholder="Enter your delivery address"
+                placeholder={checkoutT?.placeholders?.deliveryAddress || "Enter your delivery address"}
                 required={orderType === "takeaway"}
                 disabled={loading}
               />
@@ -434,9 +436,11 @@ export default function CheckoutPage({
           {orderType === "takeaway" && deliveryAddress.trim().length > 0 && (
             <div className="space-y-2">
               <Label>
-                Delivery Location{" "}
+                {(checkoutT?.fields?.deliveryLocation || "Delivery Location")}{" "}
                 <span className="text-muted-foreground">
-                  {geocodingLoading ? "(Detecting location...)" : "(Auto-detected)"}
+                  {geocodingLoading
+                    ? `(${checkoutT?.labels?.detectingLocation || "Detecting location..."})`
+                    : `(${checkoutT?.labels?.autoDetected || "Auto-detected"})`}
                 </span>
               </Label>
               {deliveryLocation ? (
@@ -450,19 +454,19 @@ export default function CheckoutPage({
                       <MapPin className="h-4 w-4 text-muted-foreground" />
                       {locationDetails.state && (
                         <span className="text-muted-foreground">
-                          State: <span className="font-medium text-foreground">{locationDetails.state}</span>
+                          {(checkoutT?.fields?.state || "State")}: <span className="font-medium text-foreground">{locationDetails.state}</span>
                         </span>
                       )}
                       {locationDetails.country && (
                         <span className="text-muted-foreground">
-                          {locationDetails.state && "• "}Country:{" "}
+                          {locationDetails.state && "• "}{(checkoutT?.fields?.country || "Country")}:{" "}
                           <span className="font-medium text-foreground">{locationDetails.country}</span>
                         </span>
                       )}
                     </div>
                   )}
                   <p className="text-xs text-muted-foreground">
-                    Tap on the map to adjust the delivery location pin.
+                    {checkoutT?.messages?.adjustPin || "Tap on the map to adjust the delivery location pin."}
                   </p>
                 </>
               ) : geocodingLoading ? (
@@ -472,7 +476,7 @@ export default function CheckoutPage({
               ) : (
                 <div className="flex h-56 items-center justify-center rounded-2xl border border-border/60 bg-muted/30">
                   <p className="text-sm text-muted-foreground">
-                    Enter a valid address to see the map preview
+                    {checkoutT?.messages?.enterValidAddress || "Enter a valid address to see the map preview"}
                   </p>
                 </div>
               )}
@@ -483,7 +487,7 @@ export default function CheckoutPage({
           {orderType === "takeaway" && (
             <div className="space-y-2">
               <Label htmlFor="phoneNumber">
-                Phone Number <span className="text-destructive">*</span>
+                {(checkoutT?.fields?.phoneNumber || "Phone Number")} <span className="text-destructive">*</span>
               </Label>
               <div className="flex gap-2">
                 <Select
@@ -492,7 +496,7 @@ export default function CheckoutPage({
                   disabled={loading}
                 >
                   <SelectTrigger className="w-[180px]">
-                    <SelectValue placeholder="Select country">
+                    <SelectValue placeholder={checkoutT?.placeholders?.selectCountry || "Select country"}>
                       {getCountryByCode(phoneCountryCode) && (
                         <span className="flex items-center gap-2">
                           <CountryFlag
@@ -538,7 +542,7 @@ export default function CheckoutPage({
                       const value = e.target.value.replace(/\D/g, "");
                       setPhoneNumber(value);
                     }}
-                    placeholder="Enter phone number"
+                    placeholder={checkoutT?.placeholders?.phoneNumber || "Enter phone number"}
                     required={orderType === "takeaway"}
                     disabled={loading}
                     className={
@@ -567,10 +571,10 @@ export default function CheckoutPage({
             {loading ? (
               <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Please wait...
+                {checkoutT?.actions?.pleaseWait || "Please wait..."}
               </>
             ) : (
-              "Continue"
+              checkoutT?.actions?.continue || "Continue"
             )}
           </Button>
         </motion.form>

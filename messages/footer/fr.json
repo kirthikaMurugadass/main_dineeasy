@@ -1,0 +1,22 @@
+{
+  "tagline": "Menus digitaux pour cafés et restaurants",
+  "product": "Produit",
+  "company": "Entreprise",
+  "legal": "Juridique",
+  "links": {
+    "features": "Fonctionnalités",
+    "pricing": "Tarifs",
+    "demo": "Démo",
+    "changelog": "Journal des modifications",
+    "about": "À propos",
+    "blog": "Blog",
+    "contact": "Contact",
+    "careers": "Carrières",
+    "privacy": "Confidentialité",
+    "terms": "Conditions",
+    "imprint": "Mentions légales",
+    "cookies": "Cookies"
+  },
+  "copyright": "© {year} DineEasy. Fait avec ♥ en Suisse.",
+  "pricesNote": "Tous les prix en CHF."
+}

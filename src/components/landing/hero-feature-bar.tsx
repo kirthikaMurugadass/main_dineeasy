@@ -2,28 +2,36 @@
 
 import { QrCode, UtensilsCrossed, Table2 } from "lucide-react";
 import { useScrollReveal } from "@/hooks/useScrollReveal";
+import { useI18n } from "@/lib/i18n/context";
 import { cn } from "@/lib/utils";
 
-const items = [
-  {
-    icon: QrCode,
-    title: "Scan & view menu",
-    body: "Place a unique QR code on every table so guests can open your live digital menu in seconds.",
-  },
-  {
-    icon: UtensilsCrossed,
-    title: "Order instantly",
-    body: "Let guests send food and drink orders directly from their phone—no more waiting to flag staff.",
-  },
-  {
-    icon: Table2,
-    title: "Book tables with QR",
-    body: "Allow customers to join a waitlist or reserve tables ahead of time using the same simple QR flow.",
-  },
-] as const;
-
 export function HeroFeatureBar() {
+  const { t } = useI18n();
   const { ref, isVisible } = useScrollReveal<HTMLDivElement>();
+
+  type ItemWithIcon = {
+    title: string;
+    body: string;
+    icon: typeof QrCode;
+  };
+
+  const items: ItemWithIcon[] = (t.home?.heroFeatureBar?.items || [
+    {
+      title: "Scan & view menu",
+      body: "Place a unique QR code on every table so guests can open your live digital menu in seconds.",
+    },
+    {
+      title: "Order instantly",
+      body: "Let guests send food and drink orders directly from their phone—no more waiting to flag staff.",
+    },
+    {
+      title: "Book tables with QR",
+      body: "Allow customers to join a waitlist or reserve tables ahead of time using the same simple QR flow.",
+    },
+  ]).map((item: { title: string; body: string }, index: number) => {
+    const icons: typeof QrCode[] = [QrCode, UtensilsCrossed, Table2];
+    return { ...item, icon: icons[index] };
+  });
 
   return (
     <section

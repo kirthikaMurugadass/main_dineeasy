@@ -1,0 +1,176 @@
+{
+  "hero": {
+    "badge": "Pour les restaurants modernes",
+    "title": "Plateforme de menus digitaux nouvelle génération",
+    "titleAccent": "pour les restaurants modernes.",
+    "subtitle": "Créez des QR menus, gérez les catégories, suivez les performances et offrez une expérience premium — le tout dans un seul tableau de bord.",
+    "cta": "Commencer",
+    "ctaSecondary": "Démo en direct"
+  },
+  "heroFeatureBar": {
+    "items": [
+      {
+        "title": "Scanner et voir le menu",
+        "body": "Placez un code QR unique sur chaque table pour que les clients puissent ouvrir votre menu digital en direct en quelques secondes."
+      },
+      {
+        "title": "Commander instantanément",
+        "body": "Permettez aux clients d'envoyer des commandes de nourriture et de boissons directement depuis leur téléphone—plus besoin d'attendre pour appeler le personnel."
+      },
+      {
+        "title": "Réserver des tables avec QR",
+        "body": "Permettez aux clients de rejoindre une liste d'attente ou de réserver des tables à l'avance en utilisant le même flux QR simple."
+      }
+    ]
+  },
+  "menuCards": {
+    "badge": "Parcours alimenté par QR",
+    "title": "Du scan au paiement en un seul flux digital.",
+    "description": "DineEasy connecte chaque table à un menu en direct optimisé pour mobile. Les clients scannent un code QR, parcourent les catégories, passent des commandes et reviennent—tout sans installer d'application.",
+    "cards": [
+      {
+        "title": "Accès au menu par QR",
+        "body": "Remplacez les menus imprimés par des codes QR de marque sur chaque table pour que les clients puissent ouvrir instantanément votre menu en direct.",
+        "cta": "Voir le flux du menu QR"
+      },
+      {
+        "title": "Catégories de menu intelligentes",
+        "body": "Groupez les plats par service, besoins diététiques ou spéciaux pour que la navigation soit naturelle sur n'importe quel téléphone.",
+        "cta": "Organiser votre menu"
+      },
+      {
+        "title": "Mises à jour en temps réel",
+        "body": "Masquez les articles épuisés, mettez à jour les prix et lancez des promos en quelques secondes—pas de réimpression ou de PDFs.",
+        "cta": "Gérer les articles en direct"
+      }
+    ]
+  },
+  "story": {
+    "badge": "Pourquoi DineEasy",
+    "title": "Offrez à chaque client une expérience de restauration fluide et sans contact.",
+    "description": "DineEasy transforme chaque table en un point d'entrée intelligent pour votre restaurant—les clients scannent, parcourent, commandent et réservent en quelques secondes pendant que votre équipe se concentre sur l'hospitalité.",
+    "benefits": [
+      {
+        "title": "Expérience de restauration sans contact",
+        "body": "Les clients parcourent le menu complet, passent des commandes et paient depuis leur téléphone—aucun menu imprimé requis."
+      },
+      {
+        "title": "Traitement des commandes plus rapide",
+        "body": "Les commandes vont directement de la table à votre cuisine ou bar, réduisant les temps d'attente et les erreurs."
+      },
+      {
+        "title": "Efficacité du restaurant améliorée",
+        "body": "Tournez les tables plus rapidement, gardez le personnel concentré sur l'hospitalité et laissez DineEasy gérer le travail chargé."
+      },
+      {
+        "title": "Meilleure expérience client",
+        "body": "Ravissez les clients avec des attentes plus courtes, une réorganisation sans effort et des menus clairs optimisés pour mobile."
+      }
+    ],
+    "cta": "Voir comment ça fonctionne"
+  },
+  "finalCta": {
+    "title": "Prêt à apporter la restauration QR-first à votre restaurant ?",
+    "description": "Lancez votre menu digital avec DineEasy en quelques minutes. Commencez gratuitement, connectez vos tables et laissez les clients scanner, parcourir et commander depuis n'importe où dans votre espace.",
+    "button": "Commencer avec DineEasy"
+  },
+  "workflow": {
+    "badge": "Comment ça fonctionne",
+    "title": "Une démo produit en direct—directement dans votre navigateur.",
+    "description": "Regardez le flux que les clients vivent à la table : scanner un QR, ajouter des articles au panier, confirmer une commande, puis réserver un créneau horaire—tout sans télécharger d'application.",
+    "steps": [
+      {
+        "title": "Scanner le code QR",
+        "description": "Les clients pointent leur caméra vers le code QR de la table—aucun téléchargement d'application ou connexion requis."
+      },
+      {
+        "title": "Commander instantanément depuis le menu",
+        "description": "Les clients ajoutent des articles au panier, passent à la caisse en quelques secondes et obtiennent un état de commande confirmé—directement sur leur téléphone."
+      },
+      {
+        "title": "Réserver une table en quelques secondes",
+        "description": "Les clients choisissent un créneau horaire et confirment une réservation avec un flux de réservation propre et moderne."
+      }
+    ],
+    "cta": "Commencer avec DineEasy"
+  },
+  "pricing": {
+    "badge": "Tarifs",
+    "title": "Tarification simple pour les restaurants occupés.",
+    "description": "Commencez avec le plan gratuit en quelques minutes. Lorsque vous êtes prêt pour la réservation complète de tables et la coordination en temps réel, passez à Pro en un seul clic.",
+    "monthly": "Mensuel",
+    "annual": "Annuel",
+    "flexibleBilling": "Facturation flexible",
+    "flexibleBillingNote": "Passez du mensuel à l'annuel à tout moment.",
+    "free": {
+      "title": "Gratuit",
+      "description": "Parfait pour lancer votre menu digital.",
+      "price": "₹0",
+      "period": "/ pour toujours",
+      "features": [
+        "Gestion de menu",
+        "Page de menu publique",
+        "Tableau de bord de base"
+      ],
+      "cta": "Commencer gratuitement"
+    },
+    "pro": {
+      "title": "Pro",
+      "description": "Système de réservation complet avec coordination en temps réel.",
+      "priceMonthly": "₹999",
+      "priceAnnual": "₹9,999",
+      "periodMonthly": "/ mois",
+      "periodAnnual": "/ an",
+      "billedMonthly": "Facturé mensuellement. Annulez à tout moment.",
+      "billedAnnual": "Facturé une fois par an. Annulez à tout moment.",
+      "mostPopular": "Le plus populaire",
+      "features": [
+        "Gestion de menu",
+        "Réservation de tables",
+        "Sélection de table en temps réel",
+        "Notifications de réservation"
+      ],
+      "cta": "Passer à Pro"
+    }
+  },
+  "trust": {
+    "badge": "Conçu pour les salles de restaurant occupées",
+    "title": "Approuvé par les cafés, bistros et restaurants modernes.",
+    "description": "Que vous dirigiez un spot de brunch de quartier ou un groupe multi-emplacements, DineEasy garde vos menus QR rapides, fiables et toujours à jour.",
+    "metrics": [
+      {
+        "value": "5–7 min",
+        "label": "Temps moyen économisé par table"
+      },
+      {
+        "value": "100K+",
+        "label": "Commandes gérées avec DineEasy"
+      },
+      {
+        "value": "90%",
+        "label": "Réduction des coûts d'impression de menu"
+      },
+      {
+        "value": "99,9%",
+        "label": "Temps de fonctionnement pour votre menu digital"
+      }
+    ]
+  },
+  "features": {
+    "label": "Fonctionnalités",
+    "title": "Tout ce dont votre café et restaurant a besoin",
+    "subtitle": "Fonctionnalités puissantes, magnifiquement simples",
+    "qr": {
+      "title": "Accès au menu QR",
+      "description": "Les clients scannent un QR de table pour ouvrir instantanément votre menu digital—aucune application requise."
+    },
+    "multilang": {
+      "title": "Commande de nourriture instantanée",
+      "description": "Permettez aux clients de commander directement depuis leur téléphone avec un panier et une caisse rapides et modernes."
+    },
+    "themes": {
+      "title": "Réservation de table via QR",
+      "description": "Permettez aux clients de réserver des tables ou de rejoindre une liste d'attente depuis le même flux QR."
+    }
+  }
+}

@@ -4,23 +4,26 @@ import Link from "next/link";
 import { StaggerContainer, StaggerItem, FadeIn } from "@/components/motion";
 import { Button } from "@/components/ui/button";
 import { PhoneDemo } from "@/components/landing/phone-demo";
-
-const steps = [
-  {
-    title: "Scan the QR code",
-    description: "Guests point their camera at the table QR code—no app downloads or logins required.",
-  },
-  {
-    title: "Order instantly from the menu",
-    description: "Guests add items to cart, checkout in seconds, and get a confirmed order state—right on their phone.",
-  },
-  {
-    title: "Book a table in seconds",
-    description: "Guests choose a time slot and confirm a reservation with a clean, modern booking flow.",
-  },
-];
+import { useI18n } from "@/lib/i18n/context";
 
 export function WorkflowSection() {
+  const { t } = useI18n();
+  
+  const steps = t.home?.workflow?.steps || [
+    {
+      title: "Scan the QR code",
+      description: "Guests point their camera at the table QR code—no app downloads or logins required.",
+    },
+    {
+      title: "Order instantly from the menu",
+      description: "Guests add items to cart, checkout in seconds, and get a confirmed order state—right on their phone.",
+    },
+    {
+      title: "Book a table in seconds",
+      description: "Guests choose a time slot and confirm a reservation with a clean, modern booking flow.",
+    },
+  ];
+
   return (
     <section
       id="how-it-works"
@@ -38,22 +41,21 @@ export function WorkflowSection() {
           <div className="text-center lg:text-left">
             <FadeIn>
               <p className="text-xs font-semibold uppercase tracking-[0.25em] text-primary">
-                How it works
+                {t.home?.workflow?.badge || "How it works"}
               </p>
             </FadeIn>
             <FadeIn delay={0.08}>
               <h2 className="mt-4 font-sans text-[clamp(1.9rem,3vw+0.5rem,2.7rem)] font-semibold leading-tight tracking-tight text-foreground">
-                A live product demo—right in your browser.
+                {t.home?.workflow?.title || "A live product demo—right in your browser."}
               </h2>
             </FadeIn>
             <FadeIn delay={0.14}>
               <p className="mx-auto mt-4 max-w-xl text-base leading-relaxed text-muted-foreground sm:text-lg lg:mx-0">
-                Watch the flow guests experience at the table: scan a QR, add items to cart, confirm an order,
-                then reserve a time slot—all without downloading an app.
+                {t.home?.workflow?.description || "Watch the flow guests experience at the table: scan a QR, add items to cart, confirm an order, then reserve a time slot—all without downloading an app."}
               </p>
             </FadeIn>
             <StaggerContainer className="mt-8 space-y-6 sm:mt-10 sm:space-y-7" staggerDelay={0.06}>
-              {steps.map((step, i) => (
+              {steps.map((step: any, i: number) => (
                 <StaggerItem key={step.title} className="flex gap-4 text-left">
                   <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-primary/40 bg-card/70 text-sm font-semibold text-primary shadow-soft backdrop-blur">
                     {i + 1}
@@ -72,7 +74,7 @@ export function WorkflowSection() {
             <FadeIn delay={0.25}>
               <Link href="/signup" className="mt-8 inline-block sm:mt-10">
                 <Button size="lg" className="rounded-full px-8 shadow-lg shadow-primary/20 hover:shadow-xl hover:shadow-primary/30 transition-all duration-300">
-                  Start with DineEasy
+                  {t.home?.workflow?.cta || "Start with DineEasy"}
                 </Button>
               </Link>
             </FadeIn>

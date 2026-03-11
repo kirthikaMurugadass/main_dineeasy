@@ -4,7 +4,7 @@ import { useState, useRef, useEffect, useCallback, useMemo } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
-import { Plus, Minus, ShoppingCart, ShoppingBag, Lock, Sun, Moon, Monitor } from "lucide-react";
+import { Plus, Minus, ShoppingCart, ShoppingBag, Lock, Sun, Moon, Monitor, Globe } from "lucide-react";
 import type { PublicMenu, PublicRestaurantData, Language, ThemeConfig } from "@/types/database";
 import { defaultThemeConfig } from "@/types/database";
 import { GoogleFontsLoader } from "./google-fonts-loader";
@@ -12,6 +12,7 @@ import { useI18n } from "@/lib/i18n/context";
 import { useCartStore } from "@/lib/stores/cart-store";
 import { createClient } from "@/lib/supabase/client";
 import { useTheme } from "@/components/providers/theme-provider";
+import { LanguageFlag } from "@/components/ui/language-flag";
 import {
   Dialog,
   DialogContent,
@@ -129,10 +130,11 @@ function OrnamentalDivider({ accentColor, isDark }: { accentColor: string; isDar
 }
 
 export function PublicMenuView({ data, restaurantId, menuId, initialLang }: Props) {
-  const { t, setLanguage } = useI18n();
+  const { t, language, languages, setLanguage } = useI18n();
+  const menuPublicT = (t.menu as any)?.public;
   const { resolvedTheme, setTheme } = useTheme();
   const ThemeIcon = resolvedTheme === "light" ? Sun : resolvedTheme === "dark" ? Moon : Monitor;
-  const [lang, setLang] = useState<Language>(initialLang ?? "de");
+  const [lang, setLang] = useState<Language>(initialLang ?? language ?? "de");
   const [activeCategory, setActiveCategory] = useState(data.categories[0]?.id ?? "");
   const categoryRefs = useRef<Map<string, HTMLElement>>(new Map());
   const [mounted, setMounted] = useState(false);
@@ -320,23 +322,14 @@ export function PublicMenuView({ data, restaurantId, menuId, initialLang }: Prop
     setIsDark(theme.mode === "dark");
   }, [theme.mode]);
 
-  // Only read from localStorage when NOT in preview mode (no initialLang)
+  // In normal public pages, keep local menu language aligned with global i18n language.
+  // This prevents menu/cart/checkout from drifting to different locales.
   useEffect(() => {
     if (initialLang) return; // Preview mode: lang is controlled by URL
-    const stored = localStorage.getItem("dineeasy-menu-lang") as Language | null;
-    if (stored && data.availableLanguages.includes(stored)) {
-      setLang(stored);
-      return;
+    if (language && data.availableLanguages.includes(language) && language !== lang) {
+      setLang(language);
     }
-    const browserLang = navigator.language.substring(0, 2) as Language;
-    if (data.availableLanguages.includes(browserLang)) setLang(browserLang);
-  }, [data.availableLanguages, initialLang]);
-
-  // Persist lang to localStorage only when NOT in preview mode
-  useEffect(() => {
-    if (initialLang) return;
-    localStorage.setItem("dineeasy-menu-lang", lang);
-  }, [lang, initialLang]);
+  }, [data.availableLanguages, initialLang, language, lang]);
 
   const scrollToCategory = useCallback((categoryId: string) => {
     const el = categoryRefs.current.get(categoryId);
@@ -390,8 +383,8 @@ export function PublicMenuView({ data, restaurantId, menuId, initialLang }: Prop
     solidColor: "#1a1714",
     overlayColor: "#000000",
     overlayOpacity: 65,
-    title: "Our Menu",
-    subtitle: "DELICIOUS & AMAZING",
+    title: menuPublicT?.heroTitle || "Our Menu",
+    subtitle: menuPublicT?.heroSubtitle || "DELICIOUS & AMAZING",
     textAlign: "center" as const,
     fontSize: 4.5,
     fontWeight: "300" as const,
@@ -541,13 +534,57 @@ export function PublicMenuView({ data, restaurantId, menuId, initialLang }: Prop
               {!isProPlan && (
                 <span className="mt-1 inline-flex items-center rounded-full bg-black/40 px-2.5 py-0.5 text-[11px] font-medium uppercase tracking-[0.16em] text-amber-200">
                   <Lock className="mr-1 h-3 w-3" />
-                  Menu View Only
+                  {menuPublicT?.menuViewOnly || "Menu View Only"}
                 </span>
               )}
             </div>
           </div>
 
           <div className="flex items-center gap-2">
+            {/* Language switcher */}
+            {mounted && (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-9 w-9 rounded-full bg-white/10 backdrop-blur-sm text-white transition-all hover:bg-white/20"
+                    style={{ textShadow: "0 2px 8px rgba(0,0,0,0.5)" }}
+                    aria-label={menuPublicT?.switchLanguage || "Switch language"}
+                  >
+                    <Globe className="h-[18px] w-[18px]" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent
+                  align="end"
+                  className="z-[10000] min-w-[180px] rounded-xl border border-border/70 bg-background/80 p-1 shadow-lg backdrop-blur-md"
+                >
+                  {languages
+                    .filter((entry) => data.availableLanguages.includes(entry.code))
+                    .map((entry) => (
+                    <DropdownMenuItem
+                      key={entry.code}
+                      onClick={() => {
+                        setLang(entry.code);
+                        setLanguage(entry.code);
+                      }}
+                      className={`flex items-center gap-2 rounded-lg px-3 py-2.5 text-sm transition-colors ${
+                        lang === entry.code || language === entry.code
+                          ? "bg-accent/90 text-accent-foreground shadow-sm"
+                          : "text-foreground hover:bg-muted/70"
+                      }`}
+                    >
+                      <LanguageFlag code={entry.code} />
+                      <span className="flex-1 text-left">{entry.label}</span>
+                      {(lang === entry.code || language === entry.code) && (
+                        <span className="text-primary">✓</span>
+                      )}
+                    </DropdownMenuItem>
+                  ))}
+                </DropdownMenuContent>
+              </DropdownMenu>
+            )}
+
             {/* Theme toggle */}
             {mounted && (
               <DropdownMenu>
@@ -557,7 +594,7 @@ export function PublicMenuView({ data, restaurantId, menuId, initialLang }: Prop
                     size="icon"
                     className="h-9 w-9 rounded-full bg-white/10 backdrop-blur-sm text-white transition-all hover:bg-white/20"
                     style={{ textShadow: "0 2px 8px rgba(0,0,0,0.5)" }}
-                    aria-label="Toggle theme"
+                    aria-label={menuPublicT?.toggleTheme || "Toggle theme"}
                   >
                     <ThemeIcon className="h-[18px] w-[18px]" />
                   </Button>
@@ -570,19 +607,19 @@ export function PublicMenuView({ data, restaurantId, menuId, initialLang }: Prop
                     onClick={() => setTheme("light")}
                     className="rounded-lg py-2.5 text-foreground"
                   >
-                    <Sun className="mr-3 h-[18px] w-[18px]" /> Light
+                    <Sun className="mr-3 h-[18px] w-[18px]" /> {menuPublicT?.themeLight || "Light"}
                   </DropdownMenuItem>
                   <DropdownMenuItem
                     onClick={() => setTheme("dark")}
                     className="rounded-lg py-2.5 text-foreground"
                   >
-                    <Moon className="mr-3 h-[18px] w-[18px]" /> Dark
+                    <Moon className="mr-3 h-[18px] w-[18px]" /> {menuPublicT?.themeDark || "Dark"}
                   </DropdownMenuItem>
                   <DropdownMenuItem
                     onClick={() => setTheme("system")}
                     className="rounded-lg py-2.5 text-foreground"
                   >
-                    <Monitor className="mr-3 h-[18px] w-[18px]" /> System
+                    <Monitor className="mr-3 h-[18px] w-[18px]" /> {menuPublicT?.themeSystem || "System"}
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
@@ -598,7 +635,7 @@ export function PublicMenuView({ data, restaurantId, menuId, initialLang }: Prop
                     style={{ textShadow: "0 2px 8px rgba(0,0,0,0.5)" }}
                   >
                     <ShoppingCart size={20} />
-                    <span className="hidden sm:inline text-sm font-medium">Cart</span>
+                    <span className="hidden sm:inline text-sm font-medium">{menuPublicT?.cart || "Cart"}</span>
                     {mounted && getItemCount() > 0 && (
                       <span
                         className="absolute -right-1 -top-1 flex h-5 w-5 items-center justify-center rounded-full text-xs font-bold text-white"
@@ -619,7 +656,7 @@ export function PublicMenuView({ data, restaurantId, menuId, initialLang }: Prop
                     style={{ textShadow: "0 2px 8px rgba(0,0,0,0.5)" }}
                   >
                     <ShoppingCart size={18} className="opacity-70" />
-                    <span className="hidden sm:inline">Ordering disabled</span>
+                    <span className="hidden sm:inline">{menuPublicT?.orderingDisabled || "Ordering disabled"}</span>
                   </button>
                 )}
               </>
@@ -864,7 +901,7 @@ export function PublicMenuView({ data, restaurantId, menuId, initialLang }: Prop
                                     backgroundColor: accentColor,
                                     color: "#1a1714",
                                   }}
-                                  aria-label="Decrease quantity"
+                                  aria-label={menuPublicT?.decreaseQuantity || "Decrease quantity"}
                                   type="button"
                                 >
                                   <Minus size={16} />
@@ -886,7 +923,7 @@ export function PublicMenuView({ data, restaurantId, menuId, initialLang }: Prop
                                     backgroundColor: accentColor,
                                     color: "#1a1714",
                                   }}
-                                  aria-label="Increase quantity"
+                                  aria-label={menuPublicT?.increaseQuantity || "Increase quantity"}
                                   type="button"
                                 >
                                   <Plus size={16} />
@@ -913,7 +950,7 @@ export function PublicMenuView({ data, restaurantId, menuId, initialLang }: Prop
                                 type="button"
                               >
                                 <Plus size={16} />
-                                <span>Add</span>
+                                <span>{menuPublicT?.add || "Add"}</span>
                               </button>
                             );
                           }
@@ -930,7 +967,7 @@ export function PublicMenuView({ data, restaurantId, menuId, initialLang }: Prop
                               type="button"
                             >
                               <Lock size={14} />
-                              <span>Add (ordering disabled)</span>
+                              <span>{menuPublicT?.addOrderingDisabled || "Add (ordering disabled)"}</span>
                             </button>
                           );
                         })()}
@@ -979,7 +1016,7 @@ export function PublicMenuView({ data, restaurantId, menuId, initialLang }: Prop
               backgroundColor: accentColor,
               color: "#1a1714",
             }}
-            aria-label="View cart"
+            aria-label={menuPublicT?.viewCart || "View cart"}
           >
             <ShoppingBag size={24} />
             {getItemCount() > 0 && (
@@ -1003,9 +1040,10 @@ export function PublicMenuView({ data, restaurantId, menuId, initialLang }: Prop
       <Dialog open={ordersModalOpen} onOpenChange={setOrdersModalOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Ordering not available</DialogTitle>
+            <DialogTitle>{menuPublicT?.orderingNotAvailableTitle || "Ordering not available"}</DialogTitle>
             <DialogDescription>
-              Online ordering is available only in the Pro plan. You can still view the full menu.
+              {menuPublicT?.orderingNotAvailableDescription ||
+                "Online ordering is available only in the Pro plan. You can still view the full menu."}
             </DialogDescription>
           </DialogHeader>
         </DialogContent>

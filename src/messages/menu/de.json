@@ -1,0 +1,27 @@
+{
+  "language": "Sprache",
+  "currency": "CHF",
+  "poweredBy": "Bereitgestellt von DineEasy",
+  "untitled": "Ohne Titel",
+  "menuSection": "Menübereich",
+  "selectLanguage": "Sprache wählen",
+  "public": {
+    "heroTitle": "Unsere Speisekarte",
+    "heroSubtitle": "LECKER & EINZIGARTIG",
+    "menuViewOnly": "Nur Menüansicht",
+    "switchLanguage": "Sprache wechseln",
+    "toggleTheme": "Theme wechseln",
+    "themeLight": "Hell",
+    "themeDark": "Dunkel",
+    "themeSystem": "System",
+    "cart": "Warenkorb",
+    "orderingDisabled": "Bestellung deaktiviert",
+    "decreaseQuantity": "Menge verringern",
+    "increaseQuantity": "Menge erhöhen",
+    "add": "Hinzufügen",
+    "addOrderingDisabled": "Hinzufügen (Bestellung deaktiviert)",
+    "viewCart": "Warenkorb anzeigen",
+    "orderingNotAvailableTitle": "Bestellung nicht verfügbar",
+    "orderingNotAvailableDescription": "Online-Bestellungen sind nur im Pro-Tarif verfügbar. Sie können die Speisekarte weiterhin ansehen."
+  }
+}

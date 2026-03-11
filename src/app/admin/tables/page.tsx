@@ -63,7 +63,7 @@ export default function TablesPage() {
         setTables(data || []);
       } catch (error: any) {
         console.error("Error loading tables:", error);
-        toast.error(error?.message || "Failed to load tables");
+        toast.error(t.table?.toasts?.loadError || error?.message || "Failed to load tables");
       } finally {
         setLoading(false);
       }
@@ -104,23 +104,27 @@ export default function TablesPage() {
 
   useEffect(() => {
     if (!subscriptionLoading && !isPro) {
-      toast.error("Table management is available on the Pro plan.");
+      toast.error(
+        t.table?.pro?.required || "Table management is available on the Pro plan."
+      );
       router.replace("/admin");
     }
-  }, [isPro, subscriptionLoading, router]);
+  }, [isPro, subscriptionLoading, router, t.table]);
 
   async function handleAddTable(e: React.FormEvent) {
     e.preventDefault();
     if (!restaurantId) return;
 
     if (!tableName.trim()) {
-      toast.error("Please enter a table name.");
+      toast.error(t.table?.create?.toasts?.nameRequired || "Please enter a table name.");
       return;
     }
 
     const cap = parseInt(capacity, 10);
     if (isNaN(cap) || cap <= 0) {
-      toast.error("Capacity must be a positive number.");
+      toast.error(
+        t.table?.create?.toasts?.capacityInvalid || "Capacity must be a positive number."
+      );
       return;
     }
 
@@ -137,7 +141,7 @@ export default function TablesPage() {
 
       if (error) throw error;
 
-      toast.success("Table added.");
+      toast.success(t.table?.create?.toasts?.createSuccess || "Table added.");
       setTableName("");
       setCapacity("2");
       setSection("");
@@ -145,7 +149,9 @@ export default function TablesPage() {
       await loadTables(restaurantId);
     } catch (error: any) {
       console.error("Error adding table:", error, error?.message);
-      toast.error(error?.message || "Failed to add table");
+      toast.error(
+        t.table?.create?.toasts?.createError || error?.message || "Failed to add table"
+      );
     } finally {
       setAdding(false);
     }
@@ -164,13 +170,15 @@ export default function TablesPage() {
     if (!editingTable || !restaurantId) return;
 
     if (!editingName.trim()) {
-      toast.error("Please enter a table name.");
+      toast.error(t.table?.edit?.toasts?.nameRequired || "Please enter a table name.");
       return;
     }
 
     const cap = parseInt(editingCapacity, 10);
     if (isNaN(cap) || cap <= 0) {
-      toast.error("Capacity must be a positive number.");
+      toast.error(
+        t.table?.edit?.toasts?.capacityInvalid || "Capacity must be a positive number."
+      );
       return;
     }
 
@@ -190,12 +198,14 @@ export default function TablesPage() {
 
       if (error) throw error;
 
-      toast.success("Table updated.");
+      toast.success(t.table?.edit?.toasts?.updateSuccess || "Table updated.");
       setEditingTable(null);
       await loadTables(restaurantId);
     } catch (error: any) {
       console.error("Error updating table:", error);
-      toast.error(error?.message || "Failed to update table");
+      toast.error(
+        t.table?.edit?.toasts?.updateError || error?.message || "Failed to update table"
+      );
     } finally {
       setSavingEdit(false);
     }
@@ -204,7 +214,12 @@ export default function TablesPage() {
   async function handleDelete(id: string) {
     if (!restaurantId) return;
 
-    if (!confirm("Are you sure you want to delete this table? This cannot be undone.")) {
+    if (
+      !confirm(
+        t.table?.confirm?.deleteMessage ||
+          "Are you sure you want to delete this table? This cannot be undone."
+      )
+    ) {
       return;
     }
 
@@ -219,18 +234,16 @@ export default function TablesPage() {
 
       if (error) throw error;
 
-      toast.success("Table deleted.");
+      toast.success(t.table?.toasts?.deleteSuccess || "Table deleted.");
       await loadTables(restaurantId);
     } catch (error: any) {
       console.error("Error deleting table:", error);
-      toast.error(error?.message || "Failed to delete table");
+      toast.error(
+        t.table?.toasts?.deleteError || error?.message || "Failed to delete table"
+      );
     } finally {
       setDeletingId(null);
     }
-  }
-
-  if (!isPro) {
-    return null;
   }
 
   const numericCapacity = Math.max(1, Math.min(12, parseInt(capacity, 10) || 0));
@@ -305,9 +318,11 @@ export default function TablesPage() {
               <Table2 className="h-5 w-5 text-[#22C55E] dark:text-[#22c55e]" />
             </div>
             <div>
-              <PageTitle className="dark:text-[#ffffff]">Create Table</PageTitle>
+              <PageTitle className="dark:text-[#ffffff]">
+                {t.table?.create?.pageTitle || "Create Table"}
+              </PageTitle>
               <p className="text-sm text-[#6B7B5A] dark:text-[#9ca3af] mt-0.5">
-                Add and manage restaurant tables
+                {t.table?.create?.subtitle || "Add and manage restaurant tables"}
               </p>
             </div>
           </div>
@@ -321,7 +336,7 @@ export default function TablesPage() {
           <Card className="rounded-2xl border border-[#D6D2C4]/50 bg-white shadow-xl dark:border-[#1f1f1f] dark:bg-[#111111] dark:p-6">
             <CardHeader className="pb-4">
               <CardTitle className="text-lg font-semibold text-[#2D3A1A] dark:text-[#ffffff]">
-                Create Table
+                {t.table?.create?.pageTitle || "Create Table"}
               </CardTitle>
             </CardHeader>
             <CardContent>
@@ -333,29 +348,38 @@ export default function TablesPage() {
                       1
                     </span>
                     <p className="text-sm font-semibold text-[#2D3A1A] dark:text-[#ffffff]">
-                      Table Information
+                      {t.table?.create?.steps?.info || "Table Information"}
                     </p>
                   </div>
                   <div className="space-y-2">
                     <label className="text-sm font-medium text-[#2D3A1A] dark:text-[#bfbfbf]">
-                      Table Name
+                      {t.table?.create?.labels?.tableName || "Table Name"}
                     </label>
                     <Input
                       value={tableName}
                       onChange={(e) => setTableName(e.target.value)}
-                      placeholder="e.g. T1, Window 3, Booth A"
+                      placeholder={
+                        t.table?.create?.labels?.tableNamePlaceholder ||
+                        "e.g. T1, Window 3, Booth A"
+                      }
                       disabled={adding}
                       className="h-11 rounded-xl border-2 border-[#D6D2C4]/70 bg-white/80 text-sm shadow-sm transition-all focus-visible:border-[#22C55E] focus-visible:ring-[#22C55E]/20 dark:border-[#262626] dark:bg-[#0f0f0f] dark:text-[#ffffff] dark:placeholder:text-[#8a8a8a] dark:focus-visible:border-[#22c55e]"
                     />
                   </div>
                   <div className="space-y-2">
                     <label className="text-sm font-medium text-[#2D3A1A] dark:text-[#bfbfbf]">
-                      Section <span className="text-xs text-[#9ca3af]">(optional)</span>
+                      {t.table?.create?.labels?.section || "Section"}{" "}
+                      <span className="text-xs text-[#9ca3af]">
+                        {t.table?.create?.labels?.sectionOptional || "(optional)"}
+                      </span>
                     </label>
                     <Input
                       value={section}
                       onChange={(e) => setSection(e.target.value)}
-                      placeholder="e.g. Terrace, Window, Garden"
+                      placeholder={
+                        t.table?.create?.labels?.sectionPlaceholder ||
+                        "e.g. Terrace, Window, Garden"
+                      }
                       disabled={adding}
                       className="h-11 rounded-xl border-2 border-[#D6D2C4]/70 bg-white/80 text-sm shadow-sm transition-all focus-visible:border-[#22C55E] focus-visible:ring-[#22C55E]/20 dark:border-[#262626] dark:bg-[#0f0f0f] dark:text-[#ffffff] dark:placeholder:text-[#8a8a8a] dark:focus-visible:border-[#22c55e]"
                     />
@@ -369,12 +393,12 @@ export default function TablesPage() {
                       2
                     </span>
                     <p className="text-sm font-semibold text-[#2D3A1A] dark:text-[#ffffff]">
-                      Seating Details
+                      {t.table?.create?.steps?.seating || "Seating Details"}
                     </p>
                   </div>
                   <div className="space-y-2">
                     <label className="text-sm font-medium text-[#2D3A1A] dark:text-[#bfbfbf]">
-                      Seating Capacity
+                      {t.table?.create?.labels?.capacity || "Seating Capacity"}
                     </label>
                     <Input
                       type="number"
@@ -385,7 +409,8 @@ export default function TablesPage() {
                       className="h-11 rounded-xl border-2 border-[#D6D2C4]/70 bg-white/80 text-sm shadow-sm transition-all focus-visible:border-[#22C55E] focus-visible:ring-[#22C55E]/20 dark:border-[#262626] dark:bg-[#0f0f0f] dark:text-[#ffffff] dark:placeholder:text-[#8a8a8a] dark:focus-visible:border-[#22c55e]"
                     />
                     <p className="text-xs text-[#6B7B5A] dark:text-[#9ca3af]">
-                      Choose how many guests this table can comfortably seat.
+                      {t.table?.create?.labels?.capacityHelp ||
+                        "Choose how many guests this table can comfortably seat."}
                     </p>
                   </div>
                 </div>
@@ -397,16 +422,20 @@ export default function TablesPage() {
                       3
                     </span>
                     <p className="text-sm font-semibold text-[#2D3A1A] dark:text-[#ffffff]">
-                      Table Settings
+                      {t.table?.create?.steps?.settings || "Table Settings"}
                     </p>
                   </div>
                   <div className="flex items-center justify-between rounded-xl bg-[#F6F4EA] px-3 py-2.5 text-sm dark:bg-[#1a1a1a] dark:border dark:border-[#262626]">
                     <div className="space-y-0.5">
                       <p className="font-medium text-[#2D3A1A] dark:text-[#ffffff]">
-                        Active status
+                        {t.table?.create?.labels?.activeStatus || "Active status"}
                       </p>
                       <p className="text-xs text-[#6B7B5A] dark:text-[#9ca3af]">
-                        {isActive ? "Table will be available for bookings and walk-ins." : "Table will be hidden from booking options."}
+                        {isActive
+                          ? t.table?.create?.labels?.activeDescriptionOn ||
+                            "Table will be available for bookings and walk-ins."
+                          : t.table?.create?.labels?.activeDescriptionOff ||
+                            "Table will be hidden from booking options."}
                       </p>
                     </div>
                     <Switch
@@ -431,7 +460,7 @@ export default function TablesPage() {
                       setIsActive(true);
                     }}
                   >
-                    Cancel
+                    {t.table?.create?.actions?.reset || "Cancel"}
                   </Button>
                   <Button
                     type="submit"
@@ -441,10 +470,10 @@ export default function TablesPage() {
                     {adding ? (
                       <>
                         <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                        Saving...
+                        {t.table?.create?.actions?.saving || "Saving..."}
                       </>
                     ) : (
-                      "Create Table"
+                      t.table?.create?.actions?.submit || "Create Table"
                     )}
                   </Button>
                 </div>
@@ -461,7 +490,7 @@ export default function TablesPage() {
                 <span className="inline-flex h-7 w-7 items-center justify-center rounded-full bg-[#22c55e]/20 text-[#16A34A] dark:text-[#22c55e]">
                   <Table2 className="h-4 w-4" />
                 </span>
-                Table Preview
+                {t.table?.preview?.title || "Table Preview"}
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
@@ -488,8 +517,11 @@ export default function TablesPage() {
                         <div className={`mt-1 h-1.5 w-1.5 rounded-full ${dotClasses}`} />
                         {/* Capacity (bottom) */}
                         <div className="mt-auto text-[10px] font-medium leading-tight text-[#6B7B5A] dark:text-[#9ca3af]">
-                          Capacity: {table.capacity}{" "}
-                          {table.capacity === 1 ? "Person" : "Persons"}
+                          {(t.table?.preview?.capacityLabel || "Capacity")}:{" "}
+                          {table.capacity}{" "}
+                          {table.capacity === 1
+                            ? t.table?.preview?.capacitySingular || "Person"
+                            : t.table?.preview?.capacityPlural || "Persons"}
                         </div>
                       </div>
                     );
@@ -501,15 +533,21 @@ export default function TablesPage() {
               <div className="flex flex-wrap items-center justify-center gap-6 rounded-2xl border border-[#D6D2C4]/60 bg-white px-6 py-4 shadow-sm dark:border-[#262626] dark:bg-[#0f0f0f]">
                 <div className="flex items-center gap-2">
                   <div className="h-2 w-2 rounded-full bg-[#22C55E]" />
-                  <span className="text-sm text-[#6B7B5A] dark:text-[#9ca3af]">Available</span>
+                  <span className="text-sm text-[#6B7B5A] dark:text-[#9ca3af]">
+                    {t.table?.preview?.legend?.available || "Available"}
+                  </span>
                 </div>
                 <div className="flex items-center gap-2">
                   <div className="h-2 w-2 rounded-full bg-[#F97316]" />
-                  <span className="text-sm text-[#6B7B5A] dark:text-[#9ca3af]">Occupied</span>
+                  <span className="text-sm text-[#6B7B5A] dark:text-[#9ca3af]">
+                    {t.table?.preview?.legend?.occupied || "Occupied"}
+                  </span>
                 </div>
                 <div className="flex items-center gap-2">
                   <div className="h-2 w-2 rounded-full bg-[#3B82F6]" />
-                  <span className="text-sm text-[#6B7B5A] dark:text-[#9ca3af]">Reserved</span>
+                  <span className="text-sm text-[#6B7B5A] dark:text-[#9ca3af]">
+                    {t.table?.preview?.legend?.reserved || "Reserved"}
+                  </span>
                 </div>
               </div>
             </CardContent>
@@ -523,7 +561,7 @@ export default function TablesPage() {
           <Card className="rounded-2xl border border-[#D6D2C4]/50 bg-white shadow-md dark:border-[#1f1f1f] dark:bg-[#111111] dark:p-6">
             <CardHeader className="pb-3">
               <CardTitle className="text-lg font-semibold text-[#2D3A1A] dark:text-[#ffffff]">
-                Edit Table
+                {t.table?.edit?.title || "Edit Table"}
               </CardTitle>
             </CardHeader>
             <CardContent>
@@ -531,7 +569,7 @@ export default function TablesPage() {
                 <div className="grid gap-4 md:grid-cols-3">
                   <div className="space-y-2 md:col-span-2">
                     <label className="text-sm font-medium text-[#2D3A1A] dark:text-[#bfbfbf]">
-                      Table Name
+                      {t.table?.edit?.labels?.tableName || "Table Name"}
                     </label>
                     <Input
                       value={editingName}
@@ -542,7 +580,7 @@ export default function TablesPage() {
                   </div>
                   <div className="space-y-2">
                     <label className="text-sm font-medium text-[#2D3A1A] dark:text-[#bfbfbf]">
-                      Capacity
+                      {t.table?.edit?.labels?.capacity || "Capacity"}
                     </label>
                     <Input
                       type="number"
@@ -557,7 +595,10 @@ export default function TablesPage() {
                 <div className="grid gap-4 md:grid-cols-[minmax(0,1.4fr)_minmax(0,0.8fr)] items-center">
                   <div className="space-y-2">
                     <label className="text-sm font-medium text-[#2D3A1A] dark:text-[#bfbfbf]">
-                      Section <span className="text-xs text-[#9ca3af]">(optional)</span>
+                      {t.table?.edit?.labels?.section || "Section"}{" "}
+                      <span className="text-xs text-[#9ca3af]">
+                        {t.table?.edit?.labels?.sectionOptional || "(optional)"}
+                      </span>
                     </label>
                     <Input
                       value={editingSection}
@@ -568,7 +609,7 @@ export default function TablesPage() {
                   </div>
                   <div className="flex items-center justify-between rounded-xl bg-[#F6F4EA] px-3 py-2.5 text-sm dark:bg-[#1a1a1a] dark:border dark:border-[#262626]">
                     <span className="text-sm font-medium text-[#2D3A1A] dark:text-[#ffffff]">
-                      Active
+                      {t.table?.edit?.labels?.active || "Active"}
                     </span>
                     <Switch
                       checked={editingActive}
@@ -585,7 +626,7 @@ export default function TablesPage() {
                     disabled={savingEdit}
                     className="rounded-full border-[#D6D2C4]/70 bg-white/70 hover:bg-[#E8E4D9]/70 dark:border-[#262626] dark:bg-[#1a1a1a] dark:text-[#ffffff] dark:hover:bg-[#262626]"
                   >
-                    Cancel
+                    {t.table?.edit?.actions?.cancel || "Cancel"}
                   </Button>
                   <Button
                     type="submit"
@@ -595,10 +636,10 @@ export default function TablesPage() {
                     {savingEdit ? (
                       <>
                         <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                        Saving...
+                        {t.table?.edit?.actions?.saving || "Saving..."}
                       </>
                     ) : (
-                      "Save Changes"
+                      t.table?.edit?.actions?.save || "Save Changes"
                     )}
                   </Button>
                 </div>
@@ -613,7 +654,7 @@ export default function TablesPage() {
         <Card className="rounded-2xl border border-[#D6D2C4]/50 bg-white shadow-md dark:border-[#1f1f1f] dark:bg-[#111111] dark:p-6">
           <CardHeader className="pb-3">
             <CardTitle className="text-lg font-semibold text-[#2D3A1A] dark:text-[#ffffff]">
-              All Tables
+              {t.table?.list?.title || "All Tables"}
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -624,10 +665,11 @@ export default function TablesPage() {
             ) : tables.length === 0 ? (
               <div className="flex flex-col items-center justify-center gap-2 py-8 text-center">
                 <p className="text-sm font-medium text-[#2D3A1A] dark:text-[#ffffff]">
-                  No tables yet
+                  {t.table?.list?.emptyTitle || "No tables yet"}
                 </p>
                 <p className="max-w-md text-xs text-[#6B7B5A] dark:text-[#9ca3af]">
-                  Start by creating your first table using the form above to organize your floor layout.
+                  {t.table?.list?.emptyDescription ||
+                    "Start by creating your first table using the form above to organize your floor layout."}
                 </p>
               </div>
             ) : (
@@ -649,12 +691,21 @@ export default function TablesPage() {
                               : "bg-zinc-100 text-zinc-600 dark:bg-[#1a1a1a] dark:text-[#9ca3af]"
                           }`}
                         >
-                          {table.is_active ? "Active" : "Inactive"}
+                          {table.is_active
+                            ? t.table?.list?.badges?.active || "Active"
+                            : t.table?.list?.badges?.inactive || "Inactive"}
                         </span>
                       </div>
                       <div className="flex flex-wrap gap-3 text-xs text-[#6B7280] dark:text-[#9ca3af]">
-                        <span>Capacity: {table.capacity} seats</span>
-                        {table.section && <span>Section: {table.section}</span>}
+                        <span>
+                          {(t.table?.list?.labels?.capacity || "Capacity")}: {table.capacity}{" "}
+                          {t.table?.list?.labels?.seats || "seats"}
+                        </span>
+                        {table.section && (
+                          <span>
+                            {(t.table?.list?.labels?.section || "Section")}: {table.section}
+                          </span>
+                        )}
                       </div>
                     </div>
                     <div className="flex items-center gap-2">

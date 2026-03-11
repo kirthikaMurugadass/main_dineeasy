@@ -23,15 +23,16 @@ type Step1Data = {
 
 function getDisplayTitle(
   titleRecord: Record<Language, string> | undefined,
-  lang: Language
+  lang: Language,
+  fallback = "Unknown Item"
 ): string {
-  if (!titleRecord) return "Unknown Item";
+  if (!titleRecord) return fallback;
   const order: Language[] = [lang, "de", "en", "fr", "it"];
   for (const l of order) {
     const v = titleRecord[l];
     if (v && String(v).trim()) return v.trim();
   }
-  return "Unknown Item";
+  return fallback;
 }
 
 export default function CheckoutOrderSummaryPage({
@@ -40,7 +41,8 @@ export default function CheckoutOrderSummaryPage({
   params: Promise<{ restaurant: string; menuId: string }>;
 }) {
   const router = useRouter();
-  const { language } = useI18n();
+  const { t, language } = useI18n();
+  const summaryT = (t.order as any)?.public?.summary;
   const { items, getTotal, clearCart, restaurantId } = useCartStore();
 
   const [resolvedParams, setResolvedParams] = useState<{
@@ -90,17 +92,19 @@ export default function CheckoutOrderSummaryPage({
 
   const prettyOrderType = useMemo(() => {
     if (!step1) return "—";
-    return step1.orderType === "dine_in" ? "Dine-in" : "Takeaway";
-  }, [step1]);
+    return step1.orderType === "dine_in"
+      ? (summaryT?.orderTypes?.dineIn || "Dine-in")
+      : (summaryT?.orderTypes?.takeaway || "Takeaway");
+  }, [step1, summaryT?.orderTypes?.dineIn, summaryT?.orderTypes?.takeaway]);
 
   async function handlePlaceOrder() {
     if (!resolvedParams || !step1) return;
     if (!restaurantId) {
-      toast.error("Restaurant information is missing");
+      toast.error(summaryT?.messages?.restaurantInfoMissing || "Restaurant information is missing");
       return;
     }
     if (!step1.customerName?.trim()) {
-      toast.error("Missing customer name. Please go back.");
+      toast.error(summaryT?.messages?.missingCustomerName || "Missing customer name. Please go back.");
       return;
     }
 
@@ -140,10 +144,10 @@ export default function CheckoutOrderSummaryPage({
 
       const data = await response.json();
       if (!response.ok) {
-        throw new Error(data.error || "Failed to place order");
+        throw new Error(data.error || summaryT?.messages?.failedPlaceOrder || "Failed to place order");
       }
 
-      toast.success("Order Placed Successfully");
+      toast.success(summaryT?.toasts?.orderPlaced || "Order Placed Successfully");
       clearCart();
       setSuccess(true);
 
@@ -156,7 +160,7 @@ export default function CheckoutOrderSummaryPage({
       }, 2500);
     } catch (err) {
       console.error("Order error:", err);
-      toast.error(err instanceof Error ? err.message : "Failed to place order");
+      toast.error(err instanceof Error ? err.message : summaryT?.messages?.failedPlaceOrder || "Failed to place order");
     } finally {
       setSubmitting(false);
     }
@@ -179,12 +183,12 @@ export default function CheckoutOrderSummaryPage({
           className="text-center"
         >
           <CheckCircle2 className="mx-auto mb-4 h-16 w-16 text-green-500" />
-          <h1 className="mb-2 text-3xl font-bold">Order Placed Successfully</h1>
+          <h1 className="mb-2 text-3xl font-bold">{summaryT?.success?.title || "Order Placed Successfully"}</h1>
           <p className="mb-6 text-muted-foreground">
-            Redirecting back to the menu...
+            {summaryT?.success?.description || "Redirecting back to the menu..."}
           </p>
           <Link href={`/public-menu/${resolvedParams.restaurant}/${resolvedParams.menuId}`}>
-            <Button variant="outline">Return to Menu</Button>
+            <Button variant="outline">{summaryT?.actions?.returnToMenu || "Return to Menu"}</Button>
           </Link>
         </motion.div>
       </div>
@@ -201,9 +205,9 @@ export default function CheckoutOrderSummaryPage({
               <ArrowLeft className="h-5 w-5" />
             </Button>
           </Link>
-          <h1 className="text-2xl font-bold sm:text-3xl">Order Summary</h1>
+          <h1 className="text-2xl font-bold sm:text-3xl">{summaryT?.title || "Order Summary"}</h1>
           <p className="mt-2 text-muted-foreground">
-            Review your details before placing the order
+            {summaryT?.description || "Review your details before placing the order"}
           </p>
         </div>
 
@@ -215,17 +219,17 @@ export default function CheckoutOrderSummaryPage({
         >
           <div className="grid gap-3 text-sm">
             <div className="flex flex-wrap items-center justify-between gap-2">
-              <span className="text-muted-foreground">Customer Name</span>
+              <span className="text-muted-foreground">{summaryT?.fields?.customerName || "Customer Name"}</span>
               <span className="font-semibold">{step1.customerName}</span>
             </div>
             <div className="flex flex-wrap items-center justify-between gap-2">
-              <span className="text-muted-foreground">Order Type</span>
+              <span className="text-muted-foreground">{summaryT?.fields?.orderType || "Order Type"}</span>
               <span className="font-semibold">{prettyOrderType}</span>
             </div>
 
             {step1.orderType === "dine_in" && (
               <div className="flex flex-wrap items-center justify-between gap-2">
-                <span className="text-muted-foreground">Table Number</span>
+                <span className="text-muted-foreground">{summaryT?.fields?.tableNumber || "Table Number"}</span>
                 <span className="font-semibold">{step1.tableNumber || "—"}</span>
               </div>
             )}
@@ -233,12 +237,12 @@ export default function CheckoutOrderSummaryPage({
             {step1.orderType === "takeaway" && (
               <>
                 <div className="flex flex-wrap items-center justify-between gap-2">
-                  <span className="text-muted-foreground">Address</span>
+                  <span className="text-muted-foreground">{summaryT?.fields?.address || "Address"}</span>
                   <span className="max-w-full break-words text-right font-semibold">{step1.deliveryAddress || "—"}</span>
                 </div>
                 <div className="flex flex-wrap items-center justify-between gap-2">
                   <span className="inline-flex items-center gap-2 text-muted-foreground">
-                    <MapPin className="h-4 w-4" /> Map Location
+                    <MapPin className="h-4 w-4" /> {summaryT?.fields?.mapLocation || "Map Location"}
                   </span>
                   <span className="font-semibold">
                     {step1.deliveryLocation
@@ -257,22 +261,22 @@ export default function CheckoutOrderSummaryPage({
           animate={{ opacity: 1, y: 0 }}
           className="mb-8 rounded-2xl border border-border/60 bg-card p-4 shadow-sm sm:p-6"
         >
-          <h2 className="mb-4 text-lg font-semibold">Ordered Items</h2>
+          <h2 className="mb-4 text-lg font-semibold">{summaryT?.sections?.orderedItems || "Ordered Items"}</h2>
           <div className="space-y-2">
             {items.map((item) => (
               <div key={item.id} className="flex items-center justify-between text-sm">
                 <span className="text-muted-foreground">
-                  {item.quantity}x {getDisplayTitle(item.title, language)}
+                  {item.quantity}x {getDisplayTitle(item.title, language, t.order?.labels?.unknownItem || "Unknown Item")}
                 </span>
                 <span className="font-medium">
-                  CHF {(item.price * item.quantity).toFixed(2)}
+                  {(t.menu?.currency || "CHF")} {(item.price * item.quantity).toFixed(2)}
                 </span>
               </div>
             ))}
           </div>
           <div className="mt-4 flex items-center justify-between border-t border-border pt-4">
-            <span className="text-lg font-semibold">Total Amount</span>
-            <span className="text-xl font-bold">CHF {total.toFixed(2)}</span>
+            <span className="text-lg font-semibold">{summaryT?.fields?.totalAmount || "Total Amount"}</span>
+            <span className="text-xl font-bold">{(t.menu?.currency || "CHF")} {total.toFixed(2)}</span>
           </div>
         </motion.div>
 
@@ -288,10 +292,10 @@ export default function CheckoutOrderSummaryPage({
             {submitting ? (
               <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Placing Order...
+                {summaryT?.actions?.placingOrder || "Placing Order..."}
               </>
             ) : (
-              "Place Order"
+              summaryT?.actions?.placeOrder || "Place Order"
             )}
           </Button>
         </Card>

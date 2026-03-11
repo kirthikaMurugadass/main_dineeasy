@@ -44,7 +44,7 @@ export default function BookingDetailsPage() {
   const router = useRouter();
   const params = useParams();
   const bookingId = params.id as string;
-  const { t } = useI18n();
+  const { t, language } = useI18n();
   const [booking, setBooking] = useState<Booking | null>(null);
   const [loading, setLoading] = useState(true);
   const [updatingStatus, setUpdatingStatus] = useState(false);
@@ -52,10 +52,12 @@ export default function BookingDetailsPage() {
 
   useEffect(() => {
     if (!subscriptionLoading && !isPro) {
-      toast.error("Bookings are available on the Pro plan.");
+      toast.error(
+        t.booking?.messages?.proOnly || "Bookings are available on the Pro plan."
+      );
       router.replace("/admin");
     }
-  }, [isPro, subscriptionLoading, router]);
+  }, [isPro, subscriptionLoading, router, t.booking]);
 
   useEffect(() => {
     async function loadBooking() {
@@ -93,7 +95,7 @@ export default function BookingDetailsPage() {
           .single();
 
         if (bookingError || !bookingData) {
-          toast.error("Booking not found");
+          toast.error(t.booking?.messages?.notFound || "Booking not found");
           router.push("/admin/bookings");
           return;
         }
@@ -101,7 +103,9 @@ export default function BookingDetailsPage() {
         setBooking(bookingData);
       } catch (error) {
         console.error("Error loading booking:", error);
-        toast.error("Failed to load booking");
+        toast.error(
+          t.booking?.messages?.loadError || "Failed to load booking"
+        );
       } finally {
         setLoading(false);
       }
@@ -183,7 +187,7 @@ export default function BookingDetailsPage() {
 
   function formatDate(dateString: string) {
     const date = new Date(dateString);
-    return new Intl.DateTimeFormat("en-US", {
+    return new Intl.DateTimeFormat(language || "en-US", {
       month: "long",
       day: "numeric",
       year: "numeric",
@@ -192,7 +196,7 @@ export default function BookingDetailsPage() {
 
   function formatDateTime(dateString: string) {
     const date = new Date(dateString);
-    return new Intl.DateTimeFormat("en-US", {
+    return new Intl.DateTimeFormat(language || "en-US", {
       month: "long",
       day: "numeric",
       year: "numeric",
@@ -217,12 +221,14 @@ export default function BookingDetailsPage() {
         <Link href="/admin/bookings">
           <Button variant="ghost" size="sm">
             <ArrowLeft className="h-4 w-4 mr-2" />
-            Back to Bookings
+            {t.booking?.detail?.backToBookings || "Back to Bookings"}
           </Button>
         </Link>
         <Card className="dark:border-[#1f1f1f] dark:bg-[#111111]">
           <CardContent className="flex flex-col items-center justify-center py-12">
-            <p className="text-muted-foreground dark:text-[#9ca3af]">Booking not found</p>
+            <p className="text-muted-foreground dark:text-[#9ca3af]">
+              {t.booking?.messages?.notFound || "Booking not found"}
+            </p>
           </CardContent>
         </Card>
       </div>
@@ -234,11 +240,17 @@ export default function BookingDetailsPage() {
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">
           <Link href="/admin/bookings">
-            <Button variant="ghost" size="icon" className="dark:bg-[#1a1a1a] dark:hover:bg-[#262626] dark:text-[#ffffff]">
+            <Button
+              variant="ghost"
+              size="icon"
+              className="dark:bg-[#1a1a1a] dark:hover:bg-[#262626] dark:text-[#ffffff]"
+            >
               <ArrowLeft className="h-4 w-4" />
             </Button>
           </Link>
-          <PageTitle className="dark:text-[#ffffff]">Booking Details</PageTitle>
+          <PageTitle className="dark:text-[#ffffff]">
+            {t.booking?.detail?.title || "Booking Details"}
+          </PageTitle>
         </div>
         <Badge
           variant="outline"
@@ -254,27 +266,29 @@ export default function BookingDetailsPage() {
         <FadeIn>
           <Card className="dark:border-[#1f1f1f] dark:bg-[#111111] dark:p-6 rounded-2xl">
             <CardHeader>
-              <CardTitle className="dark:text-[#ffffff]">Booking Information</CardTitle>
+              <CardTitle className="dark:text-[#ffffff]">
+                {t.booking?.detail?.infoCardTitle || "Booking Information"}
+              </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               <div>
                 <p className="text-sm text-muted-foreground dark:text-[#bfbfbf] flex items-center gap-2">
                   <User className="h-4 w-4 dark:text-[#22c55e]" />
-                  Customer Name
+                  {t.booking?.detail?.customerName || "Customer Name"}
                 </p>
                 <p className="text-lg font-semibold dark:text-[#ffffff]">{booking.customer_name}</p>
               </div>
               <div>
                 <p className="text-sm text-muted-foreground dark:text-[#bfbfbf] flex items-center gap-2">
                   <Phone className="h-4 w-4 dark:text-[#22c55e]" />
-                  Phone Number
+                  {t.booking?.detail?.phoneNumber || "Phone Number"}
                 </p>
                 <p className="text-lg font-semibold dark:text-[#ffffff]">{booking.phone}</p>
               </div>
               <div>
                 <p className="text-sm text-muted-foreground dark:text-[#bfbfbf] flex items-center gap-2">
                   <Calendar className="h-4 w-4 dark:text-[#22c55e]" />
-                  Booking Date & Time
+                  {t.booking?.detail?.dateTime || "Booking Date & Time"}
                 </p>
                 <p className="text-lg font-semibold dark:text-[#ffffff]">
                   {formatDate(booking.booking_date)} at {booking.booking_time}
@@ -283,28 +297,41 @@ export default function BookingDetailsPage() {
               <div>
                 <p className="text-sm text-muted-foreground dark:text-[#bfbfbf] flex items-center gap-2">
                   <Users className="h-4 w-4 dark:text-[#22c55e]" />
-                  Number of Guests
+                  {t.booking?.detail?.guestCount || "Number of Guests"}
                 </p>
                 <p className="text-lg font-semibold dark:text-[#ffffff]">
-                  {booking.guest_count} {booking.guest_count === 1 ? "Guest" : "Guests"}
+                  {booking.guest_count}{" "}
+                  {booking.guest_count === 1
+                    ? t.booking?.labels?.guestSingular || "Guest"
+                    : t.booking?.labels?.guestPlural || "Guests"}
                 </p>
               </div>
               {booking.special_note && (
                 <div>
                   <p className="text-sm text-muted-foreground dark:text-[#bfbfbf] flex items-center gap-2">
                     <MessageSquare className="h-4 w-4 dark:text-[#22c55e]" />
-                    Special Requests
+                    {t.booking?.detail?.specialRequests || "Special Requests"}
                   </p>
-                  <p className="text-lg font-semibold mt-1 dark:text-[#ffffff]">{booking.special_note}</p>
+                  <p className="text-lg font-semibold mt-1 dark:text-[#ffffff]">
+                    {booking.special_note}
+                  </p>
                 </div>
               )}
               <div>
-                <p className="text-sm text-muted-foreground dark:text-[#bfbfbf]">Requested At</p>
-                <p className="text-lg font-semibold dark:text-[#ffffff]">{formatDateTime(booking.created_at)}</p>
+                <p className="text-sm text-muted-foreground dark:text-[#bfbfbf]">
+                  {t.booking?.detail?.requestedAt || "Requested At"}
+                </p>
+                <p className="text-lg font-semibold dark:text-[#ffffff]">
+                  {formatDateTime(booking.created_at)}
+                </p>
               </div>
               <div>
-                <p className="text-sm text-muted-foreground dark:text-[#bfbfbf]">Booking ID</p>
-                <p className="text-sm font-mono text-muted-foreground dark:text-[#9ca3af]">{booking.id}</p>
+                <p className="text-sm text-muted-foreground dark:text-[#bfbfbf]">
+                  {t.booking?.detail?.bookingId || "Booking ID"}
+                </p>
+                <p className="text-sm font-mono text-muted-foreground dark:text-[#9ca3af]">
+                  {booking.id}
+                </p>
               </div>
             </CardContent>
           </Card>
@@ -314,7 +341,9 @@ export default function BookingDetailsPage() {
         <FadeIn delay={0.1}>
           <Card className="dark:border-[#1f1f1f] dark:bg-[#111111] dark:p-6 rounded-2xl">
             <CardHeader>
-              <CardTitle className="dark:text-[#ffffff]">Status Management</CardTitle>
+              <CardTitle className="dark:text-[#ffffff]">
+                {t.booking?.detail?.statusManagement || ""}
+              </CardTitle>
             </CardHeader>
             <CardContent className="space-y-3">
               {booking.status !== "confirmed" && (
@@ -325,7 +354,9 @@ export default function BookingDetailsPage() {
                   disabled={updatingStatus}
                 >
                   <CheckCircle className="h-4 w-4 mr-2 dark:text-[#22c55e]" />
-                  Confirm Booking
+                  {t.booking?.actions?.confirmBooking ||
+                    t.booking?.actions?.confirm ||
+                    ""}
                 </Button>
               )}
               {booking.status !== "cancelled" && (
@@ -336,7 +367,9 @@ export default function BookingDetailsPage() {
                   disabled={updatingStatus}
                 >
                   <XCircle className="h-4 w-4 mr-2 dark:text-[#ef4444]" />
-                  Cancel Booking
+                  {t.booking?.actions?.cancelBooking ||
+                    t.booking?.actions?.cancel ||
+                    ""}
                 </Button>
               )}
               {booking.status !== "completed" && (
@@ -347,7 +380,7 @@ export default function BookingDetailsPage() {
                   disabled={updatingStatus}
                 >
                   <CheckCircle className="h-4 w-4 mr-2 dark:text-[#22c55e]" />
-                  Mark as Completed
+                  {t.booking?.actions?.markCompleted || ""}
                 </Button>
               )}
             </CardContent>

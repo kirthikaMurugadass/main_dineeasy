@@ -1,0 +1,203 @@
+{
+  "title": "Prenotazioni",
+  "description": "Gestisci le prenotazioni dei tavoli",
+  "tabs": {
+    "all": "Tutte le prenotazioni",
+    "today": "Oggi",
+    "upcoming": "In arrivo",
+    "pending": "In attesa",
+    "confirmed": "Confermata",
+    "completed": "Completata"
+  },
+  "filters": {
+    "searchPlaceholder": "Cerca per nome cliente...",
+    "clear": "Pulisci"
+  },
+  "tableHeaders": {
+    "bookingId": "ID prenotazione",
+    "customer": "Nome cliente",
+    "table": "Tavolo",
+    "dateTime": "Data e ora",
+    "guests": "Ospiti",
+    "status": "Stato",
+    "actions": "Azione"
+  },
+  "labels": {
+    "tableLabel": "Tavolo",
+    "guestSingular": "ospite",
+    "guestPlural": "ospiti"
+  },
+  "status": {
+    "pending": "In attesa",
+    "confirmed": "Confermata",
+    "cancelled": "Annullata",
+    "completed": "Completata"
+  },
+  "messages": {
+    "noBookings": "Nessuna prenotazione al momento",
+    "loadError": "Impossibile caricare le prenotazioni",
+    "proOnly": "Le prenotazioni sono disponibili solo con il piano Pro.",
+    "notFound": "Prenotazione non trovata"
+  },
+  "actions": {
+    "viewDetails": "Vedi prenotazione",
+    "confirm": "Conferma",
+    "cancel": "Annulla",
+    "markCompleted": "Segna come completata",
+    "confirmBooking": "Conferma prenotazione",
+    "cancelBooking": "Annulla prenotazione"
+  },
+  "toasts": {
+    "statusUpdated": "Stato della prenotazione aggiornato",
+    "statusUpdateError": "Impossibile aggiornare lo stato della prenotazione"
+  },
+  "detail": {
+    "title": "Dettagli prenotazione",
+    "backToBookings": "Torna alle prenotazioni",
+    "infoCardTitle": "Informazioni sulla prenotazione",
+    "customerName": "Nome cliente",
+    "phoneNumber": "Numero di telefono",
+    "dateTime": "Data e ora della prenotazione",
+    "guestCount": "Numero di ospiti",
+    "specialRequests": "Richieste speciali",
+    "requestedAt": "Richiesta il",
+    "bookingId": "ID prenotazione",
+    "statusManagement": "Gestione stato"
+  },
+  "pagination": {
+    "showing": "Mostra",
+    "to": "a",
+    "of": "di",
+    "bookings": "prenotazioni",
+    "previous": "Precedente",
+    "next": "Successivo"
+  },
+  "publicFlow": {
+    "steps": {
+      "step1Of4": "Passo 1 di 4",
+      "step2Of4": "Passo 2 di 4",
+      "step3Of4": "Passo 3 di 4",
+      "step4Of4": "Passo 4 di 4",
+      "bookYourTable": "Prenota il tuo tavolo",
+      "bookATable": "Prenota un tavolo",
+      "orderSummary": "Riepilogo prenotazione",
+      "tableBookedSuccess": "Tavolo prenotato con successo! 🎉"
+    },
+    "intro": {
+      "restaurantReservation": "Prenotazione ristorante",
+      "premiumDining": "PREMIUM DINING",
+      "headline": "Prenota un'esperienza culinaria indimenticabile",
+      "subheadline": "Scegli data, ora e numero di ospiti: ti aiuteremo a trovare il tavolo migliore.",
+      "findTableTitle": "Trova un tavolo",
+      "findTableSubtitle": "Seleziona data, ora e numero di ospiti.",
+      "nextStepHint": "Nel prossimo passaggio inserirai nome e contatti.",
+      "premiumDiningTitle": "Premium Dining",
+      "premiumDiningHeading": "Un momento culinario premium - pensato per te",
+      "premiumDiningDescription": "Vivi un'esperienza elevata con ospitalita calorosa, piatti curati e atmosfera rilassata."
+    },
+    "sections": {
+      "guestInformation": "Informazioni ospite",
+      "visitDetails": "Dettagli visita",
+      "hours": "Orari",
+      "location": "Posizione",
+      "contact": "Contatto",
+      "orderDetails": "Dettagli",
+      "reservationDetails": "Dettagli prenotazione",
+      "customerInformation": "Informazioni cliente",
+      "reservationInfo": "Info prenotazione",
+      "orderedItems": "Elementi prenotati",
+      "billing": "Riepilogo costi"
+    },
+    "fields": {
+      "date": "Data",
+      "time": "Ora",
+      "guests": "Ospiti",
+      "fullName": "Nome completo",
+      "phoneNumber": "Numero di telefono",
+      "email": "Email",
+      "dateToCome": "Data di arrivo",
+      "timeToCome": "Ora di arrivo",
+      "numberOfGuests": "Numero di ospiti",
+      "specialNotes": "Note speciali",
+      "tableNumber": "Numero tavolo",
+      "customerName": "Cliente",
+      "reservationId": "ID prenotazione",
+      "bookingTime": "Orario prenotazione",
+      "selectedTable": "Tavolo selezionato",
+      "capacity": "Capacita",
+      "subtotal": "Subtotale",
+      "tax": "Tassa (10%)",
+      "totalPrice": "Prezzo totale"
+    },
+    "labels": {
+      "optional": "opzionale",
+      "personSingular": "persona",
+      "personPlural": "persone",
+      "at": "alle",
+      "notAvailable": "N/D",
+      "tableReservationFee": "Costo prenotazione tavolo"
+    },
+    "placeholders": {
+      "select": "Seleziona",
+      "selectCountry": "Seleziona paese",
+      "selectTime": "Seleziona orario",
+      "fullName": "Mario Rossi",
+      "email": "tuo@esempio.it",
+      "specialRequests": "Richieste speciali o esigenze alimentari..."
+    },
+    "status": {
+      "available": "Disponibile",
+      "occupied": "Occupato",
+      "reserved": "Riservato"
+    },
+    "actions": {
+      "findTable": "Trova tavolo",
+      "nextSelectTable": "Avanti: seleziona tavolo",
+      "continueToSelectTable": "Continua alla selezione tavolo",
+      "continue": "Continua",
+      "confirmBooking": "Conferma prenotazione",
+      "processing": "Elaborazione...",
+      "backToMenu": "Torna al menu",
+      "backToHome": "Torna alla home",
+      "viewReservation": "Vedi prenotazione"
+    },
+    "validation": {
+      "nameRequired": "Inserisci il tuo nome",
+      "phoneRequired": "Inserisci il tuo numero di telefono",
+      "invalidPhone": "Numero di telefono non valido",
+      "emailRequired": "Inserisci la tua email",
+      "invalidEmail": "Inserisci un indirizzo email valido",
+      "dateRequired": "Seleziona una data",
+      "timeRequired": "Seleziona un orario",
+      "guestsRequired": "Seleziona il numero di ospiti",
+      "futureDateRequired": "Seleziona una data futura",
+      "selectTableRequired": "Seleziona un tavolo per continuare."
+    },
+    "messages": {
+      "restaurantNotFound": "Ristorante non trovato",
+      "restaurantInfoMissing": "Informazioni ristorante mancanti",
+      "onlineBookingUnavailableTitle": "Prenotazioni online non disponibili",
+      "onlineBookingUnavailable": "Questo ristorante al momento non accetta prenotazioni online.",
+      "startBookingAgain": "Ricomincia la prenotazione.",
+      "invalidBookingData": "Dati prenotazione non validi. Riprova.",
+      "startBookingError": "Impossibile avviare la prenotazione",
+      "failedLoadTables": "Impossibile caricare i tavoli",
+      "failedLoadTableSelection": "Impossibile caricare la selezione tavolo",
+      "tableAlreadyBooked": "Questo tavolo e gia prenotato per l'orario selezionato.",
+      "tableHeldByAnother": "Questo tavolo e temporaneamente bloccato da un altro ospite.",
+      "failedSelectTableRetry": "Impossibile selezionare il tavolo. Riprova.",
+      "failedSelectTable": "Impossibile selezionare il tavolo.",
+      "tableSelectedConfirmBooking": "Tavolo selezionato. Conferma la prenotazione.",
+      "lockVerifyError": "Impossibile verificare il blocco del tavolo.",
+      "tableHoldExpired": "Il blocco del tavolo e scaduto. Seleziona di nuovo un tavolo.",
+      "failedCreateBooking": "Impossibile creare la prenotazione",
+      "bookingRequestSent": "Richiesta di prenotazione inviata! Confermeremo a breve.",
+      "failedConfirmBooking": "Impossibile confermare la prenotazione",
+      "noTablesConfigured": "Nessun tavolo configurato. Contatta il ristorante.",
+      "reservationConfirmed": "La tua prenotazione e stata confermata.",
+      "setOpeningClosingHours": "Imposta orari di apertura/chiusura nelle Impostazioni Admin",
+      "setAddress": "Imposta l'indirizzo del ristorante nelle Impostazioni Admin",
+      "setContactPhone": "Imposta il telefono di contatto nelle Impostazioni Admin"
+    }
+  }
+}

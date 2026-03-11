@@ -1,0 +1,104 @@
+{
+  "title": "Dashboard",
+  "welcome": "Bentornato",
+  "liveBusinessOverview": "Panoramica business in diretta",
+  "live": "In diretta",
+  "realtime": "Tempo reale",
+  "statistics": {
+    "todaysRevenue": "Ricavi di oggi",
+    "pendingOrders": "Ordini in attesa",
+    "totalOrdersToday": "Totale ordini oggi",
+    "tablesOccupied": "Tavoli occupati",
+    "tablesAvailable": "Tavoli disponibili",
+    "totalCategories": "Categorie totali",
+    "activeCategories": "Categorie attive"
+  },
+  "upgrade": {
+    "title": "Passa a Pro per sbloccare analisi avanzate",
+    "description": "Ottieni ordini in tempo reale, gestione tavoli e notifiche di prenotazione con Pro.",
+    "button": "Passa a Pro",
+    "dialogTitle": "Passa a Pro",
+    "proFeature": "Funzionalità Pro",
+    "proFeatureDescription": "Passa a Pro per visualizzare ordini in tempo reale e gestire le operazioni del tuo ristorante.",
+    "proFeatureTables": "Passa a Pro per gestire i tavoli e visualizzare lo stato dei tavoli in tempo reale.",
+    "proFeatureOrders": "Passa a Pro per visualizzare il grafico degli ordini in tempo reale."
+  },
+  "liveOrderActivity": {
+    "title": "Attività ordini in diretta",
+    "loading": "Caricamento ordini...",
+    "noOrders": "Nessun ordine ancora",
+    "orderItems": "Articoli dell'ordine",
+    "table": "Tavolo",
+    "timeAgo": {
+      "justNow": "Proprio ora",
+      "minutesAgo": "min fa",
+      "hoursAgo": "ore fa"
+    }
+  },
+  "quickActions": {
+    "title": "Azioni rapide",
+    "manageMenu": "Gestisci menu",
+    "viewOrders": "Visualizza ordini",
+    "manageTables": "Gestisci tavoli",
+    "viewBookings": "Visualizza prenotazioni",
+    "analytics": "Analisi",
+    "appearance": "Aspetto",
+    "qrCode": "Codice QR"
+  },
+  "tableStatus": {
+    "title": "Stato tavoli",
+    "loading": "Caricamento tavoli...",
+    "noTables": "Nessun tavolo configurato. Aggiungi tavoli nella sezione Tavoli.",
+    "available": "Disponibile",
+    "occupied": "Occupato",
+    "reserved": "Prenotato",
+    "totalTables": "Totale tavoli"
+  },
+  "revenueAnalytics": {
+    "title": "Analisi dei ricavi",
+    "daily": "Giornaliero",
+    "monthly": "Mensile",
+    "noData": "Nessun dato disponibile"
+  },
+  "orders": {
+    "title": "Ordini",
+    "today": "Oggi",
+    "month": "Mese",
+    "noOrdersToday": "Nessun ordine oggi",
+    "noOrdersMonth": "Nessun ordine questo mese"
+  },
+  "tableBookings": {
+    "title": "Analisi prenotazioni tavoli",
+    "today": "Oggi",
+    "month": "Mese",
+    "noBookingsToday": "Nessuna prenotazione oggi",
+    "noBookingsMonth": "Nessuna prenotazione questo mese"
+  },
+  "status": {
+    "pending": "In attesa",
+    "preparing": "In preparazione",
+    "completed": "Completato"
+  },
+  "totalCategories": "Categorie totali",
+  "activeCategories": "Categorie attive",
+  "quickCreate": "Crea menu",
+  "recentActivity": "Attività recente",
+  "quickActions": "Azioni rapide",
+  "analytics": "Analisi",
+  "noMenu": "Nessun menu trovato",
+  "createMenu": "Crea menu",
+  "viewPublic": "Vedi menu pubblico",
+  "noRecentActivity": "Nessuna attività recente",
+  "smartInsights": "Approfondimenti intelligenti della dashboard",
+  "addCategory": "Aggiungi categoria",
+  "generateQr": "Genera QR",
+  "manageMenu": "Gestisci menu",
+  "viewAnalytics": "Vedi analisi",
+  "categoryGrowth": "Crescita categorie",
+  "qrActivity": "Attività codice QR",
+  "activity": {
+    "categoryAdded": "Categoria aggiunta",
+    "qrGenerated": "Codice QR generato",
+    "menuUpdated": "Menu aggiornato"
+  }
+}

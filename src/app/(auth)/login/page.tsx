@@ -25,7 +25,7 @@ export default function LoginPage() {
   async function handleLogin(e: React.FormEvent) {
     e.preventDefault();
     if (!email || !password) {
-      toast.error(t.auth.login.errors.emptyFields);
+      toast.error(t.auth?.login?.errors?.emptyFields || t.auth.login.errors.emptyFields || "Please enter both email and password");
       return;
     }
     setLoading(true);
@@ -61,12 +61,13 @@ export default function LoginPage() {
         });
         
         if (retryError) {
-          throw new Error("Failed to create session. Please try again.");
+          const sessionError = (t.auth?.login?.errors as any)?.sessionError || t.auth.login.errors.genericError || "Failed to create session. Please try again.";
+          throw new Error(sessionError);
         }
       }
 
       if (loginData.success && authData?.session) {
-        toast.success(t.auth.login.success);
+        toast.success(t.auth?.login?.success || t.auth.login.success || "Welcome back!");
         router.push("/admin");
         router.refresh();
       } else if (loginData.success) {
@@ -82,14 +83,15 @@ export default function LoginPage() {
           : "";
 
       if (message === "Failed to fetch" || message.includes("fetch")) {
-        toast.error(
-          "Cannot reach server. Please check your connection and try again."
-        );
+        const connectionError = (t.auth?.login?.errors as any)?.connectionError || t.auth.login.errors.genericError || "Cannot reach server. Please check your connection and try again.";
+        toast.error(connectionError);
       } else {
         const errorMessage =
           message.includes("Invalid") || message.includes("password")
-            ? t.auth.login.errors.invalidCredentials
-            : message || t.auth.login.errors.genericError;
+            ? t.auth?.login?.errors?.invalidCredentials || t.auth.login.errors.invalidCredentials
+            : message.includes("session") || message.includes("Failed to create session")
+            ? (t.auth?.login?.errors as any)?.sessionError || t.auth.login.errors.genericError
+            : message || t.auth?.login?.errors?.genericError || t.auth.login.errors.genericError;
         toast.error(errorMessage);
       }
     } finally {
@@ -101,12 +103,12 @@ export default function LoginPage() {
     <AuthSplitPanel
       imageSrc="/images/sign2.jpg"
       imageOnLeft={false}
-      leftHeading="Hello, Friend!"
-      leftSubtitle="Enter your personal details and start your journey with us"
-      leftButtonText="SIGN UP"
+      leftHeading={t.auth?.login?.panelGreeting || t.auth.login.panelGreeting || "Hello, Friend!"}
+      leftSubtitle={t.auth?.login?.panelDescription || t.auth.login.panelDescription || "Enter your personal details and start your journey with us"}
+      leftButtonText={t.auth?.login?.panelButton || t.auth.login.panelButton || "SIGN UP"}
       leftButtonHref="/signup"
-      formTitle="Sign In"
-      formSubtitle="or use your email for login"
+      formTitle={t.auth?.login?.title || t.auth.login.title || "Sign In"}
+      formSubtitle={t.auth?.login?.subtitle || t.auth.login.subtitle || "or use your email for login"}
     >
       <form onSubmit={handleLogin} className="space-y-5">
         <motion.div
@@ -116,7 +118,7 @@ export default function LoginPage() {
           className="space-y-2"
         >
           <Label htmlFor="email" className="text-sm font-medium text-foreground">
-            {t.auth.login.emailLabel}
+            {t.auth?.login?.emailLabel || t.auth.login.emailLabel || "Email address"}
           </Label>
           <div className="relative">
             <Mail
@@ -128,7 +130,7 @@ export default function LoginPage() {
             <Input
               id="email"
               type="email"
-              placeholder="you@restaurant.ch"
+              placeholder={t.auth?.login?.emailPlaceholder || t.auth.login.emailPlaceholder || "you@restaurant.ch"}
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               onFocus={() => setFocusedField("email")}
@@ -152,7 +154,7 @@ export default function LoginPage() {
           className="space-y-2"
         >
           <Label htmlFor="password" className="text-sm font-medium text-foreground">
-            {t.auth.login.passwordLabel}
+            {t.auth?.login?.passwordLabel || t.auth.login.passwordLabel || "Password"}
           </Label>
           <div className="relative">
             <Lock
@@ -163,7 +165,7 @@ export default function LoginPage() {
             />
             <PasswordInput
               id="password"
-              placeholder={t.auth.login.passwordPlaceholder ?? "Enter your password"}
+              placeholder={t.auth?.login?.passwordPlaceholder || t.auth.login.passwordPlaceholder || "Enter your password"}
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               onFocus={() => setFocusedField("password")}
@@ -184,7 +186,7 @@ export default function LoginPage() {
               onClick={() => router.push("/forgot-password")}
               className="text-xs font-medium text-primary underline-offset-2 transition-colors duration-300 hover:text-primary/80"
             >
-              {t.auth.login.forgotPassword}
+              {t.auth?.login?.forgotPassword || t.auth.login.forgotPassword || "Forgot password?"}
             </button>
           </div>
         </motion.div>
@@ -204,7 +206,7 @@ export default function LoginPage() {
                 className="flex items-center justify-center gap-2"
               >
                 <Loader2 size={18} className="animate-spin" />
-                {t.auth.login.submitButton}...
+                {t.auth?.login?.submitButton || t.auth.login.submitButton || "Sign In"}...
               </motion.span>
             ) : (
               <motion.span
@@ -213,19 +215,19 @@ export default function LoginPage() {
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
               >
-                {t.auth.login.submitButton}
+                {t.auth?.login?.submitButton || t.auth.login.submitButton || "Sign In"}
               </motion.span>
             )}
           </AnimatePresence>
         </Button>
 
         <p className="text-center text-sm text-muted-foreground">
-          {t.auth.login.noAccount}{" "}
+          {t.auth?.login?.noAccount || t.auth.login.noAccount || "Don't have an account?"}{" "}
           <Link
             href="/signup"
             className="font-medium text-primary underline-offset-2 transition-colors duration-300 hover:text-primary/80"
           >
-            {t.auth.login.signUpLink}
+            {t.auth?.login?.signUpLink || t.auth.login.signUpLink || "Sign up"}
           </Link>
         </p>
       </form>

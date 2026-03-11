@@ -8,7 +8,8 @@ import {
   useCallback,
   type ReactNode,
 } from "react";
-import { getDictionary, type Dictionary, SUPPORTED_LANGUAGES } from "./dictionaries";
+import { getModularDictionary, type ModularDictionary } from "./migrate";
+import { SUPPORTED_LANGUAGES } from "./dictionaries";
 import type { Language } from "@/types/database";
 
 const STORAGE_KEY = "dineeasy-lang";
@@ -17,15 +18,42 @@ const VALID_LANGUAGES = new Set<string>(["de", "en", "fr", "it"]);
 interface I18nContextType {
   language: Language;
   setLanguage: (lang: Language) => void;
-  t: Dictionary;
+  t: ModularDictionary;
   languages: typeof SUPPORTED_LANGUAGES;
+  loading: boolean;
 }
+
+// Initialize with old dictionary for SSR and client-side compatibility
+const getInitialDictionary = (lang: Language = "de"): ModularDictionary => {
+  // Use old dictionary synchronously for both SSR and client-side initial render
+  const { getDictionary } = require("./dictionaries");
+  const oldDict = getDictionary(lang);
+  return {
+    ...oldDict,
+    navbar: oldDict.landing?.nav || {},
+    home: {},
+    footer: oldDict.landing?.footer || {},
+    dashboard: oldDict.admin?.dashboard || {},
+      order: oldDict.admin?.orders || {},
+      table: {},
+      booking: {},
+      analytics: oldDict.admin?.analytics || {},
+      appearance: oldDict.admin?.appearance || {},
+      qr: oldDict.admin?.qr || {},
+      settings: oldDict.admin?.settings || {},
+      auth: oldDict.auth || {
+        login: {},
+        signup: {},
+      },
+  } as ModularDictionary;
+};
 
 const I18nContext = createContext<I18nContextType>({
   language: "de",
   setLanguage: () => {},
-  t: getDictionary("de"),
+  t: getInitialDictionary("de"),
   languages: SUPPORTED_LANGUAGES,
+  loading: true,
 });
 
 export function I18nProvider({
@@ -37,7 +65,87 @@ export function I18nProvider({
 }) {
   // Start with defaultLanguage to match server render
   const [language, setLang] = useState<Language>(defaultLanguage);
+  // Initialize with old dictionary immediately (both SSR and client-side)
+  const [translations, setTranslations] = useState<ModularDictionary>(() => 
+    getInitialDictionary(defaultLanguage)
+  );
+  const [loading, setLoading] = useState(true);
   const [mounted, setMounted] = useState(false);
+
+  // Load translations when language changes
+  useEffect(() => {
+    let cancelled = false;
+    
+    async function loadTranslations() {
+      setLoading(true);
+      try {
+        const t = await getModularDictionary(language);
+        if (!cancelled) {
+          // Ensure navbar is always defined (fallback to old system if needed)
+          if (!t.navbar || Object.keys(t.navbar).length === 0) {
+            // Use the migration helper's conversion function
+            const { getDictionary: getOldDict } = await import("./dictionaries");
+            const oldDict = getOldDict(language);
+            const converted = {
+              ...oldDict,
+              navbar: oldDict.landing?.nav || {},
+              home: {},
+              footer: oldDict.landing?.footer || {},
+              dashboard: oldDict.admin?.dashboard || {},
+      order: oldDict.admin?.orders || {},
+      table: {},
+      booking: {},
+      analytics: oldDict.admin?.analytics || {},
+      appearance: oldDict.admin?.appearance || {},
+      qr: oldDict.admin?.qr || {},
+      settings: oldDict.admin?.settings || {},
+      auth: oldDict.auth || {
+        login: {},
+        signup: {},
+      },
+            };
+            setTranslations(converted as ModularDictionary);
+          } else {
+            setTranslations(t);
+          }
+          setLoading(false);
+        }
+      } catch (error) {
+        console.error("Failed to load translations:", error);
+        // Fallback to old system
+        if (!cancelled) {
+          const { getDictionary: getOldDict } = await import("./dictionaries");
+          const oldDict = getOldDict(language);
+          const converted = {
+            ...oldDict,
+            navbar: oldDict.landing?.nav || {},
+            home: {},
+            footer: oldDict.landing?.footer || {},
+            dashboard: oldDict.admin?.dashboard || {},
+      order: oldDict.admin?.orders || {},
+      table: {},
+      booking: {},
+      analytics: oldDict.admin?.analytics || {},
+      appearance: oldDict.admin?.appearance || {},
+      qr: oldDict.admin?.qr || {},
+      settings: oldDict.admin?.settings || {},
+      auth: oldDict.auth || {
+        login: {},
+        signup: {},
+      },
+          };
+          setTranslations(converted as ModularDictionary);
+          setLoading(false);
+        }
+      }
+    }
+    
+    loadTranslations();
+    
+    return () => {
+      cancelled = true;
+    };
+  }, [language]);
 
   // Only read from localStorage/cookies after component mounts (client-side only)
   // This ensures server and client render the same initial content (preventing hydration errors)
@@ -81,10 +189,8 @@ export function I18nProvider({
     }
   }, [mounted]);
 
-  const t = getDictionary(language);
-
   return (
-    <I18nContext.Provider value={{ language, setLanguage, t, languages: SUPPORTED_LANGUAGES }}>
+    <I18nContext.Provider value={{ language, setLanguage, t: translations, languages: SUPPORTED_LANGUAGES, loading }}>
       {children}
     </I18nContext.Provider>
   );

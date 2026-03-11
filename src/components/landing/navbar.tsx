@@ -97,7 +97,7 @@ export function Navbar() {
                 )}
               >
                 <span className="absolute inset-0 rounded-full bg-primary/10 opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
-                <span className="relative z-10">{t.landing.nav[key]}</span>
+                <span className="relative z-10">{t.navbar?.[key] || t.landing?.nav?.[key] || key}</span>
               </Link>
             ))}
           </nav>
@@ -116,8 +116,8 @@ export function Navbar() {
                         ? "text-foreground hover:bg-accent hover:text-foreground"
                         : "text-gray-700 hover:bg-gray-100 hover:text-gray-900 dark:text-gray-200 dark:hover:bg-gray-800 dark:hover:text-white"
                     )}
-                    title={t.landing.nav.selectLanguage}
-                    aria-label={t.landing.nav.selectLanguage}
+                    title={t.navbar?.selectLanguage || t.landing?.nav?.selectLanguage || "Select language"}
+                    aria-label={t.navbar?.selectLanguage || t.landing?.nav?.selectLanguage || "Select language"}
                   >
                     <Globe className="h-[18px] w-[18px]" />
                   </Button>
@@ -168,7 +168,7 @@ export function Navbar() {
                         ? "text-foreground hover:bg-accent hover:text-foreground"
                         : "text-gray-700 hover:bg-gray-100 hover:text-gray-900 dark:text-gray-200 dark:hover:bg-gray-800 dark:hover:text-white"
                     )}
-                    aria-label={t.landing.nav.theme}
+                    aria-label={t.navbar?.theme || t.landing?.nav?.theme || "Theme"}
                   >
                     <ThemeIcon className="h-[18px] w-[18px]" />
                   </Button>
@@ -178,13 +178,13 @@ export function Navbar() {
                   className="z-[10000] min-w-[140px] rounded-xl border border-border bg-popover p-1 shadow-lg"
                 >
                   <DropdownMenuItem onClick={() => setTheme("light")} className="rounded-lg py-2.5 text-foreground">
-                    <Sun className="mr-3 h-[18px] w-[18px]" /> {t.admin.topbar.light}
+                    <Sun className="mr-3 h-[18px] w-[18px]" /> Light
                   </DropdownMenuItem>
                   <DropdownMenuItem onClick={() => setTheme("dark")} className="rounded-lg py-2.5 text-foreground">
-                    <Moon className="mr-3 h-[18px] w-[18px]" /> {t.admin.topbar.dark}
+                    <Moon className="mr-3 h-[18px] w-[18px]" /> Dark
                   </DropdownMenuItem>
                   <DropdownMenuItem onClick={() => setTheme("system")} className="rounded-lg py-2.5 text-foreground">
-                    <Monitor className="mr-3 h-[18px] w-[18px]" /> {t.admin.topbar.system}
+                    <Monitor className="mr-3 h-[18px] w-[18px]" /> System
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
@@ -212,7 +212,7 @@ export function Navbar() {
                         : "text-gray-700 hover:bg-gray-100 hover:text-gray-900 dark:text-gray-200 dark:hover:bg-gray-800 dark:hover:text-white"
                     )}
                   >
-                    {t.landing.nav.login}
+                    {t.navbar?.login || t.landing?.nav?.login || "Sign In"}
                   </Button>
                 </Link>
                 <Link href="/signup" className="hidden sm:block">
@@ -220,7 +220,7 @@ export function Navbar() {
                     size="sm"
                     className="h-9 rounded-full px-5 text-sm font-semibold shadow-lg shadow-primary/40 transition-all duration-300 hover:bg-primary/90 hover:shadow-xl hover:shadow-primary/50"
                   >
-                    {t.landing.nav.cta}
+                    {t.navbar?.cta || t.landing?.nav?.cta || "Get Started"}
                   </Button>
                 </Link>
               </>
@@ -284,12 +284,12 @@ export function Navbar() {
                     onClick={() => setMobileOpen(false)}
                     className="rounded-lg px-4 py-3.5 text-base font-medium text-foreground hover:bg-muted"
                   >
-                    {t.landing.nav[key]}
+                    {t.navbar?.[key] || t.landing?.nav?.[key] || key}
                   </Link>
                 ))}
                 <div className="my-4 h-px bg-border" />
                 <p className="px-4 pb-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                  {t.landing.nav.language}
+                  {t.navbar?.language || t.landing?.nav?.language || "Language"}
                 </p>
                 <div className="flex flex-col gap-1">
                   {languages.map((lang) => (
@@ -309,7 +309,7 @@ export function Navbar() {
                   ))}
                 </div>
                 <p className="mt-4 px-4 pb-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                  {t.landing.nav.theme}
+                  {t.navbar?.theme || t.landing?.nav?.theme || "Theme"}
                 </p>
                 <div className="flex flex-col gap-1">
                   {(["light", "dark", "system"] as const).map((mode) => (
@@ -322,7 +322,7 @@ export function Navbar() {
                       {mode === "light" && <Sun className="mr-3 h-[18px] w-[18px]" />}
                       {mode === "dark" && <Moon className="mr-3 h-[18px] w-[18px]" />}
                       {mode === "system" && <Monitor className="mr-3 h-[18px] w-[18px]" />}
-                      {t.admin.topbar[mode]}
+                      {mode === "light" ? "Light" : mode === "dark" ? "Dark" : "System"}
                     </Button>
                   ))}
                 </div>
@@ -330,12 +330,12 @@ export function Navbar() {
                   <div className="mt-8 flex flex-col gap-3">
                     <Link href="/login" onClick={() => setMobileOpen(false)}>
                       <Button variant="outline" className="h-12 w-full rounded-xl font-medium">
-                        {t.landing.nav.login}
+                        {t.navbar?.login || t.landing?.nav?.login || "Sign In"}
                       </Button>
                     </Link>
                     <Link href="/signup" onClick={() => setMobileOpen(false)}>
                       <Button className="h-12 w-full rounded-xl font-medium">
-                        {t.landing.nav.cta}
+                        {t.navbar?.cta || t.landing?.nav?.cta || "Get Started"}
                       </Button>
                     </Link>
                   </div>

@@ -30,7 +30,8 @@ export default function CartPage({
   params: Promise<{ restaurant: string; menuId: string }>;
 }) {
   const router = useRouter();
-  const { language } = useI18n();
+  const { t, language } = useI18n();
+  const cartT = (t.order as any)?.public?.cart;
   const [resolvedParams, setResolvedParams] = useState<{
     restaurant: string;
     menuId: string;
@@ -77,15 +78,15 @@ export default function CartPage({
           className="text-center"
         >
           <ShoppingBag className="mx-auto mb-4 h-16 w-16 text-muted-foreground" />
-          <h1 className="mb-2 text-2xl font-semibold">Your cart is empty</h1>
+          <h1 className="mb-2 text-2xl font-semibold">{cartT?.emptyTitle || "Your cart is empty"}</h1>
           <p className="mb-6 text-muted-foreground">
-            Add some items from the menu to get started
+            {cartT?.emptyDescription || "Add some items from the menu to get started"}
           </p>
           {resolvedParams && (
             <Link
               href={`/public-menu/${resolvedParams.restaurant}/${resolvedParams.menuId}`}
             >
-              <Button>Back to Menu</Button>
+              <Button>{cartT?.backToMenu || "Back to Menu"}</Button>
             </Link>
           )}
         </motion.div>
@@ -111,9 +112,9 @@ export default function CartPage({
               </Link>
             )}
             <div>
-              <h1 className="text-3xl font-bold">Your Cart</h1>
+              <h1 className="text-3xl font-bold">{cartT?.title || "Your Cart"}</h1>
               <p className="text-muted-foreground">
-                {getItemCount()} {getItemCount() === 1 ? "item" : "items"}
+                {getItemCount()} {getItemCount() === 1 ? (cartT?.itemSingular || "item") : (cartT?.itemPlural || "items")}
               </p>
             </div>
           </div>
@@ -154,13 +155,13 @@ export default function CartPage({
                       {getDisplayTitle(item.title, language)}
                     </h3>
                     <p className="text-sm font-medium text-muted-foreground">
-                      CHF {item.price.toFixed(2)} each
+                      {t.menu?.currency || "CHF"} {item.price.toFixed(2)} {cartT?.each || "each"}
                     </p>
                   </div>
                   <button
                     onClick={() => removeItem(item.id)}
                     className="rounded-lg p-2 text-muted-foreground transition-colors hover:bg-destructive/10 hover:text-destructive"
-                    aria-label="Remove item"
+                    aria-label={cartT?.removeItem || "Remove item"}
                   >
                     <Trash2 size={18} />
                   </button>
@@ -178,7 +179,7 @@ export default function CartPage({
                         }
                       }}
                       className="flex h-9 w-9 items-center justify-center rounded-lg border border-border bg-background transition-colors hover:bg-accent"
-                      aria-label="Decrease quantity"
+                      aria-label={cartT?.decreaseQuantity || "Decrease quantity"}
                     >
                       <Minus size={16} />
                     </button>
@@ -188,13 +189,13 @@ export default function CartPage({
                     <button
                       onClick={() => updateQuantity(item.id, item.quantity + 1)}
                       className="flex h-9 w-9 items-center justify-center rounded-lg border border-border bg-background transition-colors hover:bg-accent"
-                      aria-label="Increase quantity"
+                      aria-label={cartT?.increaseQuantity || "Increase quantity"}
                     >
                       <Plus size={16} />
                     </button>
                   </div>
                   <p className="text-lg font-bold">
-                    CHF {(item.price * item.quantity).toFixed(2)}
+                    {(t.menu?.currency || "CHF")} {(item.price * item.quantity).toFixed(2)}
                   </p>
                 </div>
               </div>
@@ -205,8 +206,8 @@ export default function CartPage({
         {/* Total and Checkout */}
         <div className="sticky bottom-0 rounded-2xl border border-border/60 bg-card p-4 shadow-lg sm:p-6">
           <div className="mb-6 flex items-center justify-between text-base sm:text-lg">
-            <span className="font-semibold">Total</span>
-            <span className="text-xl font-bold sm:text-2xl">CHF {total.toFixed(2)}</span>
+            <span className="font-semibold">{cartT?.total || "Total"}</span>
+            <span className="text-xl font-bold sm:text-2xl">{(t.menu?.currency || "CHF")} {total.toFixed(2)}</span>
           </div>
           {resolvedParams && (
             <Link
@@ -214,7 +215,7 @@ export default function CartPage({
               className="block w-full"
             >
               <Button size="lg" className="w-full">
-                Proceed to Checkout
+                {cartT?.proceedToCheckout || "Proceed to Checkout"}
               </Button>
             </Link>
           )}

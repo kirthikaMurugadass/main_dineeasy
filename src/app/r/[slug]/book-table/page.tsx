@@ -4,7 +4,7 @@ import { useState, useEffect, useRef } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Image from "next/image";
 import { motion } from "framer-motion";
-import { Calendar, Clock, Users, Phone, MapPin, User, MessageSquare, CheckCircle2, Loader2, Sun, Moon, Monitor } from "lucide-react";
+import { Calendar, Clock, Users, Phone, MapPin, User, MessageSquare, CheckCircle2, Loader2, Sun, Moon, Monitor, Globe } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -20,6 +20,8 @@ import {
 import { toast } from "sonner";
 import { createClient } from "@/lib/supabase/client";
 import { useTheme } from "@/components/providers/theme-provider";
+import { useI18n } from "@/lib/i18n/context";
+import { LanguageFlag } from "@/components/ui/language-flag";
 import { CountryFlag } from "@/components/ui/country-flag";
 import {
   countryCodes,
@@ -41,6 +43,8 @@ interface Restaurant {
 export default function BookTablePage() {
   const params = useParams();
   const router = useRouter();
+  const { t, language, setLanguage, languages } = useI18n();
+  const flowT = t.booking?.publicFlow;
   const { theme, setTheme, resolvedTheme } = useTheme();
   const currentTheme = resolvedTheme || (theme === "system" ? "light" : theme);
   const ThemeIcon = currentTheme === "light" ? Sun : currentTheme === "dark" ? Moon : Monitor;
@@ -98,7 +102,7 @@ export default function BookTablePage() {
         .single();
 
       if (error || !restaurantData) {
-        toast.error("Restaurant not found");
+        toast.error(flowT?.messages?.restaurantNotFound || "Restaurant not found");
         router.push("/");
         return;
       }
@@ -139,52 +143,52 @@ export default function BookTablePage() {
 
     // Validation
     if (!name.trim()) {
-      toast.error("Please enter your name");
+      toast.error(flowT?.validation?.nameRequired || "Please enter your name");
       return;
     }
 
     if (!phone.trim()) {
-      toast.error("Please enter your phone number");
+      toast.error(flowT?.validation?.phoneRequired || "Please enter your phone number");
       return;
     }
 
     // Validate phone number based on selected country
     const phoneValidation = validatePhoneNumber(phone.trim(), phoneCountryCode);
     if (!phoneValidation.valid) {
-      setPhoneValidationError(phoneValidation.message || "Invalid phone number");
-      toast.error(phoneValidation.message || "Invalid phone number");
+      setPhoneValidationError(phoneValidation.message || (flowT?.validation?.invalidPhone || "Invalid phone number"));
+      toast.error(phoneValidation.message || (flowT?.validation?.invalidPhone || "Invalid phone number"));
       return;
     }
     setPhoneValidationError("");
 
     if (!email.trim()) {
-      toast.error("Please enter your email");
+      toast.error(flowT?.validation?.emailRequired || "Please enter your email");
       return;
     }
 
     // Basic email format check
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) {
-      toast.error("Please enter a valid email address");
+      toast.error(flowT?.validation?.invalidEmail || "Please enter a valid email address");
       return;
     }
 
     if (!date) {
-      toast.error("Please select a date");
+      toast.error(flowT?.validation?.dateRequired || "Please select a date");
       return;
     }
 
     if (!time) {
-      toast.error("Please select a time");
+      toast.error(flowT?.validation?.timeRequired || "Please select a time");
       return;
     }
 
     if (!guestCount) {
-      toast.error("Please select number of guests");
+      toast.error(flowT?.validation?.guestsRequired || "Please select number of guests");
       return;
     }
 
     if (!restaurant) {
-      toast.error("Restaurant information is missing");
+      toast.error(flowT?.messages?.restaurantInfoMissing || "Restaurant information is missing");
       return;
     }
 
@@ -193,7 +197,7 @@ export default function BookTablePage() {
     const todayDate = new Date();
     todayDate.setHours(0, 0, 0, 0);
     if (selectedDate < todayDate) {
-      toast.error("Please select a future date");
+      toast.error(flowT?.validation?.futureDateRequired || "Please select a future date");
       return;
     }
 
@@ -222,7 +226,7 @@ export default function BookTablePage() {
     } catch (error) {
       console.error("Booking step 1 error:", error);
       toast.error(
-        error instanceof Error ? error.message : "Failed to start booking"
+        error instanceof Error ? error.message : flowT?.messages?.startBookingError || "Failed to start booking"
       );
       setSubmitting(false);
     }
@@ -245,19 +249,22 @@ export default function BookTablePage() {
       <div className="flex min-h-screen items-center justify-center bg-background px-4">
         <Card className="max-w-md rounded-2xl shadow-lg">
           <CardHeader>
-            <CardTitle>Online bookings are not available</CardTitle>
+            <CardTitle>
+              {flowT?.messages?.onlineBookingUnavailableTitle ||
+                "Online bookings are not available"}
+            </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             <p className="text-sm text-muted-foreground">
-              This restaurant does not currently accept online table bookings.
-              Please contact the restaurant directly to make a reservation.
+              {flowT?.messages?.onlineBookingUnavailable ||
+                "This restaurant does not currently accept online table bookings. Please contact the restaurant directly to make a reservation."}
             </p>
             <Button
               variant="outline"
               className="w-full rounded-full"
               onClick={() => router.push(`/r/${restaurant.slug}`)}
             >
-              Back to menu
+              {flowT?.actions?.backToMenu || "Back to menu"}
             </Button>
           </CardContent>
         </Card>
@@ -269,15 +276,15 @@ export default function BookTablePage() {
   if (showIntro) {
     const handleFindTable = () => {
       if (!date) {
-        toast.error("Please select a date");
+        toast.error(flowT?.validation?.dateRequired || "Please select a date");
         return;
       }
       if (!time) {
-        toast.error("Please select a time");
+        toast.error(flowT?.validation?.timeRequired || "Please select a time");
         return;
       }
       if (!guestCount) {
-        toast.error("Please select number of guests");
+        toast.error(flowT?.validation?.guestsRequired || "Please select number of guests");
         return;
       }
       setShowIntro(false);
@@ -307,7 +314,41 @@ export default function BookTablePage() {
 
         {/* Theme toggle – top right */}
         {mounted && (
-          <div className="fixed top-4 right-4 z-50">
+          <div className="fixed top-4 right-4 z-50 flex items-center gap-2">
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-9 w-9 rounded-full border border-border/60 bg-card shadow-sm transition duration-200 hover:opacity-80 dark:bg-[#111111] dark:border-[#1f1f1f]"
+                  aria-label="Switch language"
+                >
+                  <Globe className="h-[18px] w-[18px]" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent
+                align="end"
+                className="z-[10000] min-w-[180px] rounded-xl border border-border/70 bg-background/80 p-1 shadow-lg backdrop-blur-md"
+              >
+                {languages.map((option) => (
+                  <DropdownMenuItem
+                    key={option.code}
+                    onClick={() => setLanguage(option.code)}
+                    className={`flex items-center gap-2 rounded-lg px-3 py-2.5 text-sm transition-colors ${
+                      language === option.code
+                        ? "bg-accent/90 text-accent-foreground shadow-sm"
+                        : "text-foreground hover:bg-muted/70"
+                    }`}
+                  >
+                    <LanguageFlag code={option.code} />
+                    {option.label}
+                    {language === option.code && (
+                      <span className="ml-auto text-primary">✓</span>
+                    )}
+                  </DropdownMenuItem>
+                ))}
+              </DropdownMenuContent>
+            </DropdownMenu>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button
@@ -373,7 +414,9 @@ export default function BookTablePage() {
                 <p className="text-xs font-semibold uppercase tracking-[0.18em] text-white/80">
                   {restaurant.name}
                 </p>
-                <p className="text-[11px] text-white/55">Restaurant reservation</p>
+                <p className="text-[11px] text-white/55">
+                  {flowT?.intro?.restaurantReservation || "Restaurant reservation"}
+                </p>
               </div>
             </div>
           </motion.div>
@@ -387,13 +430,14 @@ export default function BookTablePage() {
               className="space-y-4"
             >
               <p className="text-xs font-semibold uppercase tracking-[0.28em] text-white/70">
-                PREMIUM DINING
+                {flowT?.intro?.premiumDining || "PREMIUM DINING"}
               </p>
               <h1 className="text-4xl font-bold tracking-tight text-white sm:text-5xl">
-                Reserve an Unforgettable Dining Experience
+                {flowT?.intro?.headline || "Reserve an Unforgettable Dining Experience"}
               </h1>
               <p className="max-w-xl text-base leading-relaxed text-white/70 sm:text-lg">
-                Pick a date and time, choose your party size, and we’ll help you find the best table for your visit.
+                {flowT?.intro?.subheadline ||
+                  "Pick a date and time, choose your party size, and we'll help you find the best table for your visit."}
               </p>
             </motion.div>
 
@@ -406,10 +450,10 @@ export default function BookTablePage() {
               <Card className="overflow-hidden rounded-[20px] border border-white/12 bg-white/[0.06] shadow-2xl backdrop-blur-xl">
                 <CardHeader className="pb-2">
                   <CardTitle className="text-xl font-semibold text-white">
-                    Find a Table
+                    {flowT?.intro?.findTableTitle || "Find a Table"}
                 </CardTitle>
                   <p className="text-sm text-white/70">
-                    Select your preferred date, time, and guests.
+                    {flowT?.intro?.findTableSubtitle || "Select your preferred date, time, and guests."}
                   </p>
               </CardHeader>
                 <CardContent className="space-y-5">
@@ -417,7 +461,7 @@ export default function BookTablePage() {
                     {/* Date */}
                     <div className="space-y-2 sm:col-span-1">
                       <Label className="text-sm font-medium text-white leading-none">
-                        Date
+                        {flowT?.fields?.date || "Date"}
                       </Label>
                       <div className="relative">
                         {/* Hide native indicator (we render our own icon), but keep input behavior */}
@@ -454,11 +498,11 @@ export default function BookTablePage() {
                     {/* Time */}
                     <div className="space-y-2 sm:col-span-1">
                       <Label className="text-sm font-medium text-white leading-none">
-                        Time
+                        {flowT?.fields?.time || "Time"}
                       </Label>
                       <Select value={time} onValueChange={setTime}>
                         <SelectTrigger className="flex h-12 items-center justify-between rounded-xl border border-white/10 bg-black/35 px-4 text-sm text-white shadow-sm transition-all hover:bg-white/5 focus-visible:border-[#22C55E] focus-visible:ring-2 focus-visible:ring-[#22C55E]/20">
-                          <SelectValue placeholder="Select" />
+                          <SelectValue placeholder={flowT?.placeholders?.select || "Select"} />
                         </SelectTrigger>
                         <SelectContent className="rounded-xl">
                           {timeSlots.map((slot) => (
@@ -473,16 +517,16 @@ export default function BookTablePage() {
                     {/* Guests */}
                     <div className="space-y-2 sm:col-span-1">
                       <Label className="text-sm font-medium text-white leading-none">
-                        Guests
+                        {flowT?.fields?.guests || "Guests"}
                       </Label>
                       <Select value={guestCount} onValueChange={setGuestCount}>
                         <SelectTrigger className="flex h-12 items-center justify-between rounded-xl border border-white/10 bg-black/35 px-4 text-sm text-white shadow-sm transition-all hover:bg-white/5 focus-visible:border-[#22C55E] focus-visible:ring-2 focus-visible:ring-[#22C55E]/20">
-                          <SelectValue placeholder="Select" />
+                          <SelectValue placeholder={flowT?.placeholders?.select || "Select"} />
                         </SelectTrigger>
                         <SelectContent className="rounded-xl">
                           {Array.from({ length: 10 }, (_, i) => i + 1).map((num) => (
                             <SelectItem key={num} value={String(num)} className="rounded-lg">
-                              {num} {num === 1 ? "Guest" : "Guests"}
+                              {num} {num === 1 ? (t.booking?.labels?.guestSingular || "Guest") : (t.booking?.labels?.guestPlural || "Guests")}
                             </SelectItem>
                           ))}
                         </SelectContent>
@@ -495,11 +539,11 @@ export default function BookTablePage() {
                     onClick={handleFindTable}
                     className="h-12 w-full rounded-xl bg-gradient-to-r from-[#22C55E] to-[#16A34A] text-white text-base font-semibold shadow-xl transition-all hover:shadow-2xl hover:scale-[1.01] active:scale-[0.99]"
                 >
-                    Find Table
+                    {flowT?.actions?.findTable || "Find Table"}
                 </Button>
 
                   <p className="text-xs text-white/60">
-                    You’ll enter your name and contact details in the next step.
+                    {flowT?.intro?.nextStepHint || "You'll enter your name and contact details in the next step."}
                   </p>
               </CardContent>
             </Card>
@@ -516,14 +560,15 @@ export default function BookTablePage() {
             <div className="rounded-3xl border border-white/10 bg-white/[0.06] p-6 shadow-xl backdrop-blur-xl sm:p-8">
               <div>
                 <p className="text-xs font-semibold uppercase tracking-[0.28em] text-white/60">
-                  Premium Dining
+                  {flowT?.intro?.premiumDiningTitle || "Premium Dining"}
                 </p>
                 <h2 className="mt-3 text-2xl font-semibold tracking-tight text-white">
-                  A premium dining moment — curated for you
+                  {flowT?.intro?.premiumDiningHeading || "A premium dining moment - curated for you"}
                 </h2>
                 <p className="mt-3 max-w-3xl text-sm leading-relaxed text-white/65">
                   {settings.description ||
-                    "Enjoy an elevated dining experience with warm hospitality, thoughtfully crafted dishes, and a calm ambience — perfect for celebrations or a quiet evening out."}
+                    flowT?.intro?.premiumDiningDescription ||
+                    "Enjoy an elevated dining experience with warm hospitality, thoughtfully crafted dishes, and a calm ambience - perfect for celebrations or a quiet evening out."}
                 </p>
               </div>
 
@@ -536,11 +581,11 @@ export default function BookTablePage() {
                     <Clock className="h-5 w-5 text-white/80" />
                   </div>
                   <div className="min-w-0">
-                    <p className="text-sm font-semibold text-white">Hours</p>
+                    <p className="text-sm font-semibold text-white">{flowT?.sections?.hours || "Hours"}</p>
                     <p className="mt-1 text-xs leading-relaxed text-white/65">
                       {(business.openingHours && business.closingHours)
                         ? `Mon–Sun: ${business.openingHours} – ${business.closingHours}`
-                        : "Set opening & closing hours in Admin Settings"}
+                        : flowT?.messages?.setOpeningClosingHours || "Set opening and closing hours in Admin Settings"}
                     </p>
                   </div>
                 </div>
@@ -551,11 +596,11 @@ export default function BookTablePage() {
                     <MapPin className="h-5 w-5 text-white/80" />
                   </div>
                   <div className="min-w-0">
-                    <p className="text-sm font-semibold text-white">Location</p>
+                    <p className="text-sm font-semibold text-white">{flowT?.sections?.location || "Location"}</p>
                     <p className="mt-1 text-xs leading-relaxed text-white/65">
                       {[address.street, address.city, address.state, address.country, address.postalCode]
                         .filter(Boolean)
-                        .join(", ") || "Set restaurant address in Admin Settings"}
+                        .join(", ") || flowT?.messages?.setAddress || "Set restaurant address in Admin Settings"}
                     </p>
                   </div>
                 </div>
@@ -566,9 +611,9 @@ export default function BookTablePage() {
                     <Phone className="h-5 w-5 text-white/80" />
                   </div>
                   <div className="min-w-0">
-                    <p className="text-sm font-semibold text-white">Contact</p>
+                    <p className="text-sm font-semibold text-white">{flowT?.sections?.contact || "Contact"}</p>
                     <p className="mt-1 text-xs leading-relaxed text-white/65">
-                      {settings.contactPhone || "Set contact phone in Admin Settings"}
+                      {settings.contactPhone || flowT?.messages?.setContactPhone || "Set contact phone in Admin Settings"}
                     </p>
                   </div>
                 </div>
@@ -586,7 +631,41 @@ export default function BookTablePage() {
     <div className="min-h-screen bg-[#FAFAF5] dark:bg-[#000000] font-sans">
       {/* Theme toggle – top right */}
       {mounted && (
-        <div className="fixed top-4 right-4 z-50">
+        <div className="fixed top-4 right-4 z-50 flex items-center gap-2">
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-9 w-9 rounded-full border border-border/60 bg-card shadow-sm transition duration-200 hover:opacity-80 dark:bg-[#111111] dark:border-[#1f1f1f]"
+                aria-label="Switch language"
+              >
+                <Globe className="h-[18px] w-[18px]" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent
+              align="end"
+              className="z-[10000] min-w-[180px] rounded-xl border border-border/70 bg-background/80 p-1 shadow-lg backdrop-blur-md"
+            >
+              {languages.map((option) => (
+                <DropdownMenuItem
+                  key={option.code}
+                  onClick={() => setLanguage(option.code)}
+                  className={`flex items-center gap-2 rounded-lg px-3 py-2.5 text-sm transition-colors ${
+                    language === option.code
+                      ? "bg-accent/90 text-accent-foreground shadow-sm"
+                      : "text-foreground hover:bg-muted/70"
+                  }`}
+                >
+                  <LanguageFlag code={option.code} />
+                  {option.label}
+                  {language === option.code && (
+                    <span className="ml-auto text-primary">✓</span>
+                  )}
+                </DropdownMenuItem>
+              ))}
+            </DropdownMenuContent>
+          </DropdownMenu>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button
@@ -635,10 +714,10 @@ export default function BookTablePage() {
           <div className="flex items-center justify-between mb-6">
           <div>
               <p className="text-xs font-semibold uppercase tracking-wider text-[#9CA88A] dark:text-[#9ca3af] mb-2" style={{ fontFamily: "'Inter', system-ui, sans-serif" }}>
-              Step 1 of 4
+              {flowT?.steps?.step1Of4 || "Step 1 of 4"}
             </p>
               <h1 className="text-3xl font-bold tracking-tight text-[#1a1a1a] dark:text-white" style={{ fontFamily: "'Inter', system-ui, sans-serif" }}>
-                Book Your Table
+                {flowT?.steps?.bookYourTable || "Book Your Table"}
               </h1>
           </div>
             <div className="hidden sm:flex items-center gap-2 rounded-full bg-[#DCFCE7] dark:bg-[#22c55e]/10 px-4 py-2">
@@ -664,14 +743,14 @@ export default function BookTablePage() {
             <div className="bg-gradient-to-r from-[#22C55E]/5 via-transparent to-transparent dark:from-[#22C55E]/5 px-6 pt-6 pb-2">
               <CardTitle className="text-lg font-semibold text-[#1a1a1a] dark:text-white flex items-center gap-2" style={{ fontFamily: "'Inter', system-ui, sans-serif" }}>
                 <User className="h-5 w-5 text-[#22C55E]" />
-                Guest Information
+                {flowT?.sections?.guestInformation || "Guest Information"}
               </CardTitle>
             </div>
             <CardContent className="px-6 pt-4 pb-6 space-y-6">
               {/* Name */}
               <div className="space-y-2">
                 <Label htmlFor="name" className="text-sm font-medium text-[#1a1a1a] dark:text-[#ffffff]" style={{ fontFamily: "'Inter', system-ui, sans-serif" }}>
-                  Full Name <span className="text-red-500">*</span>
+                  {(flowT?.fields?.fullName || "Full Name")} <span className="text-red-500">*</span>
                 </Label>
                 <div className="relative">
                   <User className="pointer-events-none absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-[#9CA88A] dark:text-[#6b7280]" />
@@ -679,7 +758,7 @@ export default function BookTablePage() {
                     id="name"
                     value={name}
                     onChange={(e) => setName(e.target.value)}
-                    placeholder="John Doe"
+                    placeholder={flowT?.placeholders?.fullName || "John Doe"}
                     required
                     disabled={submitting}
                     className="h-12 rounded-xl border-2 border-[#E4E0D2] bg-white pl-12 pr-4 text-sm font-normal shadow-sm transition-all placeholder:text-[#9ca3af] focus-visible:border-[#22C55E] focus-visible:ring-2 focus-visible:ring-[#22C55E]/20 dark:border-[#1f1f1f] dark:bg-[#0f0f0f] dark:text-white dark:placeholder:text-[#6b7280]"
@@ -691,7 +770,7 @@ export default function BookTablePage() {
               {/* Phone */}
               <div className="space-y-2">
                 <Label htmlFor="phone" className="text-sm font-medium text-[#1a1a1a] dark:text-[#ffffff]" style={{ fontFamily: "'Inter', system-ui, sans-serif" }}>
-                  Phone Number <span className="text-red-500">*</span>
+                  {(flowT?.fields?.phoneNumber || "Phone Number")} <span className="text-red-500">*</span>
                 </Label>
                 <div className="flex gap-3">
                   <Select
@@ -700,7 +779,7 @@ export default function BookTablePage() {
                     disabled={submitting}
                   >
                     <SelectTrigger className="w-[200px] h-12 rounded-xl border-2 border-[#E4E0D2] bg-white text-sm font-normal shadow-sm transition-all focus-visible:border-[#22C55E] focus-visible:ring-2 focus-visible:ring-[#22C55E]/20 dark:border-[#1f1f1f] dark:bg-[#0f0f0f] dark:text-white">
-                      <SelectValue placeholder="Select country">
+                    <SelectValue placeholder={flowT?.placeholders?.selectCountry || "Select country"}>
                         {getCountryByCode(phoneCountryCode) && (
                           <span className="flex items-center gap-2.5">
                             <CountryFlag code={phoneCountryCode} className="h-5 w-5 flex-shrink-0" />
@@ -761,14 +840,14 @@ export default function BookTablePage() {
               {/* Email */}
               <div className="space-y-2">
                 <Label htmlFor="email" className="text-sm font-medium text-[#1a1a1a] dark:text-[#ffffff]" style={{ fontFamily: "'Inter', system-ui, sans-serif" }}>
-                  Email <span className="text-red-500">*</span>
+                  {(flowT?.fields?.email || "Email")} <span className="text-red-500">*</span>
                 </Label>
                 <Input
                   id="email"
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  placeholder="you@example.com"
+                  placeholder={flowT?.placeholders?.email || "you@example.com"}
                   required
                   disabled={submitting}
                   className="h-12 rounded-xl border-2 border-[#E4E0D2] bg-white px-4 text-sm font-normal shadow-sm transition-all placeholder:text-[#9ca3af] focus-visible:border-[#22C55E] focus-visible:ring-2 focus-visible:ring-[#22C55E]/20 dark:border-[#1f1f1f] dark:bg-[#0f0f0f] dark:text-white dark:placeholder:text-[#6b7280]"
@@ -783,14 +862,14 @@ export default function BookTablePage() {
             <div className="bg-gradient-to-r from-[#22C55E]/5 via-transparent to-transparent dark:from-[#22C55E]/5 px-6 pt-6 pb-2">
               <CardTitle className="text-lg font-semibold text-[#1a1a1a] dark:text-white flex items-center gap-2" style={{ fontFamily: "'Inter', system-ui, sans-serif" }}>
                 <Calendar className="h-5 w-5 text-[#22C55E]" />
-                Visit Details
+                {flowT?.sections?.visitDetails || "Visit Details"}
               </CardTitle>
             </div>
             <CardContent className="px-6 pt-4 pb-6 space-y-6">
               {/* Date */}
               <div className="space-y-2">
                 <Label htmlFor="date" className="text-sm font-medium text-[#1a1a1a] dark:text-[#ffffff]" style={{ fontFamily: "'Inter', system-ui, sans-serif" }}>
-                  Date to Come <span className="text-red-500">*</span>
+                  {(flowT?.fields?.dateToCome || "Date to Come")} <span className="text-red-500">*</span>
                 </Label>
                 <div className="relative">
                   <Calendar className="pointer-events-none absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-[#9CA88A] dark:text-[#6b7280]" />
@@ -811,14 +890,14 @@ export default function BookTablePage() {
               {/* Time */}
               <div className="space-y-2">
                 <Label htmlFor="time" className="text-sm font-medium text-[#1a1a1a] dark:text-[#ffffff]" style={{ fontFamily: "'Inter', system-ui, sans-serif" }}>
-                  Time to Come <span className="text-red-500">*</span>
+                  {(flowT?.fields?.timeToCome || "Time to Come")} <span className="text-red-500">*</span>
                 </Label>
                 <Select value={time} onValueChange={setTime} disabled={submitting}>
                   <SelectTrigger
                     id="time"
                     className="h-12 rounded-xl border-2 border-[#E4E0D2] bg-white text-sm font-normal shadow-sm transition-all focus-visible:border-[#22C55E] focus-visible:ring-2 focus-visible:ring-[#22C55E]/20 dark:border-[#1f1f1f] dark:bg-[#0f0f0f] dark:text-white"
                   >
-                    <SelectValue placeholder="Select time" />
+                    <SelectValue placeholder={flowT?.placeholders?.selectTime || "Select time"} />
                   </SelectTrigger>
                   <SelectContent className="rounded-xl">
                     {timeSlots.map((slot) => (
@@ -833,19 +912,19 @@ export default function BookTablePage() {
               {/* Guest Count */}
               <div className="space-y-2">
                 <Label htmlFor="guests" className="text-sm font-medium text-[#1a1a1a] dark:text-[#ffffff]" style={{ fontFamily: "'Inter', system-ui, sans-serif" }}>
-                  Number of Guests <span className="text-red-500">*</span>
+                  {(flowT?.fields?.numberOfGuests || "Number of Guests")} <span className="text-red-500">*</span>
                 </Label>
                 <Select value={guestCount} onValueChange={setGuestCount} disabled={submitting}>
                   <SelectTrigger
                     id="guests"
                     className="h-12 rounded-xl border-2 border-[#E4E0D2] bg-white text-sm font-normal shadow-sm transition-all focus-visible:border-[#22C55E] focus-visible:ring-2 focus-visible:ring-[#22C55E]/20 dark:border-[#1f1f1f] dark:bg-[#0f0f0f] dark:text-white"
                   >
-                    <SelectValue placeholder="Select" />
+                    <SelectValue placeholder={flowT?.placeholders?.select || "Select"} />
                   </SelectTrigger>
                   <SelectContent className="rounded-xl">
                     {Array.from({ length: 10 }, (_, i) => i + 1).map((num) => (
                       <SelectItem key={num} value={num.toString()} className="rounded-lg">
-                        {num} {num === 1 ? "Person" : "Persons"}
+                        {num} {num === 1 ? (flowT?.labels?.personSingular || "Person") : (flowT?.labels?.personPlural || "Persons")}
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -855,13 +934,13 @@ export default function BookTablePage() {
               {/* Special Note */}
               <div className="space-y-2">
                 <Label htmlFor="note" className="text-sm font-medium text-[#1a1a1a] dark:text-[#ffffff]" style={{ fontFamily: "'Inter', system-ui, sans-serif" }}>
-                  Special Notes <span className="text-xs font-normal text-[#9ca3af]">(optional)</span>
+                  {(flowT?.fields?.specialNotes || "Special Notes")} <span className="text-xs font-normal text-[#9ca3af]">({flowT?.labels?.optional || "optional"})</span>
                 </Label>
                 <Textarea
                   id="note"
                   value={specialNote}
                   onChange={(e) => setSpecialNote(e.target.value)}
-                  placeholder="Any special requests or dietary requirements..."
+                  placeholder={flowT?.placeholders?.specialRequests || "Any special requests or dietary requirements..."}
                   rows={4}
                   disabled={submitting}
                   className="rounded-xl border-2 border-[#E4E0D2] bg-white px-4 py-3 text-sm font-normal shadow-sm transition-all placeholder:text-[#9ca3af] focus-visible:border-[#22C55E] focus-visible:ring-2 focus-visible:ring-[#22C55E]/20 dark:border-[#1f1f1f] dark:bg-[#0f0f0f] dark:text-white dark:placeholder:text-[#6b7280] resize-none"
@@ -876,9 +955,9 @@ export default function BookTablePage() {
         <div className="pointer-events-none fixed inset-x-0 bottom-0 z-20 bg-gradient-to-t from-[#FAFAF5] via-[#FAFAF5]/95 to-transparent pb-6 pt-6 dark:from-[#000000] dark:via-[#000000] dark:to-transparent">
           <div className="pointer-events-auto mx-auto flex w-full max-w-2xl flex-col gap-3 px-4 sm:px-6">
             <div className="flex items-center justify-between text-xs text-[#6B7B5A] dark:text-[#9ca3af] px-1" style={{ fontFamily: "'Inter', system-ui, sans-serif" }}>
-              <span className="font-medium">Next: Select Table</span>
+              <span className="font-medium">{flowT?.actions?.nextSelectTable || "Next: Select Table"}</span>
               <span className="font-medium">
-                {guestCount} {guestCount === "1" ? "guest" : "guests"}
+                {guestCount} {guestCount === "1" ? (t.booking?.labels?.guestSingular || "guest") : (t.booking?.labels?.guestPlural || "guests")}
               </span>
             </div>
             <Button
@@ -892,10 +971,10 @@ export default function BookTablePage() {
               {submitting ? (
                 <>
                   <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-                  Processing...
+                  {flowT?.actions?.processing || "Processing..."}
                 </>
               ) : (
-                "Continue to Select Table"
+                flowT?.actions?.continueToSelectTable || "Continue to Select Table"
               )}
             </Button>
           </div>

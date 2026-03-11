@@ -1,0 +1,26 @@
+{
+  "title": "Tableau de bord",
+  "welcome": "Bienvenue",
+  "totalCategories": "Total catégories",
+  "activeCategories": "Catégories actives",
+  "quickCreate": "Créer un menu",
+  "recentActivity": "Activité récente",
+  "quickActions": "Actions rapides",
+  "analytics": "Analyses",
+  "noMenu": "Aucun menu trouvé",
+  "createMenu": "Créer un menu",
+  "viewPublic": "Voir le menu public",
+  "noRecentActivity": "Aucune activité récente",
+  "smartInsights": "Aperçus intelligents du tableau de bord",
+  "addCategory": "Ajouter catégorie",
+  "generateQr": "Générer QR",
+  "manageMenu": "Gérer le menu",
+  "viewAnalytics": "Voir les analyses",
+  "categoryGrowth": "Croissance des catégories",
+  "qrActivity": "Activité des codes QR",
+  "activity": {
+    "categoryAdded": "Catégorie ajoutée",
+    "qrGenerated": "Code QR généré",
+    "menuUpdated": "Menu mis à jour"
+  }
+}

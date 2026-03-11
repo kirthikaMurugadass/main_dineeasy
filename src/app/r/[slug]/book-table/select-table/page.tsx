@@ -8,6 +8,7 @@ import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { toast } from "sonner";
+import { useI18n } from "@/lib/i18n/context";
 
 interface Restaurant {
   id: string;
@@ -49,6 +50,8 @@ type TableStatus = "available" | "locked" | "booked" | "selected";
 export default function SelectTablePage() {
   const params = useParams();
   const router = useRouter();
+  const { t } = useI18n();
+  const flowT = t.booking?.publicFlow;
   const [restaurant, setRestaurant] = useState<Restaurant | null>(null);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
@@ -90,14 +93,14 @@ export default function SelectTablePage() {
       if (typeof window !== "undefined") {
         const raw = sessionStorage.getItem(key);
         if (!raw) {
-          toast.error("Please start your booking again.");
+          toast.error(flowT?.messages?.startBookingAgain || "Please start your booking again.");
           router.push(`/r/${slug}/book-table`);
           return;
         }
         try {
           parsed = JSON.parse(raw) as BookingStepData;
         } catch {
-          toast.error("Invalid booking data. Please start again.");
+          toast.error(flowT?.messages?.invalidBookingData || "Invalid booking data. Please start again.");
           router.push(`/r/${slug}/book-table`);
           return;
         }
@@ -116,7 +119,7 @@ export default function SelectTablePage() {
           .single();
 
         if (restaurantError || !restaurantData) {
-          toast.error("Restaurant not found");
+          toast.error(flowT?.messages?.restaurantNotFound || "Restaurant not found");
           router.push("/");
           return;
         }
@@ -143,7 +146,7 @@ export default function SelectTablePage() {
 
         if (tablesError) {
           console.error("Error loading tables:", tablesError);
-          toast.error("Failed to load tables");
+          toast.error(flowT?.messages?.failedLoadTables || "Failed to load tables");
           return;
         }
 
@@ -266,7 +269,7 @@ export default function SelectTablePage() {
         };
       } catch (error) {
         console.error("Select table init error:", error);
-        toast.error("Failed to load table selection");
+        toast.error(flowT?.messages?.failedLoadTableSelection || "Failed to load table selection");
         setLoading(false);
       }
     }
@@ -302,11 +305,11 @@ export default function SelectTablePage() {
 
     const status = getStatusForTable(tableId);
     if (status === "booked") {
-      toast.error("This table is already booked for the selected time.");
+      toast.error(flowT?.messages?.tableAlreadyBooked || "This table is already booked for the selected time.");
       return;
     }
     if (status === "locked" && selectedTableId !== tableId) {
-      toast.error("This table is temporarily held by another guest.");
+      toast.error(flowT?.messages?.tableHeldByAnother || "This table is temporarily held by another guest.");
       return;
     }
 
@@ -331,22 +334,22 @@ export default function SelectTablePage() {
 
       if (error) {
         console.error("Error creating lock:", error);
-        toast.error("Failed to select table. Please try again.");
+        toast.error(flowT?.messages?.failedSelectTableRetry || "Failed to select table. Please try again.");
         return;
       }
 
       setSelectedTableId(tableId);
-      toast.success("Table selected. Please confirm your booking.");
+      toast.success(flowT?.messages?.tableSelectedConfirmBooking || "Table selected. Please confirm your booking.");
     } catch (error) {
       console.error("Table selection error:", error);
-      toast.error("Failed to select table.");
+      toast.error(flowT?.messages?.failedSelectTable || "Failed to select table.");
     }
   };
 
   const handleConfirm = async () => {
     if (!restaurant || !stepData) return;
     if (!selectedTableId) {
-      toast.error("Please select a table to continue.");
+      toast.error(flowT?.validation?.selectTableRequired || "Please select a table to continue.");
       return;
     }
 
@@ -366,13 +369,13 @@ export default function SelectTablePage() {
 
       if (lockError) {
         console.error("Error verifying lock:", lockError);
-        toast.error("Could not verify table lock. Please try again.");
+        toast.error(flowT?.messages?.lockVerifyError || "Could not verify table lock. Please try again.");
         setSubmitting(false);
         return;
       }
 
       if (!locks || locks.length === 0) {
-        toast.error("Your table hold has expired. Please select a table again.");
+        toast.error(flowT?.messages?.tableHoldExpired || "Your table hold has expired. Please select a table again.");
         setSelectedTableId(null);
         setSubmitting(false);
         return;
@@ -399,7 +402,7 @@ export default function SelectTablePage() {
 
       if (!response.ok) {
         console.error("Final booking API error:", data);
-        throw new Error(data.error || "Failed to create booking");
+        throw new Error(data.error || flowT?.messages?.failedCreateBooking || "Failed to create booking");
       }
 
       setBookingData(data);
@@ -417,7 +420,7 @@ export default function SelectTablePage() {
         sessionStorage.removeItem(`dineeasy-book-table-step1-${slug}`);
       }
 
-      toast.success("Booking request sent! We will confirm shortly.");
+      toast.success(flowT?.messages?.bookingRequestSent || "Booking request sent! We will confirm shortly.");
       setSuccess(true);
       
       // Auto-close success modal after 5 seconds
@@ -427,7 +430,7 @@ export default function SelectTablePage() {
     } catch (error) {
       console.error("Final booking error:", error);
       toast.error(
-        error instanceof Error ? error.message : "Failed to confirm booking"
+        error instanceof Error ? error.message : flowT?.messages?.failedConfirmBooking || "Failed to confirm booking"
       );
     } finally {
       setSubmitting(false);
@@ -451,19 +454,19 @@ export default function SelectTablePage() {
       <div className="flex min-h-screen items-center justify-center bg-background px-4">
         <Card className="max-w-md">
           <CardHeader>
-            <CardTitle>Online bookings are not available</CardTitle>
+            <CardTitle>{flowT?.messages?.onlineBookingUnavailableTitle || "Online bookings are not available"}</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             <p className="text-sm text-muted-foreground">
-              This restaurant does not currently accept online table bookings.
-              Please contact the restaurant directly to make a reservation.
+              {flowT?.messages?.onlineBookingUnavailable ||
+                "This restaurant does not currently accept online table bookings. Please contact the restaurant directly to make a reservation."}
             </p>
             <Button
               variant="outline"
               className="w-full"
               onClick={() => router.push(`/r/${slug}`)}
             >
-              Back to menu
+              {flowT?.actions?.backToMenu || "Back to menu"}
             </Button>
           </CardContent>
         </Card>
@@ -533,6 +536,9 @@ export default function SelectTablePage() {
           <div className="absolute inset-0 bg-gradient-to-br from-[#22C55E]/5 via-transparent to-transparent dark:from-[#22C55E]/5" />
 
           <div className="relative z-10">
+            <p className="mb-2 text-[11px] font-medium uppercase tracking-[0.16em] text-[#9CA88A] dark:text-[#9ca3af]">
+              {flowT?.steps?.step4Of4 || "Step 4 of 4"}
+            </p>
             <motion.div
               initial={{ scale: 0.8, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
@@ -548,7 +554,7 @@ export default function SelectTablePage() {
               className="mb-2 text-3xl font-bold text-[#1F2933] dark:text-white mb-3"
               style={{ fontFamily: "'Inter', system-ui, sans-serif" }}
             >
-              Table Booked Successfully! 🎉
+              {flowT?.steps?.tableBookedSuccess || "Table Booked Successfully! 🎉"}
             </motion.h1>
             <motion.p 
               initial={{ opacity: 0 }}
@@ -557,7 +563,7 @@ export default function SelectTablePage() {
               className="mb-8 text-base text-[#6B7B5A] dark:text-[#9ca3af]"
               style={{ fontFamily: "'Inter', system-ui, sans-serif" }}
             >
-              Your table reservation has been confirmed.
+              {flowT?.messages?.reservationConfirmed || "Your table reservation has been confirmed."}
             </motion.p>
 
           {stepData && (
@@ -570,28 +576,28 @@ export default function SelectTablePage() {
               <div className="space-y-3">
                 {/* Table Number */}
                 <div className="border-b border-[#E4E0D2] dark:border-[#1f1f1f] pb-3">
-                  <p className="text-xs font-medium uppercase tracking-wide text-[#9CA88A] dark:text-[#9ca3af] mb-1">Table Number</p>
+                  <p className="text-xs font-medium uppercase tracking-wide text-[#9CA88A] dark:text-[#9ca3af] mb-1">{flowT?.fields?.tableNumber || "Table Number"}</p>
                   <p className="text-lg font-bold text-[#2D3A1A] dark:text-[#ffffff]">
                     {selectedTableId
-                      ? tables.find((t) => t.id === selectedTableId)?.table_name ?? "N/A"
-                      : "N/A"}
+                      ? tables.find((t) => t.id === selectedTableId)?.table_name ?? (flowT?.labels?.notAvailable || "N/A")
+                      : (flowT?.labels?.notAvailable || "N/A")}
                   </p>
                 </div>
 
                 {/* Order Details */}
                 <div className="border-b border-[#E4E0D2] dark:border-[#1f1f1f] pb-3">
-                  <p className="text-xs font-medium uppercase tracking-wide text-[#9CA88A] dark:text-[#9ca3af] mb-2">Order Details</p>
+                  <p className="text-xs font-medium uppercase tracking-wide text-[#9CA88A] dark:text-[#9ca3af] mb-2">{flowT?.sections?.orderDetails || "Order Details"}</p>
                   <div className="space-y-1">
                     <p className="text-sm text-[#2D3A1A] dark:text-[#ffffff]">
-                      <span className="font-medium">Customer:</span> {stepData.customerName}
+                      <span className="font-medium">{flowT?.fields?.customerName || "Customer"}:</span> {stepData.customerName}
                     </p>
                     <p className="text-sm text-[#6B7B5A] dark:text-[#9ca3af]">
-                      <span className="font-medium">Guests:</span> {stepData.guestCount}{" "}
-                      {stepData.guestCount === 1 ? "person" : "persons"}
+                      <span className="font-medium">{flowT?.fields?.guests || "Guests"}:</span> {stepData.guestCount}{" "}
+                      {stepData.guestCount === 1 ? (flowT?.labels?.personSingular || "person") : (flowT?.labels?.personPlural || "persons")}
                     </p>
                     {bookingData?.id && (
                       <p className="text-sm text-[#6B7B5A] dark:text-[#9ca3af]">
-                        <span className="font-medium">Reservation ID:</span> {bookingData.id ?? bookingData.bookingId ?? "—"}
+                        <span className="font-medium">{flowT?.fields?.reservationId || "Reservation ID"}:</span> {bookingData.id ?? bookingData.bookingId ?? "—"}
                       </p>
                     )}
                   </div>
@@ -599,9 +605,9 @@ export default function SelectTablePage() {
 
                 {/* Booking Time */}
                 <div>
-                  <p className="text-xs font-medium uppercase tracking-wide text-[#9CA88A] dark:text-[#9ca3af] mb-1">Booking Time</p>
+                  <p className="text-xs font-medium uppercase tracking-wide text-[#9CA88A] dark:text-[#9ca3af] mb-1">{flowT?.fields?.bookingTime || "Booking Time"}</p>
                   <p className="text-base font-semibold text-[#2D3A1A] dark:text-[#ffffff]">
-                    {stepData.bookingDate} at {stepData.bookingTime}
+                    {stepData.bookingDate} {flowT?.labels?.at || "at"} {stepData.bookingTime}
                   </p>
                 </div>
               </div>
@@ -614,13 +620,13 @@ export default function SelectTablePage() {
               className="w-full rounded-full border-[#D6D2C4]/70 bg-white/80 hover:bg-[#E8E4D9]/80 sm:w-auto"
               onClick={() => router.push(`/r/${restaurant.slug}`)}
             >
-              Back to Home
+              {flowT?.actions?.backToHome || "Back to Home"}
             </Button>
             <Button
               className="w-full rounded-full bg-gradient-to-r from-[#22C55E] to-[#16A34A] text-white shadow-md hover:shadow-lg sm:w-auto"
               onClick={() => router.push(`/r/${restaurant.slug}`)}
             >
-              View Reservation
+              {flowT?.actions?.viewReservation || "View Reservation"}
             </Button>
           </div>
         </div>
@@ -652,9 +658,9 @@ export default function SelectTablePage() {
               </Button>
               <div>
                 <p className="text-[11px] font-medium uppercase tracking-[0.16em] text-[#9CA88A] dark:text-[#9ca3af]">
-                  Step 3 of 4
+                  {flowT?.steps?.step3Of4 || "Step 3 of 4"}
                 </p>
-                <h1 className="text-2xl font-semibold text-[#2D3A1A] dark:text-[#ffffff]">Order Summary</h1>
+                <h1 className="text-2xl font-semibold text-[#2D3A1A] dark:text-[#ffffff]">{flowT?.steps?.orderSummary || "Order Summary"}</h1>
               </div>
             </div>
           </div>
@@ -668,18 +674,18 @@ export default function SelectTablePage() {
           >
             <Card className="rounded-2xl border border-[#D6D2C4]/60 bg-gradient-to-b from-white to-[#F7F4EA] shadow-sm dark:border-[#1f1f1f] dark:bg-[#000000] dark:from-transparent dark:via-transparent dark:to-transparent">
               <CardHeader>
-                <CardTitle className="text-lg font-semibold text-[#2D3A1A] dark:text-[#ffffff]">Reservation Details</CardTitle>
+                <CardTitle className="text-lg font-semibold text-[#2D3A1A] dark:text-[#ffffff]">{flowT?.sections?.reservationDetails || "Reservation Details"}</CardTitle>
               </CardHeader>
               <CardContent className="space-y-6 text-[#2D3A1A] dark:text-[#ffffff]">
                 {/* Selected Table */}
                 <div className="space-y-2">
-                  <p className="text-xs font-medium uppercase tracking-wide text-[#9CA88A]">Selected Table</p>
-                  <p className="text-xl font-bold text-[#2D3A1A]">{selectedTable?.table_name || "N/A"}</p>
+                  <p className="text-xs font-medium uppercase tracking-wide text-[#9CA88A]">{flowT?.fields?.selectedTable || "Selected Table"}</p>
+                  <p className="text-xl font-bold text-[#2D3A1A]">{selectedTable?.table_name || (flowT?.labels?.notAvailable || "N/A")}</p>
                 </div>
 
                 {/* Customer Information */}
                 <div className="space-y-2 border-t border-[#E4E0D2] pt-4 dark:border-[#1f1f1f]">
-                  <p className="text-xs font-medium uppercase tracking-wide text-[#9CA88A] dark:text-[#9ca3af]">Customer Information</p>
+                  <p className="text-xs font-medium uppercase tracking-wide text-[#9CA88A] dark:text-[#9ca3af]">{flowT?.sections?.customerInformation || "Customer Information"}</p>
                   <div className="space-y-1 text-sm">
                     <p className="font-medium text-[#2D3A1A] dark:text-[#ffffff]">{stepData.customerName}</p>
                     <p className="text-[#6B7B5A] dark:text-[#e5e5e5]">{stepData.phone}</p>
@@ -689,43 +695,43 @@ export default function SelectTablePage() {
 
                 {/* Reservation Info */}
                 <div className="space-y-2 border-t border-[#E4E0D2] pt-4 dark:border-[#1f1f1f]">
-                  <p className="text-xs font-medium uppercase tracking-wide text-[#9CA88A] dark:text-[#9ca3af]">Reservation Info</p>
+                  <p className="text-xs font-medium uppercase tracking-wide text-[#9CA88A] dark:text-[#9ca3af]">{flowT?.sections?.reservationInfo || "Reservation Info"}</p>
                   <div className="space-y-1 text-sm">
                     <p className="text-[#6B7B5A] dark:text-[#e5e5e5]">
-                      <span className="font-medium text-[#2D3A1A] dark:text-[#ffffff]">Date:</span> {stepData.bookingDate}
+                      <span className="font-medium text-[#2D3A1A] dark:text-[#ffffff]">{flowT?.fields?.date || "Date"}:</span> {stepData.bookingDate}
                     </p>
                     <p className="text-[#6B7B5A] dark:text-[#e5e5e5]">
-                      <span className="font-medium text-[#2D3A1A] dark:text-[#ffffff]">Time:</span> {stepData.bookingTime}
+                      <span className="font-medium text-[#2D3A1A] dark:text-[#ffffff]">{flowT?.fields?.time || "Time"}:</span> {stepData.bookingTime}
                     </p>
                     <p className="text-[#6B7B5A] dark:text-[#e5e5e5]">
-                      <span className="font-medium text-[#2D3A1A] dark:text-[#ffffff]">Guests:</span> {stepData.guestCount}{" "}
-                      {stepData.guestCount === 1 ? "person" : "persons"}
+                      <span className="font-medium text-[#2D3A1A] dark:text-[#ffffff]">{flowT?.fields?.guests || "Guests"}:</span> {stepData.guestCount}{" "}
+                      {stepData.guestCount === 1 ? (flowT?.labels?.personSingular || "person") : (flowT?.labels?.personPlural || "persons")}
                     </p>
                   </div>
                 </div>
 
                 {/* Ordered Items (UI placeholder) */}
                 <div className="space-y-2 border-t border-[#E4E0D2] pt-4 dark:border-[#1f1f1f]">
-                  <p className="text-xs font-medium uppercase tracking-wide text-[#9CA88A] dark:text-[#9ca3af]">Ordered Items</p>
+                  <p className="text-xs font-medium uppercase tracking-wide text-[#9CA88A] dark:text-[#9ca3af]">{flowT?.sections?.orderedItems || "Ordered Items"}</p>
                   <div className="rounded-xl bg-[#F7F4EA] p-3 text-sm text-[#6B7B5A] dark:bg-[#111111] dark:text-[#e5e5e5]">
-                    Table reservation fee
+                    {flowT?.labels?.tableReservationFee || "Table reservation fee"}
                   </div>
                 </div>
 
                 {/* Billing Section */}
                 <div className="space-y-3 border-t border-[#E4E0D2] pt-4 dark:border-[#1f1f1f]">
-                  <p className="text-xs font-medium uppercase tracking-wide text-[#9CA88A] dark:text-[#9ca3af]">Billing</p>
+                  <p className="text-xs font-medium uppercase tracking-wide text-[#9CA88A] dark:text-[#9ca3af]">{flowT?.sections?.billing || "Billing"}</p>
                   <div className="space-y-2 text-sm">
                     <div className="flex items-center justify-between text-[#6B7B5A] dark:text-[#e5e5e5]">
-                      <span>Subtotal</span>
+                      <span>{flowT?.fields?.subtotal || "Subtotal"}</span>
                       <span className="font-medium text-[#2D3A1A] dark:text-[#ffffff]">CHF {basePrice.toFixed(2)}</span>
                     </div>
                     <div className="flex items-center justify-between text-[#6B7B5A] dark:text-[#e5e5e5]">
-                      <span>Tax (10%)</span>
+                      <span>{flowT?.fields?.tax || "Tax (10%)"}</span>
                       <span className="font-medium text-[#2D3A1A] dark:text-[#ffffff]">CHF {tax.toFixed(2)}</span>
                     </div>
                     <div className="flex items-center justify_between border-t border-[#E4E0D2] pt-2 text-lg font-bold text-[#2D3A1A] dark:border-[#1f1f1f] dark:text-[#ffffff]">
-                      <span>Total Price</span>
+                      <span>{flowT?.fields?.totalPrice || "Total Price"}</span>
                       <span className="text-[#22C55E]">CHF {total.toFixed(2)}</span>
                     </div>
                   </div>
@@ -746,10 +752,10 @@ export default function SelectTablePage() {
                 {submitting ? (
                   <>
                     <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-                    Processing...
+                  {flowT?.actions?.processing || "Processing..."}
                   </>
                 ) : (
-                  "Confirm Order"
+                  flowT?.actions?.confirmBooking || "Confirm Booking"
                 )}
               </Button>
             </div>
@@ -776,9 +782,9 @@ export default function SelectTablePage() {
             </Button>
             <div>
               <p className="text-[11px] font-medium uppercase tracking-[0.16em] text-[#9CA88A] dark:text-[#9ca3af]">
-                Step 2 of 4
+                {flowT?.steps?.step2Of4 || "Step 2 of 4"}
               </p>
-              <h1 className="text-2xl font-semibold text-[#2D3A1A] dark:text-[#ffffff]">Book a Table</h1>
+              <h1 className="text-2xl font-semibold text-[#2D3A1A] dark:text-[#ffffff]">{flowT?.steps?.bookATable || "Book a Table"}</h1>
             </div>
           </div>
           <p className="ml-0 flex flex-wrap items-center gap-3 text-sm text-[#6B7B5A] dark:text-[#9ca3af] sm:ml-12">
@@ -792,7 +798,7 @@ export default function SelectTablePage() {
             </span>
             <span className="inline-flex items-center gap-1.5">
               <Users className="h-4 w-4" />
-              {stepData.guestCount} {stepData.guestCount === 1 ? "guest" : "guests"}
+              {stepData.guestCount} {stepData.guestCount === 1 ? (t.booking?.labels?.guestSingular || "guest") : (t.booking?.labels?.guestPlural || "guests")}
             </span>
           </p>
         </div>
@@ -803,7 +809,7 @@ export default function SelectTablePage() {
             <Card className="rounded-2xl border border-[#D6D2C4]/60 bg-gradient-to-b from-white to-[#F7F4EA] shadow-sm dark:border-[#1f1f1f] dark:bg-[#000000] dark:from-transparent dark:via-transparent dark:to-transparent">
               <CardContent className="py-12 text-center">
                 <p className="text-sm text-[#6B7B5A]">
-                  No tables configured yet. Please contact the restaurant.
+                  {flowT?.messages?.noTablesConfigured || "No tables configured yet. Please contact the restaurant."}
                 </p>
               </CardContent>
             </Card>
@@ -868,8 +874,8 @@ export default function SelectTablePage() {
                             status === "selected" ? "text-white/90" : "text-[#6B7B5A]"
                           }`}
                         >
-                          Capacity: {table.capacity}{" "}
-                          {table.capacity === 1 ? "Person" : "Persons"}
+                          {flowT?.fields?.capacity || "Capacity"}: {table.capacity}{" "}
+                          {table.capacity === 1 ? (flowT?.labels?.personSingular || "Person") : (flowT?.labels?.personPlural || "Persons")}
                         </div>
                       </motion.button>
                     );
@@ -883,15 +889,15 @@ export default function SelectTablePage() {
         <div className="mb-6 flex flex-wrap items-center justify-center gap-6 rounded-2xl border border-[#D6D2C4]/60 bg-gradient-to-b from-white to-[#F7F4EA] px-6 py-4 shadow-sm">
           <div className="flex items-center gap-2">
             <div className="h-2 w-2 rounded-full bg-[#22C55E]" />
-            <span className="text-sm text-[#6B7B5A]">Available</span>
+            <span className="text-sm text-[#6B7B5A]">{flowT?.status?.available || "Available"}</span>
           </div>
           <div className="flex items-center gap-2">
             <div className="h-2 w-2 rounded-full bg-[#F97316]" />
-            <span className="text-sm text-[#6B7B5A]">Occupied</span>
+            <span className="text-sm text-[#6B7B5A]">{flowT?.status?.occupied || "Occupied"}</span>
           </div>
           <div className="flex items-center gap-2">
             <div className="h-2 w-2 rounded-full bg-[#3B82F6]" />
-            <span className="text-sm text-[#6B7B5A]">Reserved</span>
+            <span className="text-sm text-[#6B7B5A]">{flowT?.status?.reserved || "Reserved"}</span>
           </div>
         </div>
 
@@ -902,7 +908,7 @@ export default function SelectTablePage() {
               type="button"
               onClick={() => {
                 if (!selectedTableId) {
-                  toast.error("Please select a table to continue.");
+                  toast.error(flowT?.validation?.selectTableRequired || "Please select a table to continue.");
                   return;
                 }
                 setUiStep("summary");
@@ -913,10 +919,10 @@ export default function SelectTablePage() {
               {submitting ? (
                 <>
                   <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-                  Processing...
+                  {flowT?.actions?.processing || "Processing..."}
                 </>
               ) : (
-                "Continue"
+                flowT?.actions?.continue || "Continue"
               )}
             </Button>
           </div>

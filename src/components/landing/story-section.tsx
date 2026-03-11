@@ -3,32 +3,45 @@
 import Link from "next/link";
 import { FadeIn, ScrollReveal } from "@/components/motion";
 import { Button } from "@/components/ui/button";
+import { useI18n } from "@/lib/i18n/context";
 import { Sparkles, Zap, GaugeCircle, Smile } from "lucide-react";
 
-const benefits = [
-  {
-    title: "Contactless dining experience",
-    body: "Guests browse the full menu, place orders, and pay from their phone—no printed menus required.",
-    icon: <Sparkles className="h-5 w-5" />,
-  },
-  {
-    title: "Faster order processing",
-    body: "Orders go straight from the table to your kitchen or bar, reducing wait times and errors.",
-    icon: <Zap className="h-5 w-5" />,
-  },
-  {
-    title: "Improved restaurant efficiency",
-    body: "Turn tables faster, keep staff focused on hospitality, and let DineEasy handle the busy-work.",
-    icon: <GaugeCircle className="h-5 w-5" />,
-  },
-  {
-    title: "Better customer experience",
-    body: "Delight guests with shorter waits, effortless reordering, and clear, mobile-first menus.",
-    icon: <Smile className="h-5 w-5" />,
-  },
-];
-
 export function StorySection() {
+  const { t } = useI18n();
+  
+  type BenefitWithIcon = {
+    title: string;
+    body: string;
+    icon: React.ReactElement;
+  };
+
+  const benefits: BenefitWithIcon[] = (t.home?.story?.benefits || [
+    {
+      title: "Contactless dining experience",
+      body: "Guests browse the full menu, place orders, and pay from their phone—no printed menus required.",
+    },
+    {
+      title: "Faster order processing",
+      body: "Orders go straight from the table to your kitchen or bar, reducing wait times and errors.",
+    },
+    {
+      title: "Improved restaurant efficiency",
+      body: "Turn tables faster, keep staff focused on hospitality, and let DineEasy handle the busy-work.",
+    },
+    {
+      title: "Better customer experience",
+      body: "Delight guests with shorter waits, effortless reordering, and clear, mobile-first menus.",
+    },
+  ]).map((item: { title: string; body: string }, index: number) => {
+    const icons = [
+      <Sparkles className="h-5 w-5" key="sparkles" />,
+      <Zap className="h-5 w-5" key="zap" />,
+      <GaugeCircle className="h-5 w-5" key="gauge" />,
+      <Smile className="h-5 w-5" key="smile" />,
+    ];
+    return { ...item, icon: icons[index] };
+  });
+
   return (
     <section className="relative border-t border-border/60 bg-gradient-to-b from-[var(--hero-bg)] via-[var(--section-alt)] to-background py-16 sm:py-20 md:py-24 lg:py-28 2xl:py-32 dark:bg-[#000000]">
       {/* soft radial accent */}
@@ -41,18 +54,17 @@ export function StorySection() {
         <div className="mx-auto max-w-3xl text-center">
           <FadeIn delay={0.1}>
             <p className="inline-flex items-center justify-center rounded-full bg-card/70 px-4 py-1 text-[11px] font-semibold uppercase tracking-[0.25em] text-primary shadow-soft backdrop-blur">
-              Why DineEasy
+              {t.home?.story?.badge || "Why DineEasy"}
             </p>
           </FadeIn>
           <ScrollReveal delay={0.05}>
             <h2 className="mt-5 text-balance text-[clamp(2.1rem,3.8vw+0.5rem,3rem)] font-semibold leading-tight tracking-tight text-foreground dark:text-[#ffffff]">
-              Give every guest a smooth, contactless dining experience.
+              {t.home?.story?.title || "Give every guest a smooth, contactless dining experience."}
             </h2>
           </ScrollReveal>
           <ScrollReveal delay={0.1}>
             <p className="mx-auto mt-4 max-w-2xl text-base leading-relaxed text-muted-foreground sm:text-lg dark:text-[#bfbfbf]">
-              DineEasy turns any table into a smart entry point for your restaurant—guests scan,
-              browse, order, and book in seconds while your team focuses on hospitality.
+              {t.home?.story?.description || "DineEasy turns any table into a smart entry point for your restaurant—guests scan, browse, order, and book in seconds while your team focuses on hospitality."}
             </p>
           </ScrollReveal>
         </div>
@@ -88,7 +100,7 @@ export function StorySection() {
                 size="lg"
                 className="rounded-full border border-primary/40 bg-card/80 px-8 text-sm font-semibold text-foreground shadow-soft backdrop-blur-md transition-all duration-300 hover:border-primary hover:bg-primary hover:text-primary-foreground hover:shadow-lg"
               >
-                See how it works
+                {t.home?.story?.cta || "See how it works"}
               </Button>
             </Link>
           </div>
