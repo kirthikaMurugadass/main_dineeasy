@@ -19,6 +19,7 @@ export async function POST(req: NextRequest) {
       specialNote,
       tableId,
     } = body;
+    const parsedGuestCount = Number(guestCount);
 
     // Validation
     if (!restaurantId || !customerName || !phone || !email || !bookingDate || !bookingTime || !guestCount) {
@@ -28,9 +29,16 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    if (guestCount < 1 || guestCount > 10) {
+    if (!Number.isInteger(parsedGuestCount) || parsedGuestCount < 1 || parsedGuestCount > 10) {
       return NextResponse.json(
         { error: "Guest count must be between 1 and 10" },
+        { status: 400 }
+      );
+    }
+
+    if (!tableId || typeof tableId !== "string") {
+      return NextResponse.json(
+        { error: "Table selection is required" },
         { status: 400 }
       );
     }
@@ -94,6 +102,59 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    // Enforce exact table capacity match and table ownership.
+    const { data: table, error: tableError } = await admin
+      .from("restaurant_tables")
+      .select("id, restaurant_id, capacity, is_active")
+      .eq("id", tableId)
+      .eq("restaurant_id", restaurantId)
+      .single();
+
+    if (tableError || !table) {
+      return NextResponse.json(
+        { error: "Selected table is invalid for this restaurant" },
+        { status: 400 }
+      );
+    }
+
+    if (!table.is_active) {
+      return NextResponse.json(
+        { error: "Selected table is not available" },
+        { status: 400 }
+      );
+    }
+
+    if (table.capacity !== parsedGuestCount) {
+      return NextResponse.json(
+        { error: "Selected table capacity does not match the number of guests." },
+        { status: 400 }
+      );
+    }
+
+    // Prevent bypass: ensure table isn't already booked for this slot.
+    const { count: existingCount, error: existingError } = await admin
+      .from("bookings")
+      .select("id", { count: "exact", head: true })
+      .eq("restaurant_id", restaurantId)
+      .eq("table_id", tableId)
+      .eq("booking_date", bookingDate)
+      .eq("booking_time", bookingTime)
+      .in("status", ["pending", "confirmed"]);
+
+    if (existingError) {
+      return NextResponse.json(
+        { error: "Failed to validate table availability" },
+        { status: 500 }
+      );
+    }
+
+    if ((existingCount ?? 0) > 0) {
+      return NextResponse.json(
+        { error: "Selected table is already booked for this time" },
+        { status: 409 }
+      );
+    }
+
     // Create booking (optionally with table_id for multi-step flow)
     const { data: booking, error: bookingError } = await admin
       .from("bookings")
@@ -104,9 +165,9 @@ export async function POST(req: NextRequest) {
         email: emailValue,
         booking_date: bookingDate,
         booking_time: bookingTime,
-        guest_count: guestCount,
+        guest_count: parsedGuestCount,
         special_note: (specialNote as string | undefined)?.trim() || null,
-        table_id: tableId || null,
+        table_id: tableId,
         status: "pending",
       })
       .select("id")

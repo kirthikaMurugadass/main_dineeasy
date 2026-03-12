@@ -36,6 +36,11 @@ export function Navbar() {
   const { t, language, setLanguage, languages } = useI18n();
   const { theme, setTheme } = useTheme();
   const ThemeIcon = theme === "light" ? Sun : theme === "dark" ? Moon : Monitor;
+  const themeLabels = {
+    light: t.navbar?.themeLight || "Light",
+    dark: t.navbar?.themeDark || "Dark",
+    system: t.navbar?.themeSystem || "System",
+  } as const;
   
   // Hide Sign In and Get Started buttons on auth pages
   const isAuthPage = pathname === "/login" || pathname === "/signup";
@@ -80,7 +85,7 @@ export function Navbar() {
           "fixed inset-x-0 top-0 z-[9999] border-b transition-all duration-300 ease-out",
           scrolled
             ? "border-border/60 bg-background/90 shadow-md backdrop-blur-md"
-            : "border-transparent bg-transparent shadow-none backdrop-blur-sm"
+            : "border-white/10 bg-black/30 shadow-none backdrop-blur-md"
         )}
       >
         <div className="mx-auto flex h-16 w-full max-w-7xl items-center justify-between gap-2 px-3 sm:px-6 md:grid md:grid-cols-[auto_1fr_auto] md:gap-4 lg:h-[72px] lg:gap-8 lg:px-10 2xl:max-w-[90rem]">
@@ -105,7 +110,7 @@ export function Navbar() {
                   "group relative inline-flex items-center rounded-full px-4 py-2 text-sm font-medium transition-colors duration-300",
                   scrolled
                     ? "text-muted-foreground hover:text-foreground"
-                    : "text-gray-700 hover:text-primary dark:text-gray-200 dark:hover:text-primary"
+                    : "text-white/90 hover:text-white"
                 )}
               >
                 <span className="absolute inset-0 rounded-full bg-primary/10 opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
@@ -126,7 +131,7 @@ export function Navbar() {
                       "h-9 w-9 rounded-full transition-colors",
                       scrolled
                         ? "text-foreground hover:bg-accent hover:text-foreground"
-                        : "text-gray-700 hover:bg-gray-100 hover:text-gray-900 dark:text-gray-200 dark:hover:bg-gray-800 dark:hover:text-white"
+                        : "text-white hover:bg-white/10 hover:text-white"
                     )}
                     title={t.navbar?.selectLanguage || t.landing?.nav?.selectLanguage || "Select language"}
                     aria-label={t.navbar?.selectLanguage || t.landing?.nav?.selectLanguage || "Select language"}
@@ -178,7 +183,7 @@ export function Navbar() {
                       "h-9 w-9 rounded-full transition-colors",
                       scrolled
                         ? "text-foreground hover:bg-accent hover:text-foreground"
-                        : "text-gray-700 hover:bg-gray-100 hover:text-gray-900 dark:text-gray-200 dark:hover:bg-gray-800 dark:hover:text-white"
+                        : "text-white hover:bg-white/10 hover:text-white"
                     )}
                     aria-label={t.navbar?.theme || t.landing?.nav?.theme || "Theme"}
                   >
@@ -190,13 +195,13 @@ export function Navbar() {
                   className="z-[10000] min-w-[140px] rounded-xl border border-border bg-popover p-1 shadow-lg"
                 >
                   <DropdownMenuItem onClick={() => setTheme("light")} className="rounded-lg py-2.5 text-foreground">
-                    <Sun className="mr-3 h-[18px] w-[18px]" /> Light
+                    <Sun className="mr-3 h-[18px] w-[18px]" /> {themeLabels.light}
                   </DropdownMenuItem>
                   <DropdownMenuItem onClick={() => setTheme("dark")} className="rounded-lg py-2.5 text-foreground">
-                    <Moon className="mr-3 h-[18px] w-[18px]" /> Dark
+                    <Moon className="mr-3 h-[18px] w-[18px]" /> {themeLabels.dark}
                   </DropdownMenuItem>
                   <DropdownMenuItem onClick={() => setTheme("system")} className="rounded-lg py-2.5 text-foreground">
-                    <Monitor className="mr-3 h-[18px] w-[18px]" /> System
+                    <Monitor className="mr-3 h-[18px] w-[18px]" /> {themeLabels.system}
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
@@ -221,7 +226,7 @@ export function Navbar() {
                       "h-9 rounded-full px-4 text-sm font-medium transition-colors",
                       scrolled
                         ? "text-foreground hover:bg-accent hover:text-[var(--sage-dark)]"
-                        : "text-gray-700 hover:bg-gray-100 hover:text-gray-900 dark:text-gray-200 dark:hover:bg-gray-800 dark:hover:text-white"
+                        : "text-white hover:bg-white/10 hover:text-white"
                     )}
                   >
                     {t.navbar?.login || t.landing?.nav?.login || "Sign In"}
@@ -246,7 +251,7 @@ export function Navbar() {
                 "flex h-10 w-10 items-center justify-center rounded-full md:hidden",
                 scrolled
                   ? "text-foreground hover:bg-muted"
-                  : "text-gray-700 hover:bg-gray-100 hover:text-gray-900 dark:text-gray-200 dark:hover:bg-gray-800 dark:hover:text-white"
+                  : "text-white hover:bg-white/10 hover:text-white"
               )}
               aria-label={mobileOpen ? "Close menu" : "Open menu"}
               aria-expanded={mobileOpen}
@@ -334,7 +339,7 @@ export function Navbar() {
                       {mode === "light" && <Sun className="mr-3 h-[18px] w-[18px]" />}
                       {mode === "dark" && <Moon className="mr-3 h-[18px] w-[18px]" />}
                       {mode === "system" && <Monitor className="mr-3 h-[18px] w-[18px]" />}
-                      {mode === "light" ? "Light" : mode === "dark" ? "Dark" : "System"}
+                      {themeLabels[mode]}
                     </Button>
                   ))}
                 </div>

@@ -1,0 +1,25 @@
+"use strict";
+/*
+ * ATTENTION: An "eval-source-map" devtool has been used.
+ * This devtool is neither made for production nor for readable output files.
+ * It uses "eval()" calls to create a separate source file with attached SourceMaps in the browser devtools.
+ * If you are trying to read the output file, select a different devtool (https://webpack.js.org/configuration/devtool/)
+ * or disable the default devtool with "devtool: false".
+ * If you are looking for production-ready output files, see mode: "production" (https://webpack.js.org/configuration/mode/).
+ */
+exports.id = "_ssr_src_messages_table_fr_json";
+exports.ids = ["_ssr_src_messages_table_fr_json"];
+exports.modules = {
+
+/***/ "(ssr)/./src/messages/table/fr.json":
+/*!************************************!*\
+  !*** ./src/messages/table/fr.json ***!
+  \************************************/
+/***/ ((module) => {
+
+module.exports = /*#__PURE__*/JSON.parse('{"title":"Tables","description":"Créer, prévisualiser et gérer les tables de votre restaurant","create":{"pageTitle":"Créer une table","subtitle":"Ajouter et gérer les tables du restaurant","steps":{"info":"Informations sur la table","seating":"Détails des places","settings":"Paramètres de la table"},"labels":{"tableName":"Nom de la table","tableNamePlaceholder":"ex. T1, Fenêtre 3, Box A","section":"Zone","sectionOptional":"(optionnel)","sectionPlaceholder":"ex. Terrasse, Fenêtre, Jardin","capacity":"Capacité d\'accueil","capacityHelp":"Choisissez le nombre de clients que cette table peut accueillir confortablement.","activeStatus":"Statut actif","activeDescriptionOn":"La table sera disponible pour les réservations et les clients sur place.","activeDescriptionOff":"La table sera masquée des options de réservation."},"actions":{"reset":"Annuler","submit":"Créer la table","saving":"Enregistrement..."},"toasts":{"nameRequired":"Veuillez saisir un nom de table.","capacityInvalid":"La capacité doit être un nombre positif.","createSuccess":"Table ajoutée.","createError":"Échec de l\'ajout de la table"}},"preview":{"title":"Aperçu des tables","capacityLabel":"Capacité","capacitySingular":"personne","capacityPlural":"personnes","legend":{"available":"Disponible","occupied":"Occupée","reserved":"Réservée"}},"edit":{"title":"Modifier la table","labels":{"tableName":"Nom de la table","capacity":"Capacité","section":"Zone","sectionOptional":"(optionnel)","active":"Active"},"actions":{"cancel":"Annuler","save":"Enregistrer les modifications","saving":"Enregistrement..."},"toasts":{"nameRequired":"Veuillez saisir un nom de table.","capacityInvalid":"La capacité doit être un nombre positif.","updateSuccess":"Table mise à jour.","updateError":"Échec de la mise à jour de la table"}},"list":{"title":"Toutes les tables","emptyTitle":"Aucune table pour le moment","emptyDescription":"Créez votre première table à l\'aide du formulaire ci-dessus pour organiser votre salle.","badges":{"active":"Active","inactive":"Inactive"},"labels":{"capacity":"Capacité","seats":"places","section":"Zone"},"actions":{"edit":"Modifier la table","delete":"Supprimer la table"}},"pro":{"required":"La gestion des tables est disponible uniquement avec l\'offre Pro."},"confirm":{"deleteTitle":"Supprimer la table","deleteMessage":"Voulez-vous vraiment supprimer cette table ? Cette action est irréversible."},"toasts":{"deleteSuccess":"Table supprimée.","deleteError":"Échec de la suppression de la table","loadError":"Échec du chargement des tables"}}');
+
+/***/ })
+
+};
+;

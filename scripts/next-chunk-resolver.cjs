@@ -15,6 +15,7 @@
 const fs = require("fs");
 const path = require("path");
 const Module = require("module");
+const distDirName = process.env.NEXT_DIST_DIR || ".next";
 
 const originalLoad = Module._load;
 
@@ -23,7 +24,10 @@ function isNumericChunkRequest(req) {
 }
 
 function isInsideNextServer(filename) {
-  return typeof filename === "string" && filename.includes(path.join(".next", "server"));
+  return (
+    typeof filename === "string" &&
+    filename.includes(path.join(distDirName, "server"))
+  );
 }
 
 Module._load = function patchedLoad(request, parent, isMain) {

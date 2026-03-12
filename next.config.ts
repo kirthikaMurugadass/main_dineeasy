@@ -1,6 +1,8 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  // Allow scripts to isolate dev and prod build artifacts to avoid stale module mixing.
+  distDir: process.env.NEXT_DIST_DIR || ".next",
   // Avoid incorrect tracing root when multiple lockfiles exist (Vercel/monorepo-like setups)
   outputFileTracingRoot: process.cwd(),
   // Optimize serverless functions - exclude heavy 3D libraries from bundling

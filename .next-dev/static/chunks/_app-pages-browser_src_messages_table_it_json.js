@@ -1,0 +1,22 @@
+"use strict";
+/*
+ * ATTENTION: An "eval-source-map" devtool has been used.
+ * This devtool is neither made for production nor for readable output files.
+ * It uses "eval()" calls to create a separate source file with attached SourceMaps in the browser devtools.
+ * If you are trying to read the output file, select a different devtool (https://webpack.js.org/configuration/devtool/)
+ * or disable the default devtool with "devtool: false".
+ * If you are looking for production-ready output files, see mode: "production" (https://webpack.js.org/configuration/mode/).
+ */
+(self["webpackChunk_N_E"] = self["webpackChunk_N_E"] || []).push([["_app-pages-browser_src_messages_table_it_json"],{
+
+/***/ "(app-pages-browser)/./src/messages/table/it.json":
+/*!************************************!*\
+  !*** ./src/messages/table/it.json ***!
+  \************************************/
+/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
+
+module.exports = /*#__PURE__*/JSON.parse('{"title":"Tavoli","description":"Crea, visualizza in anteprima e gestisci i tavoli del tuo ristorante","create":{"pageTitle":"Crea tavolo","subtitle":"Aggiungi e gestisci i tavoli del ristorante","steps":{"info":"Informazioni sul tavolo","seating":"Dettagli posti","settings":"Impostazioni tavolo"},"labels":{"tableName":"Nome tavolo","tableNamePlaceholder":"es. T1, Finestra 3, Box A","section":"Area","sectionOptional":"(opzionale)","sectionPlaceholder":"es. Terrazza, Finestra, Giardino","capacity":"Capacità posti","capacityHelp":"Scegli quanti ospiti possono sedersi comodamente a questo tavolo.","activeStatus":"Stato attivo","activeDescriptionOn":"Il tavolo sarà disponibile per prenotazioni e clienti di passaggio.","activeDescriptionOff":"Il tavolo sarà nascosto dalle opzioni di prenotazione."},"actions":{"reset":"Annulla","submit":"Crea tavolo","saving":"Salvataggio..."},"toasts":{"nameRequired":"Inserisci un nome per il tavolo.","capacityInvalid":"La capacità deve essere un numero positivo.","createSuccess":"Tavolo aggiunto.","createError":"Impossibile aggiungere il tavolo"}},"preview":{"title":"Anteprima tavoli","capacityLabel":"Capacità","capacitySingular":"persona","capacityPlural":"persone","legend":{"available":"Disponibile","occupied":"Occupato","reserved":"Prenotato"}},"edit":{"title":"Modifica tavolo","labels":{"tableName":"Nome tavolo","capacity":"Capacità","section":"Area","sectionOptional":"(opzionale)","active":"Attivo"},"actions":{"cancel":"Annulla","save":"Salva modifiche","saving":"Salvataggio..."},"toasts":{"nameRequired":"Inserisci un nome per il tavolo.","capacityInvalid":"La capacità deve essere un numero positivo.","updateSuccess":"Tavolo aggiornato.","updateError":"Impossibile aggiornare il tavolo"}},"list":{"title":"Tutti i tavoli","emptyTitle":"Ancora nessun tavolo","emptyDescription":"Crea il tuo primo tavolo usando il modulo qui sopra per organizzare la sala.","badges":{"active":"Attivo","inactive":"Non attivo"},"labels":{"capacity":"Capacità","seats":"posti","section":"Area"},"actions":{"edit":"Modifica tavolo","delete":"Elimina tavolo"}},"pro":{"required":"La gestione dei tavoli è disponibile solo con il piano Pro."},"confirm":{"deleteTitle":"Elimina tavolo","deleteMessage":"Sei sicuro di voler eliminare questo tavolo? Questa azione non può essere annullata."},"toasts":{"deleteSuccess":"Tavolo eliminato.","deleteError":"Impossibile eliminare il tavolo","loadError":"Impossibile caricare i tavoli"}}');
+
+/***/ })
+
+}]);

@@ -300,8 +300,35 @@ export default function SelectTablePage() {
     return "bg-[#22C55E]"; // Green - Available
   };
 
+  const selectedTable = useMemo(
+    () => tables.find((table) => table.id === selectedTableId),
+    [tables, selectedTableId]
+  );
+
+  const selectedTableMatchesGuestCount = useMemo(() => {
+    if (!stepData || !selectedTable) return false;
+    return selectedTable.capacity === stepData.guestCount;
+  }, [stepData, selectedTable]);
+
+  useEffect(() => {
+    if (!stepData || !selectedTableId || !selectedTable) return;
+    if (selectedTable.capacity !== stepData.guestCount) {
+      setSelectedTableId(null);
+    }
+  }, [stepData, selectedTableId, selectedTable]);
+
   const handleTableClick = async (tableId: string) => {
     if (!stepData) return;
+    const targetTable = tables.find((table) => table.id === tableId);
+    if (!targetTable) return;
+
+    if (targetTable.capacity !== stepData.guestCount) {
+      toast.error(
+        flowT?.messages?.capacityMismatch ||
+          "Guest count does not match table capacity"
+      );
+      return;
+    }
 
     const status = getStatusForTable(tableId);
     if (status === "booked") {
@@ -828,11 +855,17 @@ export default function SelectTablePage() {
                   })
                   .map((table) => {
                     const status = getStatusForTable(table.id);
+                    const isCapacityMismatch = table.capacity !== stepData.guestCount;
                     const isDisabled =
+                      isCapacityMismatch ||
                       status === "booked" ||
                       (status === "locked" && selectedTableId !== table.id);
-                    const statusColor = getStatusColor(status);
-                    const dotColor = getStatusDotColor(status);
+                    const statusColor = isCapacityMismatch
+                      ? "bg-[#F3F4F6] border-[#D1D5DB] text-[#9CA3AF] dark:bg-[#111111] dark:border-[#2a2a2a] dark:text-[#6B7280]"
+                      : getStatusColor(status);
+                    const dotColor = isCapacityMismatch
+                      ? "bg-[#9CA3AF] dark:bg-[#6B7280]"
+                      : getStatusDotColor(status);
 
                     return (
                       <motion.button
@@ -842,6 +875,11 @@ export default function SelectTablePage() {
                         whileTap={!isDisabled ? { scale: 0.98 } : {}}
                         onClick={() => handleTableClick(table.id)}
                         disabled={isDisabled || submitting}
+                        title={
+                          isCapacityMismatch
+                            ? (flowT?.messages?.capacityMismatch || "Guest count does not match table capacity")
+                            : undefined
+                        }
                         className={`relative flex h-20 flex-col items-center justify-center rounded-md border-2 px-1 py-1 shadow-sm transition-all hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#22C55E]/50 disabled:cursor-not-allowed disabled:opacity-50 ${statusColor} ${
                           status === "selected"
                             ? "ring-2 ring-[#22C55E] ring-offset-2"
@@ -861,7 +899,11 @@ export default function SelectTablePage() {
                         {/* Table number at top */}
                         <div
                           className={`text-[13px] font-bold ${
-                            status === "selected" ? "text-white" : "text-[#2D3A1A]"
+                            isCapacityMismatch
+                              ? "text-[#9CA3AF] dark:text-[#6B7280]"
+                              : status === "selected"
+                              ? "text-white"
+                              : "text-[#2D3A1A]"
                           }`}
                         >
                           {table.table_name}
@@ -871,12 +913,21 @@ export default function SelectTablePage() {
                         {/* Capacity text at bottom */}
                         <div
                           className={`mt-auto text-[10px] font-medium leading-tight ${
-                            status === "selected" ? "text-white/90" : "text-[#6B7B5A]"
+                            isCapacityMismatch
+                              ? "text-[#9CA3AF] dark:text-[#6B7280]"
+                              : status === "selected"
+                              ? "text-white/90"
+                              : "text-[#6B7B5A]"
                           }`}
                         >
                           {flowT?.fields?.capacity || "Capacity"}: {table.capacity}{" "}
                           {table.capacity === 1 ? (flowT?.labels?.personSingular || "Person") : (flowT?.labels?.personPlural || "Persons")}
                         </div>
+                        {isCapacityMismatch && (
+                          <div className="mt-0.5 text-[9px] font-medium leading-tight text-[#9CA3AF] dark:text-[#6B7280]">
+                            {flowT?.messages?.capacityMismatch || "Guest count does not match table capacity"}
+                          </div>
+                        )}
                       </motion.button>
                     );
                   })}
@@ -911,9 +962,16 @@ export default function SelectTablePage() {
                   toast.error(flowT?.validation?.selectTableRequired || "Please select a table to continue.");
                   return;
                 }
+                if (!selectedTableMatchesGuestCount) {
+                  toast.error(
+                    flowT?.messages?.capacityMismatch ||
+                      "Guest count does not match table capacity"
+                  );
+                  return;
+                }
                 setUiStep("summary");
               }}
-              disabled={!selectedTableId || submitting}
+              disabled={!selectedTableId || !selectedTableMatchesGuestCount || submitting}
               className="w-full rounded-full bg-gradient-to-r from-[#22C55E] to-[#16A34A] text-white shadow-lg transition-all hover:shadow-xl hover:from-[#16A34A] hover:to-[#15803D] disabled:opacity-60 disabled:cursor-not-allowed h-12 text-base font-semibold"
             >
               {submitting ? (

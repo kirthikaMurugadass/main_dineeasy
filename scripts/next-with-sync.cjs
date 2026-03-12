@@ -7,8 +7,8 @@ function isNumericChunk(fileName) {
   return /^\d+\.js$/.test(fileName);
 }
 
-function removeServerRootNumericChunks(projectRoot) {
-  const serverDir = path.join(projectRoot, ".next", "server");
+function removeServerRootNumericChunks(projectRoot, distDirName) {
+  const serverDir = path.join(projectRoot, distDirName, "server");
   if (!fs.existsSync(serverDir)) return;
 
   let entries;
@@ -29,8 +29,18 @@ function removeServerRootNumericChunks(projectRoot) {
   }
 }
 
-function syncServerChunksOnce(projectRoot) {
-  const serverDir = path.join(projectRoot, ".next", "server");
+function clearStaleServerBuild(projectRoot, distDirName) {
+  const serverDir = path.join(projectRoot, distDirName, "server");
+  if (!fs.existsSync(serverDir)) return;
+  try {
+    fs.rmSync(serverDir, { recursive: true, force: true });
+  } catch {
+    // ignore transient file locks on Windows
+  }
+}
+
+function syncServerChunksOnce(projectRoot, distDirName) {
+  const serverDir = path.join(projectRoot, distDirName, "server");
   const chunksDir = path.join(serverDir, "chunks");
 
   if (!fs.existsSync(serverDir) || !fs.existsSync(chunksDir)) return;
@@ -65,6 +75,7 @@ function main() {
   const projectRoot = process.cwd();
   const mode = process.argv[2] || "dev"; // "dev" | "start"
   const restArgs = process.argv.slice(3);
+  const distDirName = mode === "dev" ? ".next-dev" : ".next";
 
   // If present, prefer a preload hook that rewrites numeric chunk requires to `.next/server/chunks/`
   // to avoid stale/partial copies during Fast Refresh on Windows.
@@ -95,23 +106,36 @@ function main() {
     ? (cleanedNodeOptions.includes(preloadArg) ? cleanedNodeOptions : `${cleanedNodeOptions} ${preloadArg}`.trim())
     : cleanedNodeOptions;
 
+  // In dev mode, stale server artifacts are the most common source of webpack runtime
+  // module-shape errors on Windows (`__webpack_modules__[moduleId] is not a function`).
+  // Clearing only `.next/server` keeps startup stable without deleting full Next cache.
+  if (mode === "dev") {
+    clearStaleServerBuild(projectRoot, distDirName);
+  }
+
   // sync once before start only when the preload hook is NOT active.
   // On Windows with the hook, copied root chunks can become stale and trigger
   // runtime errors like "Cannot read properties of undefined (reading 'call')".
   if (hasPreloadHook) {
-    removeServerRootNumericChunks(projectRoot);
+    removeServerRootNumericChunks(projectRoot, distDirName);
   } else {
-    syncServerChunksOnce(projectRoot);
+    syncServerChunksOnce(projectRoot, distDirName);
   }
 
   const nextBin = require.resolve("next/dist/bin/next");
   const child = spawn(process.execPath, [nextBin, mode, ...restArgs], {
     stdio: "inherit",
-    env: { ...process.env, NODE_OPTIONS: nextNodeOptions },
+    env: {
+      ...process.env,
+      NODE_OPTIONS: nextNodeOptions,
+      NEXT_DIST_DIR: distDirName,
+    },
   });
 
   // If the preload hook is active, avoid background copying to prevent stale chunk duplication.
-  const interval = hasPreloadHook ? null : setInterval(() => syncServerChunksOnce(projectRoot), 1200);
+  const interval = hasPreloadHook
+    ? null
+    : setInterval(() => syncServerChunksOnce(projectRoot, distDirName), 1200);
 
   const cleanup = (code) => {
     if (interval) clearInterval(interval);

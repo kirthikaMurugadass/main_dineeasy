@@ -6,12 +6,20 @@ import {
   useState,
   useEffect,
   useCallback,
-  useRef,
   type ReactNode,
 } from "react";
 import { createClient } from "@/lib/supabase/client";
 
-const STORAGE_KEY = "dineeasy-booking-notifications";
+const STORAGE_KEY_PREFIX = "dineeasy-booking-notifications";
+
+function getStorageKey(restaurantId: string | null) {
+  return restaurantId ? `${STORAGE_KEY_PREFIX}:${restaurantId}` : STORAGE_KEY_PREFIX;
+}
+
+function isMissingReadMarkerColumn(error: unknown) {
+  const message = (error as { message?: string } | null)?.message ?? "";
+  return message.includes("last_bookings_seen_at");
+}
 
 interface BookingNotificationContextType {
   bookingNotificationCount: number;
@@ -33,114 +41,155 @@ export function BookingNotificationProvider({
   restaurantId: string | null;
 }) {
   const [bookingNotificationCount, setBookingNotificationCount] = useState(0);
-  const [mounted, setMounted] = useState(false);
-  const incrementRef = useRef<() => void>();
-
-  // Load from localStorage on mount
-  useEffect(() => {
-    setMounted(true);
-    const stored = localStorage.getItem(STORAGE_KEY);
-    if (stored) {
-      try {
-        const count = parseInt(stored, 10);
-        if (!isNaN(count) && count >= 0) {
-          setBookingNotificationCount(count);
-        }
-      } catch {
-        // Invalid stored value, ignore
-      }
-    }
-  }, []);
-
-  // Save to localStorage whenever count changes
-  useEffect(() => {
-    if (mounted) {
-      localStorage.setItem(STORAGE_KEY, bookingNotificationCount.toString());
-    }
-  }, [bookingNotificationCount, mounted]);
+  const [supportsReadMarkers, setSupportsReadMarkers] = useState(true);
+  const [pendingReset, setPendingReset] = useState(false);
 
   const incrementBookingNotification = useCallback(() => {
-    console.log("[BookingNotification] Incrementing notification count");
     setBookingNotificationCount((prev) => {
-      const newCount = prev + 1;
-      console.log("[BookingNotification] Count updated:", prev, "->", newCount);
-      return newCount;
+      const next = prev + 1;
+      if (!supportsReadMarkers) {
+        localStorage.setItem(getStorageKey(restaurantId), String(next));
+      }
+      return next;
     });
-  }, []);
-
-  // Store increment function in ref to avoid re-subscription
-  useEffect(() => {
-    incrementRef.current = incrementBookingNotification;
-  }, [incrementBookingNotification]);
+  }, [supportsReadMarkers, restaurantId]);
 
   const resetBookingNotification = useCallback(() => {
-    console.log("[BookingNotification] Resetting notification count");
     setBookingNotificationCount(0);
-    if (mounted) {
-      localStorage.removeItem(STORAGE_KEY);
-    }
-  }, [mounted]);
-
-  // Set up Supabase realtime listener for new bookings
-  useEffect(() => {
-    if (!restaurantId || !mounted) {
-      console.log("[BookingNotification] Skipping subscription - restaurantId:", restaurantId, "mounted:", mounted);
+    if (!restaurantId) {
+      setPendingReset(true);
       return;
     }
 
-    console.log("[BookingNotification] Setting up realtime subscription for restaurant:", restaurantId);
+    if (!supportsReadMarkers) {
+      localStorage.removeItem(getStorageKey(restaurantId));
+      return;
+    }
+
+    const supabase = createClient();
+    void supabase
+      .from("restaurants")
+      .update({ last_bookings_seen_at: new Date().toISOString() })
+      .eq("id", restaurantId);
+  }, [restaurantId, supportsReadMarkers]);
+
+  const loadInitialUnreadCount = useCallback(async () => {
+    if (!restaurantId) {
+      setBookingNotificationCount(0);
+      return;
+    }
+
+    const supabase = createClient();
+    const { data: restaurant, error: restaurantError } = await supabase
+      .from("restaurants")
+      .select("last_bookings_seen_at")
+      .eq("id", restaurantId)
+      .single();
+
+    if (restaurantError) {
+      if (isMissingReadMarkerColumn(restaurantError)) {
+        setSupportsReadMarkers(false);
+        const stored = localStorage.getItem(getStorageKey(restaurantId));
+        if (stored && !Number.isNaN(Number(stored))) {
+          setBookingNotificationCount(Number(stored));
+          return;
+        }
+        const { count } = await supabase
+          .from("bookings")
+          .select("id", { count: "exact", head: true })
+          .eq("restaurant_id", restaurantId)
+          .eq("status", "pending");
+        setBookingNotificationCount(count ?? 0);
+        return;
+      }
+      console.warn("[BookingNotification] Failed to load last_bookings_seen_at", restaurantError);
+      setBookingNotificationCount(0);
+      return;
+    }
+    setSupportsReadMarkers(true);
+
+    let query = supabase
+      .from("bookings")
+      .select("id", { count: "exact", head: true })
+      .eq("restaurant_id", restaurantId)
+      .eq("status", "pending");
+
+    if (restaurant?.last_bookings_seen_at) {
+      query = query.gt("created_at", restaurant.last_bookings_seen_at);
+    }
+
+    const { count, error: countError } = await query;
+    if (countError) {
+      console.warn("[BookingNotification] Failed to load unread booking count", countError);
+      setBookingNotificationCount(0);
+      return;
+    }
+
+    setBookingNotificationCount(count ?? 0);
+  }, [restaurantId]);
+
+  useEffect(() => {
+    void loadInitialUnreadCount();
+  }, [loadInitialUnreadCount]);
+
+  useEffect(() => {
+    if (!pendingReset || !restaurantId) return;
+    if (!supportsReadMarkers) {
+      localStorage.removeItem(getStorageKey(restaurantId));
+      setPendingReset(false);
+      return;
+    }
+    const supabase = createClient();
+    void (async () => {
+      try {
+        await supabase
+          .from("restaurants")
+          .update({ last_bookings_seen_at: new Date().toISOString() })
+          .eq("id", restaurantId);
+      } finally {
+        setPendingReset(false);
+      }
+    })();
+  }, [pendingReset, restaurantId, supportsReadMarkers]);
+
+  // Set up Supabase realtime listener for new bookings
+  useEffect(() => {
+    if (!restaurantId) {
+      return;
+    }
+
     const supabase = createClient();
 
-    // Create a unique channel name to avoid conflicts
-    const channelName = `booking-notifications-${restaurantId}-${Date.now()}`;
     const channel = supabase
-      .channel(channelName)
+      .channel(`booking-notifications-${restaurantId}`)
       .on(
         "postgres_changes",
         {
-          event: "INSERT",
+          event: "*",
           schema: "public",
           table: "bookings",
           filter: `restaurant_id=eq.${restaurantId}`,
         },
         (payload) => {
-          console.log("[BookingNotification] New booking received:", payload);
-          const newBooking = payload.new as { status?: string; restaurant_id?: string };
-          console.log("[BookingNotification] Booking details:", {
-            status: newBooking.status,
-            restaurant_id: newBooking.restaurant_id,
-            expected_restaurant_id: restaurantId,
-          });
-          
-          // Only increment if booking status is "pending" and restaurant matches
-          if (newBooking.status === "pending" && newBooking.restaurant_id === restaurantId) {
-            console.log("[BookingNotification] Incrementing count for pending booking");
-            incrementRef.current?.();
-          } else {
-            console.log("[BookingNotification] Skipping - status:", newBooking.status, "restaurant match:", newBooking.restaurant_id === restaurantId);
+          const changedBooking = (payload.new ?? payload.old) as { restaurant_id?: string } | undefined;
+          if (changedBooking?.restaurant_id !== restaurantId) return;
+
+          if (supportsReadMarkers) {
+            void loadInitialUnreadCount();
+            return;
+          }
+
+          if (payload.eventType === "INSERT") {
+            incrementBookingNotification();
           }
         }
       )
-      .subscribe((status) => {
-        console.log("[BookingNotification] Subscription status:", status);
-        if (status === "SUBSCRIBED") {
-          console.log("[BookingNotification] Successfully subscribed to bookings table");
-        } else if (status === "CHANNEL_ERROR") {
-          // Surface as a warning instead of an error to avoid noisy dev console,
-          // but keep logging so issues are still visible during debugging.
-          console.warn("[BookingNotification] Channel subscription error (non-fatal)");
-        } else if (status === "TIMED_OUT") {
-          console.warn("[BookingNotification] Subscription timed out (non-fatal)");
-        } else if (status === "CLOSED") {
-          console.log("[BookingNotification] Subscription closed");
-        }
-      });
+      .subscribe();
 
     return () => {
-      console.log("[BookingNotification] Cleaning up subscription");
       supabase.removeChannel(channel);
     };
-  }, [restaurantId, mounted]); // Removed incrementBookingNotification from deps to prevent re-subscription
+  }, [restaurantId, incrementBookingNotification, loadInitialUnreadCount, supportsReadMarkers]);
 
   return (
     <BookingNotificationContext.Provider

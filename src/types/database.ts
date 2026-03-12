@@ -13,6 +13,8 @@ export interface Restaurant {
   plan_type?: string;
   billing_cycle?: string | null;
   plan_status?: string;
+  last_orders_seen_at?: string | null;
+  last_bookings_seen_at?: string | null;
   created_at: string;
   updated_at: string;
 }

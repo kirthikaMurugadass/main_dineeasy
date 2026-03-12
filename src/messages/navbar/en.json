@@ -8,5 +8,8 @@
   "cta": "Get Started",
   "language": "Language",
   "theme": "Theme",
-  "selectLanguage": "Select language"
+  "selectLanguage": "Select language",
+  "themeLight": "Light",
+  "themeDark": "Dark",
+  "themeSystem": "System"
 }

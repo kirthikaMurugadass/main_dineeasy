@@ -1,0 +1,22 @@
+"use strict";
+/*
+ * ATTENTION: An "eval-source-map" devtool has been used.
+ * This devtool is neither made for production nor for readable output files.
+ * It uses "eval()" calls to create a separate source file with attached SourceMaps in the browser devtools.
+ * If you are trying to read the output file, select a different devtool (https://webpack.js.org/configuration/devtool/)
+ * or disable the default devtool with "devtool: false".
+ * If you are looking for production-ready output files, see mode: "production" (https://webpack.js.org/configuration/mode/).
+ */
+(self["webpackChunk_N_E"] = self["webpackChunk_N_E"] || []).push([["_app-pages-browser_src_messages_qr_de_json"],{
+
+/***/ "(app-pages-browser)/./src/messages/qr/de.json":
+/*!*********************************!*\
+  !*** ./src/messages/qr/de.json ***!
+  \*********************************/
+/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
+
+module.exports = /*#__PURE__*/JSON.parse('{"title":"QR-Codes","description":"Die permanenten QR-Codes deines Restaurants","loading":"Wird geladen...","qrColor":"QR-Farbe","background":"Hintergrund","urlDescription":"Diese URL laedt das standardmaessig aktive Menue deines Restaurants","urlDescriptionMenu":"Diese URL laedt das spezifische Menue deines Restaurants","menuQrCode":"Menue-QR-Code","menuQrCodeUrl":"Menue-QR-Code-URL","scanToViewMenu":"Scannen, um das Menue zu sehen","bookTableQrCode":"Tischreservierungs-QR-Code","bookTableQrCodeUrl":"Tischreservierungs-QR-Code-URL","customersScanToBook":"Kunden scannen diesen QR-Code, um einen Tisch zu reservieren","scanToBookTable":"Scannen, um einen Tisch zu reservieren","printAction":"Drucken","printTitle":"QR-Code","pro":{"bookingQrRequired":"Upgrade auf Pro, um den Tischreservierungs-QR zu aktivieren.","upgradeAction":"Auf Pro upgraden"},"toasts":{"generateError":"QR-Code konnte nicht erstellt werden","generateBookTableError":"Tischreservierungs-QR-Code konnte nicht erstellt werden","urlCopied":"URL kopiert!","bookTableUrlCopied":"Tischreservierungs-URL kopiert!","menuPngDownloaded":"Menue-QR-Code als PNG heruntergeladen!","menuSvgDownloaded":"Menue-QR-Code als SVG heruntergeladen!","svgGenerateError":"SVG konnte nicht erstellt werden","bookTablePngDownloaded":"Tischreservierungs-QR-Code als PNG heruntergeladen!","bookTableSvgDownloaded":"Tischreservierungs-QR-Code als SVG heruntergeladen!"}}');
+
+/***/ })
+
+}]);

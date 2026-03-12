@@ -6,12 +6,20 @@ import {
   useState,
   useEffect,
   useCallback,
-  useRef,
   type ReactNode,
 } from "react";
 import { createClient } from "@/lib/supabase/client";
 
-const STORAGE_KEY = "dineeasy-order-notifications";
+const STORAGE_KEY_PREFIX = "dineeasy-order-notifications";
+
+function getStorageKey(restaurantId: string | null) {
+  return restaurantId ? `${STORAGE_KEY_PREFIX}:${restaurantId}` : STORAGE_KEY_PREFIX;
+}
+
+function isMissingReadMarkerColumn(error: unknown) {
+  const message = (error as { message?: string } | null)?.message ?? "";
+  return message.includes("last_orders_seen_at");
+}
 
 interface OrderNotificationContextType {
   notificationCount: number;
@@ -33,112 +41,155 @@ export function OrderNotificationProvider({
   restaurantId: string | null;
 }) {
   const [notificationCount, setNotificationCount] = useState(0);
-  const [mounted, setMounted] = useState(false);
-  const incrementRef = useRef<() => void>();
-
-  // Load from localStorage on mount
-  useEffect(() => {
-    setMounted(true);
-    const stored = localStorage.getItem(STORAGE_KEY);
-    if (stored) {
-      try {
-        const count = parseInt(stored, 10);
-        if (!isNaN(count) && count >= 0) {
-          setNotificationCount(count);
-        }
-      } catch {
-        // Invalid stored value, ignore
-      }
-    }
-  }, []);
-
-  // Save to localStorage whenever count changes
-  useEffect(() => {
-    if (mounted) {
-      localStorage.setItem(STORAGE_KEY, notificationCount.toString());
-    }
-  }, [notificationCount, mounted]);
+  const [supportsReadMarkers, setSupportsReadMarkers] = useState(true);
+  const [pendingReset, setPendingReset] = useState(false);
 
   const incrementNotification = useCallback(() => {
-    console.log("[OrderNotification] Incrementing notification count");
     setNotificationCount((prev) => {
-      const newCount = prev + 1;
-      console.log("[OrderNotification] Count updated:", prev, "->", newCount);
-      return newCount;
+      const next = prev + 1;
+      if (!supportsReadMarkers) {
+        localStorage.setItem(getStorageKey(restaurantId), String(next));
+      }
+      return next;
     });
-  }, []);
-
-  // Store increment function in ref to avoid re-subscription
-  useEffect(() => {
-    incrementRef.current = incrementNotification;
-  }, [incrementNotification]);
+  }, [supportsReadMarkers, restaurantId]);
 
   const resetNotification = useCallback(() => {
-    console.log("[OrderNotification] Resetting notification count");
     setNotificationCount(0);
-    if (mounted) {
-      localStorage.removeItem(STORAGE_KEY);
-    }
-  }, [mounted]);
-
-  // Set up Supabase realtime listener for new orders
-  useEffect(() => {
-    if (!restaurantId || !mounted) {
-      console.log("[OrderNotification] Skipping subscription - restaurantId:", restaurantId, "mounted:", mounted);
+    if (!restaurantId) {
+      setPendingReset(true);
       return;
     }
 
-    console.log("[OrderNotification] Setting up realtime subscription for restaurant:", restaurantId);
+    if (!supportsReadMarkers) {
+      localStorage.removeItem(getStorageKey(restaurantId));
+      return;
+    }
+
+    const supabase = createClient();
+    void supabase
+      .from("restaurants")
+      .update({ last_orders_seen_at: new Date().toISOString() })
+      .eq("id", restaurantId);
+  }, [restaurantId, supportsReadMarkers]);
+
+  const loadInitialUnreadCount = useCallback(async () => {
+    if (!restaurantId) {
+      setNotificationCount(0);
+      return;
+    }
+
+    const supabase = createClient();
+    const { data: restaurant, error: restaurantError } = await supabase
+      .from("restaurants")
+      .select("last_orders_seen_at")
+      .eq("id", restaurantId)
+      .single();
+
+    if (restaurantError) {
+      if (isMissingReadMarkerColumn(restaurantError)) {
+        setSupportsReadMarkers(false);
+        const stored = localStorage.getItem(getStorageKey(restaurantId));
+        if (stored && !Number.isNaN(Number(stored))) {
+          setNotificationCount(Number(stored));
+          return;
+        }
+        const { count } = await supabase
+          .from("orders")
+          .select("id", { count: "exact", head: true })
+          .eq("restaurant_id", restaurantId)
+          .eq("status", "pending");
+        setNotificationCount(count ?? 0);
+        return;
+      }
+      console.warn("[OrderNotification] Failed to load last_orders_seen_at", restaurantError);
+      setNotificationCount(0);
+      return;
+    }
+    setSupportsReadMarkers(true);
+
+    let query = supabase
+      .from("orders")
+      .select("id", { count: "exact", head: true })
+      .eq("restaurant_id", restaurantId)
+      .eq("status", "pending");
+
+    if (restaurant?.last_orders_seen_at) {
+      query = query.gt("created_at", restaurant.last_orders_seen_at);
+    }
+
+    const { count, error: countError } = await query;
+    if (countError) {
+      console.warn("[OrderNotification] Failed to load unread order count", countError);
+      setNotificationCount(0);
+      return;
+    }
+
+    setNotificationCount(count ?? 0);
+  }, [restaurantId]);
+
+  useEffect(() => {
+    void loadInitialUnreadCount();
+  }, [loadInitialUnreadCount]);
+
+  useEffect(() => {
+    if (!pendingReset || !restaurantId) return;
+    if (!supportsReadMarkers) {
+      localStorage.removeItem(getStorageKey(restaurantId));
+      setPendingReset(false);
+      return;
+    }
+    const supabase = createClient();
+    void (async () => {
+      try {
+        await supabase
+          .from("restaurants")
+          .update({ last_orders_seen_at: new Date().toISOString() })
+          .eq("id", restaurantId);
+      } finally {
+        setPendingReset(false);
+      }
+    })();
+  }, [pendingReset, restaurantId, supportsReadMarkers]);
+
+  // Set up Supabase realtime listener for new orders
+  useEffect(() => {
+    if (!restaurantId) {
+      return;
+    }
+
     const supabase = createClient();
 
-    // Create a unique channel name to avoid conflicts
-    const channelName = `order-notifications-${restaurantId}-${Date.now()}`;
     const channel = supabase
-      .channel(channelName)
+      .channel(`order-notifications-${restaurantId}`)
       .on(
         "postgres_changes",
         {
-          event: "INSERT",
+          event: "*",
           schema: "public",
           table: "orders",
           filter: `restaurant_id=eq.${restaurantId}`,
         },
         (payload) => {
-          console.log("[OrderNotification] New order received:", payload);
-          const newOrder = payload.new as { status?: string; restaurant_id?: string };
-          console.log("[OrderNotification] Order details:", {
-            status: newOrder.status,
-            restaurant_id: newOrder.restaurant_id,
-            expected_restaurant_id: restaurantId,
-          });
-          
-          // Only increment if order status is "pending" and restaurant matches
-          if (newOrder.status === "pending" && newOrder.restaurant_id === restaurantId) {
-            console.log("[OrderNotification] Incrementing count for pending order");
-            incrementRef.current?.();
-          } else {
-            console.log("[OrderNotification] Skipping - status:", newOrder.status, "restaurant match:", newOrder.restaurant_id === restaurantId);
+          const changedOrder = (payload.new ?? payload.old) as { restaurant_id?: string } | undefined;
+          if (changedOrder?.restaurant_id !== restaurantId) return;
+
+          if (supportsReadMarkers) {
+            void loadInitialUnreadCount();
+            return;
+          }
+
+          if (payload.eventType === "INSERT") {
+            incrementNotification();
           }
         }
       )
-      .subscribe((status) => {
-        console.log("[OrderNotification] Subscription status:", status);
-        if (status === "SUBSCRIBED") {
-          console.log("[OrderNotification] Successfully subscribed to orders table");
-        } else if (status === "CHANNEL_ERROR") {
-          console.warn("[OrderNotification] Channel subscription error (non-fatal)");
-        } else if (status === "TIMED_OUT") {
-          console.warn("[OrderNotification] Subscription timed out (non-fatal)");
-        } else if (status === "CLOSED") {
-          console.log("[OrderNotification] Subscription closed");
-        }
-      });
+      .subscribe();
 
     return () => {
-      console.log("[OrderNotification] Cleaning up subscription");
       supabase.removeChannel(channel);
     };
-  }, [restaurantId, mounted]); // Removed incrementNotification from deps to prevent re-subscription
+  }, [restaurantId, incrementNotification, loadInitialUnreadCount, supportsReadMarkers]);
 
   return (
     <OrderNotificationContext.Provider

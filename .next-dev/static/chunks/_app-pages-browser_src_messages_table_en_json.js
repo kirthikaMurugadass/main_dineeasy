@@ -1,0 +1,22 @@
+"use strict";
+/*
+ * ATTENTION: An "eval-source-map" devtool has been used.
+ * This devtool is neither made for production nor for readable output files.
+ * It uses "eval()" calls to create a separate source file with attached SourceMaps in the browser devtools.
+ * If you are trying to read the output file, select a different devtool (https://webpack.js.org/configuration/devtool/)
+ * or disable the default devtool with "devtool: false".
+ * If you are looking for production-ready output files, see mode: "production" (https://webpack.js.org/configuration/mode/).
+ */
+(self["webpackChunk_N_E"] = self["webpackChunk_N_E"] || []).push([["_app-pages-browser_src_messages_table_en_json"],{
+
+/***/ "(app-pages-browser)/./src/messages/table/en.json":
+/*!************************************!*\
+  !*** ./src/messages/table/en.json ***!
+  \************************************/
+/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
+
+module.exports = /*#__PURE__*/JSON.parse('{"title":"Tables","description":"Create, preview and manage your restaurant tables","create":{"pageTitle":"Create Table","subtitle":"Add and manage restaurant tables","steps":{"info":"Table Information","seating":"Seating Details","settings":"Table Settings"},"labels":{"tableName":"Table Name","tableNamePlaceholder":"e.g. T1, Window 3, Booth A","section":"Section","sectionOptional":"(optional)","sectionPlaceholder":"e.g. Terrace, Window, Garden","capacity":"Seating Capacity","capacityHelp":"Choose how many guests this table can comfortably seat.","activeStatus":"Active status","activeDescriptionOn":"Table will be available for bookings and walk-ins.","activeDescriptionOff":"Table will be hidden from booking options."},"actions":{"reset":"Cancel","submit":"Create Table","saving":"Saving..."},"toasts":{"nameRequired":"Please enter a table name.","capacityInvalid":"Capacity must be a positive number.","createSuccess":"Table added.","createError":"Failed to add table"}},"preview":{"title":"Table Preview","capacityLabel":"Capacity","capacitySingular":"Person","capacityPlural":"Persons","legend":{"available":"Available","occupied":"Occupied","reserved":"Reserved"}},"edit":{"title":"Edit Table","labels":{"tableName":"Table Name","capacity":"Capacity","section":"Section","sectionOptional":"(optional)","active":"Active"},"actions":{"cancel":"Cancel","save":"Save Changes","saving":"Saving..."},"toasts":{"nameRequired":"Please enter a table name.","capacityInvalid":"Capacity must be a positive number.","updateSuccess":"Table updated.","updateError":"Failed to update table"}},"list":{"title":"All Tables","emptyTitle":"No tables yet","emptyDescription":"Start by creating your first table using the form above to organize your floor layout.","badges":{"active":"Active","inactive":"Inactive"},"labels":{"capacity":"Capacity","seats":"seats","section":"Section"},"actions":{"edit":"Edit table","delete":"Delete table"}},"pro":{"required":"Table management is available on the Pro plan."},"confirm":{"deleteTitle":"Delete table","deleteMessage":"Are you sure you want to delete this table? This cannot be undone."},"toasts":{"deleteSuccess":"Table deleted.","deleteError":"Failed to delete table","loadError":"Failed to load tables"}}');
+
+/***/ })
+
+}]);

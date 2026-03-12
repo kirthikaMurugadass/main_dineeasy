@@ -6,12 +6,9 @@ import { ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useI18n } from "@/lib/i18n/context";
 import { cn } from "@/lib/utils";
-import { useTheme } from "@/components/providers/theme-provider";
-import Particles from "@/components/ui/particles-background";
 
 export function Hero() {
   const { t } = useI18n();
-  const { resolvedTheme } = useTheme();
   const [visible, setVisible] = useState(false);
 
   useEffect(() => {
@@ -19,46 +16,26 @@ export function Hero() {
     setVisible(true);
   }, []);
 
-  // Green theme colors for particles - brighter for visibility
-  const particleColors = resolvedTheme === "dark" 
-    ? ["#22c55e", "#4ade80", "#86efac", "#34d399"] // Green shades for dark theme
-    : ["#22c55e", "#16a34a", "#10b981", "#059669"]; // Green shades for light theme
-
-  // Get pixel ratio safely for SSR
-  const [pixelRatio, setPixelRatio] = useState(1);
-  useEffect(() => {
-    if (typeof window !== "undefined") {
-      setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
-    }
-  }, []);
-
   return (
-    <section className="relative overflow-hidden bg-background min-h-[80vh]">
-      {/* Particles Background Layer */}
-      <div className="absolute inset-0 z-0 w-full h-full" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%' }}>
-        <Particles
-          particleCount={100}
-          particleSpread={10}
-          speed={0.08}
-          particleColors={particleColors}
-          moveParticlesOnHover={false}
-          alphaParticles={true}
-          particleBaseSize={120}
-          sizeRandomness={0.8}
-          cameraDistance={18}
-          disableRotation={false}
-          pixelRatio={pixelRatio}
-          className="w-full h-full"
-        />
-      </div>
-      
+    <section
+      className="relative overflow-hidden min-h-[80vh] bg-black"
+      style={{
+        backgroundImage: "url('/images/hero.jpg')",
+        backgroundSize: "cover",
+        backgroundPosition: "center",
+        backgroundRepeat: "no-repeat",
+      }}
+    >
+      {/* Dark overlay for readability */}
+      <div className="absolute inset-0 z-0 bg-black/40" />
+
       {/* Hero Content Layer */}
-      <div className="relative z-10 mx-auto flex min-h-[80vh] w-full max-w-7xl items-center justify-center px-4 py-16 sm:px-6 sm:py-20 md:py-24 lg:py-28 lg:px-10 2xl:max-w-[90rem] 2xl:py-32">
-        <div className="flex w-full max-w-4xl flex-col items-center text-center">
+      <div className="relative z-10 mx-auto flex min-h-[80vh] w-full max-w-7xl items-center px-4 py-16 sm:px-6 sm:py-20 md:py-24 lg:py-28 lg:px-10 2xl:max-w-[90rem] 2xl:py-32">
+        <div className="flex w-full max-w-3xl flex-col items-start text-left">
           {/* Badge */}
           <p
             className={cn(
-              "inline-flex items-center rounded-full bg-primary/10 px-4 py-1.5 text-xs font-medium uppercase tracking-[0.2em] text-primary shadow-soft",
+              "inline-flex items-center rounded-full bg-primary/20 px-4 py-1.5 text-xs font-medium uppercase tracking-[0.2em] text-primary-foreground shadow-soft",
               "slide-in-left",
               visible && "is-visible",
               "delay-100"
@@ -70,7 +47,7 @@ export function Hero() {
           {/* Heading */}
           <h1
             className={cn(
-              "mt-5 text-balance text-[clamp(2.4rem,4.4vw+1rem,3.9rem)] font-semibold leading-[1.05] tracking-tight text-foreground",
+              "mt-5 text-balance text-[clamp(2.4rem,4.4vw+1rem,3.9rem)] font-semibold leading-[1.05] tracking-tight text-white",
               "slide-in-left",
               visible && "is-visible",
               "delay-200"
@@ -87,7 +64,7 @@ export function Hero() {
           {/* Description */}
           <p
             className={cn(
-              "mt-4 max-w-xl text-base leading-relaxed text-muted-foreground text-balance sm:text-lg",
+              "mt-4 max-w-xl text-base leading-relaxed text-white/85 text-balance sm:text-lg",
               "slide-in-left",
               visible && "is-visible",
               "delay-300"
@@ -99,7 +76,7 @@ export function Hero() {
           {/* Buttons */}
           <div
             className={cn(
-              "mt-6 flex flex-wrap items-center justify-center gap-3 sm:gap-4 lg:justify-start",
+              "mt-6 flex flex-wrap items-center gap-3 sm:gap-4",
               "slide-in-left",
               visible && "is-visible",
               "delay-400"
