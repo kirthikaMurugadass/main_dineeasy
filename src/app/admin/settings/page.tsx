@@ -262,7 +262,7 @@ export default function SettingsPage() {
           <Button
             onClick={handleSave}
             disabled={saving}
-            className="gap-2 rounded-full bg-gradient-to-r from-[#22C55E] to-[#16A34A] text-white shadow-lg transition-all hover:shadow-xl hover:from-[#16A34A] hover:to-[#15803D] disabled:opacity-60"
+            className="gap-2 rounded-full bg-gradient-to-r from-primary to-primary/80 text-primary-foreground shadow-lg transition-all hover:shadow-xl hover:from-primary hover:to-primary/90 disabled:opacity-60"
           >
             {saving ? <Loader2 size={16} className="animate-spin" /> : <Save size={16} />}
             {settingsT?.save || "Save"}
@@ -276,7 +276,7 @@ export default function SettingsPage() {
           <Card className="rounded-3xl border border-[#D6D2C4]/60 bg-gradient-to-br from-[#FAFAF5] via-[#F8F6EE] to-[#F0EDE4] shadow-xl dark:border-[#1f1f1f] dark:!bg-[#000000] dark:from-transparent dark:via-transparent dark:to-transparent">
             <CardHeader className="pb-3">
               <CardTitle className="flex items-center gap-2 text-lg font-semibold text-[#2D3A1A] dark:text-[#E8E4D9]">
-                <span className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-[#DCFCE7] text-[#16A34A] dark:bg-[#0f0f0f] dark:text-[#22c55e]">
+                <span className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-primary/10 text-primary dark:bg-primary/10 dark:text-primary">
                   <Store className="h-4 w-4" />
                 </span>
                 {settingsT?.page?.sections?.restaurantSettings || "Restaurant Settings"}
@@ -286,7 +286,7 @@ export default function SettingsPage() {
               {/* Restaurant Basic Info */}
               <div className="rounded-2xl border border-[#D6D2C4]/60 bg-white/70 p-4 shadow-sm dark:border-[#1f1f1f] dark:bg-[#000000]">
                 <div className="mb-3 flex items-center gap-2">
-                  <Settings2 className="h-4 w-4 text-[#16A34A]" />
+                  <Settings2 className="h-4 w-4 text-primary" />
                   <p className="text-sm font-semibold text-[#2D3A1A] dark:text-[#E8E4D9]">
                     {settingsT?.page?.sections?.restaurantBasicInfo || "Restaurant Basic Info"}
                   </p>
@@ -298,7 +298,7 @@ export default function SettingsPage() {
                       value={name}
                       onChange={(e) => setName(e.target.value)}
                       placeholder={settingsT?.restaurantNamePlaceholder || "My Cafe or Restaurant"}
-                      className="h-11 rounded-xl border-2 border-[#D6D2C4]/70 bg-white/80 text-sm shadow-sm transition-all focus-visible:border-[#22C55E] focus-visible:ring-[#22C55E]/20 dark:border-[#1f1f1f] dark:bg-[#0f0f0f] dark:text-white"
+                      className="h-11 rounded-xl border-2 border-[#D6D2C4]/70 bg-white/80 text-sm shadow-sm transition-all focus-visible:border-primary focus-visible:ring-primary/20 dark:border-[#1f1f1f] dark:bg-[#0f0f0f] dark:text-white"
                     />
                   </div>
 
@@ -308,7 +308,7 @@ export default function SettingsPage() {
                       value={description}
                       onChange={(e) => setDescription(e.target.value)}
                       placeholder={settingsT?.page?.placeholders?.restaurantDescription || "Add a short description for your restaurant"}
-                      className="min-h-[90px] rounded-xl border-2 border-[#D6D2C4]/70 bg-white/60 text-sm shadow-sm transition-all focus-visible:border-[#22C55E] focus-visible:ring-[#22C55E]/20 dark:border-[#1f1f1f] dark:bg-[#0f0f0f] dark:text-white"
+                      className="min-h-[90px] rounded-xl border-2 border-[#D6D2C4]/70 bg-white/60 text-sm shadow-sm transition-all focus-visible:border-primary focus-visible:ring-primary/20 dark:border-[#1f1f1f] dark:bg-[#0f0f0f] dark:text-white"
                     />
                   </div>
 
@@ -319,7 +319,7 @@ export default function SettingsPage() {
                         value={contactPhone}
                         onChange={(e) => setContactPhone(e.target.value)}
                         placeholder={settingsT?.page?.placeholders?.contactPhone || "+41 79 000 00 00"}
-                        className="h-11 rounded-xl border-2 border-[#D6D2C4]/70 bg-white/80 text-sm shadow-sm transition-all focus-visible:border-[#22C55E] focus-visible:ring-[#22C55E]/20 dark:border-[#1f1f1f] dark:bg-[#0f0f0f] dark:text-white"
+                        className="h-11 rounded-xl border-2 border-[#D6D2C4]/70 bg-white/80 text-sm shadow-sm transition-all focus-visible:border-primary focus-visible:ring-primary/20 dark:border-[#1f1f1f] dark:bg-[#0f0f0f] dark:text-white"
                       />
                     </div>
                     <div className="space-y-2">
@@ -329,7 +329,7 @@ export default function SettingsPage() {
                         value={contactEmail}
                         onChange={(e) => setContactEmail(e.target.value)}
                         placeholder={ownerEmail || settingsT?.page?.placeholders?.contactEmail || "you@example.com"}
-                        className="h-11 rounded-xl border-2 border-[#D6D2C4]/70 bg-white/80 text-sm shadow-sm transition-all focus-visible:border-[#22C55E] focus-visible:ring-[#22C55E]/20 dark:border-[#1f1f1f] dark:bg-[#0f0f0f] dark:text-white"
+                        className="h-11 rounded-xl border-2 border-[#D6D2C4]/70 bg-white/80 text-sm shadow-sm transition-all focus-visible:border-primary focus-visible:ring-primary/20 dark:border-[#1f1f1f] dark:bg-[#0f0f0f] dark:text-white"
                       />
                       <p className="text-xs text-[#6B7B5A] dark:text-[#9CA88A]">
                         {settingsT?.page?.labels?.defaultEmailFromOwner || "Default email from your owner account:"}{" "}
@@ -346,7 +346,7 @@ export default function SettingsPage() {
                         setSlug(e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, "-"))
                       }
                       placeholder={settingsT?.urlSlugPlaceholder || "my-cafe"}
-                      className="h-11 rounded-xl border-2 border-[#D6D2C4]/70 bg-white/80 text-sm shadow-sm transition-all focus-visible:border-[#22C55E] focus-visible:ring-[#22C55E]/20 dark:border-[#1f1f1f] dark:bg-[#0f0f0f] dark:text-white"
+                      className="h-11 rounded-xl border-2 border-[#D6D2C4]/70 bg-white/80 text-sm shadow-sm transition-all focus-visible:border-primary focus-visible:ring-primary/20 dark:border-[#1f1f1f] dark:bg-[#0f0f0f] dark:text-white"
                     />
                     <p className="text-xs text-muted-foreground">
                       {settingsT?.urlDescription || "Your menu will be at: dineeasy.app/"}
@@ -359,7 +359,7 @@ export default function SettingsPage() {
               {/* Restaurant Address */}
               <div className="rounded-2xl border border-[#D6D2C4]/60 bg-white/70 p-4 shadow-sm dark:border-[#1f1f1f] dark:bg-[#000000]">
                 <div className="mb-3 flex items-center gap-2">
-                  <MapPin className="h-4 w-4 text-[#16A34A]" />
+                  <MapPin className="h-4 w-4 text-primary" />
                   <p className="text-sm font-semibold text-[#2D3A1A] dark:text-[#E8E4D9]">
                     {settingsT?.page?.sections?.restaurantAddress || "Restaurant Address"}
                   </p>
@@ -371,7 +371,7 @@ export default function SettingsPage() {
                       value={street}
                       onChange={(e) => setStreet(e.target.value)}
                       placeholder={settingsT?.page?.placeholders?.streetAddress || "Street and number"}
-                      className="h-11 rounded-xl border-2 border-[#D6D2C4]/70 bg-white/80 text-sm shadow-sm transition-all focus-visible:border-[#22C55E] focus-visible:ring-[#22C55E]/20 dark:border-[#1f1f1f] dark:bg-[#0f0f0f] dark:text-white"
+                      className="h-11 rounded-xl border-2 border-[#D6D2C4]/70 bg-white/80 text-sm shadow-sm transition-all focus-visible:border-primary focus-visible:ring-primary/20 dark:border-[#1f1f1f] dark:bg-[#0f0f0f] dark:text-white"
                     />
                   </div>
                   <div className="space-y-2">
@@ -380,7 +380,7 @@ export default function SettingsPage() {
                       value={city}
                       onChange={(e) => setCity(e.target.value)}
                       placeholder={settingsT?.page?.placeholders?.city || "City"}
-                      className="h-11 rounded-xl border-2 border-[#D6D2C4]/70 bg-white/80 text-sm shadow-sm transition-all focus-visible:border-[#22C55E] focus-visible:ring-[#22C55E]/20 dark:border-[#1f1f1f] dark:bg-[#0f0f0f] dark:text-white"
+                      className="h-11 rounded-xl border-2 border-[#D6D2C4]/70 bg-white/80 text-sm shadow-sm transition-all focus-visible:border-primary focus-visible:ring-primary/20 dark:border-[#1f1f1f] dark:bg-[#0f0f0f] dark:text-white"
                     />
                   </div>
                   <div className="space-y-2">
@@ -389,7 +389,7 @@ export default function SettingsPage() {
                       value={stateRegion}
                       onChange={(e) => setStateRegion(e.target.value)}
                       placeholder={settingsT?.page?.placeholders?.state || "State / Region"}
-                      className="h-11 rounded-xl border-2 border-[#D6D2C4]/70 bg-white/80 text-sm shadow-sm transition-all focus-visible:border-[#22C55E] focus-visible:ring-[#22C55E]/20 dark:border-[#1f1f1f] dark:bg-[#0f0f0f] dark:text-white"
+                      className="h-11 rounded-xl border-2 border-[#D6D2C4]/70 bg-white/80 text-sm shadow-sm transition-all focus-visible:border-primary focus-visible:ring-primary/20 dark:border-[#1f1f1f] dark:bg-[#0f0f0f] dark:text-white"
                     />
                   </div>
                   <div className="space-y-2">
@@ -398,7 +398,7 @@ export default function SettingsPage() {
                       value={country}
                       onChange={(e) => setCountry(e.target.value)}
                       placeholder={settingsT?.page?.placeholders?.country || "Country"}
-                      className="h-11 rounded-xl border-2 border-[#D6D2C4]/70 bg-white/80 text-sm shadow-sm transition-all focus-visible:border-[#22C55E] focus-visible:ring-[#22C55E]/20 dark:border-[#1f1f1f] dark:bg-[#0f0f0f] dark:text-white"
+                      className="h-11 rounded-xl border-2 border-[#D6D2C4]/70 bg-white/80 text-sm shadow-sm transition-all focus-visible:border-primary focus-visible:ring-primary/20 dark:border-[#1f1f1f] dark:bg-[#0f0f0f] dark:text-white"
                     />
                   </div>
                   <div className="space-y-2">
@@ -407,7 +407,7 @@ export default function SettingsPage() {
                       value={postalCode}
                       onChange={(e) => setPostalCode(e.target.value)}
                       placeholder={settingsT?.page?.placeholders?.postalCode || "ZIP / Postal Code"}
-                      className="h-11 rounded-xl border-2 border-[#D6D2C4]/70 bg-white/80 text-sm shadow-sm transition-all focus-visible:border-[#22C55E] focus-visible:ring-[#22C55E]/20 dark:border-[#1f1f1f] dark:bg-[#0f0f0f] dark:text-white"
+                      className="h-11 rounded-xl border-2 border-[#D6D2C4]/70 bg-white/80 text-sm shadow-sm transition-all focus-visible:border-primary focus-visible:ring-primary/20 dark:border-[#1f1f1f] dark:bg-[#0f0f0f] dark:text-white"
                     />
                   </div>
                 </div>
@@ -416,7 +416,7 @@ export default function SettingsPage() {
               {/* Business Details */}
               <div className="rounded-2xl border border-[#D6D2C4]/60 bg-white/70 p-4 shadow-sm dark:border-[#1f1f1f] dark:bg-[#000000]">
                 <div className="mb-3 flex items-center gap-2">
-                  <Briefcase className="h-4 w-4 text-[#16A34A]" />
+                  <Briefcase className="h-4 w-4 text-primary" />
                   <p className="text-sm font-semibold text-[#2D3A1A] dark:text-[#E8E4D9]">
                     {settingsT?.page?.sections?.businessDetails || "Business Details"}
                   </p>
@@ -428,7 +428,7 @@ export default function SettingsPage() {
                       value={openingHours}
                       onChange={(e) => setOpeningHours(e.target.value)}
                       placeholder={settingsT?.page?.placeholders?.openingHours || "e.g. 09:00"}
-                      className="h-11 rounded-xl border-2 border-[#D6D2C4]/70 bg-white/80 text-sm shadow-sm transition-all focus-visible:border-[#22C55E] focus-visible:ring-[#22C55E]/20 dark:border-[#1f1f1f] dark:bg-[#0f0f0f] dark:text-white"
+                      className="h-11 rounded-xl border-2 border-[#D6D2C4]/70 bg-white/80 text-sm shadow-sm transition-all focus-visible:border-primary focus-visible:ring-primary/20 dark:border-[#1f1f1f] dark:bg-[#0f0f0f] dark:text-white"
                     />
                   </div>
                   <div className="space-y-2">
@@ -437,7 +437,7 @@ export default function SettingsPage() {
                       value={closingHours}
                       onChange={(e) => setClosingHours(e.target.value)}
                       placeholder={settingsT?.page?.placeholders?.closingHours || "e.g. 22:00"}
-                      className="h-11 rounded-xl border-2 border-[#D6D2C4]/70 bg-white/80 text-sm shadow-sm transition-all focus-visible:border-[#22C55E] focus-visible:ring-[#22C55E]/20 dark:border-[#1f1f1f] dark:bg-[#0f0f0f] dark:text-white"
+                      className="h-11 rounded-xl border-2 border-[#D6D2C4]/70 bg-white/80 text-sm shadow-sm transition-all focus-visible:border-primary focus-visible:ring-primary/20 dark:border-[#1f1f1f] dark:bg-[#0f0f0f] dark:text-white"
                     />
                   </div>
                   <div className="space-y-2">
@@ -446,7 +446,7 @@ export default function SettingsPage() {
                       value={timeZone}
                       onChange={(e) => setTimeZone(e.target.value)}
                       placeholder={settingsT?.page?.placeholders?.timeZone || "e.g. Europe/Zurich"}
-                      className="h-11 rounded-xl border-2 border-[#D6D2C4]/70 bg-white/80 text-sm shadow-sm transition-all focus-visible:border-[#22C55E] focus-visible:ring-[#22C55E]/20 dark:border-[#1f1f1f] dark:bg-[#0f0f0f] dark:text-white"
+                      className="h-11 rounded-xl border-2 border-[#D6D2C4]/70 bg-white/80 text-sm shadow-sm transition-all focus-visible:border-primary focus-visible:ring-primary/20 dark:border-[#1f1f1f] dark:bg-[#0f0f0f] dark:text-white"
                     />
                   </div>
                   <div className="space-y-2">
@@ -455,7 +455,7 @@ export default function SettingsPage() {
                       value={currency}
                       onChange={(e) => setCurrency(e.target.value)}
                       placeholder={settingsT?.page?.placeholders?.currency || "e.g. CHF"}
-                      className="h-11 rounded-xl border-2 border-[#D6D2C4]/70 bg-white/80 text-sm shadow-sm transition-all focus-visible:border-[#22C55E] focus-visible:ring-[#22C55E]/20 dark:border-[#1f1f1f] dark:bg-[#0f0f0f] dark:text-white"
+                      className="h-11 rounded-xl border-2 border-[#D6D2C4]/70 bg-white/80 text-sm shadow-sm transition-all focus-visible:border-primary focus-visible:ring-primary/20 dark:border-[#1f1f1f] dark:bg-[#0f0f0f] dark:text-white"
                     />
                   </div>
                 </div>
@@ -470,7 +470,7 @@ export default function SettingsPage() {
           <Card className="rounded-3xl border border-[#D6D2C4]/60 bg-gradient-to-br from-[#FAFAF5] via-[#F8F6EE] to-[#F0EDE4] shadow-xl dark:border-[#1f1f1f] dark:!bg-[#000000] dark:from-transparent dark:via-transparent dark:to-transparent">
             <CardHeader className="pb-3">
               <CardTitle className="flex items-center gap-2 text-lg font-semibold text-[#2D3A1A] dark:text-[#E8E4D9]">
-                <span className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-[#DCFCE7] text-[#16A34A] dark:bg-[#0f0f0f] dark:text-[#22c55e]">
+                <span className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-primary/10 text-primary dark:bg-primary/10 dark:text-primary">
                   <CalendarDays className="h-4 w-4" />
                 </span>
                 {settingsT?.page?.sections?.bookATableSettings || "Book a Table Settings"}
@@ -480,7 +480,7 @@ export default function SettingsPage() {
               {/* Reservation Settings */}
               <div className="rounded-2xl border border-[#D6D2C4]/60 bg-white/70 p-4 shadow-sm dark:border-[#1f1f1f] dark:bg-[#000000]">
                 <div className="mb-3 flex items-center gap-2">
-                  <Settings2 className="h-4 w-4 text-[#16A34A]" />
+                  <Settings2 className="h-4 w-4 text-primary" />
                   <p className="text-sm font-semibold text-[#2D3A1A] dark:text-[#E8E4D9]">
                     {settingsT?.page?.sections?.reservationSettings || "Reservation Settings"}
                   </p>
@@ -510,7 +510,7 @@ export default function SettingsPage() {
                         value={maxGuestsPerTable}
                         onChange={(e) => setMaxGuestsPerTable(e.target.value)}
                         placeholder={settingsT?.page?.placeholders?.maxGuestsPerTable || "e.g. 8"}
-                        className="h-11 rounded-xl border-2 border-[#D6D2C4]/70 bg-white/80 text-sm shadow-sm transition-all focus-visible:border-[#22C55E] focus-visible:ring-[#22C55E]/20 dark:border-[#1f1f1f] dark:bg-[#0f0f0f] dark:text-white"
+                        className="h-11 rounded-xl border-2 border-[#D6D2C4]/70 bg-white/80 text-sm shadow-sm transition-all focus-visible:border-primary focus-visible:ring-primary/20 dark:border-[#1f1f1f] dark:bg-[#0f0f0f] dark:text-white"
                       />
                     </div>
                     <div className="space-y-2">
@@ -521,7 +521,7 @@ export default function SettingsPage() {
                         value={minGuestsPerTable}
                         onChange={(e) => setMinGuestsPerTable(e.target.value)}
                         placeholder={settingsT?.page?.placeholders?.minGuestsPerTable || "e.g. 1"}
-                        className="h-11 rounded-xl border-2 border-[#D6D2C4]/70 bg-white/80 text-sm shadow-sm transition-all focus-visible:border-[#22C55E] focus-visible:ring-[#22C55E]/20 dark:border-[#1f1f1f] dark:bg-[#0f0f0f] dark:text-white"
+                        className="h-11 rounded-xl border-2 border-[#D6D2C4]/70 bg-white/80 text-sm shadow-sm transition-all focus-visible:border-primary focus-visible:ring-primary/20 dark:border-[#1f1f1f] dark:bg-[#0f0f0f] dark:text-white"
                       />
                     </div>
                     <div className="space-y-2">
@@ -532,7 +532,7 @@ export default function SettingsPage() {
                         value={advanceBookingLimit}
                         onChange={(e) => setAdvanceBookingLimit(e.target.value)}
                         placeholder={settingsT?.page?.placeholders?.advanceBookingLimit || "e.g. 7"}
-                        className="h-11 rounded-xl border-2 border-[#D6D2C4]/70 bg-white/80 text-sm shadow-sm transition-all focus-visible:border-[#22C55E] focus-visible:ring-[#22C55E]/20 dark:border-[#1f1f1f] dark:bg-[#0f0f0f] dark:text-white"
+                        className="h-11 rounded-xl border-2 border-[#D6D2C4]/70 bg-white/80 text-sm shadow-sm transition-all focus-visible:border-primary focus-visible:ring-primary/20 dark:border-[#1f1f1f] dark:bg-[#0f0f0f] dark:text-white"
                       />
                     </div>
                     <div className="space-y-2">
@@ -546,7 +546,7 @@ export default function SettingsPage() {
                           setBookingIntervalMinutes(e.target.value)
                         }
                         placeholder={settingsT?.page?.placeholders?.bookingTimeInterval || "e.g. 30"}
-                        className="h-11 rounded-xl border-2 border-[#D6D2C4]/70 bg-white/80 text-sm shadow-sm transition-all focus-visible:border-[#22C55E] focus-visible:ring-[#22C55E]/20 dark:border-[#1f1f1f] dark:bg-[#0f0f0f] dark:text-white"
+                        className="h-11 rounded-xl border-2 border-[#D6D2C4]/70 bg-white/80 text-sm shadow-sm transition-all focus-visible:border-primary focus-visible:ring-primary/20 dark:border-[#1f1f1f] dark:bg-[#0f0f0f] dark:text-white"
                       />
                     </div>
                   </div>
@@ -556,7 +556,7 @@ export default function SettingsPage() {
               {/* Table Management */}
               <div className="rounded-2xl border border-[#D6D2C4]/60 bg-white/70 p-4 shadow-sm dark:border-[#1f1f1f] dark:bg-[#000000]">
                 <div className="mb-3 flex items-center gap-2">
-                  <Briefcase className="h-4 w-4 text-[#16A34A]" />
+                  <Briefcase className="h-4 w-4 text-primary" />
                   <p className="text-sm font-semibold text-[#2D3A1A] dark:text-[#E8E4D9]">
                     {settingsT?.page?.sections?.tableManagement || "Table Management"}
                   </p>
@@ -570,7 +570,7 @@ export default function SettingsPage() {
                       value={defaultTableCapacity}
                       onChange={(e) => setDefaultTableCapacity(e.target.value)}
                       placeholder={settingsT?.page?.placeholders?.defaultTableCapacity || "e.g. 4"}
-                      className="h-11 rounded-xl border-2 border-[#D6D2C4]/70 bg-white/80 text-sm shadow-sm transition-all focus-visible:border-[#22C55E] focus-visible:ring-[#22C55E]/20 dark:border-[#1f1f1f] dark:bg-[#0f0f0f] dark:text-white"
+                      className="h-11 rounded-xl border-2 border-[#D6D2C4]/70 bg-white/80 text-sm shadow-sm transition-all focus-visible:border-primary focus-visible:ring-primary/20 dark:border-[#1f1f1f] dark:bg-[#0f0f0f] dark:text-white"
                     />
                   </div>
                   <div className="flex items-center justify-between rounded-xl bg-[#F6F4EA] px-3 py-2.5 text-sm dark:bg-[#000000] dark:border dark:border-[#1f1f1f]">
@@ -593,7 +593,7 @@ export default function SettingsPage() {
               {/* Booking Rules */}
               <div className="rounded-2xl border border-[#D6D2C4]/60 bg-white/70 p-4 shadow-sm dark:border-[#1f1f1f] dark:bg-[#000000]">
                 <div className="mb-3 flex items-center gap-2">
-                  <Briefcase className="h-4 w-4 text-[#16A34A]" />
+                  <Briefcase className="h-4 w-4 text-primary" />
                   <p className="text-sm font-semibold text-[#2D3A1A] dark:text-[#E8E4D9]">
                     {settingsT?.page?.sections?.bookingRules || "Booking Rules"}
                   </p>
@@ -625,7 +625,7 @@ export default function SettingsPage() {
                       value={cancellationTimeLimit}
                       onChange={(e) => setCancellationTimeLimit(e.target.value)}
                       placeholder={settingsT?.page?.placeholders?.cancellationTimeLimit || "e.g. 120"}
-                      className="h-11 rounded-xl border-2 border-[#D6D2C4]/70 bg-white/80 text-sm shadow-sm transition-all focus-visible:border-[#22C55E] focus-visible:ring-[#22C55E]/20 dark:border-[#1f1f1f] dark:bg-[#0f0f0f] dark:text-white"
+                      className="h-11 rounded-xl border-2 border-[#D6D2C4]/70 bg-white/80 text-sm shadow-sm transition-all focus-visible:border-primary focus-visible:ring-primary/20 dark:border-[#1f1f1f] dark:bg-[#0f0f0f] dark:text-white"
                     />
                   </div>
                 </div>
@@ -634,7 +634,7 @@ export default function SettingsPage() {
               {/* Notification Settings */}
               <div className="rounded-2xl border border-[#D6D2C4]/60 bg-white/70 p-4 shadow-sm dark:border-[#1f1f1f] dark:bg-[#000000]">
                 <div className="mb-3 flex items-center gap-2">
-                  <Bell className="h-4 w-4 text-[#16A34A]" />
+                  <Bell className="h-4 w-4 text-primary" />
                   <p className="text-sm font-semibold text-[#2D3A1A] dark:text-[#E8E4D9]">
                     {settingsT?.page?.sections?.notificationSettings || "Notification Settings"}
                   </p>

@@ -80,6 +80,14 @@ const nextConfig: NextConfig = {
       },
     ];
   },
+  webpack(config: any, { isServer }) {
+    // Workaround for a Windows/webpack runtime chunk path issue where the server
+    // runtime tries to require chunks from `.next/server` instead of `.next/server/chunks`.
+    if (isServer && config.output) {
+      config.output.chunkFilename = "chunks/[id].js";
+    }
+    return config;
+  },
 };
 
 export default nextConfig;

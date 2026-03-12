@@ -181,7 +181,7 @@ export default function BookingDetailsPage() {
       case "cancelled":
         return "bg-red-500/10 text-red-600 dark:text-red-400 border-red-500/20";
       case "completed":
-        return "bg-green-500/10 text-green-600 dark:text-green-400 border-green-500/20 dark:bg-[#22c55e]/10 dark:text-[#22c55e] dark:border-[#22c55e]/30";
+        return "bg-primary/10 text-primary border-primary/20 dark:bg-primary/10 dark:text-primary dark:border-primary/30";
     }
   }
 
@@ -273,21 +273,21 @@ export default function BookingDetailsPage() {
             <CardContent className="space-y-4">
               <div>
                 <p className="text-sm text-muted-foreground dark:text-[#bfbfbf] flex items-center gap-2">
-                  <User className="h-4 w-4 dark:text-[#22c55e]" />
+                  <User className="h-4 w-4 dark:text-primary" />
                   {t.booking?.detail?.customerName || "Customer Name"}
                 </p>
                 <p className="text-lg font-semibold dark:text-[#ffffff]">{booking.customer_name}</p>
               </div>
               <div>
                 <p className="text-sm text-muted-foreground dark:text-[#bfbfbf] flex items-center gap-2">
-                  <Phone className="h-4 w-4 dark:text-[#22c55e]" />
+                  <Phone className="h-4 w-4 dark:text-primary" />
                   {t.booking?.detail?.phoneNumber || "Phone Number"}
                 </p>
                 <p className="text-lg font-semibold dark:text-[#ffffff]">{booking.phone}</p>
               </div>
               <div>
                 <p className="text-sm text-muted-foreground dark:text-[#bfbfbf] flex items-center gap-2">
-                  <Calendar className="h-4 w-4 dark:text-[#22c55e]" />
+                  <Calendar className="h-4 w-4 dark:text-primary" />
                   {t.booking?.detail?.dateTime || "Booking Date & Time"}
                 </p>
                 <p className="text-lg font-semibold dark:text-[#ffffff]">
@@ -296,7 +296,7 @@ export default function BookingDetailsPage() {
               </div>
               <div>
                 <p className="text-sm text-muted-foreground dark:text-[#bfbfbf] flex items-center gap-2">
-                  <Users className="h-4 w-4 dark:text-[#22c55e]" />
+                  <Users className="h-4 w-4 dark:text-primary" />
                   {t.booking?.detail?.guestCount || "Number of Guests"}
                 </p>
                 <p className="text-lg font-semibold dark:text-[#ffffff]">
@@ -309,7 +309,7 @@ export default function BookingDetailsPage() {
               {booking.special_note && (
                 <div>
                   <p className="text-sm text-muted-foreground dark:text-[#bfbfbf] flex items-center gap-2">
-                    <MessageSquare className="h-4 w-4 dark:text-[#22c55e]" />
+                    <MessageSquare className="h-4 w-4 dark:text-primary" />
                     {t.booking?.detail?.specialRequests || "Special Requests"}
                   </p>
                   <p className="text-lg font-semibold mt-1 dark:text-[#ffffff]">
@@ -353,7 +353,7 @@ export default function BookingDetailsPage() {
                   onClick={() => updateBookingStatus("confirmed")}
                   disabled={updatingStatus}
                 >
-                  <CheckCircle className="h-4 w-4 mr-2 dark:text-[#22c55e]" />
+                  <CheckCircle className="h-4 w-4 mr-2 dark:text-primary" />
                   {t.booking?.actions?.confirmBooking ||
                     t.booking?.actions?.confirm ||
                     ""}
@@ -379,7 +379,7 @@ export default function BookingDetailsPage() {
                   onClick={() => updateBookingStatus("completed")}
                   disabled={updatingStatus}
                 >
-                  <CheckCircle className="h-4 w-4 mr-2 dark:text-[#22c55e]" />
+                  <CheckCircle className="h-4 w-4 mr-2 dark:text-primary" />
                   {t.booking?.actions?.markCompleted || ""}
                 </Button>
               )}

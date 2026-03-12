@@ -314,8 +314,8 @@ export default function TablesPage() {
       <FadeIn>
         <div className="flex items-center justify-between rounded-2xl border border-[#D6D2C4]/50 bg-white px-4 py-4 shadow-sm dark:border-[#1f1f1f] dark:bg-[#111111]">
           <div className="flex items-center gap-3">
-            <div className="rounded-2xl bg-[#22c55e]/20 p-2.5 shadow-sm dark:bg-[#22c55e]/20">
-              <Table2 className="h-5 w-5 text-[#22C55E] dark:text-[#22c55e]" />
+            <div className="rounded-2xl bg-primary/10 p-2.5 shadow-sm dark:bg-primary/10">
+              <Table2 className="h-5 w-5 text-primary" />
             </div>
             <div>
               <PageTitle className="dark:text-[#ffffff]">
@@ -344,7 +344,7 @@ export default function TablesPage() {
                 {/* Table Information */}
                 <div className="space-y-3 rounded-2xl bg-white/70 p-4 shadow-sm dark:bg-[#0f0f0f] dark:border dark:border-[#262626]">
                   <div className="flex items-center gap-2 pb-1">
-                    <span className="flex h-7 w-7 items-center justify-center rounded-full bg-[#22c55e]/20 text-[#16A34A] text-xs font-semibold dark:text-[#22c55e]">
+                    <span className="flex h-7 w-7 items-center justify-center rounded-full bg-primary/10 text-primary text-xs font-semibold dark:text-primary">
                       1
                     </span>
                     <p className="text-sm font-semibold text-[#2D3A1A] dark:text-[#ffffff]">
@@ -363,7 +363,7 @@ export default function TablesPage() {
                         "e.g. T1, Window 3, Booth A"
                       }
                       disabled={adding}
-                      className="h-11 rounded-xl border-2 border-[#D6D2C4]/70 bg-white/80 text-sm shadow-sm transition-all focus-visible:border-[#22C55E] focus-visible:ring-[#22C55E]/20 dark:border-[#262626] dark:bg-[#0f0f0f] dark:text-[#ffffff] dark:placeholder:text-[#8a8a8a] dark:focus-visible:border-[#22c55e]"
+                      className="h-11 rounded-xl border-2 border-[#D6D2C4]/70 bg-white/80 text-sm shadow-sm transition-all focus-visible:border-primary focus-visible:ring-primary/20 dark:border-[#262626] dark:bg-[#0f0f0f] dark:text-[#ffffff] dark:placeholder:text-[#8a8a8a] dark:focus-visible:border-primary"
                     />
                   </div>
                   <div className="space-y-2">
@@ -381,7 +381,7 @@ export default function TablesPage() {
                         "e.g. Terrace, Window, Garden"
                       }
                       disabled={adding}
-                      className="h-11 rounded-xl border-2 border-[#D6D2C4]/70 bg-white/80 text-sm shadow-sm transition-all focus-visible:border-[#22C55E] focus-visible:ring-[#22C55E]/20 dark:border-[#262626] dark:bg-[#0f0f0f] dark:text-[#ffffff] dark:placeholder:text-[#8a8a8a] dark:focus-visible:border-[#22c55e]"
+                      className="h-11 rounded-xl border-2 border-[#D6D2C4]/70 bg-white/80 text-sm shadow-sm transition-all focus-visible:border-primary focus-visible:ring-primary/20 dark:border-[#262626] dark:bg-[#0f0f0f] dark:text-[#ffffff] dark:placeholder:text-[#8a8a8a] dark:focus-visible:border-primary"
                     />
                   </div>
                 </div>
@@ -389,7 +389,7 @@ export default function TablesPage() {
                 {/* Seating Details */}
                 <div className="space-y-3 rounded-2xl bg-white/70 p-4 shadow-sm dark:bg-[#0f0f0f] dark:border dark:border-[#262626]">
                   <div className="flex items-center gap-2 pb-1">
-                    <span className="flex h-7 w-7 items-center justify-center rounded-full bg-[#22c55e]/20 text-[#16A34A] text-xs font-semibold dark:text-[#22c55e]">
+                    <span className="flex h-7 w-7 items-center justify-center rounded-full bg-primary/10 text-primary text-xs font-semibold dark:text-primary">
                       2
                     </span>
                     <p className="text-sm font-semibold text-[#2D3A1A] dark:text-[#ffffff]">
@@ -406,7 +406,7 @@ export default function TablesPage() {
                       value={capacity}
                       onChange={(e) => setCapacity(e.target.value)}
                       disabled={adding}
-                      className="h-11 rounded-xl border-2 border-[#D6D2C4]/70 bg-white/80 text-sm shadow-sm transition-all focus-visible:border-[#22C55E] focus-visible:ring-[#22C55E]/20 dark:border-[#262626] dark:bg-[#0f0f0f] dark:text-[#ffffff] dark:placeholder:text-[#8a8a8a] dark:focus-visible:border-[#22c55e]"
+                      className="h-11 rounded-xl border-2 border-[#D6D2C4]/70 bg-white/80 text-sm shadow-sm transition-all focus-visible:border-primary focus-visible:ring-primary/20 dark:border-[#262626] dark:bg-[#0f0f0f] dark:text-[#ffffff] dark:placeholder:text-[#8a8a8a] dark:focus-visible:border-primary"
                     />
                     <p className="text-xs text-[#6B7B5A] dark:text-[#9ca3af]">
                       {t.table?.create?.labels?.capacityHelp ||
@@ -418,7 +418,7 @@ export default function TablesPage() {
                 {/* Table Settings */}
                 <div className="space-y-3 rounded-2xl bg-white/70 p-4 shadow-sm dark:bg-[#0f0f0f] dark:border dark:border-[#262626]">
                   <div className="flex items-center gap-2 pb-1">
-                    <span className="flex h-7 w-7 items-center justify-center rounded-full bg-[#22c55e]/20 text-[#16A34A] text-xs font-semibold dark:text-[#22c55e]">
+                    <span className="flex h-7 w-7 items-center justify-center rounded-full bg-primary/10 text-primary text-xs font-semibold dark:text-primary">
                       3
                     </span>
                     <p className="text-sm font-semibold text-[#2D3A1A] dark:text-[#ffffff]">
@@ -464,7 +464,7 @@ export default function TablesPage() {
                   </Button>
                   <Button
                     type="submit"
-                    className="w-full rounded-full bg-[#22C55E] text-white shadow-lg transition-all hover:bg-[#16A34A] disabled:opacity-60 sm:w-auto dark:bg-[#22c55e] dark:hover:bg-[#16a34a]"
+                    className="w-full rounded-full bg-primary text-primary-foreground shadow-lg transition-all hover:bg-primary/90 disabled:opacity-60 sm:w-auto"
                     disabled={adding || !restaurantId}
                   >
                     {adding ? (
@@ -487,7 +487,7 @@ export default function TablesPage() {
           <Card className="rounded-2xl border border-[#D6D2C4]/50 bg-white shadow-xl dark:border-[#1f1f1f] dark:bg-[#111111] dark:p-6">
             <CardHeader className="pb-3">
               <CardTitle className="text-sm font-semibold text-[#2D3A1A] dark:text-[#ffffff] flex items-center gap-2">
-                <span className="inline-flex h-7 w-7 items-center justify-center rounded-full bg-[#22c55e]/20 text-[#16A34A] dark:text-[#22c55e]">
+                <span className="inline-flex h-7 w-7 items-center justify-center rounded-full bg-primary/10 text-primary dark:text-primary">
                   <Table2 className="h-4 w-4" />
                 </span>
                 {t.table?.preview?.title || "Table Preview"}
@@ -503,8 +503,8 @@ export default function TablesPage() {
                     const isInactive = !table.is_active;
                     const cardClasses = isInactive
                       ? "bg-gray-100 border-gray-300 text-gray-500 opacity-70 dark:bg-[#1a1a1a] dark:border-[#262626] dark:text-[#9ca3af]"
-                      : "bg-white border-[#22C55E] text-[#2D3A1A] dark:bg-[#1a1a1a] dark:border-[#22c55e] dark:text-[#ffffff]";
-                    const dotClasses = isInactive ? "bg-gray-400 dark:bg-[#9ca3af]" : "bg-[#22C55E]";
+                      : "bg-white border-primary text-[#2D3A1A] dark:bg-[#1a1a1a] dark:border-primary dark:text-[#ffffff]";
+                    const dotClasses = isInactive ? "bg-gray-400 dark:bg-[#9ca3af]" : "bg-primary";
 
                     return (
                       <div
@@ -532,7 +532,7 @@ export default function TablesPage() {
               {/* Legend (same as booking page) */}
               <div className="flex flex-wrap items-center justify-center gap-6 rounded-2xl border border-[#D6D2C4]/60 bg-white px-6 py-4 shadow-sm dark:border-[#262626] dark:bg-[#0f0f0f]">
                 <div className="flex items-center gap-2">
-                  <div className="h-2 w-2 rounded-full bg-[#22C55E]" />
+                  <div className="h-2 w-2 rounded-full bg-primary" />
                   <span className="text-sm text-[#6B7B5A] dark:text-[#9ca3af]">
                     {t.table?.preview?.legend?.available || "Available"}
                   </span>
@@ -575,7 +575,7 @@ export default function TablesPage() {
                       value={editingName}
                       onChange={(e) => setEditingName(e.target.value)}
                       disabled={savingEdit}
-                      className="h-10 rounded-xl border-2 border-[#D6D2C4]/70 bg-white/80 text-sm shadow-sm transition-all focus-visible:border-[#22C55E] focus-visible:ring-[#22C55E]/20 dark:border-[#262626] dark:bg-[#0f0f0f] dark:text-[#ffffff] dark:placeholder:text-[#8a8a8a] dark:focus-visible:border-[#22c55e]"
+                      className="h-10 rounded-xl border-2 border-[#D6D2C4]/70 bg-white/80 text-sm shadow-sm transition-all focus-visible:border-primary focus-visible:ring-primary/20 dark:border-[#262626] dark:bg-[#0f0f0f] dark:text-[#ffffff] dark:placeholder:text-[#8a8a8a] dark:focus-visible:border-primary"
                     />
                   </div>
                   <div className="space-y-2">
@@ -588,7 +588,7 @@ export default function TablesPage() {
                       value={editingCapacity}
                       onChange={(e) => setEditingCapacity(e.target.value)}
                       disabled={savingEdit}
-                      className="h-10 rounded-xl border-2 border-[#D6D2C4]/70 bg-white/80 text-sm shadow-sm transition-all focus-visible:border-[#22C55E] focus-visible:ring-[#22C55E]/20 dark:border-[#262626] dark:bg-[#0f0f0f] dark:text-[#ffffff] dark:placeholder:text-[#8a8a8a] dark:focus-visible:border-[#22c55e]"
+                      className="h-10 rounded-xl border-2 border-[#D6D2C4]/70 bg-white/80 text-sm shadow-sm transition-all focus-visible:border-primary focus-visible:ring-primary/20 dark:border-[#262626] dark:bg-[#0f0f0f] dark:text-[#ffffff] dark:placeholder:text-[#8a8a8a] dark:focus-visible:border-primary"
                     />
                   </div>
                 </div>
@@ -604,7 +604,7 @@ export default function TablesPage() {
                       value={editingSection}
                       onChange={(e) => setEditingSection(e.target.value)}
                       disabled={savingEdit}
-                      className="h-10 rounded-xl border-2 border-[#D6D2C4]/70 bg-white/80 text-sm shadow-sm transition-all focus-visible:border-[#22C55E] focus-visible:ring-[#22C55E]/20 dark:border-[#262626] dark:bg-[#0f0f0f] dark:text-[#ffffff] dark:placeholder:text-[#8a8a8a] dark:focus-visible:border-[#22c55e]"
+                      className="h-10 rounded-xl border-2 border-[#D6D2C4]/70 bg-white/80 text-sm shadow-sm transition-all focus-visible:border-primary focus-visible:ring-primary/20 dark:border-[#262626] dark:bg-[#0f0f0f] dark:text-[#ffffff] dark:placeholder:text-[#8a8a8a] dark:focus-visible:border-primary"
                     />
                   </div>
                   <div className="flex items-center justify-between rounded-xl bg-[#F6F4EA] px-3 py-2.5 text-sm dark:bg-[#1a1a1a] dark:border dark:border-[#262626]">
@@ -631,7 +631,7 @@ export default function TablesPage() {
                   <Button
                     type="submit"
                     disabled={savingEdit}
-                    className="rounded-full bg-[#22C55E] text-white shadow-lg hover:bg-[#16A34A] disabled:opacity-60 dark:bg-[#22c55e] dark:hover:bg-[#16a34a]"
+                    className="rounded-full bg-primary text-primary-foreground shadow-lg hover:bg-primary/90 disabled:opacity-60"
                   >
                     {savingEdit ? (
                       <>
@@ -660,7 +660,7 @@ export default function TablesPage() {
           <CardContent>
             {loading ? (
               <div className="flex items-center justify-center py-8">
-                <Loader2 className="h-5 w-5 animate-spin text-[#5B7A2F] dark:text-[#22c55e]" />
+                <Loader2 className="h-5 w-5 animate-spin text-primary" />
               </div>
             ) : tables.length === 0 ? (
               <div className="flex flex-col items-center justify-center gap-2 py-8 text-center">
@@ -677,7 +677,7 @@ export default function TablesPage() {
                 {tables.map((table) => (
                   <div
                     key={table.id}
-                    className="flex items-center justify-between rounded-2xl border border-[#D6D2C4]/70 bg-white/80 px-4 py-3 text-sm shadow-sm transition-all hover:-translate-y-0.5 hover:border-[#22C55E]/60 hover:shadow-md dark:border-[#262626] dark:bg-[#0f0f0f] dark:hover:border-[#22c55e]"
+                    className="flex items-center justify-between rounded-2xl border border-[#D6D2C4]/70 bg-white/80 px-4 py-3 text-sm shadow-sm transition-all hover:-translate-y-0.5 hover:border-primary/60 hover:shadow-md dark:border-[#262626] dark:bg-[#0f0f0f] dark:hover:border-primary"
                   >
                     <div className="flex flex-col gap-0.5">
                       <div className="flex items-center gap-2">
@@ -687,7 +687,7 @@ export default function TablesPage() {
                         <span
                           className={`rounded-full px-2 py-0.5 text-[11px] font-medium ${
                             table.is_active
-                              ? "bg-[#DCFCE7] text-[#166534] dark:bg-[#22c55e]/20 dark:text-[#22c55e]"
+                              ? "bg-primary/10 text-primary dark:bg-primary/10 dark:text-primary"
                               : "bg-zinc-100 text-zinc-600 dark:bg-[#1a1a1a] dark:text-[#9ca3af]"
                           }`}
                         >

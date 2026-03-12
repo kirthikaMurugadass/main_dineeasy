@@ -11,6 +11,7 @@
     "menuViewOnly": "Menu uniquement",
     "switchLanguage": "Changer de langue",
     "toggleTheme": "Changer le thème",
+    "searchPlaceholder": "Rechercher un produit...",
     "themeLight": "Clair",
     "themeDark": "Sombre",
     "themeSystem": "Système",
@@ -22,6 +23,17 @@
     "addOrderingDisabled": "Ajouter (commande désactivée)",
     "viewCart": "Voir le panier",
     "orderingNotAvailableTitle": "Commande non disponible",
-    "orderingNotAvailableDescription": "La commande en ligne est disponible uniquement avec l'offre Pro. Vous pouvez toujours consulter le menu complet."
+    "orderingNotAvailableDescription": "La commande en ligne est disponible uniquement avec l'offre Pro. Vous pouvez toujours consulter le menu complet.",
+    "pos": {
+      "posLabel": "POS",
+      "navigation": "Navigation",
+      "allCategories": "Tous",
+      "itemsLabel": "articles",
+      "bottomBarTitle": "POS",
+      "itemSingular": "article",
+      "itemPlural": "articles",
+      "emptyCart": "Aucun article",
+      "placeOrder": "Passer la commande"
+    }
   }
 }

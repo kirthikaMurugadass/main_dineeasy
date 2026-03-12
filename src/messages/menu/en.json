@@ -101,6 +101,7 @@
     "menuViewOnly": "Menu View Only",
     "switchLanguage": "Switch language",
     "toggleTheme": "Toggle theme",
+    "searchPlaceholder": "Search product here...",
     "themeLight": "Light",
     "themeDark": "Dark",
     "themeSystem": "System",
@@ -112,6 +113,17 @@
     "addOrderingDisabled": "Add (ordering disabled)",
     "viewCart": "View cart",
     "orderingNotAvailableTitle": "Ordering not available",
-    "orderingNotAvailableDescription": "Online ordering is available only in the Pro plan. You can still view the full menu."
+    "orderingNotAvailableDescription": "Online ordering is available only in the Pro plan. You can still view the full menu.",
+    "pos": {
+      "posLabel": "POS",
+      "navigation": "Navigation",
+      "allCategories": "All",
+      "itemsLabel": "items",
+      "bottomBarTitle": "POS",
+      "itemSingular": "item",
+      "itemPlural": "items",
+      "emptyCart": "No items yet",
+      "placeOrder": "Place Order"
+    }
   }
 }

@@ -41,7 +41,7 @@ interface OrderItem {
 interface Order {
   id: string;
   customer_name: string;
-  order_type: "dine_in" | "takeaway";
+  order_type: "dine_in" | "takeaway" | "delivery";
   table_number: number | null;
   delivery_address: string | null;
   phone_number: string | null;
@@ -353,11 +353,15 @@ export default function OrdersPage() {
   }
 
   // Get address display text
+  const isDeliveryOrder = (order: Order) =>
+    order.order_type === "delivery" ||
+    (order.order_type !== "dine_in" && Boolean(order.delivery_address));
+
   const getAddressText = (order: Order) => {
     if (order.order_type === "dine_in" && order.table_number) {
       return `${t.order?.labels?.table || "Table"} ${order.table_number}`;
     }
-    if (order.order_type === "takeaway" && order.delivery_address) {
+    if (isDeliveryOrder(order) && order.delivery_address) {
       return order.delivery_address;
     }
     return t.order?.labels?.addressDash || "-";
@@ -367,7 +371,7 @@ export default function OrdersPage() {
   const getStatusBadgeColor = (status: Order["status"]) => {
     switch (status) {
       case "completed":
-        return "bg-[#5B7A2F]/10 text-[#5B7A2F] border-[#5B7A2F]/20 dark:bg-[#22c55e]/10 dark:text-[#22c55e] dark:border-[#22c55e]/30";
+        return "bg-primary/10 text-primary border-primary/20 dark:bg-primary/10 dark:text-primary dark:border-primary/30";
       case "pending":
         return "bg-yellow-100 text-yellow-700 border-yellow-200 dark:bg-yellow-900/30 dark:text-yellow-400 dark:border-yellow-800/30";
       case "preparing":
@@ -438,7 +442,7 @@ export default function OrdersPage() {
                     setSelectedDate(e.target.value);
                     setCurrentPage(1);
                   }}
-                  className="rounded-xl border border-[#D6D2C4]/50 bg-white px-3 py-2 text-sm text-[#2D3A1A] shadow-sm transition-all hover:border-[#5B7A2F]/50 focus:border-[#5B7A2F] focus:outline-none focus:ring-2 focus:ring-[#5B7A2F]/20 dark:border-[#262626] dark:bg-[#0f0f0f] dark:text-[#ffffff] dark:placeholder:text-[#8a8a8a] dark:hover:border-[#22c55e]/50 dark:focus:border-[#22c55e]"
+                  className="rounded-xl border border-border bg-background px-3 py-2 text-sm text-foreground shadow-sm transition-all hover:border-primary/50 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 dark:bg-[#0f0f0f] dark:text-[#ffffff] dark:placeholder:text-[#8a8a8a]"
                 />
                 {selectedDate && (
                   <Button
@@ -462,7 +466,7 @@ export default function OrdersPage() {
       {/* Orders Table */}
       {loading ? (
         <div className="flex items-center justify-center py-12">
-          <Loader2 className="h-6 w-6 animate-spin text-[#5B7A2F] dark:text-[#22c55e]" />
+          <Loader2 className="h-6 w-6 animate-spin text-primary" />
         </div>
       ) : orders.length === 0 ? (
         <FadeIn>
@@ -524,7 +528,7 @@ export default function OrdersPage() {
                       </td>
                       <td className="px-4 py-4 whitespace-nowrap">
                         <div className="flex items-center gap-3">
-                          <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[#22c55e] text-white font-semibold text-sm shadow-md shrink-0">
+                          <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary text-primary-foreground font-semibold text-sm shadow-md shrink-0">
                             {getAvatarInitial(order.customer_name)}
                           </div>
                           <span className="text-sm font-semibold text-[#2D3A1A] dark:text-[#ffffff]">
@@ -533,10 +537,12 @@ export default function OrdersPage() {
                         </div>
                       </td>
                       <td className="px-4 py-4 whitespace-nowrap">
-                        <span className="inline-flex items-center rounded-full bg-white/70 px-3 py-1 text-xs font-semibold text-[#5B7A2F] shadow-sm dark:bg-[#22c55e]/20 dark:text-[#22c55e] dark:border dark:border-[#22c55e]/30">
+                        <span className="inline-flex items-center rounded-full bg-primary/10 px-3 py-1 text-xs font-semibold text-primary shadow-sm border border-primary/20 dark:bg-primary/10 dark:text-primary dark:border-primary/30">
                           {order.order_type === "dine_in"
                             ? t.order?.type?.dineIn || "Dine-in"
-                            : t.order?.type?.takeaway || "Takeaway"}
+                            : isDeliveryOrder(order)
+                              ? (t.order?.type?.delivery || "Delivery")
+                              : t.order?.type?.takeaway || "Takeaway"}
                         </span>
                       </td>
                       <td className="px-4 py-4">
@@ -577,7 +583,7 @@ export default function OrdersPage() {
                             <Button
                               variant="outline"
                               size="sm"
-                              className="rounded-xl border-[#D6D2C4]/50 bg-white/50 text-[#5B7A2F] hover:bg-[#22c55e] hover:text-[#000000] hover:border-[#22c55e] shadow-sm transition-all dark:border-[#262626] dark:bg-[#1a1a1a] dark:text-[#22c55e] dark:hover:bg-[#22c55e] dark:hover:text-[#000000]"
+                              className="rounded-xl border-border bg-background/60 text-primary hover:bg-primary hover:text-primary-foreground hover:border-primary shadow-sm transition-all dark:bg-[#1a1a1a] dark:text-primary"
                             >
                               <Eye className="h-4 w-4" />
                             </Button>
@@ -591,7 +597,7 @@ export default function OrdersPage() {
                                 className="rounded-xl hover:bg-[#E8E4D9]/50 dark:hover:bg-[#1a1a1a]"
                               >
                                 {updatingStatus === order.id ? (
-                                  <Loader2 className="h-4 w-4 animate-spin text-[#5B7A2F] dark:text-[#22c55e]" />
+                                  <Loader2 className="h-4 w-4 animate-spin text-primary" />
                                 ) : (
                                   <MoreVertical className="h-4 w-4 text-[#6B7B5A] dark:text-[#bfbfbf]" />
                                 )}

@@ -18,7 +18,8 @@
   },
   "type": {
     "dineIn": "Dine-in",
-    "takeaway": "Takeaway"
+    "takeaway": "Take Away",
+    "delivery": "Delivery"
   },
   "status": {
     "pending": "Pending",
@@ -78,6 +79,29 @@
     "orderNotFound": "Order not found"
   },
   "public": {
+    "pos": {
+      "orderTitle": "Order",
+      "itemSingular": "item",
+      "itemPlural": "items",
+      "emptyCart": "No items yet",
+      "emptyCartHint": "Add items from the menu to get started",
+      "subtotal": "Sub Total",
+      "tax": "Tax",
+      "totalAmount": "Total Amount",
+      "paymentMethods": "Payment",
+      "payment": {
+        "cash": "Cash",
+        "card": "Card",
+        "qr": "QR"
+      },
+      "placeOrder": "Place Order",
+      "veg": "Veg",
+      "nonVeg": "Non Veg",
+      "unknownDiet": "—",
+      "toasts": {
+        "selectItemBeforeOrder": "Please select at least one item before placing the order."
+      }
+    },
     "cart": {
       "title": "Your Cart",
       "emptyTitle": "Your cart is empty",
@@ -96,7 +120,42 @@
       "title": "Checkout",
       "description": "Please provide your details to complete your order",
       "sections": {
-        "orderSummary": "Order Summary"
+        "orderSummary": "Order Summary",
+        "items": "Items"
+      },
+      "celebration": {
+        "title": "Order Successful!",
+        "message": "Your order has been placed successfully.",
+        "viewReceipt": "View Receipt",
+        "backToMenu": "Back to Menu"
+      },
+      "card": {
+        "title": "Card Details",
+        "labels": {
+          "optional": "(optional)"
+        },
+        "fields": {
+          "cardholderName": "Cardholder Name",
+          "cardNumber": "Card Number",
+          "expiry": "Expiry (MM/YY)",
+          "cvv": "CVV",
+          "billingName": "Billing Name"
+        },
+        "placeholders": {
+          "cardholderName": "Name on card",
+          "cardNumber": "1234 5678 9012 3456",
+          "expiry": "MM/YY",
+          "cvv": "123",
+          "billingName": "Billing name"
+        },
+        "validation": {
+          "fixErrors": "Please fix the card details",
+          "cardholderNameRequired": "Cardholder name is required",
+          "cardNumberInvalid": "Enter a valid card number",
+          "expiryInvalid": "Enter expiry as MM/YY",
+          "expiryExpired": "Card has expired",
+          "cvvInvalid": "Enter a valid CVV"
+        }
       },
       "fields": {
         "total": "Total",
@@ -111,7 +170,8 @@
       },
       "orderTypes": {
         "dineIn": "Dine-in",
-        "takeaway": "Takeaway"
+        "takeaway": "Take Away",
+        "delivery": "Delivery"
       },
       "placeholders": {
         "yourName": "Enter your name",
@@ -127,25 +187,51 @@
       "validation": {
         "nameRequired": "Please enter your name",
         "tableNumberRequired": "Please enter a table number",
-        "deliveryAddressRequired": "Please enter a delivery address",
+        "deliveryAddressRequired": "Please enter your delivery address",
         "phoneRequired": "Please enter your phone number",
         "invalidPhone": "Invalid phone number"
       },
       "actions": {
         "pleaseWait": "Please wait...",
         "continue": "Continue",
+        "payNow": "Pay Now",
         "returnToMenu": "Return to Menu"
       },
       "messages": {
         "restaurantInfoMissing": "Restaurant information is missing",
         "continueFailed": "Failed to continue. Please try again.",
+        "failedPlaceOrder": "Failed to place order",
         "adjustPin": "Tap on the map to adjust the delivery location pin.",
         "enterValidAddress": "Enter a valid address to see the map preview"
+      },
+      "successModal": {
+        "title": "Order Successful",
+        "message": "Your order has been placed successfully.",
+        "orderNumberLabel": "Order Number",
+        "viewOrder": "View Order",
+        "close": "Close"
       },
       "success": {
         "title": "Order placed successfully!",
         "description": "Redirecting to menu in a few seconds..."
       }
+    },
+    "receipt": {
+      "title": "Receipt",
+      "orderNumberLabel": "Order Number",
+      "orderDateLabel": "Order Date",
+      "orderTypeLabel": "Order Type",
+      "tableNumberLabel": "Table Number",
+      "paymentMethodLabel": "Payment Method",
+      "itemsHeader": {
+        "name": "Item",
+        "qty": "Qty",
+        "price": "Price"
+      },
+      "downloadReceipt": "Download Receipt",
+      "printReceipt": "Print Receipt",
+      "backToMenu": "Back to Menu",
+      "missingReceipt": "Receipt data is not available. You can still return to the menu."
     },
     "summary": {
       "title": "Order Summary",
@@ -163,7 +249,8 @@
       },
       "orderTypes": {
         "dineIn": "Dine-in",
-        "takeaway": "Takeaway"
+        "takeaway": "Take Away",
+        "delivery": "Delivery"
       },
       "actions": {
         "placeOrder": "Place Order",

@@ -65,11 +65,6 @@ export function AdminSidebar() {
    const { isPro, loading } = useSubscription();
    const [upgradeOpen, setUpgradeOpen] = useState(false);
 
-  // Debug: Log notification count changes
-  useEffect(() => {
-    console.log("[Sidebar] Notification count:", notificationCount);
-  }, [notificationCount]);
-
   // Close sidebar on mobile when pathname changes
   useEffect(() => {
     if (isMobile) {
@@ -173,7 +168,7 @@ export function AdminSidebar() {
                             {/* Notification badge for Orders - positioned on icon */}
                             {item.key === "orders" && notificationCount > 0 && (
                               <span 
-                                className="absolute -right-1 -top-1 z-[100] flex h-5 min-w-5 items-center justify-center rounded-full bg-red-500 px-1.5 text-[11px] font-bold leading-none text-white shadow-lg ring-2 ring-sidebar transition-all animate-in fade-in zoom-in duration-200 md:group-data-[collapsible=icon]:right-0 md:group-data-[collapsible=icon]:top-0"
+                                className="absolute -right-1 -top-1 z-[100] flex h-5 min-w-5 items-center justify-center rounded-full bg-primary px-1.5 text-[11px] font-bold leading-none text-primary-foreground shadow-lg ring-2 ring-sidebar transition-all animate-in fade-in zoom-in duration-200 md:group-data-[collapsible=icon]:right-0 md:group-data-[collapsible=icon]:top-0"
                                 aria-label={`${notificationCount} new orders`}
                               >
                                 {notificationCount > 99 ? "99+" : notificationCount}
@@ -183,7 +178,7 @@ export function AdminSidebar() {
                             {item.key === "bookings" &&
                               bookingNotificationCount > 0 && (
                               <span 
-                                className="absolute -right-1 -top-1 z-[100] flex h-5 min-w-5 items-center justify-center rounded-full bg-red-500 px-1.5 text-[11px] font-bold leading-none text-white shadow-lg ring-2 ring-sidebar transition-all animate-in fade-in zoom-in duration-200 md:group-data-[collapsible=icon]:right-0 md:group-data-[collapsible=icon]:top-0"
+                                className="absolute -right-1 -top-1 z-[100] flex h-5 min-w-5 items-center justify-center rounded-full bg-primary px-1.5 text-[11px] font-bold leading-none text-primary-foreground shadow-lg ring-2 ring-sidebar transition-all animate-in fade-in zoom-in duration-200 md:group-data-[collapsible=icon]:right-0 md:group-data-[collapsible=icon]:top-0"
                                 aria-label={`${bookingNotificationCount} new bookings`}
                               >
                                 {bookingNotificationCount > 99 ? "99+" : bookingNotificationCount}

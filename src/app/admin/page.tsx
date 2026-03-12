@@ -1579,8 +1579,8 @@ function RevenueChart({
       >
         <defs>
           <linearGradient id="revenueGradient" x1="0%" y1="0%" x2="0%" y2="100%">
-            <stop offset="0%" stopColor="rgb(93, 199, 137)" stopOpacity="0.3" />
-            <stop offset="100%" stopColor="rgb(93, 199, 137)" stopOpacity="0.05" />
+            <stop offset="0%" stopColor="var(--primary)" stopOpacity="0.3" />
+            <stop offset="100%" stopColor="var(--primary)" stopOpacity="0.05" />
           </linearGradient>
         </defs>
 
@@ -1609,7 +1609,7 @@ function RevenueChart({
         <polyline
           points={points.join(" ")}
           fill="none"
-          stroke="rgb(93, 199, 137)"
+          stroke="var(--primary)"
           strokeWidth="3"
           strokeLinecap="round"
           strokeLinejoin="round"
@@ -1628,10 +1628,10 @@ function RevenueChart({
                 cx={x}
                 cy={y}
               r="6"
-                fill="rgb(93, 199, 137)"
+                fill="var(--primary)"
               fillOpacity="0.2"
               />
-              <circle cx={x} cy={y} r="4" fill="rgb(93, 199, 137)" />
+              <circle cx={x} cy={y} r="4" fill="var(--primary)" />
             </g>
           );
         })}
@@ -1727,7 +1727,7 @@ function OrdersChart({
                 y={y}
                 width={barWidth}
                 height={barHeight}
-                fill="rgb(93, 199, 137)"
+                fill="var(--primary)"
                 rx="4"
                 initial={{ height: 0, y: chartHeight - padding }}
                 animate={{ height: barHeight, y: y }}
@@ -1937,7 +1937,7 @@ function TablesChart({
               cy="100"
               r="80"
               fill="none"
-              stroke="rgb(93, 199, 137)"
+              stroke="var(--primary)"
               strokeWidth="20"
               strokeDasharray={`${(availablePercent / 100) * 502.65} 502.65`}
               strokeDashoffset={-((occupiedPercent / 100) * 502.65)}

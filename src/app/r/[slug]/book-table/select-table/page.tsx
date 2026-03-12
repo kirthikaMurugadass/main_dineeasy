@@ -3,12 +3,14 @@
 import { useEffect, useMemo, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { motion } from "framer-motion";
-import { CheckCircle2, Loader2, Table2, Users, Calendar, Clock, ArrowLeft } from "lucide-react";
+import { ArrowLeft, Calendar, CheckCircle2, Clock, Loader2, Search, Table2, Users } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
 import { useI18n } from "@/lib/i18n/context";
+import { cn } from "@/lib/utils";
 
 interface Restaurant {
   id: string;
@@ -65,6 +67,7 @@ export default function SelectTablePage() {
   const [activeFloor, setActiveFloor] = useState<"ground" | "first" | "second" | "rooftop">("ground");
   const [uiStep, setUiStep] = useState<"select" | "summary">("select");
   const [bookingData, setBookingData] = useState<any | null>(null);
+  const [query, setQuery] = useState("");
 
   const slug = params.slug as string;
 
@@ -82,6 +85,28 @@ export default function SelectTablePage() {
       : "";
 
   const supabase = useMemo(() => createClient(), []);
+
+  const sortedTables = useMemo(() => {
+    return [...tables].sort((a, b) => {
+      const aMatch = a.table_name.match(/T-(\\d+)/i);
+      const bMatch = b.table_name.match(/T-(\\d+)/i);
+      if (aMatch && bMatch) return Number(aMatch[1]) - Number(bMatch[1]);
+      return a.table_name.localeCompare(b.table_name, undefined, {
+        numeric: true,
+        sensitivity: "base",
+      });
+    });
+  }, [tables]);
+
+  const filteredTables = useMemo(() => {
+    const q = query.trim().toLowerCase();
+    if (!q) return sortedTables;
+    return sortedTables.filter((t) => {
+      const name = (t.table_name || "").toLowerCase();
+      const cap = String(t.capacity ?? "");
+      return name.includes(q) || cap.includes(q);
+    });
+  }, [query, sortedTables]);
 
   useEffect(() => {
     async function init() {
@@ -287,17 +312,17 @@ export default function SelectTablePage() {
   };
 
   const getStatusColor = (status: TableStatus) => {
-    if (status === "selected") return "bg-[#22C55E] border-[#22C55E] text-white";
+    if (status === "selected") return "bg-primary border-primary text-primary-foreground";
     if (status === "booked") return "bg-white border-[#F97316] text-[#2D3A1A]"; // Orange - Occupied
     if (status === "locked") return "bg-white border-[#3B82F6] text-[#2D3A1A]"; // Blue - Reserved
-    return "bg-white border-[#22C55E] text-[#2D3A1A]"; // Green - Available
+    return "bg-white border-primary text-[#2D3A1A]"; // Green - Available
   };
 
   const getStatusDotColor = (status: TableStatus) => {
-    if (status === "selected") return "bg-[#22C55E]";
+    if (status === "selected") return "bg-primary";
     if (status === "booked") return "bg-[#F97316]"; // Orange - Occupied
     if (status === "locked") return "bg-[#3B82F6]"; // Blue - Reserved
-    return "bg-[#22C55E]"; // Green - Available
+    return "bg-primary"; // Green - Available
   };
 
   const handleTableClick = async (tableId: string) => {
@@ -476,7 +501,7 @@ export default function SelectTablePage() {
 
   if (success) {
     // Generate confetti particles
-    const confettiColors = ["#22C55E", "#FACC15", "#F97316", "#3B82F6", "#A855F7", "#EC4899"];
+    const confettiColors = ["#16a34a", "#FACC15", "#F97316", "#3B82F6", "#A855F7", "#EC4899"];
     const confettiParticles = Array.from({ length: 50 }, (_, i) => ({
       id: i,
       color: confettiColors[i % confettiColors.length],
@@ -533,7 +558,7 @@ export default function SelectTablePage() {
           className="relative z-10 w-full max-w-md rounded-3xl border border-[#D6D2C4]/60 bg-white p-10 text-center shadow-2xl dark:border-[#1f1f1f] dark:bg-[#000000] overflow-hidden"
         >
           {/* Decorative background gradient */}
-          <div className="absolute inset-0 bg-gradient-to-br from-[#22C55E]/5 via-transparent to-transparent dark:from-[#22C55E]/5" />
+          <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-transparent dark:from-primary/5" />
 
           <div className="relative z-10">
             <p className="mb-2 text-[11px] font-medium uppercase tracking-[0.16em] text-[#9CA88A] dark:text-[#9ca3af]">
@@ -543,7 +568,7 @@ export default function SelectTablePage() {
               initial={{ scale: 0.8, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               transition={{ delay: 0.25, type: "spring", stiffness: 240, damping: 16 }}
-              className="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-full bg-gradient-to-br from-[#22C55E] to-[#16A34A] text-white shadow-xl"
+              className="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-full bg-gradient-to-br from-primary to-primary/80 text-primary-foreground shadow-xl"
             >
               <CheckCircle2 className="h-10 w-10" />
             </motion.div>
@@ -623,7 +648,7 @@ export default function SelectTablePage() {
               {flowT?.actions?.backToHome || "Back to Home"}
             </Button>
             <Button
-              className="w-full rounded-full bg-gradient-to-r from-[#22C55E] to-[#16A34A] text-white shadow-md hover:shadow-lg sm:w-auto"
+              className="w-full rounded-full bg-gradient-to-r from-primary to-primary/80 text-primary-foreground shadow-md hover:shadow-lg sm:w-auto"
               onClick={() => router.push(`/r/${restaurant.slug}`)}
             >
               {flowT?.actions?.viewReservation || "View Reservation"}
@@ -643,122 +668,266 @@ export default function SelectTablePage() {
     const total = basePrice + tax;
 
     return (
-      <div className="min-h-screen bg-[#FAFAF5] dark:bg-[#000000]">
-        <div className="mx-auto flex min-h-screen max-w-2xl flex-col px-4 pb-32 pt-6 sm:px-6 lg:px-8">
-          {/* Step header */}
-          <div className="mb-6 flex flex-col gap-2">
-            <div className="flex items-center gap-3">
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={() => setUiStep("select")}
-                className="h-9 w-9 rounded-full border border-[#D6D2C4]/60 text-[#6B7B5A] hover:bg-[#E8E4D9]/50 dark:border-[#3f3f3f] dark:text-[#e5e5e5] dark:hover:bg-[#111111]"
-              >
-                <ArrowLeft className="h-4 w-4" />
-              </Button>
-              <div>
-                <p className="text-[11px] font-medium uppercase tracking-[0.16em] text-[#9CA88A] dark:text-[#9ca3af]">
-                  {flowT?.steps?.step3Of4 || "Step 3 of 4"}
-                </p>
-                <h1 className="text-2xl font-semibold text-[#2D3A1A] dark:text-[#ffffff]">{flowT?.steps?.orderSummary || "Order Summary"}</h1>
-              </div>
-            </div>
-          </div>
+      <div className="min-h-screen bg-background">
+        <div className="mx-auto grid w-full max-w-[95rem] grid-cols-1 gap-4 p-3 sm:p-4 lg:grid-cols-[260px_minmax(0,1fr)] xl:grid-cols-[260px_minmax(0,1fr)_360px]">
+          {/* Left sidebar (visual only) */}
+          <aside className="hidden lg:block">
+            <Card className="h-[calc(100vh-2rem)] rounded-3xl border border-border/60 bg-card shadow-soft">
+              <CardContent className="flex h-full flex-col gap-5 p-5">
+                <div className="flex items-center gap-3">
+                  <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-primary/10 text-primary">
+                    <Table2 className="h-5 w-5" />
+                  </div>
+                  <div className="min-w-0">
+                    <div className="truncate text-sm font-bold text-foreground">
+                      {restaurant?.name || (flowT?.steps?.bookATable || "Book a Table")}
+                    </div>
+                    <div className="text-xs text-muted-foreground">
+                      {flowT?.steps?.step3Of4 || "Step 3 of 4"}
+                    </div>
+                  </div>
+                </div>
 
-          {/* Order Summary Card */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.4 }}
-            className="space-y-4"
-          >
-            <Card className="rounded-2xl border border-[#D6D2C4]/60 bg-gradient-to-b from-white to-[#F7F4EA] shadow-sm dark:border-[#1f1f1f] dark:bg-[#000000] dark:from-transparent dark:via-transparent dark:to-transparent">
-              <CardHeader>
-                <CardTitle className="text-lg font-semibold text-[#2D3A1A] dark:text-[#ffffff]">{flowT?.sections?.reservationDetails || "Reservation Details"}</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-6 text-[#2D3A1A] dark:text-[#ffffff]">
-                {/* Selected Table */}
                 <div className="space-y-2">
-                  <p className="text-xs font-medium uppercase tracking-wide text-[#9CA88A]">{flowT?.fields?.selectedTable || "Selected Table"}</p>
-                  <p className="text-xl font-bold text-[#2D3A1A]">{selectedTable?.table_name || (flowT?.labels?.notAvailable || "N/A")}</p>
-                </div>
-
-                {/* Customer Information */}
-                <div className="space-y-2 border-t border-[#E4E0D2] pt-4 dark:border-[#1f1f1f]">
-                  <p className="text-xs font-medium uppercase tracking-wide text-[#9CA88A] dark:text-[#9ca3af]">{flowT?.sections?.customerInformation || "Customer Information"}</p>
-                  <div className="space-y-1 text-sm">
-                    <p className="font-medium text-[#2D3A1A] dark:text-[#ffffff]">{stepData.customerName}</p>
-                    <p className="text-[#6B7B5A] dark:text-[#e5e5e5]">{stepData.phone}</p>
-                    {stepData.email && <p className="text-[#6B7B5A] dark:text-[#e5e5e5]">{stepData.email}</p>}
+                  <div className="text-[10px] font-semibold uppercase tracking-[0.2em] text-muted-foreground/70">
+                    {flowT?.sections?.reservationInfo || "Reservation Info"}
                   </div>
-                </div>
-
-                {/* Reservation Info */}
-                <div className="space-y-2 border-t border-[#E4E0D2] pt-4 dark:border-[#1f1f1f]">
-                  <p className="text-xs font-medium uppercase tracking-wide text-[#9CA88A] dark:text-[#9ca3af]">{flowT?.sections?.reservationInfo || "Reservation Info"}</p>
-                  <div className="space-y-1 text-sm">
-                    <p className="text-[#6B7B5A] dark:text-[#e5e5e5]">
-                      <span className="font-medium text-[#2D3A1A] dark:text-[#ffffff]">{flowT?.fields?.date || "Date"}:</span> {stepData.bookingDate}
-                    </p>
-                    <p className="text-[#6B7B5A] dark:text-[#e5e5e5]">
-                      <span className="font-medium text-[#2D3A1A] dark:text-[#ffffff]">{flowT?.fields?.time || "Time"}:</span> {stepData.bookingTime}
-                    </p>
-                    <p className="text-[#6B7B5A] dark:text-[#e5e5e5]">
-                      <span className="font-medium text-[#2D3A1A] dark:text-[#ffffff]">{flowT?.fields?.guests || "Guests"}:</span> {stepData.guestCount}{" "}
-                      {stepData.guestCount === 1 ? (flowT?.labels?.personSingular || "person") : (flowT?.labels?.personPlural || "persons")}
-                    </p>
-                  </div>
-                </div>
-
-                {/* Ordered Items (UI placeholder) */}
-                <div className="space-y-2 border-t border-[#E4E0D2] pt-4 dark:border-[#1f1f1f]">
-                  <p className="text-xs font-medium uppercase tracking-wide text-[#9CA88A] dark:text-[#9ca3af]">{flowT?.sections?.orderedItems || "Ordered Items"}</p>
-                  <div className="rounded-xl bg-[#F7F4EA] p-3 text-sm text-[#6B7B5A] dark:bg-[#111111] dark:text-[#e5e5e5]">
-                    {flowT?.labels?.tableReservationFee || "Table reservation fee"}
-                  </div>
-                </div>
-
-                {/* Billing Section */}
-                <div className="space-y-3 border-t border-[#E4E0D2] pt-4 dark:border-[#1f1f1f]">
-                  <p className="text-xs font-medium uppercase tracking-wide text-[#9CA88A] dark:text-[#9ca3af]">{flowT?.sections?.billing || "Billing"}</p>
-                  <div className="space-y-2 text-sm">
-                    <div className="flex items-center justify-between text-[#6B7B5A] dark:text-[#e5e5e5]">
-                      <span>{flowT?.fields?.subtotal || "Subtotal"}</span>
-                      <span className="font-medium text-[#2D3A1A] dark:text-[#ffffff]">CHF {basePrice.toFixed(2)}</span>
+                  <div className="rounded-2xl border border-border/60 bg-muted/20 p-4 text-sm">
+                    <div className="flex items-center justify-between">
+                      <span className="text-muted-foreground">{flowT?.fields?.date || "Date"}</span>
+                      <span className="font-semibold text-foreground">{stepData.bookingDate}</span>
                     </div>
-                    <div className="flex items-center justify-between text-[#6B7B5A] dark:text-[#e5e5e5]">
-                      <span>{flowT?.fields?.tax || "Tax (10%)"}</span>
-                      <span className="font-medium text-[#2D3A1A] dark:text-[#ffffff]">CHF {tax.toFixed(2)}</span>
+                    <div className="mt-2 flex items-center justify-between">
+                      <span className="text-muted-foreground">{flowT?.fields?.time || "Time"}</span>
+                      <span className="font-semibold text-foreground">{stepData.bookingTime}</span>
                     </div>
-                    <div className="flex items-center justify_between border-t border-[#E4E0D2] pt-2 text-lg font-bold text-[#2D3A1A] dark:border-[#1f1f1f] dark:text-[#ffffff]">
-                      <span>{flowT?.fields?.totalPrice || "Total Price"}</span>
-                      <span className="text-[#22C55E]">CHF {total.toFixed(2)}</span>
+                    <div className="mt-2 flex items-center justify-between">
+                      <span className="text-muted-foreground">{flowT?.fields?.guests || "Guests"}</span>
+                      <span className="font-semibold text-foreground">{stepData.guestCount}</span>
                     </div>
                   </div>
+                </div>
+
+                <div className="mt-auto">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    className="w-full rounded-2xl"
+                    onClick={() => setUiStep("select")}
+                  >
+                    <ArrowLeft className="mr-2 h-4 w-4" />
+                    {flowT?.actions?.back || "Back"}
+                  </Button>
                 </div>
               </CardContent>
             </Card>
-          </motion.div>
+          </aside>
 
-          {/* Confirm Order button */}
-          <div className="fixed inset-x-0 bottom-0 z-20 bg-gradient-to-t from-[#FAFAF5] via-[#FAFAF5]/95 to-transparent pb-4 pt-6 dark:from-[#000000] dark:via-[#000000] dark:to-transparent">
-            <div className="mx-auto w-full max-w-2xl px-4 sm:px-6 lg:px-8">
-              <Button
-                type="button"
-                onClick={handleConfirm}
-                disabled={submitting || !selectedTableId}
-                className="w-full rounded-full bg-gradient-to-r from-[#22C55E] to-[#16A34A] text-white shadow-lg transition-all hover:shadow-xl hover:from-[#16A34A] hover:to-[#15803D] disabled:opacity-60 disabled:cursor-not-allowed h-12 text-base font-semibold"
-              >
-                {submitting ? (
-                  <>
-                    <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-                  {flowT?.actions?.processing || "Processing..."}
-                  </>
-                ) : (
-                  flowT?.actions?.confirmBooking || "Confirm Booking"
-                )}
-              </Button>
+          {/* Center */}
+          <section className="min-w-0">
+            <Card className="rounded-3xl border border-border/60 bg-card shadow-soft">
+              <CardContent className="p-5 sm:p-6">
+                <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                  <div className="flex items-center gap-3">
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => setUiStep("select")}
+                      className="h-10 w-10 rounded-2xl border border-border/60"
+                    >
+                      <ArrowLeft className="h-5 w-5" />
+                    </Button>
+                    <div>
+                      <div className="text-xs font-semibold uppercase tracking-[0.22em] text-muted-foreground">
+                        {flowT?.steps?.step3Of4 || "Step 3 of 4"}
+                      </div>
+                      <div className="text-lg font-bold text-foreground">
+                        {flowT?.steps?.orderSummary || "Order Summary"}
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="relative w-full sm:max-w-sm">
+                    <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                    <Input
+                      value={query}
+                      onChange={(e) => setQuery(e.target.value)}
+                      placeholder={(flowT?.placeholders as any)?.searchTable || "Search table..."}
+                      className="h-11 rounded-2xl pl-10 text-sm"
+                      disabled={submitting}
+                    />
+                  </div>
+                </div>
+
+                <div className="mt-6 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+                  {filteredTables.map((table) => {
+                    const status = getStatusForTable(table.id);
+                    const isDisabled =
+                      status === "booked" ||
+                      (status === "locked" && selectedTableId !== table.id);
+
+                    const badge = {
+                      available: "bg-primary/10 text-primary border-primary/20",
+                      selected: "bg-primary text-primary-foreground border-primary/40",
+                      locked: "bg-yellow-500/10 text-yellow-700 border-yellow-500/20 dark:text-yellow-400",
+                      booked: "bg-destructive/10 text-destructive border-destructive/20",
+                    }[status];
+
+                    const label =
+                      status === "selected"
+                        ? (flowT?.status?.selected || "Selected")
+                        : status === "available"
+                          ? (flowT?.status?.available || "Available")
+                          : status === "locked"
+                            ? (flowT?.status?.reserved || "Reserved")
+                            : (flowT?.status?.occupied || "Occupied");
+
+                    return (
+                      <motion.button
+                        key={table.id}
+                        type="button"
+                        whileHover={!isDisabled ? { y: -2 } : {}}
+                        whileTap={!isDisabled ? { scale: 0.99 } : {}}
+                        onClick={() => handleTableClick(table.id)}
+                        disabled={isDisabled || submitting}
+                        className={cn(
+                          "group w-full rounded-3xl border border-border/60 bg-background p-4 text-left shadow-soft transition hover:shadow-card focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/30 disabled:cursor-not-allowed disabled:opacity-60",
+                          status === "selected" && "border-primary/30 bg-primary/5"
+                        )}
+                      >
+                        <div className="flex items-start justify-between gap-3">
+                          <div className="min-w-0">
+                            <div className="text-base font-bold text-foreground">
+                              {table.table_name}
+                            </div>
+                            <div className="mt-1 flex items-center gap-2 text-xs text-muted-foreground">
+                              <Users className="h-4 w-4" />
+                              <span>
+                                {flowT?.fields?.capacity || "Capacity"}:{" "}
+                                <span className="font-semibold text-foreground">{table.capacity}</span>
+                              </span>
+                            </div>
+                          </div>
+                          <span
+                            className={cn(
+                              "inline-flex shrink-0 items-center rounded-full border px-2.5 py-1 text-[11px] font-bold",
+                              badge
+                            )}
+                          >
+                            {label}
+                          </span>
+                        </div>
+
+                        <div className="mt-4 flex items-center justify-between">
+                          <span className="text-xs text-muted-foreground">
+                            {flowT?.fields?.table || "Table"}
+                          </span>
+                          <span className="text-xs font-semibold text-primary">
+                            {flowT?.actions?.bookTable || "Book Table"}
+                          </span>
+                        </div>
+                      </motion.button>
+                    );
+                  })}
+                </div>
+              </CardContent>
+            </Card>
+          </section>
+
+          {/* Right panel (desktop) */}
+          <aside className="hidden xl:block">
+            <Card className="sticky top-4 rounded-3xl border border-border/60 bg-card shadow-soft">
+              <CardContent className="p-5">
+                <div className="text-sm font-semibold text-foreground">
+                  {flowT?.sections?.reservationDetails || "Reservation Details"}
+                </div>
+                <div className="mt-1 text-xs text-muted-foreground">
+                  {flowT?.steps?.step3Of4 || "Step 3 of 4"}
+                </div>
+
+                <div className="mt-5 space-y-4">
+                  <div className="rounded-2xl border border-border/60 bg-muted/20 p-4">
+                    <div className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                      {flowT?.fields?.selectedTable || "Selected Table"}
+                    </div>
+                    <div className="mt-2 text-lg font-bold text-foreground">
+                      {selectedTable?.table_name || "—"}
+                    </div>
+                    <div className="mt-2 text-sm text-muted-foreground">
+                      {flowT?.fields?.capacity || "Capacity"}:{" "}
+                      <span className="font-semibold text-foreground">
+                        {selectedTable?.capacity ?? "—"}
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="rounded-2xl border border-border/60 bg-muted/20 p-4 text-sm">
+                    <div className="flex items-center justify-between">
+                      <span className="text-muted-foreground">{flowT?.fields?.guestName || "Guest Name"}</span>
+                      <span className="font-semibold text-foreground">{stepData.customerName}</span>
+                    </div>
+                    <div className="mt-2 flex items-center justify-between">
+                      <span className="text-muted-foreground">{flowT?.fields?.guests || "Number of Guests"}</span>
+                      <span className="font-semibold text-foreground">{stepData.guestCount}</span>
+                    </div>
+                    <div className="mt-2 flex items-center justify-between">
+                      <span className="text-muted-foreground">{flowT?.fields?.bookingTime || "Booking Time"}</span>
+                      <span className="font-semibold text-foreground">
+                        {stepData.bookingDate} • {stepData.bookingTime}
+                      </span>
+                    </div>
+                    {stepData.specialNote ? (
+                      <div className="mt-3 border-t border-border/60 pt-3 text-xs text-muted-foreground">
+                        <span className="font-semibold text-foreground">
+                          {flowT?.fields?.specialRequest || "Special Request"}:
+                        </span>{" "}
+                        {stepData.specialNote}
+                      </div>
+                    ) : null}
+                  </div>
+
+                  <Button
+                    type="button"
+                    onClick={handleConfirm}
+                    disabled={submitting || !selectedTableId}
+                    className="w-full rounded-2xl"
+                  >
+                    {submitting ? (
+                      <>
+                        <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                        {flowT?.actions?.processing || "Processing..."}
+                      </>
+                    ) : (
+                      flowT?.actions?.confirmBooking || "Confirm Booking"
+                    )}
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          </aside>
+        </div>
+
+        {/* Mobile bottom action */}
+        <div className="sticky bottom-0 z-20 border-t border-border/60 bg-background/90 backdrop-blur-xl xl:hidden">
+          <div className="mx-auto flex max-w-[95rem] items-center justify-between gap-3 px-3 py-3 sm:px-4">
+            <div className="min-w-0">
+              <div className="truncate text-sm font-semibold">
+                {flowT?.fields?.selectedTable || "Selected Table"}:{" "}
+                <span className="font-bold">{selectedTable?.table_name || "—"}</span>
+              </div>
+              <div className="text-xs text-muted-foreground">
+                {stepData.bookingDate} • {stepData.bookingTime} • {stepData.guestCount}{" "}
+                {stepData.guestCount === 1 ? (t.booking?.labels?.guestSingular || "guest") : (t.booking?.labels?.guestPlural || "guests")}
+              </div>
             </div>
+            <Button
+              type="button"
+              onClick={handleConfirm}
+              disabled={submitting || !selectedTableId}
+              className="rounded-2xl"
+            >
+              {flowT?.actions?.confirmBooking || "Confirm Booking"}
+            </Button>
           </div>
         </div>
       </div>
@@ -767,165 +936,319 @@ export default function SelectTablePage() {
 
   // Table Selection Step
   return (
-    <div className="min-h-screen bg-[#FAFAF5] dark:bg-[#000000]">
-      <div className="mx-auto flex min-h-screen max-w-5xl flex-col px-4 pb-32 pt-6 sm:px-6 lg:px-8">
-        {/* Step header */}
-        <div className="mb-6 flex flex-col gap-2">
-          <div className="flex items-center gap-3">
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => router.push(`/r/${restaurant.slug}/book-table`)}
-              className="h-9 w-9 rounded-full border border-[#D6D2C4]/60 text-[#6B7B5A] hover:bg-[#E8E4D9]/50"
-            >
-              <ArrowLeft className="h-4 w-4" />
-            </Button>
-            <div>
-              <p className="text-[11px] font-medium uppercase tracking-[0.16em] text-[#9CA88A] dark:text-[#9ca3af]">
-                {flowT?.steps?.step2Of4 || "Step 2 of 4"}
-              </p>
-              <h1 className="text-2xl font-semibold text-[#2D3A1A] dark:text-[#ffffff]">{flowT?.steps?.bookATable || "Book a Table"}</h1>
-            </div>
-          </div>
-          <p className="ml-0 flex flex-wrap items-center gap-3 text-sm text-[#6B7B5A] dark:text-[#9ca3af] sm:ml-12">
-            <span className="inline-flex items-center gap-1.5">
-              <Calendar className="h-4 w-4" />
-              {stepData.bookingDate}
-            </span>
-            <span className="inline-flex items-center gap-1.5">
-              <Clock className="h-4 w-4" />
-              {stepData.bookingTime}
-            </span>
-            <span className="inline-flex items-center gap-1.5">
-              <Users className="h-4 w-4" />
-              {stepData.guestCount} {stepData.guestCount === 1 ? (t.booking?.labels?.guestSingular || "guest") : (t.booking?.labels?.guestPlural || "guests")}
-            </span>
-          </p>
-        </div>
-
-        {/* Table grid */}
-        <div className="mb-8 flex-1">
-          {tables.length === 0 ? (
-            <Card className="rounded-2xl border border-[#D6D2C4]/60 bg-gradient-to-b from-white to-[#F7F4EA] shadow-sm dark:border-[#1f1f1f] dark:bg-[#000000] dark:from-transparent dark:via-transparent dark:to-transparent">
-              <CardContent className="py-12 text-center">
-                <p className="text-sm text-[#6B7B5A]">
-                  {flowT?.messages?.noTablesConfigured || "No tables configured yet. Please contact the restaurant."}
-                </p>
-              </CardContent>
-            </Card>
-          ) : (
-            <div className="mx-auto w-full max-w-2xl text-[#2D3A1A] dark:text-[#ffffff]">
-              <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-4">
-                {[...tables]
-                  .sort((a, b) => {
-                    const aMatch = a.table_name.match(/T-(\d+)/i);
-                    const bMatch = b.table_name.match(/T-(\d+)/i);
-                    if (aMatch && bMatch) return Number(aMatch[1]) - Number(bMatch[1]);
-                    return a.table_name.localeCompare(b.table_name, undefined, {
-                      numeric: true,
-                      sensitivity: "base",
-                    });
-                  })
-                  .map((table) => {
-                    const status = getStatusForTable(table.id);
-                    const isDisabled =
-                      status === "booked" ||
-                      (status === "locked" && selectedTableId !== table.id);
-                    const statusColor = getStatusColor(status);
-                    const dotColor = getStatusDotColor(status);
-
-                    return (
-                      <motion.button
-                        key={table.id}
-                        type="button"
-                        whileHover={!isDisabled ? { y: -2, scale: 1.01 } : {}}
-                        whileTap={!isDisabled ? { scale: 0.98 } : {}}
-                        onClick={() => handleTableClick(table.id)}
-                        disabled={isDisabled || submitting}
-                        className={`relative flex h-20 flex-col items-center justify-center rounded-md border-2 px-1 py-1 shadow-sm transition-all hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#22C55E]/50 disabled:cursor-not-allowed disabled:opacity-50 ${statusColor} ${
-                          status === "selected"
-                            ? "ring-2 ring-[#22C55E] ring-offset-2"
-                            : ""
-                        }`}
-                      >
-                        {status === "selected" && (
-                          <motion.div
-                            initial={{ scale: 0, opacity: 0 }}
-                            animate={{ scale: 1, opacity: 1 }}
-                            transition={{ type: "spring", stiffness: 300, damping: 20 }}
-                            className="absolute -top-2 -right-2 flex h-4 w-4 items-center justify-center rounded-full bg-[#22C55E] text-white shadow-lg"
-                          >
-                            <CheckCircle2 className="h-3 w-3" />
-                          </motion.div>
-                        )}
-                        {/* Table number at top */}
-                        <div
-                          className={`text-[13px] font-bold ${
-                            status === "selected" ? "text-white" : "text-[#2D3A1A]"
-                          }`}
-                        >
-                          {table.table_name}
-                        </div>
-                        {/* Status dot under table number */}
-                        <div className={`mt-1 h-1.5 w-1.5 rounded-full ${dotColor}`} />
-                        {/* Capacity text at bottom */}
-                        <div
-                          className={`mt-auto text-[10px] font-medium leading-tight ${
-                            status === "selected" ? "text-white/90" : "text-[#6B7B5A]"
-                          }`}
-                        >
-                          {flowT?.fields?.capacity || "Capacity"}: {table.capacity}{" "}
-                          {table.capacity === 1 ? (flowT?.labels?.personSingular || "Person") : (flowT?.labels?.personPlural || "Persons")}
-                        </div>
-                      </motion.button>
-                    );
-                  })}
+    <div className="min-h-screen bg-background">
+      <div className="mx-auto grid w-full max-w-[95rem] grid-cols-1 gap-4 p-3 sm:p-4 lg:grid-cols-[260px_minmax(0,1fr)] xl:grid-cols-[260px_minmax(0,1fr)_360px]">
+        {/* Left sidebar (visual only) */}
+        <aside className="hidden lg:block">
+          <Card className="h-[calc(100vh-2rem)] rounded-3xl border border-border/60 bg-card shadow-soft">
+            <CardContent className="flex h-full flex-col gap-5 p-5">
+              <div className="flex items-center gap-3">
+                <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-primary/10 text-primary">
+                  <Table2 className="h-5 w-5" />
+                </div>
+                <div className="min-w-0">
+                  <div className="truncate text-sm font-bold text-foreground">{restaurant?.name}</div>
+                  <div className="text-xs text-muted-foreground">{flowT?.steps?.step2Of4 || "Step 2 of 4"}</div>
+                </div>
               </div>
+
+              <div className="space-y-2">
+                <div className="text-[10px] font-semibold uppercase tracking-[0.2em] text-muted-foreground/70">
+                  {flowT?.sections?.reservationInfo || "Reservation Info"}
+                </div>
+                <div className="rounded-2xl border border-border/60 bg-muted/20 p-4 text-sm">
+                  <div className="flex items-center justify-between">
+                    <span className="text-muted-foreground">{flowT?.fields?.date || "Date"}</span>
+                    <span className="font-semibold text-foreground">{stepData.bookingDate}</span>
+                  </div>
+                  <div className="mt-2 flex items-center justify-between">
+                    <span className="text-muted-foreground">{flowT?.fields?.time || "Time"}</span>
+                    <span className="font-semibold text-foreground">{stepData.bookingTime}</span>
+                  </div>
+                  <div className="mt-2 flex items-center justify-between">
+                    <span className="text-muted-foreground">{flowT?.fields?.guests || "Guests"}</span>
+                    <span className="font-semibold text-foreground">{stepData.guestCount}</span>
+                  </div>
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <div className="text-[10px] font-semibold uppercase tracking-[0.2em] text-muted-foreground/70">
+                  {flowT?.status?.label || "Status"}
+                </div>
+                <div className="grid gap-2 rounded-2xl border border-border/60 bg-muted/20 p-4 text-sm">
+                  <div className="flex items-center gap-2">
+                    <span className="h-2 w-2 rounded-full bg-primary" />
+                    <span className="text-muted-foreground">{flowT?.status?.available || "Available"}</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className="h-2 w-2 rounded-full bg-yellow-500" />
+                    <span className="text-muted-foreground">{flowT?.status?.reserved || "Reserved"}</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className="h-2 w-2 rounded-full bg-destructive" />
+                    <span className="text-muted-foreground">{flowT?.status?.occupied || "Occupied"}</span>
+                  </div>
+                </div>
+              </div>
+
+              <div className="mt-auto">
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="w-full rounded-2xl"
+                  onClick={() => router.push(`/r/${restaurant.slug}/book-table`)}
+                >
+                  <ArrowLeft className="mr-2 h-4 w-4" />
+                  {flowT?.actions?.back || "Back"}
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        </aside>
+
+        {/* Center grid */}
+        <section className="min-w-0">
+          <Card className="rounded-3xl border border-border/60 bg-card shadow-soft">
+            <CardContent className="p-5 sm:p-6">
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                <div className="flex items-center gap-3">
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => router.push(`/r/${restaurant.slug}/book-table`)}
+                    className="h-10 w-10 rounded-2xl border border-border/60"
+                  >
+                    <ArrowLeft className="h-5 w-5" />
+                  </Button>
+                  <div>
+                    <div className="text-xs font-semibold uppercase tracking-[0.22em] text-muted-foreground">
+                      {flowT?.steps?.step2Of4 || "Step 2 of 4"}
+                    </div>
+                    <div className="text-lg font-bold text-foreground">
+                      {flowT?.steps?.bookATable || "Book a Table"}
+                    </div>
+                    <div className="mt-1 flex flex-wrap items-center gap-3 text-xs text-muted-foreground">
+                      <span className="inline-flex items-center gap-1.5">
+                        <Calendar className="h-4 w-4" />
+                        {stepData.bookingDate}
+                      </span>
+                      <span className="inline-flex items-center gap-1.5">
+                        <Clock className="h-4 w-4" />
+                        {stepData.bookingTime}
+                      </span>
+                      <span className="inline-flex items-center gap-1.5">
+                        <Users className="h-4 w-4" />
+                        {stepData.guestCount}{" "}
+                        {stepData.guestCount === 1 ? (t.booking?.labels?.guestSingular || "guest") : (t.booking?.labels?.guestPlural || "guests")}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="relative w-full sm:max-w-sm">
+                  <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                  <Input
+                    value={query}
+                    onChange={(e) => setQuery(e.target.value)}
+                    placeholder={(flowT?.placeholders as any)?.searchTable || "Search table..."}
+                    className="h-11 rounded-2xl pl-10 text-sm"
+                    disabled={submitting}
+                  />
+                </div>
+              </div>
+
+              <div className="mt-6">
+                {filteredTables.length === 0 ? (
+                  <div className="rounded-3xl border border-border/60 bg-muted/20 p-10 text-center text-sm text-muted-foreground">
+                    {flowT?.messages?.noTablesConfigured || "No tables configured yet. Please contact the restaurant."}
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+                    {filteredTables.map((table) => {
+                      const status = getStatusForTable(table.id);
+                      const isDisabled =
+                        status === "booked" ||
+                        (status === "locked" && selectedTableId !== table.id);
+
+                      const badge = {
+                        available: "bg-primary/10 text-primary border-primary/20",
+                        selected: "bg-primary text-primary-foreground border-primary/40",
+                        locked: "bg-yellow-500/10 text-yellow-700 border-yellow-500/20 dark:text-yellow-400",
+                        booked: "bg-destructive/10 text-destructive border-destructive/20",
+                      }[status];
+
+                      const label =
+                        status === "selected"
+                          ? (flowT?.status?.selected || "Selected")
+                          : status === "available"
+                            ? (flowT?.status?.available || "Available")
+                            : status === "locked"
+                              ? (flowT?.status?.reserved || "Reserved")
+                              : (flowT?.status?.occupied || "Occupied");
+
+                      return (
+                        <motion.button
+                          key={table.id}
+                          type="button"
+                          whileHover={!isDisabled ? { y: -2 } : {}}
+                          whileTap={!isDisabled ? { scale: 0.99 } : {}}
+                          onClick={() => handleTableClick(table.id)}
+                          disabled={isDisabled || submitting}
+                          className={cn(
+                            "group w-full rounded-3xl border border-border/60 bg-background p-4 text-left shadow-soft transition hover:shadow-card focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/30 disabled:cursor-not-allowed disabled:opacity-60",
+                            status === "selected" && "border-primary/30 bg-primary/5"
+                          )}
+                        >
+                          <div className="flex items-start justify-between gap-3">
+                            <div className="min-w-0">
+                              <div className="text-base font-bold text-foreground">
+                                {table.table_name}
+                              </div>
+                              <div className="mt-1 flex items-center gap-2 text-xs text-muted-foreground">
+                                <Users className="h-4 w-4" />
+                                <span>
+                                  {flowT?.fields?.capacity || "Capacity"}:{" "}
+                                  <span className="font-semibold text-foreground">{table.capacity}</span>
+                                </span>
+                              </div>
+                            </div>
+                            <span
+                              className={cn(
+                                "inline-flex shrink-0 items-center rounded-full border px-2.5 py-1 text-[11px] font-bold",
+                                badge
+                              )}
+                            >
+                              {label}
+                            </span>
+                          </div>
+
+                          <div className="mt-4 flex items-center justify-between">
+                            <span className="text-xs text-muted-foreground">
+                              {flowT?.fields?.table || "Table"}
+                            </span>
+                            <span className="text-xs font-semibold text-primary">
+                              {flowT?.actions?.bookTable || "Book Table"}
+                            </span>
+                          </div>
+                        </motion.button>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+            </CardContent>
+          </Card>
+        </section>
+
+        {/* Right details panel */}
+        <aside className="hidden xl:block">
+          <Card className="sticky top-4 rounded-3xl border border-border/60 bg-card shadow-soft">
+            <CardContent className="p-5">
+              <div className="text-sm font-semibold text-foreground">
+                {flowT?.sections?.reservationDetails || "Reservation Details"}
+              </div>
+              <div className="mt-1 text-xs text-muted-foreground">
+                {flowT?.steps?.step2Of4 || "Step 2 of 4"}
+              </div>
+
+              <div className="mt-5 space-y-4">
+                <div className="rounded-2xl border border-border/60 bg-muted/20 p-4">
+                  <div className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                    {flowT?.fields?.selectedTable || "Selected Table"}
+                  </div>
+                  <div className="mt-2 text-lg font-bold text-foreground">
+                    {tables.find((t) => t.id === selectedTableId)?.table_name || "—"}
+                  </div>
+                  <div className="mt-2 text-sm text-muted-foreground">
+                    {flowT?.fields?.capacity || "Capacity"}:{" "}
+                    <span className="font-semibold text-foreground">
+                      {tables.find((t) => t.id === selectedTableId)?.capacity ?? "—"}
+                    </span>
+                  </div>
+                </div>
+
+                <div className="rounded-2xl border border-border/60 bg-muted/20 p-4 text-sm">
+                  <div className="flex items-center justify-between">
+                    <span className="text-muted-foreground">{flowT?.fields?.guestName || "Guest Name"}</span>
+                    <span className="font-semibold text-foreground">{stepData.customerName}</span>
+                  </div>
+                  <div className="mt-2 flex items-center justify-between">
+                    <span className="text-muted-foreground">{flowT?.fields?.guests || "Number of Guests"}</span>
+                    <span className="font-semibold text-foreground">{stepData.guestCount}</span>
+                  </div>
+                  <div className="mt-2 flex items-center justify-between">
+                    <span className="text-muted-foreground">{flowT?.fields?.bookingTime || "Booking Time"}</span>
+                    <span className="font-semibold text-foreground">
+                      {stepData.bookingDate} • {stepData.bookingTime}
+                    </span>
+                  </div>
+                  {stepData.specialNote ? (
+                    <div className="mt-3 border-t border-border/60 pt-3 text-xs text-muted-foreground">
+                      <span className="font-semibold text-foreground">
+                        {flowT?.fields?.specialRequest || "Special Request"}:
+                      </span>{" "}
+                      {stepData.specialNote}
+                    </div>
+                  ) : null}
+                </div>
+
+                <Button
+                  type="button"
+                  onClick={() => {
+                    if (!selectedTableId) {
+                      toast.error(flowT?.validation?.selectTableRequired || "Please select a table to continue.");
+                      return;
+                    }
+                    setUiStep("summary");
+                  }}
+                  disabled={!selectedTableId || submitting}
+                  className="w-full rounded-2xl"
+                >
+                  {submitting ? (
+                    <>
+                      <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                      {flowT?.actions?.processing || "Processing..."}
+                    </>
+                  ) : (
+                    flowT?.actions?.continue || "Continue"
+                  )}
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        </aside>
+      </div>
+
+      {/* Mobile bottom continue */}
+      <div className="sticky bottom-0 z-20 border-t border-border/60 bg-background/90 backdrop-blur-xl xl:hidden">
+        <div className="mx-auto flex max-w-[95rem] items-center justify-between gap-3 px-3 py-3 sm:px-4">
+          <div className="min-w-0">
+            <div className="truncate text-sm font-semibold">
+              {flowT?.fields?.selectedTable || "Selected Table"}:{" "}
+              <span className="font-bold">
+                {tables.find((t) => t.id === selectedTableId)?.table_name || "—"}
+              </span>
             </div>
-          )}
-        </div>
-
-        {/* Legend */}
-        <div className="mb-6 flex flex-wrap items-center justify-center gap-6 rounded-2xl border border-[#D6D2C4]/60 bg-gradient-to-b from-white to-[#F7F4EA] px-6 py-4 shadow-sm">
-          <div className="flex items-center gap-2">
-            <div className="h-2 w-2 rounded-full bg-[#22C55E]" />
-            <span className="text-sm text-[#6B7B5A]">{flowT?.status?.available || "Available"}</span>
+            <div className="text-xs text-muted-foreground">
+              {stepData.bookingDate} • {stepData.bookingTime} • {stepData.guestCount}{" "}
+              {stepData.guestCount === 1 ? (t.booking?.labels?.guestSingular || "guest") : (t.booking?.labels?.guestPlural || "guests")}
+            </div>
           </div>
-          <div className="flex items-center gap-2">
-            <div className="h-2 w-2 rounded-full bg-[#F97316]" />
-            <span className="text-sm text-[#6B7B5A]">{flowT?.status?.occupied || "Occupied"}</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <div className="h-2 w-2 rounded-full bg-[#3B82F6]" />
-            <span className="text-sm text-[#6B7B5A]">{flowT?.status?.reserved || "Reserved"}</span>
-          </div>
-        </div>
-
-        {/* Continue button */}
-          <div className="fixed inset-x-0 bottom-0 z-20 bg-gradient-to-t from-[#FAFAF5] via-[#FAFAF5]/95 to-transparent pb-4 pt-6 dark:from-[#000000] dark:via-[#000000] dark:to-transparent">
-          <div className="mx-auto w-full max-w-5xl px-4 sm:px-6 lg:px-8">
-            <Button
-              type="button"
-              onClick={() => {
-                if (!selectedTableId) {
-                  toast.error(flowT?.validation?.selectTableRequired || "Please select a table to continue.");
-                  return;
-                }
-                setUiStep("summary");
-              }}
-              disabled={!selectedTableId || submitting}
-              className="w-full rounded-full bg-gradient-to-r from-[#22C55E] to-[#16A34A] text-white shadow-lg transition-all hover:shadow-xl hover:from-[#16A34A] hover:to-[#15803D] disabled:opacity-60 disabled:cursor-not-allowed h-12 text-base font-semibold"
-            >
-              {submitting ? (
-                <>
-                  <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-                  {flowT?.actions?.processing || "Processing..."}
-                </>
-              ) : (
-                flowT?.actions?.continue || "Continue"
-              )}
-            </Button>
-          </div>
+          <Button
+            type="button"
+            onClick={() => {
+              if (!selectedTableId) {
+                toast.error(flowT?.validation?.selectTableRequired || "Please select a table to continue.");
+                return;
+              }
+              setUiStep("summary");
+            }}
+            disabled={!selectedTableId || submitting}
+            className="rounded-2xl"
+          >
+            {flowT?.actions?.continue || "Continue"}
+          </Button>
         </div>
       </div>
     </div>

@@ -18,7 +18,8 @@
   },
   "type": {
     "dineIn": "Vor Ort",
-    "takeaway": "Take-away"
+    "takeaway": "Take-away",
+    "delivery": "Lieferung"
   },
   "status": {
     "pending": "Ausstehend",
@@ -78,6 +79,29 @@
     "orderNotFound": "Bestellung nicht gefunden"
   },
   "public": {
+    "pos": {
+      "orderTitle": "Bestellung",
+      "itemSingular": "Artikel",
+      "itemPlural": "Artikel",
+      "emptyCart": "Noch keine Artikel",
+      "emptyCartHint": "Füge Artikel aus dem Menü hinzu, um zu starten",
+      "subtotal": "Zwischensumme",
+      "tax": "Steuer",
+      "totalAmount": "Gesamtbetrag",
+      "paymentMethods": "Zahlung",
+      "payment": {
+        "cash": "Bar",
+        "card": "Karte",
+        "qr": "QR"
+      },
+      "placeOrder": "Bestellen",
+      "veg": "Veg",
+      "nonVeg": "Non-Veg",
+      "unknownDiet": "—",
+      "toasts": {
+        "selectItemBeforeOrder": "Bitte wähle mindestens einen Artikel aus, bevor du die Bestellung aufgibst."
+      }
+    },
     "cart": {
       "title": "Dein Warenkorb",
       "emptyTitle": "Dein Warenkorb ist leer",
@@ -96,7 +120,42 @@
       "title": "Kasse",
       "description": "Bitte gib deine Daten ein, um die Bestellung abzuschließen",
       "sections": {
-        "orderSummary": "Bestellübersicht"
+        "orderSummary": "Bestellübersicht",
+        "items": "Artikel"
+      },
+      "celebration": {
+        "title": "Bestellung erfolgreich!",
+        "message": "Deine Bestellung wurde erfolgreich aufgegeben.",
+        "viewReceipt": "Beleg ansehen",
+        "backToMenu": "Zurück zum Menü"
+      },
+      "card": {
+        "title": "Kartendaten",
+        "labels": {
+          "optional": "(optional)"
+        },
+        "fields": {
+          "cardholderName": "Name auf der Karte",
+          "cardNumber": "Kartennummer",
+          "expiry": "Ablauf (MM/JJ)",
+          "cvv": "CVV",
+          "billingName": "Rechnungsname"
+        },
+        "placeholders": {
+          "cardholderName": "Name auf der Karte",
+          "cardNumber": "1234 5678 9012 3456",
+          "expiry": "MM/JJ",
+          "cvv": "123",
+          "billingName": "Rechnungsname"
+        },
+        "validation": {
+          "fixErrors": "Bitte prüfe die Kartendaten",
+          "cardholderNameRequired": "Name auf der Karte ist erforderlich",
+          "cardNumberInvalid": "Bitte gib eine gültige Kartennummer ein",
+          "expiryInvalid": "Bitte Ablauf als MM/JJ eingeben",
+          "expiryExpired": "Karte ist abgelaufen",
+          "cvvInvalid": "Bitte gib eine gültige CVV ein"
+        }
       },
       "fields": {
         "total": "Gesamt",
@@ -111,7 +170,8 @@
       },
       "orderTypes": {
         "dineIn": "Vor Ort",
-        "takeaway": "Takeaway"
+        "takeaway": "Takeaway",
+        "delivery": "Lieferung"
       },
       "placeholders": {
         "yourName": "Gib deinen Namen ein",
@@ -127,25 +187,51 @@
       "validation": {
         "nameRequired": "Bitte gib deinen Namen ein",
         "tableNumberRequired": "Bitte gib eine Tischnummer ein",
-        "deliveryAddressRequired": "Bitte gib eine Lieferadresse ein",
+        "deliveryAddressRequired": "Bitte gib deine Lieferadresse ein",
         "phoneRequired": "Bitte gib deine Telefonnummer ein",
         "invalidPhone": "Ungültige Telefonnummer"
       },
       "actions": {
         "pleaseWait": "Bitte warten...",
         "continue": "Weiter",
+        "payNow": "Jetzt bezahlen",
         "returnToMenu": "Zurück zum Menü"
       },
       "messages": {
         "restaurantInfoMissing": "Restaurantinformationen fehlen",
         "continueFailed": "Weiterleitung fehlgeschlagen. Bitte erneut versuchen.",
+        "failedPlaceOrder": "Bestellung konnte nicht aufgegeben werden",
         "adjustPin": "Tippe auf die Karte, um den Lieferpunkt anzupassen.",
         "enterValidAddress": "Gib eine gültige Adresse ein, um die Kartenansicht zu sehen"
+      },
+      "successModal": {
+        "title": "Bestellung erfolgreich",
+        "message": "Deine Bestellung wurde erfolgreich aufgegeben.",
+        "orderNumberLabel": "Bestellnummer",
+        "viewOrder": "Bestellung ansehen",
+        "close": "Schließen"
       },
       "success": {
         "title": "Bestellung erfolgreich aufgegeben!",
         "description": "Weiterleitung zum Menü in wenigen Sekunden..."
       }
+    },
+    "receipt": {
+      "title": "Beleg",
+      "orderNumberLabel": "Bestellnummer",
+      "orderDateLabel": "Bestelldatum",
+      "orderTypeLabel": "Bestellart",
+      "tableNumberLabel": "Tischnummer",
+      "paymentMethodLabel": "Zahlungsart",
+      "itemsHeader": {
+        "name": "Artikel",
+        "qty": "Anz.",
+        "price": "Preis"
+      },
+      "downloadReceipt": "Beleg herunterladen",
+      "printReceipt": "Beleg drucken",
+      "backToMenu": "Zurück zum Menü",
+      "missingReceipt": "Belegdaten sind nicht verfügbar. Du kannst trotzdem zum Menü zurückkehren."
     },
     "summary": {
       "title": "Bestellübersicht",
@@ -163,7 +249,8 @@
       },
       "orderTypes": {
         "dineIn": "Vor Ort",
-        "takeaway": "Takeaway"
+        "takeaway": "Takeaway",
+        "delivery": "Lieferung"
       },
       "actions": {
         "placeOrder": "Bestellung aufgeben",

@@ -11,6 +11,7 @@
     "menuViewOnly": "Solo visualizzazione menu",
     "switchLanguage": "Cambia lingua",
     "toggleTheme": "Cambia tema",
+    "searchPlaceholder": "Cerca prodotto...",
     "themeLight": "Chiaro",
     "themeDark": "Scuro",
     "themeSystem": "Sistema",
@@ -22,6 +23,17 @@
     "addOrderingDisabled": "Aggiungi (ordini disabilitati)",
     "viewCart": "Visualizza carrello",
     "orderingNotAvailableTitle": "Ordini non disponibili",
-    "orderingNotAvailableDescription": "Gli ordini online sono disponibili solo con il piano Pro. Puoi comunque visualizzare il menu completo."
+    "orderingNotAvailableDescription": "Gli ordini online sono disponibili solo con il piano Pro. Puoi comunque visualizzare il menu completo.",
+    "pos": {
+      "posLabel": "POS",
+      "navigation": "Navigazione",
+      "allCategories": "Tutti",
+      "itemsLabel": "articoli",
+      "bottomBarTitle": "POS",
+      "itemSingular": "articolo",
+      "itemPlural": "articoli",
+      "emptyCart": "Nessun articolo",
+      "placeOrder": "Effettua ordine"
+    }
   }
 }

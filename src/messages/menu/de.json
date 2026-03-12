@@ -11,6 +11,7 @@
     "menuViewOnly": "Nur Menüansicht",
     "switchLanguage": "Sprache wechseln",
     "toggleTheme": "Theme wechseln",
+    "searchPlaceholder": "Produkt suchen...",
     "themeLight": "Hell",
     "themeDark": "Dunkel",
     "themeSystem": "System",
@@ -22,6 +23,17 @@
     "addOrderingDisabled": "Hinzufügen (Bestellung deaktiviert)",
     "viewCart": "Warenkorb anzeigen",
     "orderingNotAvailableTitle": "Bestellung nicht verfügbar",
-    "orderingNotAvailableDescription": "Online-Bestellungen sind nur im Pro-Tarif verfügbar. Sie können die Speisekarte weiterhin ansehen."
+    "orderingNotAvailableDescription": "Online-Bestellungen sind nur im Pro-Tarif verfügbar. Sie können die Speisekarte weiterhin ansehen.",
+    "pos": {
+      "posLabel": "POS",
+      "navigation": "Navigation",
+      "allCategories": "Alle",
+      "itemsLabel": "Artikel",
+      "bottomBarTitle": "POS",
+      "itemSingular": "Artikel",
+      "itemPlural": "Artikel",
+      "emptyCart": "Noch keine Artikel",
+      "placeOrder": "Bestellen"
+    }
   }
 }

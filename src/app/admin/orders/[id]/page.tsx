@@ -36,7 +36,7 @@ interface OrderItem {
 interface Order {
   id: string;
   customer_name: string;
-  order_type: "dine_in" | "takeaway";
+  order_type: "dine_in" | "takeaway" | "delivery";
   table_number: number | null;
   delivery_address: string | null;
   phone_number: string | null;
@@ -67,6 +67,12 @@ export default function OrderDetailsPage() {
   const [order, setOrder] = useState<Order | null>(null);
   const [loading, setLoading] = useState(true);
   const [updatingStatus, setUpdatingStatus] = useState(false);
+  const isDeliveryOrder = (o: Order | null) =>
+    Boolean(
+      o &&
+        (o.order_type === "delivery" ||
+          (o.order_type !== "dine_in" && o.delivery_address))
+    );
   const { isPro, loading: subscriptionLoading } = useSubscription();
 
   useEffect(() => {
@@ -244,7 +250,7 @@ export default function OrderDetailsPage() {
       case "preparing":
         return "bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-500/20";
       case "completed":
-        return "bg-green-500/10 text-green-600 dark:text-green-400 border-green-500/20 dark:bg-[#22c55e]/10 dark:text-[#22c55e] dark:border-[#22c55e]/30";
+        return "bg-primary/10 text-primary border-primary/20 dark:bg-primary/10 dark:text-primary dark:border-primary/30";
     }
   }
 
@@ -332,7 +338,11 @@ export default function OrderDetailsPage() {
                   {t.order?.detail?.orderType || "Order Type"}
                 </p>
                 <p className="text-lg font-semibold dark:text-[#ffffff]">
-                  {order.order_type === "dine_in" ? "Dine-in" : "Takeaway"}
+                  {order.order_type === "dine_in"
+                    ? (t.order?.type?.dineIn || "Dine-in")
+                    : isDeliveryOrder(order)
+                      ? (t.order?.type?.delivery || "Delivery")
+                      : (t.order?.type?.takeaway || "Takeaway")}
                 </p>
               </div>
               {order.order_type === "dine_in" && order.table_number && (
@@ -343,7 +353,7 @@ export default function OrderDetailsPage() {
                   <p className="text-lg font-semibold dark:text-[#ffffff]">{order.table_number}</p>
                 </div>
               )}
-              {order.order_type === "takeaway" && order.delivery_address && (
+              {isDeliveryOrder(order) && order.delivery_address && (
                 <div>
                   <p className="text-sm text-muted-foreground dark:text-[#bfbfbf]">
                     {t.order?.detail?.deliveryAddress || "Delivery Address"}
@@ -351,7 +361,7 @@ export default function OrderDetailsPage() {
                   <p className="text-lg font-semibold dark:text-[#ffffff]">{order.delivery_address}</p>
                 </div>
               )}
-              {order.order_type === "takeaway" && order.phone_number && (
+              {isDeliveryOrder(order) && order.phone_number && (
                 <div>
                   <p className="text-sm text-muted-foreground dark:text-[#bfbfbf]">
                     {t.order?.detail?.phoneNumber || "Phone Number"}
@@ -391,7 +401,7 @@ export default function OrderDetailsPage() {
                   onClick={() => updateOrderStatus("pending")}
                   disabled={updatingStatus}
                 >
-                  <Clock className="h-4 w-4 mr-2 dark:text-[#22c55e]" />
+                  <Clock className="h-4 w-4 mr-2 dark:text-primary" />
                   {t.order?.actions?.markAsPending || t.admin.orders.markAsPending}
                 </Button>
               )}
@@ -402,7 +412,7 @@ export default function OrderDetailsPage() {
                   onClick={() => updateOrderStatus("preparing")}
                   disabled={updatingStatus}
                 >
-                  <ChefHat className="h-4 w-4 mr-2 dark:text-[#22c55e]" />
+                  <ChefHat className="h-4 w-4 mr-2 dark:text-primary" />
                   {t.order?.actions?.markAsPreparing || t.admin.orders.markAsPreparing}
                 </Button>
               )}
@@ -413,7 +423,7 @@ export default function OrderDetailsPage() {
                   onClick={() => updateOrderStatus("completed")}
                   disabled={updatingStatus}
                 >
-                  <CheckCircle className="h-4 w-4 mr-2 dark:text-[#22c55e]" />
+                  <CheckCircle className="h-4 w-4 mr-2 dark:text-primary" />
                   {t.order?.actions?.markAsCompleted || t.admin.orders.markAsCompleted}
                 </Button>
               )}

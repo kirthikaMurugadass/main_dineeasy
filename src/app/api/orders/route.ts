@@ -26,7 +26,7 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    if (orderType !== "dine_in" && orderType !== "takeaway") {
+    if (orderType !== "dine_in" && orderType !== "takeaway" && orderType !== "delivery") {
       return NextResponse.json(
         { error: "Invalid order type" },
         { status: 400 }
@@ -40,12 +40,17 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    if (orderType === "takeaway" && (!deliveryAddress || !deliveryAddress.trim())) {
+    if (orderType === "delivery" && (!deliveryAddress || !deliveryAddress.trim())) {
       return NextResponse.json(
-        { error: "Delivery address is required for takeaway orders" },
+        { error: "Delivery address is required for delivery orders" },
         { status: 400 }
       );
     }
+
+    // DB compatibility: if `orders.order_type` is constrained to only
+    // "dine_in" | "takeaway", we persist "delivery" as "takeaway" and
+    // infer "Delivery" in the UI from presence of delivery_address.
+    const orderTypeForDb = orderType === "delivery" ? "takeaway" : orderType;
 
     if (items.length === 0) {
       return NextResponse.json(
@@ -97,10 +102,12 @@ export async function POST(req: NextRequest) {
       .insert({
         restaurant_id: restaurantId,
         customer_name: customerName.trim(),
-        order_type: orderType,
-        table_number: orderType === "dine_in" ? tableNumber : null,
-        delivery_address: orderType === "takeaway" ? deliveryAddress.trim() : null,
-        phone_number: orderType === "takeaway" ? (phoneNumber?.trim() || null) : null,
+        order_type: orderTypeForDb,
+        table_number: orderTypeForDb === "dine_in" ? tableNumber : null,
+        delivery_address:
+          orderType === "delivery" ? deliveryAddress.trim() : null,
+        phone_number:
+          orderType === "delivery" ? (phoneNumber?.trim() || null) : null,
         status: "pending",
       })
       .select("id")

@@ -1,10 +1,10 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useEffect, useCallback, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { motion } from "framer-motion";
-import { ArrowLeft, Loader2, CheckCircle2, MapPin } from "lucide-react";
+import { ArrowLeft, Loader2, CheckCircle2, MapPin, Wallet, CreditCard, QrCode } from "lucide-react";
 import { useCartStore } from "@/lib/stores/cart-store";
 import { useI18n } from "@/lib/i18n/context";
 import { Button } from "@/components/ui/button";
@@ -21,6 +21,7 @@ import {
 import { toast } from "sonner";
 import type { Language } from "@/types/database";
 import { LocationPickerMap, type LatLng } from "@/components/checkout/location-picker-map";
+import { cn } from "@/lib/utils";
 import {
   countryCodes,
   getCountryByCode,
@@ -54,7 +55,7 @@ export default function CheckoutPage({
     menuId: string;
   } | null>(null);
   const [customerName, setCustomerName] = useState("");
-  const [orderType, setOrderType] = useState<"dine_in" | "takeaway">("dine_in");
+  const [orderType, setOrderType] = useState<"dine_in" | "takeaway" | "delivery">("dine_in");
   const [tableNumber, setTableNumber] = useState("");
   const [deliveryAddress, setDeliveryAddress] = useState("");
   const [phoneNumber, setPhoneNumber] = useState("");
@@ -68,10 +69,31 @@ export default function CheckoutPage({
   const [geocodingLoading, setGeocodingLoading] = useState(false);
   const [loading, setLoading] = useState(false);
   const [mounted, setMounted] = useState(false);
-  const [orderSuccess, setOrderSuccess] = useState(false);
   const { items, getTotal, clearCart, restaurantId } = useCartStore();
   const { t, language } = useI18n();
   const checkoutT = (t.order as any)?.public?.checkout;
+  const posT = (t.order as any)?.public?.pos;
+  const currency = t.menu?.currency || "CHF";
+  const [payment, setPayment] = useState<"cash" | "card" | "qr">("cash");
+  const cardT = checkoutT?.card;
+  const celebrateT = checkoutT?.celebration;
+
+  const [celebrateOpen, setCelebrateOpen] = useState(false);
+  const [celebrateOrderId, setCelebrateOrderId] = useState<string | null>(null);
+  const confettiCanvasRef = useRef<HTMLCanvasElement | null>(null);
+  const [confettiVisible, setConfettiVisible] = useState(false);
+
+  const [cardholderName, setCardholderName] = useState("");
+  const [cardNumber, setCardNumber] = useState("");
+  const [expiry, setExpiry] = useState("");
+  const [cvv, setCvv] = useState("");
+  const [billingName, setBillingName] = useState("");
+  const [cardErrors, setCardErrors] = useState<{
+    cardholderName?: string;
+    cardNumber?: string;
+    expiry?: string;
+    cvv?: string;
+  }>({});
 
   useEffect(() => {
     setMounted(true);
@@ -83,17 +105,169 @@ export default function CheckoutPage({
 
   // Redirect if cart is empty (only after mount to avoid hydration issues)
   useEffect(() => {
-    if (mounted && items.length === 0 && resolvedParams) {
+    if (mounted && items.length === 0 && resolvedParams && !celebrateOpen) {
       router.push(
         `/public-menu/${resolvedParams.restaurant}/${resolvedParams.menuId}`
       );
     }
-  }, [mounted, items.length, resolvedParams, router]);
+  }, [mounted, items.length, resolvedParams, router, celebrateOpen]);
+
+  useEffect(() => {
+    if (!celebrateOpen) return;
+    if (typeof window === "undefined") return;
+    const canvas = confettiCanvasRef.current;
+    if (!canvas) return;
+
+    let cancelled = false;
+    const durationMs = 3200;
+    const endAt = Date.now() + durationMs;
+    setConfettiVisible(true);
+
+    // Use canvas-confetti for smoother, more realistic SaaS-style confetti.
+    import("canvas-confetti")
+      .then((mod) => {
+        if (cancelled) return;
+        const confetti = (mod as any).default ?? mod;
+        const fire = confetti.create(canvas, { resize: true, useWorker: true });
+
+        const colors = [
+          "#fbbf24", // yellow
+          "#22c55e", // green
+          "#a78bfa", // purple
+          "#ef4444", // red
+          "#f97316", // orange
+        ];
+
+        // Full-screen birthday celebration burst (center + top spread)
+        fire({
+          particleCount: 160,
+          angle: 90,
+          spread: 360,
+          startVelocity: 52,
+          gravity: 1.05,
+          ticks: 260,
+          scalar: 0.95,
+          origin: { x: 0.5, y: 0.45 },
+          colors,
+        });
+
+        // Top line bursts to fill the full width.
+        const topOrigins = [0.1, 0.3, 0.5, 0.7, 0.9];
+        for (const x of topOrigins) {
+          fire({
+            particleCount: 46,
+            angle: 90,
+            spread: 85,
+            startVelocity: 48,
+            gravity: 1.12,
+            ticks: 240,
+            scalar: 0.9,
+            origin: { x, y: 0.05 },
+            colors,
+          });
+        }
+
+        // A couple of softer follow-up bursts for a modern feel (2–3s total).
+        (function frame() {
+          if (cancelled) return;
+          const timeLeft = endAt - Date.now();
+          if (timeLeft <= 0) {
+            try {
+              fire.reset();
+            } catch {
+              // ignore
+            }
+            setConfettiVisible(false);
+            return;
+          }
+
+          // Gentle full-screen follow-up bursts for ~3s.
+          if (Math.random() < 0.22) {
+            fire({
+              particleCount: 22,
+              angle: 90,
+              spread: 100,
+              startVelocity: 32,
+              gravity: 1.1,
+              ticks: 220,
+              scalar: 0.85,
+              origin: { x: Math.random(), y: 0.02 },
+              colors,
+            });
+          }
+
+          requestAnimationFrame(frame);
+        })();
+      })
+      .catch(() => {
+        // If confetti fails to load, skip animation (no functional impact).
+        setConfettiVisible(false);
+      });
+
+    return () => {
+      cancelled = true;
+      setConfettiVisible(false);
+    };
+  }, [celebrateOpen]);
+
+  // Reset card form errors when leaving card payment
+  useEffect(() => {
+    if (payment !== "card") {
+      setCardErrors({});
+    } else {
+      setBillingName((prev) => prev || customerName);
+    }
+  }, [payment, customerName]);
+
+  function formatCardNumber(digits: string) {
+    return digits.replace(/(\d{4})(?=\d)/g, "$1 ");
+  }
+
+  function validateCardForm() {
+    const nextErrors: typeof cardErrors = {};
+
+    const name = cardholderName.trim();
+    if (name.length < 2) {
+      nextErrors.cardholderName =
+        cardT?.validation?.cardholderNameRequired || "Cardholder name is required";
+    }
+
+    const numberDigits = cardNumber.replace(/\D/g, "");
+    if (numberDigits.length < 13 || numberDigits.length > 19) {
+      nextErrors.cardNumber = cardT?.validation?.cardNumberInvalid || "Enter a valid card number";
+    }
+
+    const exp = expiry.trim();
+    const match = exp.match(/^(\d{2})\s*\/\s*(\d{2})$/);
+    if (!match) {
+      nextErrors.expiry = cardT?.validation?.expiryInvalid || "Enter expiry as MM/YY";
+    } else {
+      const mm = Number(match[1]);
+      const yy = Number(match[2]);
+      const validMonth = mm >= 1 && mm <= 12;
+      const year = 2000 + yy;
+      const now = new Date();
+      const expEnd = new Date(year, mm, 0, 23, 59, 59, 999);
+      if (!validMonth) {
+        nextErrors.expiry = cardT?.validation?.expiryInvalid || "Enter expiry as MM/YY";
+      } else if (expEnd.getTime() < now.getTime()) {
+        nextErrors.expiry = cardT?.validation?.expiryExpired || "Card has expired";
+      }
+    }
+
+    const cvvDigits = cvv.replace(/\D/g, "");
+    if (cvvDigits.length < 3 || cvvDigits.length > 4) {
+      nextErrors.cvv = cardT?.validation?.cvvInvalid || "Enter a valid CVV";
+    }
+
+    setCardErrors(nextErrors);
+    return Object.keys(nextErrors).length === 0;
+  }
 
   // Geocode address when it changes
   const geocodeAddress = useCallback(
     async (address: string) => {
-      if (!address.trim() || orderType !== "takeaway") {
+      if (!address.trim() || orderType !== "delivery") {
         setDeliveryLocation(null);
         setLocationDetails(null);
         return;
@@ -149,7 +323,7 @@ export default function CheckoutPage({
 
   // Debounced geocoding when address changes
   useEffect(() => {
-    if (orderType !== "takeaway" || !deliveryAddress.trim()) {
+    if (orderType !== "delivery" || !deliveryAddress.trim()) {
       setDeliveryLocation(null);
       setLocationDetails(null);
       return;
@@ -164,7 +338,7 @@ export default function CheckoutPage({
 
   // Validate phone number when it changes
   useEffect(() => {
-    if (orderType !== "takeaway") {
+    if (orderType !== "delivery") {
       setPhoneValidationError("");
       return;
     }
@@ -182,7 +356,7 @@ export default function CheckoutPage({
     }
   }, [phoneNumber, phoneCountryCode, orderType]);
 
-  const handleContinue = async (e: React.FormEvent) => {
+  const handleConfirmOrder = async (e: React.FormEvent) => {
     e.preventDefault();
 
     // Validation
@@ -196,18 +370,13 @@ export default function CheckoutPage({
       return;
     }
 
-    if (orderType === "takeaway" && !deliveryAddress.trim()) {
-      toast.error(checkoutT?.validation?.deliveryAddressRequired || "Please enter a delivery address");
-      return;
-    }
-
-    if (orderType === "takeaway" && !phoneNumber.trim()) {
-      toast.error(checkoutT?.validation?.phoneRequired || "Please enter your phone number");
+    if (orderType === "delivery" && !deliveryAddress.trim()) {
+      toast.error(checkoutT?.validation?.deliveryAddressRequired || "Please enter your delivery address");
       return;
     }
 
     if (
-      orderType === "takeaway" &&
+      orderType === "delivery" &&
       phoneNumber.trim() &&
       phoneValidationError
     ) {
@@ -220,30 +389,97 @@ export default function CheckoutPage({
       return;
     }
 
+    if (!resolvedParams) return;
+
+    if (payment === "card") {
+      const ok = validateCardForm();
+      if (!ok) {
+        toast.error(cardT?.validation?.fixErrors || "Please fix the card details");
+        return;
+      }
+    }
+
+    setLoading(true);
     try {
-      // Persist step-1 checkout data for Order Summary page
-      const key = `dineeasy-checkout-step1-${resolvedParams?.restaurant}-${resolvedParams?.menuId}`;
-      const payload = {
-        customerName: customerName.trim(),
-        orderType,
-        tableNumber: orderType === "dine_in" ? tableNumber.trim() : "",
-        deliveryAddress: orderType === "takeaway" ? deliveryAddress.trim() : "",
-        phoneNumber:
-          orderType === "takeaway"
-            ? `${getCountryByCode(phoneCountryCode)?.dialCode || ""}${phoneNumber.trim()}`
-            : "",
-        deliveryLocation: orderType === "takeaway" ? deliveryLocation : null,
-      };
-      if (typeof window !== "undefined") {
-        sessionStorage.setItem(key, JSON.stringify(payload));
+      const locationSuffix =
+        orderType === "delivery" && deliveryLocation
+          ? ` (Location: ${deliveryLocation.lat.toFixed(5)}, ${deliveryLocation.lng.toFixed(5)})`
+          : "";
+
+      const response = await fetch("/api/orders", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          restaurantId,
+          customerName: customerName.trim(),
+          orderType,
+          tableNumber: orderType === "dine_in" ? parseInt(tableNumber || "", 10) : null,
+          deliveryAddress:
+            orderType === "delivery"
+              ? `${deliveryAddress.trim()}${locationSuffix}`
+              : null,
+          phoneNumber:
+            orderType === "delivery"
+              ? `${getCountryByCode(phoneCountryCode)?.dialCode || ""}${phoneNumber.trim()}`
+              : null,
+          items: items.map((item) => ({
+            itemId: item.id,
+            quantity: item.quantity,
+            price: item.price,
+          })),
+          // Payment method is UI-only for now (no API changes)
+        }),
+      });
+
+      const data = await response.json();
+      if (!response.ok) {
+        throw new Error(data.error || checkoutT?.messages?.failedPlaceOrder || "Failed to place order");
       }
 
-      router.push(
-        `/public-menu/${resolvedParams?.restaurant}/${resolvedParams?.menuId}/checkout/order-summary`
-      );
+      const placedOrderId = (data?.orderId as string | undefined) ?? null;
+
+      // Persist receipt snapshot for the success page (no API changes)
+      if (typeof window !== "undefined" && placedOrderId) {
+        const key = `dineeasy-order-receipt-${placedOrderId}`;
+        const createdAt = new Date().toISOString();
+        const subtotal = getTotal();
+        const tax = 0;
+        const totalAmount = subtotal + tax;
+        const snapshot = {
+          orderId: placedOrderId,
+          createdAt,
+          orderType,
+          tableNumber: orderType === "dine_in" ? tableNumber.trim() : "",
+          deliveryAddress: orderType === "delivery" ? deliveryAddress.trim() : "",
+          phoneNumber:
+            orderType === "delivery"
+              ? `${getCountryByCode(phoneCountryCode)?.dialCode || ""}${phoneNumber.trim()}`
+              : "",
+          paymentMethod: payment,
+          items: items.map((it) => ({
+            id: it.id,
+            title: it.title,
+            price: it.price,
+            quantity: it.quantity,
+          })),
+          subtotal,
+          tax,
+          totalAmount,
+        };
+        sessionStorage.setItem(key, JSON.stringify(snapshot));
+      }
+
+      clearCart();
+      setCelebrateOrderId(placedOrderId);
+      setCelebrateOpen(true);
+
     } catch (error) {
-      console.error("Checkout continue error:", error);
-      toast.error(checkoutT?.messages?.continueFailed || "Failed to continue. Please try again.");
+      console.error("Order error:", error);
+      toast.error(
+        error instanceof Error ? error.message : checkoutT?.messages?.failedPlaceOrder || "Failed to place order"
+      );
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -255,41 +491,90 @@ export default function CheckoutPage({
     );
   }
 
-  // Success state
-  if (orderSuccess) {
-    return (
-      <div className="flex min-h-screen items-center justify-center bg-background">
-        <motion.div
-          initial={{ opacity: 0, scale: 0.9 }}
-          animate={{ opacity: 1, scale: 1 }}
-          className="text-center"
-        >
-          <CheckCircle2 className="mx-auto mb-4 h-16 w-16 text-green-500" />
-          <h1 className="mb-2 text-3xl font-bold">{checkoutT?.success?.title || "Order placed successfully!"}</h1>
-          <p className="mb-6 text-muted-foreground">
-            {checkoutT?.success?.description || "Redirecting to menu in a few seconds..."}
-          </p>
-          {resolvedParams && (
-            <Link
-              href={`/public-menu/${resolvedParams.restaurant}/${resolvedParams.menuId}`}
-            >
-              <Button variant="outline">{checkoutT?.actions?.returnToMenu || "Return to Menu"}</Button>
-            </Link>
-          )}
-        </motion.div>
-      </div>
-    );
-  }
+  const subtotal = getTotal();
+  const tax = 0;
+  const totalAmount = subtotal + tax;
 
-  const total = getTotal();
+  const receiptHref =
+    celebrateOrderId && resolvedParams
+      ? `/public-menu/${resolvedParams.restaurant}/${resolvedParams.menuId}/checkout/success?orderId=${encodeURIComponent(
+          celebrateOrderId
+        )}`
+      : null;
 
   return (
     <div className="min-h-screen bg-background">
       <div className="mx-auto max-w-2xl px-4 py-6 sm:px-6 sm:py-8 lg:px-8">
+        {/* Celebration modal */}
+        {celebrateOpen && (
+          <div
+            className="fixed inset-0 z-[9998] flex items-center justify-center bg-black/60 backdrop-blur-sm px-4"
+            role="dialog"
+            aria-modal="true"
+          >
+            {/* Full-screen confetti layer */}
+            <canvas
+              ref={confettiCanvasRef}
+              style={{ width: "100vw", height: "100vh" }}
+              className={cn(
+                "pointer-events-none fixed top-0 left-0 right-0 bottom-0 h-[100vh] w-[100vw] z-[9999] transition-opacity duration-200",
+                confettiVisible ? "opacity-100" : "opacity-0"
+              )}
+            />
+
+            <motion.div
+              className="relative z-[10000] w-full max-w-lg rounded-3xl border border-border/60 bg-background p-6 shadow-floating sm:p-8"
+              initial={{ scale: 0.96, opacity: 0, y: 12 }}
+              animate={{ scale: 1, opacity: 1, y: 0 }}
+              transition={{ duration: 0.25, ease: "easeOut" }}
+            >
+              <div className="pointer-events-none absolute inset-0 -z-10 rounded-3xl bg-gradient-to-br from-primary/20 via-transparent to-primary/10 blur-2xl" />
+
+              <motion.div
+                className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-primary/10 shadow-soft"
+                initial={{ scale: 0.9 }}
+                animate={{ scale: [0.9, 1.06, 1] }}
+                transition={{ duration: 0.45, ease: "easeOut" }}
+              >
+                <CheckCircle2 className="h-9 w-9 text-primary" />
+              </motion.div>
+              <h2 className="mt-4 text-center text-2xl font-bold text-foreground">
+                {celebrateT?.title || "Order Successful!"}
+              </h2>
+              <p className="mt-2 text-center text-sm text-muted-foreground">
+                {celebrateT?.message || "Your order has been placed successfully."}
+              </p>
+
+              <div className="mt-6 grid gap-3 sm:grid-cols-2">
+                <Button
+                  type="button"
+                  className="rounded-2xl"
+                  onClick={() => {
+                    if (receiptHref) router.push(receiptHref);
+                  }}
+                  disabled={!receiptHref}
+                >
+                  {celebrateT?.viewReceipt || "View Receipt"}
+                </Button>
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="rounded-2xl"
+                  onClick={() => {
+                    router.push(`/public-menu/${resolvedParams.restaurant}/${resolvedParams.menuId}`);
+                  }}
+                >
+                  {celebrateT?.backToMenu || "Back to Menu"}
+                </Button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+
         {/* Header */}
         <div className="mb-8">
           <Link
-            href={`/public-menu/${resolvedParams.restaurant}/${resolvedParams.menuId}/cart`}
+            href={`/public-menu/${resolvedParams.restaurant}/${resolvedParams.menuId}`}
           >
             <Button variant="ghost" size="icon" className="mb-4">
               <ArrowLeft className="h-5 w-5" />
@@ -301,42 +586,18 @@ export default function CheckoutPage({
           </p>
         </div>
 
-        {/* Order Summary */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="mb-8 rounded-2xl border border-border/60 bg-card p-4 shadow-sm sm:p-6"
-        >
-          <h2 className="mb-4 text-lg font-semibold">{checkoutT?.sections?.orderSummary || "Order Summary"}</h2>
-          <div className="space-y-2">
-            {items.map((item) => (
-              <div
-                key={item.id}
-                className="flex items-center justify-between text-sm"
-              >
-                <span className="text-muted-foreground">
-                  {item.quantity}x {getDisplayTitle(item.title, language, t.order?.labels?.unknownItem || "Unknown Item")}
-                </span>
-                <span className="font-medium">
-                  {(t.menu?.currency || "CHF")} {(item.price * item.quantity).toFixed(2)}
-                </span>
-              </div>
-            ))}
-          </div>
-          <div className="mt-4 flex items-center justify-between gap-3 border-t border-border pt-4">
-            <span className="text-lg font-semibold">{checkoutT?.fields?.total || "Total"}</span>
-            <span className="text-xl font-bold">{(t.menu?.currency || "CHF")} {total.toFixed(2)}</span>
-          </div>
-        </motion.div>
-
-        {/* Checkout Form */}
+        {/* Single Card Checkout (details + items + totals + payment + confirm) */}
         <motion.form
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1 }}
-          onSubmit={handleContinue}
+          onSubmit={handleConfirmOrder}
           className="space-y-6 rounded-2xl border border-border/60 bg-card p-4 shadow-sm sm:p-6"
         >
+          <h2 className="text-lg font-semibold">
+            {checkoutT?.sections?.orderSummary || "Order Summary"}
+          </h2>
+
           {/* Customer Name */}
           <div className="space-y-2">
             <Label htmlFor="customerName">
@@ -360,7 +621,7 @@ export default function CheckoutPage({
             <RadioGroup
               value={orderType}
               onValueChange={(value) => {
-                const newOrderType = value as "dine_in" | "takeaway";
+                const newOrderType = value as "dine_in" | "takeaway" | "delivery";
                 setOrderType(newOrderType);
                 // Clear fields when switching order types
                 if (newOrderType === "dine_in") {
@@ -369,6 +630,13 @@ export default function CheckoutPage({
                   setPhoneValidationError("");
                   setDeliveryLocation(null);
                   setLocationDetails(null);
+                } else if (newOrderType === "takeaway") {
+                  setDeliveryAddress("");
+                  setPhoneNumber("");
+                  setPhoneValidationError("");
+                  setDeliveryLocation(null);
+                  setLocationDetails(null);
+                  setTableNumber("");
                 } else {
                   setTableNumber("");
                 }
@@ -393,6 +661,15 @@ export default function CheckoutPage({
                   {checkoutT?.orderTypes?.takeaway || "Takeaway"}
                 </Label>
               </div>
+              <div className="flex items-center space-x-2">
+                <RadioGroupItem value="delivery" id="delivery" />
+                <Label
+                  htmlFor="delivery"
+                  className="cursor-pointer font-normal"
+                >
+                  {checkoutT?.orderTypes?.delivery || "Delivery"}
+                </Label>
+              </div>
             </RadioGroup>
           </div>
 
@@ -415,9 +692,14 @@ export default function CheckoutPage({
             </div>
           )}
 
-          {/* Delivery Address (conditional for takeaway) */}
-          {orderType === "takeaway" && (
-            <div className="space-y-2">
+          {/* Delivery Address (conditional for delivery) */}
+          {orderType === "delivery" && (
+            <motion.div
+              className="space-y-2"
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.2, ease: "easeOut" }}
+            >
               <Label htmlFor="deliveryAddress">
                 {(checkoutT?.fields?.deliveryAddress || "Delivery Address")} <span className="text-destructive">*</span>
               </Label>
@@ -426,14 +708,14 @@ export default function CheckoutPage({
                 value={deliveryAddress}
                 onChange={(e) => setDeliveryAddress(e.target.value)}
                 placeholder={checkoutT?.placeholders?.deliveryAddress || "Enter your delivery address"}
-                required={orderType === "takeaway"}
+                required={orderType === "delivery"}
                 disabled={loading}
               />
-            </div>
+            </motion.div>
           )}
 
-          {/* Map Preview (conditional for takeaway when address is entered) */}
-          {orderType === "takeaway" && deliveryAddress.trim().length > 0 && (
+          {/* Map Preview (conditional for delivery when address is entered) */}
+          {orderType === "delivery" && deliveryAddress.trim().length > 0 && (
             <div className="space-y-2">
               <Label>
                 {(checkoutT?.fields?.deliveryLocation || "Delivery Location")}{" "}
@@ -483,11 +765,11 @@ export default function CheckoutPage({
             </div>
           )}
 
-          {/* Phone Number (conditional for takeaway) */}
-          {orderType === "takeaway" && (
+          {/* Phone Number (optional; shown for delivery) */}
+          {orderType === "delivery" && (
             <div className="space-y-2">
               <Label htmlFor="phoneNumber">
-                {(checkoutT?.fields?.phoneNumber || "Phone Number")} <span className="text-destructive">*</span>
+                {(checkoutT?.fields?.phoneNumber || "Phone Number")}
               </Label>
               <div className="flex gap-2">
                 <Select
@@ -543,7 +825,6 @@ export default function CheckoutPage({
                       setPhoneNumber(value);
                     }}
                     placeholder={checkoutT?.placeholders?.phoneNumber || "Enter phone number"}
-                    required={orderType === "takeaway"}
                     disabled={loading}
                     className={
                       phoneValidationError
@@ -561,7 +842,200 @@ export default function CheckoutPage({
             </div>
           )}
 
-          {/* Submit Button */}
+          {/* Cart items */}
+          <div className="rounded-2xl border border-border/60 bg-muted/20 p-4">
+            <div className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+              {(checkoutT?.sections?.items || (t.menu as any)?.public?.items || "Items")}
+            </div>
+            <div className="mt-3 space-y-2">
+              {items.map((item) => (
+                <div key={item.id} className="flex items-start justify-between gap-3 text-sm">
+                  <span className="min-w-0 flex-1 truncate text-muted-foreground">
+                    {item.quantity}x{" "}
+                    {getDisplayTitle(item.title, language, t.order?.labels?.unknownItem || "Unknown Item")}
+                  </span>
+                  <span className="shrink-0 font-medium text-foreground">
+                    {currency} {(item.price * item.quantity).toFixed(2)}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Totals */}
+          <div className="rounded-2xl border border-border/60 bg-muted/20 p-4">
+            <div className="flex items-center justify-between text-sm">
+              <span className="text-muted-foreground">{posT?.subtotal || "Sub Total"}</span>
+              <span className="font-semibold text-foreground">{currency} {subtotal.toFixed(2)}</span>
+            </div>
+            <div className="mt-2 flex items-center justify-between text-sm">
+              <span className="text-muted-foreground">{posT?.tax || "Tax"}</span>
+              <span className="font-semibold text-foreground">{currency} {tax.toFixed(2)}</span>
+            </div>
+            <div className="mt-3 border-t border-border/60 pt-3">
+              <div className="flex items-center justify-between">
+                <span className="text-sm font-semibold text-foreground">
+                  {posT?.totalAmount || "Total Amount"}
+                </span>
+                <span className="text-lg font-bold text-foreground">
+                  {currency} {totalAmount.toFixed(2)}
+                </span>
+              </div>
+            </div>
+          </div>
+
+          {/* Payment Methods (moved here) */}
+          <div className="space-y-3">
+            <div className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+              {posT?.paymentMethods || "Payment"}
+            </div>
+            <div className="grid grid-cols-3 gap-2">
+              <Button
+                type="button"
+                variant={payment === "cash" ? "default" : "outline"}
+                className="h-10 rounded-2xl"
+                onClick={() => setPayment("cash")}
+              >
+                <Wallet className="mr-2 h-4 w-4" />
+                {posT?.payment?.cash || "Cash"}
+              </Button>
+              <Button
+                type="button"
+                variant={payment === "card" ? "default" : "outline"}
+                className="h-10 rounded-2xl"
+                onClick={() => setPayment("card")}
+              >
+                <CreditCard className="mr-2 h-4 w-4" />
+                {posT?.payment?.card || "Card"}
+              </Button>
+              <Button
+                type="button"
+                variant={payment === "qr" ? "default" : "outline"}
+                className="h-10 rounded-2xl"
+                onClick={() => setPayment("qr")}
+              >
+                <QrCode className="mr-2 h-4 w-4" />
+                {posT?.payment?.qr || "QR"}
+              </Button>
+            </div>
+
+            {/* Card details form (only when Card selected) */}
+            {payment === "card" && (
+              <motion.div
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="rounded-2xl border border-border/60 bg-muted/20 p-4"
+              >
+                <div className="text-sm font-semibold text-foreground">
+                  {cardT?.title || "Card Details"}
+                </div>
+
+                <div className="mt-4 grid gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="cardholderName">
+                      {cardT?.fields?.cardholderName || "Cardholder Name"}{" "}
+                      <span className="text-destructive">*</span>
+                    </Label>
+                    <Input
+                      id="cardholderName"
+                      value={cardholderName}
+                      onChange={(e) => setCardholderName(e.target.value)}
+                      placeholder={cardT?.placeholders?.cardholderName || "Name on card"}
+                      autoComplete="cc-name"
+                      disabled={loading}
+                      className={cardErrors.cardholderName ? "border-destructive focus-visible:ring-destructive" : ""}
+                    />
+                    {cardErrors.cardholderName && (
+                      <p className="text-xs text-destructive">{cardErrors.cardholderName}</p>
+                    )}
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="cardNumber">
+                      {cardT?.fields?.cardNumber || "Card Number"}{" "}
+                      <span className="text-destructive">*</span>
+                    </Label>
+                    <Input
+                      id="cardNumber"
+                      value={formatCardNumber(cardNumber.replace(/\D/g, ""))}
+                      onChange={(e) => {
+                        const digits = e.target.value.replace(/\D/g, "").slice(0, 19);
+                        setCardNumber(digits);
+                      }}
+                      placeholder={cardT?.placeholders?.cardNumber || "1234 5678 9012 3456"}
+                      inputMode="numeric"
+                      autoComplete="cc-number"
+                      disabled={loading}
+                      className={cardErrors.cardNumber ? "border-destructive focus-visible:ring-destructive" : ""}
+                    />
+                    {cardErrors.cardNumber && (
+                      <p className="text-xs text-destructive">{cardErrors.cardNumber}</p>
+                    )}
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="space-y-2">
+                      <Label htmlFor="expiry">
+                        {cardT?.fields?.expiry || "Expiry (MM/YY)"}{" "}
+                        <span className="text-destructive">*</span>
+                      </Label>
+                      <Input
+                        id="expiry"
+                        value={expiry}
+                        onChange={(e) => {
+                          const digits = e.target.value.replace(/\D/g, "").slice(0, 4);
+                          const next = digits.length >= 3 ? `${digits.slice(0, 2)}/${digits.slice(2)}` : digits;
+                          setExpiry(next);
+                        }}
+                        placeholder={cardT?.placeholders?.expiry || "MM/YY"}
+                        inputMode="numeric"
+                        autoComplete="cc-exp"
+                        disabled={loading}
+                        className={cardErrors.expiry ? "border-destructive focus-visible:ring-destructive" : ""}
+                      />
+                      {cardErrors.expiry && <p className="text-xs text-destructive">{cardErrors.expiry}</p>}
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="cvv">
+                        {cardT?.fields?.cvv || "CVV"} <span className="text-destructive">*</span>
+                      </Label>
+                      <Input
+                        id="cvv"
+                        value={cvv}
+                        onChange={(e) => setCvv(e.target.value.replace(/\D/g, "").slice(0, 4))}
+                        placeholder={cardT?.placeholders?.cvv || "123"}
+                        inputMode="numeric"
+                        autoComplete="cc-csc"
+                        disabled={loading}
+                        className={cardErrors.cvv ? "border-destructive focus-visible:ring-destructive" : ""}
+                      />
+                      {cardErrors.cvv && <p className="text-xs text-destructive">{cardErrors.cvv}</p>}
+                    </div>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="billingName">
+                      {cardT?.fields?.billingName || "Billing Name"}{" "}
+                      <span className="text-muted-foreground">
+                        {cardT?.labels?.optional || "(optional)"}
+                      </span>
+                    </Label>
+                    <Input
+                      id="billingName"
+                      value={billingName}
+                      onChange={(e) => setBillingName(e.target.value)}
+                      placeholder={cardT?.placeholders?.billingName || customerName || ""}
+                      autoComplete="name"
+                      disabled={loading}
+                    />
+                  </div>
+                </div>
+              </motion.div>
+            )}
+          </div>
+
+          {/* Confirm order */}
           <Button
             type="submit"
             size="lg"
@@ -571,10 +1045,12 @@ export default function CheckoutPage({
             {loading ? (
               <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                {checkoutT?.actions?.pleaseWait || "Please wait..."}
+                {(t.order as any)?.public?.summary?.actions?.placingOrder || checkoutT?.actions?.pleaseWait || "Please wait..."}
               </>
             ) : (
-              checkoutT?.actions?.continue || "Continue"
+              payment === "card"
+                ? (checkoutT?.actions?.payNow || "Pay Now")
+                : (posT?.placeOrder || (t.order as any)?.public?.summary?.actions?.placeOrder || "Place Order")
             )}
           </Button>
         </motion.form>

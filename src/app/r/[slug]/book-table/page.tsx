@@ -1,16 +1,19 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Image from "next/image";
 import { motion } from "framer-motion";
-import { Calendar, Clock, Users, Phone, MapPin, User, MessageSquare, CheckCircle2, Loader2, Sun, Moon, Monitor, Globe } from "lucide-react";
+import { Calendar as CalendarIcon, Clock, Users, Phone, MapPin, User, MessageSquare, CheckCircle2, Loader2, Sun, Moon, Monitor, Globe } from "lucide-react";
+import { format, isValid, parse, startOfDay } from "date-fns";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Calendar } from "@/components/ui/calendar";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -21,6 +24,7 @@ import { toast } from "sonner";
 import { createClient } from "@/lib/supabase/client";
 import { useTheme } from "@/components/providers/theme-provider";
 import { useI18n } from "@/lib/i18n/context";
+import { cn } from "@/lib/utils";
 import { LanguageFlag } from "@/components/ui/language-flag";
 import { CountryFlag } from "@/components/ui/country-flag";
 import {
@@ -66,7 +70,6 @@ export default function BookTablePage() {
   const [time, setTime] = useState("");
   const [guestCount, setGuestCount] = useState("2");
   const [specialNote, setSpecialNote] = useState("");
-  const dateInputRef = useRef<HTMLInputElement | null>(null);
 
   const settings = (restaurant?.theme_config ?? {})?.settings ?? {};
   const heroImageUrl: string =
@@ -123,6 +126,11 @@ export default function BookTablePage() {
 
   // Set minimum date to today
   const today = new Date().toISOString().split("T")[0];
+  const minDay = startOfDay(new Date());
+  const parsedSelectedDate = date ? parse(date, "yyyy-MM-dd", new Date()) : null;
+  const selectedDateObj = parsedSelectedDate && isValid(parsedSelectedDate) ? parsedSelectedDate : undefined;
+  const formattedDateLabel =
+    selectedDateObj ? format(selectedDateObj, "PPP") : (date || "");
 
   // Real-time phone validation
   useEffect(() => {
@@ -308,7 +316,7 @@ export default function BookTablePage() {
           {/* Premium overlay (keeps text readable) */}
           <div className="absolute inset-0 bg-gradient-to-b from-black/75 via-black/55 to-black/90" />
           {/* Subtle ambient glow */}
-          <div className="absolute -top-24 left-1/2 h-[560px] w-[560px] -translate-x-1/2 rounded-full bg-[#22C55E]/10 blur-3xl" />
+          <div className="absolute -top-24 left-1/2 h-[560px] w-[560px] -translate-x-1/2 rounded-full bg-primary/10 blur-3xl" />
           <div className="absolute -bottom-40 right-[-140px] h-[560px] w-[560px] rounded-full bg-white/5 blur-3xl" />
         </div>
 
@@ -457,54 +465,59 @@ export default function BookTablePage() {
                   </p>
               </CardHeader>
                 <CardContent className="space-y-5">
-                  <div className="grid gap-4 sm:grid-cols-3">
+                  <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
                     {/* Date */}
-                    <div className="space-y-2 sm:col-span-1">
+                    <div className="space-y-2">
                       <Label className="text-sm font-medium text-white leading-none">
                         {flowT?.fields?.date || "Date"}
                       </Label>
-                      <div className="relative">
-                        {/* Hide native indicator (we render our own icon), but keep input behavior */}
-                        <Input
-                          ref={dateInputRef}
-                          type="date"
-                          value={date}
-                          onChange={(e) => setDate(e.target.value)}
-                          min={today}
-                          className={[
-                            "h-12 w-full rounded-xl border border-white/10 bg-black/35 px-4 pr-12 text-sm text-white shadow-sm transition-all",
-                            "focus-visible:border-[#22C55E] focus-visible:ring-2 focus-visible:ring-[#22C55E]/20",
-                            "[&::-webkit-calendar-picker-indicator]:opacity-0",
-                            "[&::-webkit-calendar-picker-indicator]:cursor-pointer",
-                          ].join(" ")}
-                        />
-                        <Calendar
-                          className="absolute right-4 top-1/2 h-[18px] w-[18px] -translate-y-1/2 cursor-pointer text-white/70"
-                          onClick={() => {
-                            const el = dateInputRef.current;
-                            if (!el) return;
-                            // Prefer native date picker if supported (not in all TS DOM typings yet)
-                            const anyEl = el as any;
-                            if (typeof anyEl.showPicker === "function") {
-                              anyEl.showPicker();
-                            } else {
-                              el.focus();
-                            }
-                          }}
-                        />
-                      </div>
+                      <Popover>
+                        <PopoverTrigger asChild>
+                          <Button
+                            id="intro-date"
+                            type="button"
+                            variant="outline"
+                            disabled={submitting}
+                            className={cn(
+                              "relative h-12 w-full justify-start rounded-xl border border-white/10 bg-black/35 pr-4 pl-11 text-left text-sm font-normal text-white shadow-sm transition-all hover:bg-white/5",
+                              !date && "text-white/70"
+                            )}
+                          >
+                            <CalendarIcon className="absolute left-4 top-1/2 h-[18px] w-[18px] -translate-y-1/2 text-white/70" />
+                            <span className="truncate">
+                              {date ? formattedDateLabel : (flowT?.placeholders?.select || "Select")}
+                            </span>
+                          </Button>
+                        </PopoverTrigger>
+                        <PopoverContent align="start" className="w-auto p-2">
+                          <Calendar
+                            mode="single"
+                            selected={selectedDateObj}
+                            onSelect={(d) => {
+                              if (!d) return;
+                              setDate(format(d, "yyyy-MM-dd"));
+                            }}
+                            disabled={(d) => d < minDay}
+                            initialFocus
+                          />
+                        </PopoverContent>
+                      </Popover>
                     </div>
 
                     {/* Time */}
-                    <div className="space-y-2 sm:col-span-1">
+                    <div className="space-y-2">
                       <Label className="text-sm font-medium text-white leading-none">
                         {flowT?.fields?.time || "Time"}
                       </Label>
                       <Select value={time} onValueChange={setTime}>
-                        <SelectTrigger className="flex h-12 items-center justify-between rounded-xl border border-white/10 bg-black/35 px-4 text-sm text-white shadow-sm transition-all hover:bg-white/5 focus-visible:border-[#22C55E] focus-visible:ring-2 focus-visible:ring-[#22C55E]/20">
+                        <SelectTrigger className="flex h-12 w-full items-center justify-between rounded-xl border border-white/10 bg-black/35 px-4 py-0 text-sm text-white shadow-sm transition-all hover:bg-white/5 focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/20">
                           <SelectValue placeholder={flowT?.placeholders?.select || "Select"} />
                         </SelectTrigger>
-                        <SelectContent className="rounded-xl">
+                        <SelectContent
+                          position="popper"
+                          align="start"
+                          className="w-(--radix-select-trigger-width) rounded-2xl border border-border/70 shadow-premium"
+                        >
                           {timeSlots.map((slot) => (
                             <SelectItem key={slot} value={slot} className="rounded-lg">
                               {slot}
@@ -515,15 +528,19 @@ export default function BookTablePage() {
                     </div>
 
                     {/* Guests */}
-                    <div className="space-y-2 sm:col-span-1">
+                    <div className="space-y-2 sm:col-span-2 lg:col-span-1">
                       <Label className="text-sm font-medium text-white leading-none">
                         {flowT?.fields?.guests || "Guests"}
                       </Label>
                       <Select value={guestCount} onValueChange={setGuestCount}>
-                        <SelectTrigger className="flex h-12 items-center justify-between rounded-xl border border-white/10 bg-black/35 px-4 text-sm text-white shadow-sm transition-all hover:bg-white/5 focus-visible:border-[#22C55E] focus-visible:ring-2 focus-visible:ring-[#22C55E]/20">
+                        <SelectTrigger className="flex h-12 w-full items-center justify-between rounded-xl border border-white/10 bg-black/35 px-4 py-0 text-sm text-white shadow-sm transition-all hover:bg-white/5 focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/20">
                           <SelectValue placeholder={flowT?.placeholders?.select || "Select"} />
                         </SelectTrigger>
-                        <SelectContent className="rounded-xl">
+                        <SelectContent
+                          position="popper"
+                          align="start"
+                          className="w-(--radix-select-trigger-width) rounded-2xl border border-border/70 shadow-premium"
+                        >
                           {Array.from({ length: 10 }, (_, i) => i + 1).map((num) => (
                             <SelectItem key={num} value={String(num)} className="rounded-lg">
                               {num} {num === 1 ? (t.booking?.labels?.guestSingular || "Guest") : (t.booking?.labels?.guestPlural || "Guests")}
@@ -537,7 +554,7 @@ export default function BookTablePage() {
                 <Button
                     type="button"
                     onClick={handleFindTable}
-                    className="h-12 w-full rounded-xl bg-gradient-to-r from-[#22C55E] to-[#16A34A] text-white text-base font-semibold shadow-xl transition-all hover:shadow-2xl hover:scale-[1.01] active:scale-[0.99]"
+                    className="h-12 w-full rounded-xl bg-gradient-to-r from-primary to-primary/80 text-primary-foreground text-base font-semibold shadow-xl transition-all hover:shadow-2xl hover:scale-[1.01] active:scale-[0.99]"
                 >
                     {flowT?.actions?.findTable || "Find Table"}
                 </Button>
@@ -628,121 +645,186 @@ export default function BookTablePage() {
   // Success screen is now handled after table selection / final confirmation
 
   return (
-    <div className="min-h-screen bg-[#FAFAF5] dark:bg-[#000000] font-sans">
-      {/* Theme toggle – top right */}
-      {mounted && (
-        <div className="fixed top-4 right-4 z-50 flex items-center gap-2">
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button
-                variant="ghost"
-                size="icon"
-                className="h-9 w-9 rounded-full border border-border/60 bg-card shadow-sm transition duration-200 hover:opacity-80 dark:bg-[#111111] dark:border-[#1f1f1f]"
-                aria-label="Switch language"
-              >
-                <Globe className="h-[18px] w-[18px]" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent
-              align="end"
-              className="z-[10000] min-w-[180px] rounded-xl border border-border/70 bg-background/80 p-1 shadow-lg backdrop-blur-md"
-            >
-              {languages.map((option) => (
-                <DropdownMenuItem
-                  key={option.code}
-                  onClick={() => setLanguage(option.code)}
-                  className={`flex items-center gap-2 rounded-lg px-3 py-2.5 text-sm transition-colors ${
-                    language === option.code
-                      ? "bg-accent/90 text-accent-foreground shadow-sm"
-                      : "text-foreground hover:bg-muted/70"
-                  }`}
-                >
-                  <LanguageFlag code={option.code} />
-                  {option.label}
-                  {language === option.code && (
-                    <span className="ml-auto text-primary">✓</span>
+    <div className="min-h-screen bg-background font-sans">
+      <div className="mx-auto grid w-full max-w-[95rem] grid-cols-1 gap-4 p-3 pb-24 sm:p-4 lg:grid-cols-[260px_minmax(0,1fr)] xl:grid-cols-[260px_minmax(0,1fr)_360px]">
+        {/* Left sidebar (visual only) */}
+        <aside className="hidden lg:block">
+          <Card className="h-[calc(100vh-2rem)] rounded-3xl border border-border/60 bg-card shadow-soft">
+            <CardContent className="flex h-full flex-col gap-5 p-5">
+              <div className="flex items-center gap-3">
+                <div className="relative h-11 w-11 overflow-hidden rounded-2xl bg-muted">
+                  {restaurant.logo_url ? (
+                    <Image
+                      src={restaurant.logo_url}
+                      alt=""
+                      fill
+                      className="object-cover"
+                      sizes="44px"
+                      unoptimized
+                    />
+                  ) : (
+                    <div className="flex h-full w-full items-center justify-center text-sm font-bold">
+                      {restaurant.name?.slice(0, 1)?.toUpperCase() || "R"}
+                    </div>
                   )}
-                </DropdownMenuItem>
-              ))}
-            </DropdownMenuContent>
-          </DropdownMenu>
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button
-                variant="ghost"
-                size="icon"
-                className="h-9 w-9 rounded-full border border-border/60 bg-card shadow-sm transition duration-200 hover:opacity-80 dark:bg-[#111111] dark:border-[#1f1f1f]"
-                aria-label="Toggle theme"
-              >
-                <ThemeIcon className="h-[18px] w-[18px]" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent
-              align="end"
-              className="z-[10000] min-w-[140px] rounded-xl border border-border bg-popover p-1 shadow-lg"
-            >
-              <DropdownMenuItem
-                onClick={() => setTheme("light")}
-                className="rounded-lg py-2.5 text-foreground"
-              >
-                <Sun className="mr-3 h-[18px] w-[18px]" /> Light
-              </DropdownMenuItem>
-              <DropdownMenuItem
-                onClick={() => setTheme("dark")}
-                className="rounded-lg py-2.5 text-foreground"
-              >
-                <Moon className="mr-3 h-[18px] w-[18px]" /> Dark
-              </DropdownMenuItem>
-              <DropdownMenuItem
-                onClick={() => setTheme("system")}
-                className="rounded-lg py-2.5 text-foreground"
-              >
-                <Monitor className="mr-3 h-[18px] w-[18px]" /> System
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-        </div>
-      )}
-      <div className="mx-auto flex min-h-screen max-w-2xl flex-col px-4 pb-32 pt-8 sm:px-6 sm:pt-12">
-        {/* Modern Header */}
-        <motion.div
-          initial={{ opacity: 0, y: -10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.4 }}
-          className="mb-8"
-        >
-          <div className="flex items-center justify-between mb-6">
-          <div>
-              <p className="text-xs font-semibold uppercase tracking-wider text-[#9CA88A] dark:text-[#9ca3af] mb-2" style={{ fontFamily: "'Inter', system-ui, sans-serif" }}>
-              {flowT?.steps?.step1Of4 || "Step 1 of 4"}
-            </p>
-              <h1 className="text-3xl font-bold tracking-tight text-[#1a1a1a] dark:text-white" style={{ fontFamily: "'Inter', system-ui, sans-serif" }}>
-                {flowT?.steps?.bookYourTable || "Book Your Table"}
-              </h1>
-          </div>
-            <div className="hidden sm:flex items-center gap-2 rounded-full bg-[#DCFCE7] dark:bg-[#22c55e]/10 px-4 py-2">
-              <div className="h-2 w-2 rounded-full bg-[#22C55E] animate-pulse" />
-              <span className="text-sm font-medium text-[#166534] dark:text-[#22c55e]" style={{ fontFamily: "'Inter', system-ui, sans-serif" }}>
-            {restaurant.name}
-              </span>
-            </div>
-          </div>
-        </motion.div>
+                </div>
+                <div className="min-w-0">
+                  <div className="truncate text-sm font-bold text-foreground">
+                    {restaurant.name}
+                  </div>
+                  <div className="text-xs text-muted-foreground">
+                    {flowT?.steps?.step1Of4 || "Step 1 of 4"}
+                  </div>
+                </div>
+              </div>
 
-        {/* Booking Form */}
-        <motion.form
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.4, ease: [0.23, 1, 0.32, 1] }}
-          onSubmit={handleSubmit}
-          className="flex-1 space-y-6"
-          id="book-table-form"
-        >
+              <div className="space-y-2">
+                <div className="text-[10px] font-semibold uppercase tracking-[0.2em] text-muted-foreground/70">
+                  {flowT?.sections?.visitDetails || "Visit Details"}
+                </div>
+                <div className="rounded-2xl border border-border/60 bg-muted/20 p-4 text-sm">
+                  <div className="flex items-center justify-between">
+                    <span className="text-muted-foreground">{flowT?.fields?.dateToCome || flowT?.fields?.date || "Date"}</span>
+                    <span className="font-semibold text-foreground">{date || "—"}</span>
+                  </div>
+                  <div className="mt-2 flex items-center justify-between">
+                    <span className="text-muted-foreground">{flowT?.fields?.timeToCome || flowT?.fields?.time || "Time"}</span>
+                    <span className="font-semibold text-foreground">{time || "—"}</span>
+                  </div>
+                  <div className="mt-2 flex items-center justify-between">
+                    <span className="text-muted-foreground">{flowT?.fields?.numberOfGuests || "Guests"}</span>
+                    <span className="font-semibold text-foreground">{guestCount || "—"}</span>
+                  </div>
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <div className="text-[10px] font-semibold uppercase tracking-[0.2em] text-muted-foreground/70">
+                  {flowT?.sections?.guestInformation || "Guest Information"}
+                </div>
+                <div className="rounded-2xl border border-border/60 bg-muted/20 p-4 text-sm">
+                  <div className="flex items-center justify-between">
+                    <span className="text-muted-foreground">{flowT?.fields?.fullName || "Guest Name"}</span>
+                    <span className="max-w-[140px] truncate font-semibold text-foreground">{name || "—"}</span>
+                  </div>
+                  <div className="mt-2 flex items-center justify-between">
+                    <span className="text-muted-foreground">{flowT?.fields?.phoneNumber || "Phone"}</span>
+                    <span className="max-w-[140px] truncate font-semibold text-foreground">{phone || "—"}</span>
+                  </div>
+                </div>
+              </div>
+
+              <div className="mt-auto">
+                <Button
+                  variant="outline"
+                  className="w-full rounded-2xl"
+                  onClick={() => router.push(`/r/${restaurant.slug}`)}
+                  type="button"
+                >
+                  {flowT?.actions?.backToMenu || "Back to menu"}
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        </aside>
+
+        {/* Main */}
+        <section className="min-w-0">
+          <Card className="rounded-3xl border border-border/60 bg-card shadow-soft">
+            <CardContent className="p-5 sm:p-6">
+              {/* Top header (POS-style) */}
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                <div className="min-w-0">
+                  <div className="text-xs font-semibold uppercase tracking-[0.22em] text-muted-foreground">
+                    {flowT?.steps?.step1Of4 || "Step 1 of 4"}
+                  </div>
+                  <h1 className="mt-1 truncate text-2xl font-bold text-foreground sm:text-3xl">
+                    {flowT?.steps?.bookYourTable || "Book Your Table"}
+                  </h1>
+                </div>
+
+                {/* Actions (language / theme) */}
+                {mounted && (
+                  <div className="flex items-center justify-end gap-2">
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button
+                          variant="outline"
+                          size="icon"
+                          className="h-11 w-11 rounded-2xl"
+                          aria-label={(t.menu as any)?.public?.switchLanguage || "Switch language"}
+                        >
+                          <Globe className="h-4 w-4" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent
+                        align="end"
+                        className="w-52 rounded-xl border border-border/70 bg-card p-1 shadow-xl"
+                      >
+                        {languages.map((option) => (
+                          <DropdownMenuItem
+                            key={option.code}
+                            onClick={() => setLanguage(option.code)}
+                            className={cn(
+                              "flex items-center gap-2 rounded-lg px-3 py-2.5 text-sm transition-colors",
+                              language === option.code
+                                ? "bg-accent text-accent-foreground shadow-sm"
+                                : "text-foreground hover:bg-muted/60"
+                            )}
+                          >
+                            <LanguageFlag code={option.code} className="h-4 w-4" />
+                            <span className="flex-1 text-left">{option.label}</span>
+                            {language === option.code && (
+                              <span className="text-primary text-xs">✓</span>
+                            )}
+                          </DropdownMenuItem>
+                        ))}
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button
+                          variant="outline"
+                          size="icon"
+                          className="h-11 w-11 rounded-2xl"
+                          aria-label={(t.menu as any)?.public?.toggleTheme || "Toggle theme"}
+                        >
+                          <ThemeIcon className="h-4 w-4" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent
+                        align="end"
+                        className="w-44 rounded-xl border border-border/70 bg-card p-1 shadow-xl"
+                      >
+                        <DropdownMenuItem onClick={() => setTheme("light")} className="rounded-lg py-2.5 text-sm">
+                          <Sun className="mr-2 h-4 w-4" /> {(t.menu as any)?.public?.themeLight || "Light"}
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => setTheme("dark")} className="rounded-lg py-2.5 text-sm">
+                          <Moon className="mr-2 h-4 w-4" /> {(t.menu as any)?.public?.themeDark || "Dark"}
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => setTheme("system")} className="rounded-lg py-2.5 text-sm">
+                          <Monitor className="mr-2 h-4 w-4" /> {(t.menu as any)?.public?.themeSystem || "System"}
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </div>
+                )}
+              </div>
+
+              <motion.form
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.25 }}
+                onSubmit={handleSubmit}
+                className="mt-6 space-y-6"
+                id="book-table-form"
+              >
           {/* Guest Information Card */}
-          <Card className="rounded-2xl border border-[#E4E0D2] bg-white shadow-lg dark:border-[#1f1f1f] dark:bg-[#000000] overflow-hidden">
-            <div className="bg-gradient-to-r from-[#22C55E]/5 via-transparent to-transparent dark:from-[#22C55E]/5 px-6 pt-6 pb-2">
-              <CardTitle className="text-lg font-semibold text-[#1a1a1a] dark:text-white flex items-center gap-2" style={{ fontFamily: "'Inter', system-ui, sans-serif" }}>
-                <User className="h-5 w-5 text-[#22C55E]" />
+          <Card className="rounded-3xl border border-border/60 bg-background shadow-soft overflow-hidden">
+            <div className="bg-gradient-to-r from-primary/10 via-transparent to-transparent px-6 pt-6 pb-2">
+              <CardTitle className="text-base font-semibold text-foreground flex items-center gap-2">
+                <User className="h-5 w-5 text-primary" />
                 {flowT?.sections?.guestInformation || "Guest Information"}
               </CardTitle>
             </div>
@@ -753,7 +835,7 @@ export default function BookTablePage() {
                   {(flowT?.fields?.fullName || "Full Name")} <span className="text-red-500">*</span>
                 </Label>
                 <div className="relative">
-                  <User className="pointer-events-none absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-[#9CA88A] dark:text-[#6b7280]" />
+                  <User className="pointer-events-none absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-muted-foreground" />
                   <Input
                     id="name"
                     value={name}
@@ -761,8 +843,7 @@ export default function BookTablePage() {
                     placeholder={flowT?.placeholders?.fullName || "John Doe"}
                     required
                     disabled={submitting}
-                    className="h-12 rounded-xl border-2 border-[#E4E0D2] bg-white pl-12 pr-4 text-sm font-normal shadow-sm transition-all placeholder:text-[#9ca3af] focus-visible:border-[#22C55E] focus-visible:ring-2 focus-visible:ring-[#22C55E]/20 dark:border-[#1f1f1f] dark:bg-[#0f0f0f] dark:text-white dark:placeholder:text-[#6b7280]"
-                    style={{ fontFamily: "'Inter', system-ui, sans-serif" }}
+                    className="h-12 rounded-2xl border border-border/60 bg-background pl-12 pr-4 text-sm shadow-sm transition-all placeholder:text-muted-foreground focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/20"
                   />
                 </div>
               </div>
@@ -778,12 +859,12 @@ export default function BookTablePage() {
                     onValueChange={setPhoneCountryCode}
                     disabled={submitting}
                   >
-                    <SelectTrigger className="w-[200px] h-12 rounded-xl border-2 border-[#E4E0D2] bg-white text-sm font-normal shadow-sm transition-all focus-visible:border-[#22C55E] focus-visible:ring-2 focus-visible:ring-[#22C55E]/20 dark:border-[#1f1f1f] dark:bg-[#0f0f0f] dark:text-white">
+                    <SelectTrigger className="w-[200px] h-12 rounded-2xl border border-border/60 bg-background text-sm shadow-sm transition-all focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/20">
                     <SelectValue placeholder={flowT?.placeholders?.selectCountry || "Select country"}>
                         {getCountryByCode(phoneCountryCode) && (
                           <span className="flex items-center gap-2.5">
                             <CountryFlag code={phoneCountryCode} className="h-5 w-5 flex-shrink-0" />
-                            <span className="text-sm font-medium" style={{ fontFamily: "'Inter', system-ui, sans-serif" }}>
+                            <span className="text-sm font-medium">
                               {getCountryByCode(phoneCountryCode)?.dialCode}
                             </span>
                           </span>
@@ -799,10 +880,10 @@ export default function BookTablePage() {
                         >
                           <span className="flex items-center gap-3 w-full">
                             <CountryFlag code={country.code} className="h-5 w-5 flex-shrink-0" />
-                            <span className="flex-1 text-left font-medium text-sm" style={{ fontFamily: "'Inter', system-ui, sans-serif" }}>
+                            <span className="flex-1 text-left font-medium text-sm">
                               {country.name}
                             </span>
-                            <span className="text-muted-foreground text-sm font-normal" style={{ fontFamily: "'Inter', system-ui, sans-serif" }}>
+                            <span className="text-muted-foreground text-sm font-normal">
                               {country.dialCode}
                             </span>
                           </span>
@@ -811,7 +892,7 @@ export default function BookTablePage() {
                     </SelectContent>
                   </Select>
                   <div className="flex-1 relative">
-                    <Phone className="pointer-events-none absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-[#9CA88A] dark:text-[#6b7280]" />
+                    <Phone className="pointer-events-none absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-muted-foreground" />
                   <Input
                     id="phone"
                     type="tel"
@@ -823,15 +904,14 @@ export default function BookTablePage() {
                       placeholder={getCountryByCode(phoneCountryCode)?.validation.message.replace(/.*must be/, "").trim() || "Enter phone number"}
                     required
                     disabled={submitting}
-                      className={`h-12 rounded-xl border-2 bg-white pl-12 pr-4 text-sm font-normal shadow-sm transition-all placeholder:text-[#9ca3af] focus-visible:ring-2 focus-visible:ring-[#22C55E]/20 dark:bg-[#0f0f0f] dark:text-white dark:placeholder:text-[#6b7280] ${
+                      className={`h-12 rounded-2xl border bg-background pl-12 pr-4 text-sm shadow-sm transition-all placeholder:text-muted-foreground focus-visible:ring-2 focus-visible:ring-primary/20 ${
                         phoneValidationError 
-                          ? "border-red-500 focus-visible:border-red-500 dark:border-red-500" 
-                          : "border-[#E4E0D2] focus-visible:border-[#22C55E] dark:border-[#1f1f1f] dark:focus-visible:border-[#22C55E]"
+                          ? "border-red-500 focus-visible:border-red-500" 
+                          : "border-border/60 focus-visible:border-primary"
                       }`}
-                      style={{ fontFamily: "'Inter', system-ui, sans-serif" }}
                     />
                     {phoneValidationError && (
-                      <p className="mt-2 text-xs text-red-500 font-medium" style={{ fontFamily: "'Inter', system-ui, sans-serif" }}>{phoneValidationError}</p>
+                      <p className="mt-2 text-xs text-red-500 font-medium">{phoneValidationError}</p>
                     )}
                   </div>
                 </div>
@@ -850,85 +930,111 @@ export default function BookTablePage() {
                   placeholder={flowT?.placeholders?.email || "you@example.com"}
                   required
                   disabled={submitting}
-                  className="h-12 rounded-xl border-2 border-[#E4E0D2] bg-white px-4 text-sm font-normal shadow-sm transition-all placeholder:text-[#9ca3af] focus-visible:border-[#22C55E] focus-visible:ring-2 focus-visible:ring-[#22C55E]/20 dark:border-[#1f1f1f] dark:bg-[#0f0f0f] dark:text-white dark:placeholder:text-[#6b7280]"
-                  style={{ fontFamily: "'Inter', system-ui, sans-serif" }}
+                  className="h-12 rounded-2xl border border-border/60 bg-background px-4 text-sm shadow-sm transition-all placeholder:text-muted-foreground focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/20"
                 />
               </div>
             </CardContent>
           </Card>
 
           {/* Visit Details Card */}
-          <Card className="rounded-2xl border border-[#E4E0D2] bg-white shadow-lg dark:border-[#1f1f1f] dark:bg-[#000000] overflow-hidden">
-            <div className="bg-gradient-to-r from-[#22C55E]/5 via-transparent to-transparent dark:from-[#22C55E]/5 px-6 pt-6 pb-2">
-              <CardTitle className="text-lg font-semibold text-[#1a1a1a] dark:text-white flex items-center gap-2" style={{ fontFamily: "'Inter', system-ui, sans-serif" }}>
-                <Calendar className="h-5 w-5 text-[#22C55E]" />
+          <Card className="rounded-3xl border border-border/60 bg-background shadow-soft overflow-hidden">
+            <div className="bg-gradient-to-r from-primary/10 via-transparent to-transparent px-6 pt-6 pb-2">
+              <CardTitle className="text-base font-semibold text-foreground flex items-center gap-2">
+                <CalendarIcon className="h-5 w-5 text-primary" />
                 {flowT?.sections?.visitDetails || "Visit Details"}
               </CardTitle>
             </div>
             <CardContent className="px-6 pt-4 pb-6 space-y-6">
-              {/* Date */}
-              <div className="space-y-2">
-                <Label htmlFor="date" className="text-sm font-medium text-[#1a1a1a] dark:text-[#ffffff]" style={{ fontFamily: "'Inter', system-ui, sans-serif" }}>
-                  {(flowT?.fields?.dateToCome || "Date to Come")} <span className="text-red-500">*</span>
-                </Label>
-                <div className="relative">
-                  <Calendar className="pointer-events-none absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-[#9CA88A] dark:text-[#6b7280]" />
-                  <Input
-                    id="date"
-                    type="date"
-                    value={date}
-                    onChange={(e) => setDate(e.target.value)}
-                    min={today}
-                    required
-                    disabled={submitting}
-                    className="h-12 rounded-xl border-2 border-[#E4E0D2] bg-white pl-12 pr-4 text-sm font-normal shadow-sm transition-all focus-visible:border-[#22C55E] focus-visible:ring-2 focus-visible:ring-[#22C55E]/20 dark:border-[#1f1f1f] dark:bg-[#0f0f0f] dark:text-white"
-                    style={{ fontFamily: "'Inter', system-ui, sans-serif" }}
-                  />
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                {/* Date */}
+                <div className="space-y-2">
+                  <Label htmlFor="date" className="text-sm font-medium text-[#1a1a1a] dark:text-[#ffffff]" style={{ fontFamily: "'Inter', system-ui, sans-serif" }}>
+                    {(flowT?.fields?.dateToCome || "Date to Come")} <span className="text-red-500">*</span>
+                  </Label>
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <Button
+                        id="date"
+                        type="button"
+                        variant="outline"
+                        disabled={submitting}
+                        className={cn(
+                          "relative h-12 w-full justify-start rounded-2xl border border-border/60 bg-background pr-4 pl-11 text-left text-sm font-normal shadow-sm transition-all focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/20",
+                          !date && "text-muted-foreground"
+                        )}
+                      >
+                        <CalendarIcon className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-muted-foreground" />
+                        <span className="truncate">
+                          {date ? formattedDateLabel : (flowT?.placeholders?.selectDate || flowT?.placeholders?.select || "Select")}
+                        </span>
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent align="start" className="w-auto p-2">
+                      <Calendar
+                        mode="single"
+                        selected={selectedDateObj}
+                        onSelect={(d) => {
+                          if (!d) return;
+                          setDate(format(d, "yyyy-MM-dd"));
+                        }}
+                        disabled={(d) => d < minDay}
+                        initialFocus
+                      />
+                    </PopoverContent>
+                  </Popover>
                 </div>
-              </div>
 
-              {/* Time */}
-              <div className="space-y-2">
-                <Label htmlFor="time" className="text-sm font-medium text-[#1a1a1a] dark:text-[#ffffff]" style={{ fontFamily: "'Inter', system-ui, sans-serif" }}>
-                  {(flowT?.fields?.timeToCome || "Time to Come")} <span className="text-red-500">*</span>
-                </Label>
-                <Select value={time} onValueChange={setTime} disabled={submitting}>
-                  <SelectTrigger
-                    id="time"
-                    className="h-12 rounded-xl border-2 border-[#E4E0D2] bg-white text-sm font-normal shadow-sm transition-all focus-visible:border-[#22C55E] focus-visible:ring-2 focus-visible:ring-[#22C55E]/20 dark:border-[#1f1f1f] dark:bg-[#0f0f0f] dark:text-white"
-                  >
-                    <SelectValue placeholder={flowT?.placeholders?.selectTime || "Select time"} />
-                  </SelectTrigger>
-                  <SelectContent className="rounded-xl">
-                    {timeSlots.map((slot) => (
-                      <SelectItem key={slot} value={slot} className="rounded-lg">
-                        {slot}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
+                {/* Time */}
+                <div className="space-y-2">
+                  <Label htmlFor="time" className="text-sm font-medium text-[#1a1a1a] dark:text-[#ffffff]" style={{ fontFamily: "'Inter', system-ui, sans-serif" }}>
+                    {(flowT?.fields?.timeToCome || "Time to Come")} <span className="text-red-500">*</span>
+                  </Label>
+                  <Select value={time} onValueChange={setTime} disabled={submitting}>
+                    <SelectTrigger
+                      id="time"
+                      className="h-12 w-full rounded-2xl border border-border/60 bg-background py-0 text-sm shadow-sm transition-all focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/20"
+                    >
+                      <SelectValue placeholder={flowT?.placeholders?.selectTime || "Select time"} />
+                    </SelectTrigger>
+                    <SelectContent
+                      position="popper"
+                      align="start"
+                      className="w-(--radix-select-trigger-width) rounded-2xl border border-border/70 shadow-premium"
+                    >
+                      {timeSlots.map((slot) => (
+                        <SelectItem key={slot} value={slot} className="rounded-lg">
+                          {slot}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
 
-              {/* Guest Count */}
-              <div className="space-y-2">
-                <Label htmlFor="guests" className="text-sm font-medium text-[#1a1a1a] dark:text-[#ffffff]" style={{ fontFamily: "'Inter', system-ui, sans-serif" }}>
-                  {(flowT?.fields?.numberOfGuests || "Number of Guests")} <span className="text-red-500">*</span>
-                </Label>
-                <Select value={guestCount} onValueChange={setGuestCount} disabled={submitting}>
-                  <SelectTrigger
-                    id="guests"
-                    className="h-12 rounded-xl border-2 border-[#E4E0D2] bg-white text-sm font-normal shadow-sm transition-all focus-visible:border-[#22C55E] focus-visible:ring-2 focus-visible:ring-[#22C55E]/20 dark:border-[#1f1f1f] dark:bg-[#0f0f0f] dark:text-white"
-                  >
-                    <SelectValue placeholder={flowT?.placeholders?.select || "Select"} />
-                  </SelectTrigger>
-                  <SelectContent className="rounded-xl">
-                    {Array.from({ length: 10 }, (_, i) => i + 1).map((num) => (
-                      <SelectItem key={num} value={num.toString()} className="rounded-lg">
-                        {num} {num === 1 ? (flowT?.labels?.personSingular || "Person") : (flowT?.labels?.personPlural || "Persons")}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                {/* Guests */}
+                <div className="space-y-2 sm:col-span-2 lg:col-span-1">
+                  <Label htmlFor="guests" className="text-sm font-medium text-[#1a1a1a] dark:text-[#ffffff]" style={{ fontFamily: "'Inter', system-ui, sans-serif" }}>
+                    {(flowT?.fields?.numberOfGuests || "Number of Guests")} <span className="text-red-500">*</span>
+                  </Label>
+                  <Select value={guestCount} onValueChange={setGuestCount} disabled={submitting}>
+                    <SelectTrigger
+                      id="guests"
+                      className="h-12 w-full rounded-2xl border border-border/60 bg-background py-0 text-sm shadow-sm transition-all focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/20"
+                    >
+                      <SelectValue placeholder={flowT?.placeholders?.select || "Select"} />
+                    </SelectTrigger>
+                    <SelectContent
+                      position="popper"
+                      align="start"
+                      className="w-(--radix-select-trigger-width) rounded-2xl border border-border/70 shadow-premium"
+                    >
+                      {Array.from({ length: 10 }, (_, i) => i + 1).map((num) => (
+                        <SelectItem key={num} value={num.toString()} className="rounded-lg">
+                          {num} {num === 1 ? (flowT?.labels?.personSingular || "Person") : (flowT?.labels?.personPlural || "Persons")}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
               </div>
 
               {/* Special Note */}
@@ -943,41 +1049,98 @@ export default function BookTablePage() {
                   placeholder={flowT?.placeholders?.specialRequests || "Any special requests or dietary requirements..."}
                   rows={4}
                   disabled={submitting}
-                  className="rounded-xl border-2 border-[#E4E0D2] bg-white px-4 py-3 text-sm font-normal shadow-sm transition-all placeholder:text-[#9ca3af] focus-visible:border-[#22C55E] focus-visible:ring-2 focus-visible:ring-[#22C55E]/20 dark:border-[#1f1f1f] dark:bg-[#0f0f0f] dark:text-white dark:placeholder:text-[#6b7280] resize-none"
-                  style={{ fontFamily: "'Inter', system-ui, sans-serif" }}
+                  className="rounded-2xl border border-border/60 bg-background px-4 py-3 text-sm shadow-sm transition-all placeholder:text-muted-foreground focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/20 resize-none"
                 />
               </div>
             </CardContent>
           </Card>
-        </motion.form>
+              </motion.form>
+            </CardContent>
+          </Card>
+        </section>
 
-        {/* Bottom sticky CTA */}
-        <div className="pointer-events-none fixed inset-x-0 bottom-0 z-20 bg-gradient-to-t from-[#FAFAF5] via-[#FAFAF5]/95 to-transparent pb-6 pt-6 dark:from-[#000000] dark:via-[#000000] dark:to-transparent">
-          <div className="pointer-events-auto mx-auto flex w-full max-w-2xl flex-col gap-3 px-4 sm:px-6">
-            <div className="flex items-center justify-between text-xs text-[#6B7B5A] dark:text-[#9ca3af] px-1" style={{ fontFamily: "'Inter', system-ui, sans-serif" }}>
-              <span className="font-medium">{flowT?.actions?.nextSelectTable || "Next: Select Table"}</span>
-              <span className="font-medium">
-                {guestCount} {guestCount === "1" ? (t.booking?.labels?.guestSingular || "guest") : (t.booking?.labels?.guestPlural || "guests")}
-              </span>
+        {/* Right details panel */}
+        <aside className="hidden xl:block">
+          <Card className="sticky top-4 rounded-3xl border border-border/60 bg-card shadow-soft">
+            <CardContent className="p-5">
+              <div className="text-sm font-semibold text-foreground">
+                {flowT?.sections?.reservationDetails || flowT?.sections?.visitDetails || "Booking Details"}
+              </div>
+              <div className="mt-1 text-xs text-muted-foreground">
+                {flowT?.actions?.nextSelectTable || "Next: Select Table"}
+              </div>
+
+              <div className="mt-5 space-y-4">
+                <div className="rounded-2xl border border-border/60 bg-muted/20 p-4 text-sm">
+                  <div className="flex items-center justify-between gap-3">
+                    <span className="text-muted-foreground">{flowT?.fields?.fullName || "Guest Name"}</span>
+                    <span className="max-w-[180px] truncate font-semibold text-foreground">{name || "—"}</span>
+                  </div>
+                  <div className="mt-2 flex items-center justify-between gap-3">
+                    <span className="text-muted-foreground">{flowT?.fields?.numberOfGuests || "Number of Guests"}</span>
+                    <span className="font-semibold text-foreground">{guestCount || "—"}</span>
+                  </div>
+                  <div className="mt-2 flex items-center justify-between gap-3">
+                    <span className="text-muted-foreground">{flowT?.fields?.bookingTime || flowT?.fields?.timeToCome || "Booking Time"}</span>
+                    <span className="font-semibold text-foreground">
+                      {date || "—"} • {time || "—"}
+                    </span>
+                  </div>
+                  {specialNote?.trim() ? (
+                    <div className="mt-3 border-t border-border/60 pt-3 text-xs text-muted-foreground">
+                      <span className="font-semibold text-foreground">
+                        {flowT?.fields?.specialRequest || flowT?.fields?.specialNotes || "Special Request"}:
+                      </span>{" "}
+                      {specialNote}
+                    </div>
+                  ) : null}
+                </div>
+
+                <Button
+                  type="submit"
+                  form="book-table-form"
+                  size="lg"
+                  className="w-full rounded-2xl"
+                  disabled={submitting}
+                >
+                  {submitting ? (
+                    <>
+                      <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                      {flowT?.actions?.processing || "Processing..."}
+                    </>
+                  ) : (
+                    flowT?.actions?.continueToSelectTable || flowT?.actions?.continue || "Continue"
+                  )}
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        </aside>
+      </div>
+
+      {/* Mobile/tablet sticky CTA */}
+      <div className="sticky bottom-0 z-20 border-t border-border/60 bg-background/90 backdrop-blur-xl xl:hidden">
+        <div className="mx-auto flex max-w-[95rem] items-center justify-between gap-3 px-3 py-3 sm:px-4">
+          <div className="min-w-0">
+            <div className="truncate text-sm font-semibold">
+              {flowT?.actions?.nextSelectTable || "Next: Select Table"}
             </div>
-            <Button
-              type="submit"
-              form="book-table-form"
-              size="lg"
-              className="w-full h-14 rounded-xl bg-gradient-to-r from-[#22C55E] to-[#16A34A] text-white font-semibold text-base shadow-xl transition-all hover:shadow-2xl hover:scale-[1.01] active:scale-[0.99] disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:scale-100"
-              disabled={submitting}
-              style={{ fontFamily: "'Inter', system-ui, sans-serif" }}
-            >
-              {submitting ? (
-                <>
-                  <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-                  {flowT?.actions?.processing || "Processing..."}
-                </>
-              ) : (
-                flowT?.actions?.continueToSelectTable || "Continue to Select Table"
-              )}
-            </Button>
+            <div className="text-xs text-muted-foreground">
+              {guestCount}{" "}
+              {guestCount === "1"
+                ? (t.booking?.labels?.guestSingular || "guest")
+                : (t.booking?.labels?.guestPlural || "guests")}{" "}
+              • {date || "—"} • {time || "—"}
+            </div>
           </div>
+          <Button
+            type="submit"
+            form="book-table-form"
+            className="rounded-2xl"
+            disabled={submitting}
+          >
+            {flowT?.actions?.continueToSelectTable || flowT?.actions?.continue || "Continue"}
+          </Button>
         </div>
       </div>
     </div>

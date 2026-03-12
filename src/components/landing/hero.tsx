@@ -19,10 +19,11 @@ export function Hero() {
     setVisible(true);
   }, []);
 
-  // Green theme colors for particles - brighter for visibility
-  const particleColors = resolvedTheme === "dark" 
-    ? ["#22c55e", "#4ade80", "#86efac", "#34d399"] // Green shades for dark theme
-    : ["#22c55e", "#16a34a", "#10b981", "#059669"]; // Green shades for light theme
+  // Green theme colors for particles - aligned with global POS green tokens
+  const particleColors =
+    resolvedTheme === "dark"
+      ? ["#16a34a", "#22c55e", "#4ade80", "#86efac"]
+      : ["#16a34a", "#15803d", "#22c55e", "#4ade80"];
 
   // Get pixel ratio safely for SSR
   const [pixelRatio, setPixelRatio] = useState(1);

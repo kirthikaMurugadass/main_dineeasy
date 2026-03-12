@@ -1142,8 +1142,8 @@ export default function CategoryDetailPage() {
             </motion.div>
           </Link>
           <div className="flex items-center gap-3">
-            <div className="rounded-xl bg-[#22c55e]/20 p-2.5 dark:bg-[#22c55e]/20">
-              <Plus className="h-5 w-5 text-[#5B7A2F] dark:text-[#22c55e]" />
+            <div className="rounded-xl bg-primary/10 p-2.5 dark:bg-primary/10">
+              <Plus className="h-5 w-5 text-primary dark:text-primary" />
             </div>
             <div>
               <h1 className="text-2xl font-bold text-[#2D3A1A] dark:text-[#ffffff]">
@@ -1162,7 +1162,7 @@ export default function CategoryDetailPage() {
               animate={{ opacity: 1 }}
               className="flex items-center gap-2 text-sm text-[#6B7B5A] dark:text-[#9ca3af]"
             >
-              <Loader2 className="h-4 w-4 animate-spin text-[#5B7A2F] dark:text-[#22c55e]" />
+              <Loader2 className="h-4 w-4 animate-spin text-primary" />
               <span className="hidden sm:inline">{t.admin.categories.saving}</span>
             </motion.div>
           )}
@@ -1170,7 +1170,7 @@ export default function CategoryDetailPage() {
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
-              className="flex items-center gap-2 text-sm text-[#5B7A2F] dark:text-[#22c55e]"
+              className="flex items-center gap-2 text-sm text-primary dark:text-primary"
             >
               <CheckCircle2 className="h-4 w-4" />
               <span className="hidden sm:inline">{t.admin.categories.draftSaved}</span>
@@ -1183,7 +1183,7 @@ export default function CategoryDetailPage() {
             <Button
               onClick={handleSave}
               disabled={saving}
-              className="rounded-full bg-[#22c55e] text-white shadow-lg hover:shadow-xl transition-all hover:bg-[#16a34a] disabled:opacity-50 px-6"
+              className="rounded-full bg-primary text-primary-foreground shadow-lg hover:shadow-xl transition-all hover:bg-primary/90 disabled:opacity-50 px-6"
               size="lg"
             >
               {saving ? (
@@ -1233,8 +1233,8 @@ export default function CategoryDetailPage() {
                       <Card className="rounded-2xl border border-[#D6D2C4]/50 bg-white shadow-xl dark:border-[#1f1f1f] dark:bg-[#111111] dark:p-6">
                         <CardHeader className="pb-4 dark:pb-6">
                           <CardTitle className="text-xl font-bold text-[#2D3A1A] dark:text-[#ffffff] flex items-center gap-2">
-                            <div className="rounded-xl bg-[#22c55e]/20 p-2 dark:bg-[#22c55e]/20">
-                              <Edit2 className="h-5 w-5 text-[#5B7A2F] dark:text-[#22c55e]" />
+                            <div className="rounded-xl bg-primary/10 p-2 dark:bg-primary/10">
+                              <Edit2 className="h-5 w-5 text-primary dark:text-primary" />
                             </div>
                             {t.admin.categories.detailsTitle}
                           </CardTitle>
@@ -1284,7 +1284,7 @@ export default function CategoryDetailPage() {
                                   className={`h-12 rounded-xl border pr-10 text-sm transition-all dark:text-[#ffffff] dark:placeholder:text-[#8a8a8a] ${
                                     validationErrors.title
                                       ? "border-red-300 focus-visible:border-red-500 focus-visible:ring-red-500/20"
-                                      : "border-[#D6D2C4]/50 focus-visible:border-[#5B7A2F] focus-visible:ring-[#5B7A2F]/20 dark:border-[#262626] dark:focus-visible:border-[#22c55e] dark:focus-visible:ring-[#22c55e]/20"
+                                      : "border-[#D6D2C4]/50 focus-visible:border-primary focus-visible:ring-primary/20 dark:border-[#262626] dark:focus-visible:border-primary dark:focus-visible:ring-primary/20"
                                   } bg-white/50 dark:bg-[#0f0f0f]`}
                                   maxLength={50}
                                 />
@@ -1297,7 +1297,7 @@ export default function CategoryDetailPage() {
                                     {validationErrors.title ? (
                                       <AlertCircle className="h-4 w-4 text-red-500" />
                                     ) : (
-                                      <CheckCircle2 className="h-4 w-4 text-[#22C55E]" />
+                                      <CheckCircle2 className="h-4 w-4 text-primary" />
                                     )}
                                   </motion.div>
                                 )}
@@ -1356,7 +1356,7 @@ export default function CategoryDetailPage() {
                                 }}
                                 placeholder={t.admin.categories.urlSlugPlaceholder}
                                 disabled={!slugEditable}
-                                className="h-11 font-mono text-sm rounded-xl border border-[#D6D2C4]/50 bg-white/50 focus-visible:border-[#5B7A2F] focus-visible:ring-[#5B7A2F]/20 dark:border-[#262626] dark:bg-[#0f0f0f] dark:text-[#ffffff] dark:placeholder:text-[#8a8a8a] dark:focus-visible:border-[#22c55e] dark:focus-visible:ring-[#22c55e]/20"
+                                className="h-11 font-mono text-sm rounded-xl border border-[#D6D2C4]/50 bg-white/50 focus-visible:border-primary focus-visible:ring-primary/20 dark:border-[#262626] dark:bg-[#0f0f0f] dark:text-[#ffffff] dark:placeholder:text-[#8a8a8a] dark:focus-visible:border-primary dark:focus-visible:ring-primary/20"
                               />
                               <p className="text-xs text-[#6B7B5A] dark:text-[#8a8a8a]">
                                 {t.admin.categories.urlSlugHelper}
@@ -1390,7 +1390,7 @@ export default function CategoryDetailPage() {
                                   setCategoryTranslations(updated);
                                 }}
                                 placeholder={t.admin.categories.descriptionPlaceholder}
-                                className="min-h-[120px] resize-none rounded-xl border border-[#D6D2C4]/50 bg-white/50 focus-visible:border-[#5B7A2F] focus-visible:ring-[#5B7A2F]/20 transition-all dark:border-[#262626] dark:bg-[#0f0f0f] dark:text-[#ffffff] dark:placeholder:text-[#8a8a8a] dark:focus-visible:border-[#22c55e] dark:focus-visible:ring-[#22c55e]/20"
+                                className="min-h-[120px] resize-none rounded-xl border border-[#D6D2C4]/50 bg-white/50 focus-visible:border-primary focus-visible:ring-primary/20 transition-all dark:border-[#262626] dark:bg-[#0f0f0f] dark:text-[#ffffff] dark:placeholder:text-[#8a8a8a] dark:focus-visible:border-primary dark:focus-visible:ring-primary/20"
                                 maxLength={200}
                               />
                             </motion.div>
@@ -1406,8 +1406,8 @@ export default function CategoryDetailPage() {
                         <Card className="rounded-2xl border border-[#D6D2C4]/50 bg-white shadow-xl dark:border-[#1f1f1f] dark:bg-[#111111] dark:p-6">
                           <CardHeader className="pb-4 dark:pb-6">
                             <CardTitle className="text-xl font-bold text-[#2D3A1A] dark:text-[#ffffff] flex items-center gap-2">
-                              <div className="rounded-xl bg-[#22c55e]/20 p-2 dark:bg-[#22c55e]/20">
-                                <ImageIcon className="h-5 w-5 text-[#5B7A2F] dark:text-[#22c55e]" />
+                              <div className="rounded-xl bg-primary/10 p-2 dark:bg-primary/10">
+                                <ImageIcon className="h-5 w-5 text-primary dark:text-primary" />
                               </div>
                               {t.admin.categories.imageTitle}
                             </CardTitle>
@@ -1430,8 +1430,8 @@ export default function CategoryDetailPage() {
                               whileHover={{ scale: 1.01 }}
                               className={`relative border-2 border-dashed rounded-2xl p-12 transition-all ${
                                 isDragging
-                                  ? "border-[#22C55E] bg-[#DCFCE7]/50 dark:border-[#22c55e] dark:bg-[#22c55e]/10"
-                                  : "border-[#D6D2C4]/50 hover:border-[#5B7A2F]/50 hover:bg-[#DCFCE7]/20 dark:border-[#1f1f1f] dark:hover:border-[#22c55e]/50 dark:hover:bg-[#22c55e]/10"
+                                  ? "border-primary bg-primary/10 dark:border-primary dark:bg-primary/10"
+                                  : "border-[#D6D2C4]/50 hover:border-primary/50 hover:bg-primary/5 dark:border-[#1f1f1f] dark:hover:border-primary/50 dark:hover:bg-primary/10"
                               }`}
                             >
                               <input
@@ -1480,9 +1480,9 @@ export default function CategoryDetailPage() {
                                     initial={{ scale: 0 }}
                                     animate={{ scale: 1 }}
                                     transition={{ delay: 0.1, type: "spring" }}
-                                    className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-[#DCFCE7] dark:bg-[#22c55e]/20"
+                                    className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-primary/10 dark:bg-primary/10"
                                   >
-                                    <Upload className="h-8 w-8 text-[#22C55E] dark:text-[#22c55e]" />
+                                    <Upload className="h-8 w-8 text-primary dark:text-primary" />
                                   </motion.div>
                                   <p className="text-base font-semibold mb-2 text-[#2D3A1A] dark:text-[#ffffff]">
                                     Upload category image
@@ -1497,7 +1497,7 @@ export default function CategoryDetailPage() {
                                     <Button
                                       type="button"
                                       onClick={() => categoryImageInputRef.current?.click()}
-                                      className="rounded-full bg-[#22c55e] text-white shadow-lg hover:shadow-xl hover:bg-[#16a34a] px-6"
+                                      className="rounded-full bg-primary text-primary-foreground shadow-lg hover:shadow-xl hover:bg-primary/90 px-6"
                                     >
                                       <Upload className="h-4 w-4 mr-2" />
                                       {t.admin.categories.uploadImageButton}
@@ -1653,7 +1653,7 @@ export default function CategoryDetailPage() {
                                     type="button"
                                     onClick={applyCrop}
                                     disabled={cropApplying}
-                                    className="rounded-full bg-[#22c55e] text-white hover:bg-[#16a34a]"
+                                    className="rounded-full bg-primary text-primary-foreground hover:bg-primary/90"
                                   >
                                     {cropApplying ? (
                                       <>
@@ -1758,8 +1758,8 @@ export default function CategoryDetailPage() {
                       <Card className="mt-4 rounded-2xl border border-[#D6D2C4]/50 bg-white shadow-xl dark:border-[#1f1f1f] dark:bg-[#111111] dark:p-6">
                         <CardHeader className="pb-4 dark:pb-6">
                           <CardTitle className="text-xl font-bold text-[#2D3A1A] dark:text-[#ffffff] flex items-center gap-2">
-                            <div className="rounded-xl bg-[#22c55e]/20 p-2 dark:bg-[#22c55e]/20">
-                              <CheckCircle2 className="h-5 w-5 text-[#5B7A2F] dark:text-[#22c55e]" />
+                            <div className="rounded-xl bg-primary/10 p-2 dark:bg-primary/10">
+                              <CheckCircle2 className="h-5 w-5 text-primary dark:text-primary" />
                             </div>
                             {t.admin.categories.settingsTitle}
                           </CardTitle>
@@ -1779,7 +1779,7 @@ export default function CategoryDetailPage() {
                             <Switch
                               checked={categoryActive}
                               onCheckedChange={setCategoryActive}
-                              className="data-[state=checked]:bg-[#22C55E]"
+                              className="data-[state=checked]:bg-primary"
                             />
                           </div>
                           <div className="flex items-center justify-between p-4 rounded-xl bg-white/50 dark:bg-[#111111] border border-[#D6D2C4]/30 dark:border-[#1f1f1f]">
@@ -1796,7 +1796,7 @@ export default function CategoryDetailPage() {
                             <Switch
                               checked={categoryVisible}
                               onCheckedChange={setCategoryVisible}
-                              className="data-[state=checked]:bg-[#22C55E]"
+                              className="data-[state=checked]:bg-primary"
                             />
                           </div>
                           <div className="space-y-3 p-4 rounded-xl bg-white/50 dark:bg-[#111111] border border-[#D6D2C4]/30 dark:border-[#1f1f1f]">
@@ -1804,7 +1804,7 @@ export default function CategoryDetailPage() {
                               <Label className="text-sm font-semibold text-[#2D3A1A] dark:text-[#bfbfbf]">
                                 {t.admin.categories.displayOrderLabel}
                               </Label>
-                              <span className="text-sm font-mono font-bold text-[#5B7A2F] dark:text-[#22c55e] bg-[#DCFCE7]/50 dark:bg-[#22c55e]/10 dark:border dark:border-[#22c55e]/20 px-3 py-1 rounded-lg">
+                              <span className="text-sm font-mono font-bold text-primary dark:text-primary bg-primary/10 dark:bg-primary/10 dark:border dark:border-primary/20 px-3 py-1 rounded-lg">
                                 {displayOrder}
                               </span>
                             </div>

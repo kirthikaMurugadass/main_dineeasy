@@ -237,7 +237,7 @@ export default function BookingsPage() {
   function getStatusBadgeColor(status: Booking["status"]) {
     switch (status) {
       case "completed":
-        return "bg-[#5B7A2F]/10 text-[#5B7A2F] border-[#5B7A2F]/20 dark:bg-[#22c55e]/10 dark:text-[#22c55e] dark:border-[#22c55e]/30";
+        return "bg-primary/10 text-primary border-primary/20 dark:bg-primary/10 dark:text-primary dark:border-primary/30";
       case "confirmed":
         return "bg-blue-100 text-blue-700 border-blue-200 dark:bg-blue-900/30 dark:text-blue-400 dark:border-blue-800/30";
       case "pending":
@@ -258,7 +258,7 @@ export default function BookingsPage() {
       case "cancelled":
         return "bg-red-500/10 text-red-600 dark:text-red-400 border-red-500/20";
       case "completed":
-        return "bg-green-500/10 text-green-600 dark:text-green-400 border-green-500/20";
+        return "bg-primary/10 text-primary dark:text-primary border-primary/20";
     }
   }
 
@@ -321,8 +321,8 @@ export default function BookingsPage() {
       {/* Header with Title */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <div className="rounded-xl bg-[#22c55e]/20 p-2 dark:bg-[#22c55e]/20">
-            <Calendar className="h-5 w-5 text-[#5B7A2F] dark:text-[#22c55e]" />
+          <div className="rounded-xl bg-primary/10 p-2 dark:bg-primary/10">
+            <Calendar className="h-5 w-5 text-primary dark:text-primary" />
           </div>
           <div>
             <PageTitle className="dark:text-[#ffffff]">
@@ -424,7 +424,7 @@ export default function BookingsPage() {
                       setSearchQuery(e.target.value);
                       setCurrentPage(1);
                     }}
-                    className="w-full rounded-xl border border-[#D6D2C4]/50 bg-white px-3 py-2 pl-10 text-sm text-[#2D3A1A] shadow-sm transition-all hover:border-[#5B7A2F]/50 focus:border-[#5B7A2F] focus:outline-none focus:ring-2 focus:ring-[#5B7A2F]/20 dark:border-[#262626] dark:bg-[#0f0f0f] dark:text-[#ffffff] dark:placeholder:text-[#8a8a8a] dark:hover:border-[#22c55e]/50 dark:focus:border-[#22c55e] sm:w-[200px]"
+                    className="w-full rounded-xl border border-border bg-background px-3 py-2 pl-10 text-sm text-foreground shadow-sm transition-all hover:border-primary/50 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 dark:bg-[#0f0f0f] dark:text-[#ffffff] dark:placeholder:text-[#8a8a8a] sm:w-[200px]"
                   />
                   <User2 className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-[#6B7B5A] dark:text-[#bfbfbf]" />
                 </div>
@@ -437,7 +437,7 @@ export default function BookingsPage() {
                       setSelectedDate(e.target.value);
                       setCurrentPage(1);
                     }}
-                    className="rounded-xl border border-[#D6D2C4]/50 bg-white px-3 py-2 text-sm text-[#2D3A1A] shadow-sm transition-all hover:border-[#5B7A2F]/50 focus:border-[#5B7A2F] focus:outline-none focus:ring-2 focus:ring-[#5B7A2F]/20 dark:border-[#262626] dark:bg-[#0f0f0f] dark:text-[#ffffff] dark:placeholder:text-[#8a8a8a] dark:hover:border-[#22c55e]/50 dark:focus:border-[#22c55e]"
+                    className="rounded-xl border border-border bg-background px-3 py-2 text-sm text-foreground shadow-sm transition-all hover:border-primary/50 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 dark:bg-[#0f0f0f] dark:text-[#ffffff] dark:placeholder:text-[#8a8a8a]"
                   />
                   {selectedDate && (
                     <Button
@@ -462,7 +462,7 @@ export default function BookingsPage() {
       {/* Bookings Table */}
       {loading ? (
         <div className="flex items-center justify-center py-12">
-          <Loader2 className="h-6 w-6 animate-spin text-[#5B7A2F] dark:text-[#22c55e]" />
+          <Loader2 className="h-6 w-6 animate-spin text-primary" />
         </div>
       ) : filteredBookings.length === 0 ? (
         <FadeIn>
@@ -520,7 +520,7 @@ export default function BookingsPage() {
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="flex items-center gap-3">
-                          <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[#22c55e] text-white font-semibold text-sm shadow-md shrink-0">
+                          <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary text-primary-foreground font-semibold text-sm shadow-md shrink-0">
                             {getAvatarInitial(booking.customer_name)}
                           </div>
                           <span className="text-sm font-semibold text-[#2D3A1A] dark:text-[#ffffff]">
@@ -578,7 +578,7 @@ export default function BookingsPage() {
                             <Button
                               variant="outline"
                               size="sm"
-                              className="rounded-xl border-[#D6D2C4]/50 bg-white/50 text-[#5B7A2F] hover:bg-[#22c55e] hover:text-[#000000] hover:border-[#22c55e] shadow-sm transition-all dark:border-[#262626] dark:bg-[#1a1a1a] dark:text-[#22c55e] dark:hover:bg-[#22c55e] dark:hover:text-[#000000]"
+                              className="rounded-xl border-border bg-background/60 text-primary hover:bg-primary hover:text-primary-foreground hover:border-primary shadow-sm transition-all dark:bg-[#1a1a1a] dark:text-primary"
                             >
                               <Eye className="h-4 w-4" />
                             </Button>
@@ -592,7 +592,7 @@ export default function BookingsPage() {
                                 className="rounded-xl hover:bg-[#E8E4D9]/50 dark:hover:bg-[#1a1a1a]"
                               >
                                 {updatingStatus === booking.id ? (
-                                  <Loader2 className="h-4 w-4 animate-spin text-[#5B7A2F] dark:text-[#22c55e]" />
+                                  <Loader2 className="h-4 w-4 animate-spin text-primary" />
                                 ) : (
                                   <MoreVertical className="h-4 w-4 text-[#6B7B5A] dark:text-[#bfbfbf]" />
                                 )}

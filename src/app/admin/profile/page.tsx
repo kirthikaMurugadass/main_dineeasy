@@ -48,7 +48,7 @@ function FieldRow({
 }) {
   return (
     <div className="flex items-start gap-3 rounded-2xl border border-[#D6D2C4]/60 bg-white/70 px-4 py-3 shadow-sm transition-all hover:shadow-md dark:border-[#1f1f1f] dark:bg-[#000000]">
-      <div className="mt-0.5 flex h-9 w-9 items-center justify-center rounded-xl bg-[#DCFCE7] text-[#16A34A] dark:bg-[#0f0f0f] dark:text-[#22c55e]">
+      <div className="mt-0.5 flex h-9 w-9 items-center justify-center rounded-xl bg-primary/10 text-primary dark:bg-primary/10 dark:text-primary">
         <Icon className="h-4 w-4" />
       </div>
       <div className="min-w-0 flex-1">
@@ -84,7 +84,7 @@ function EditableFieldRow({
 }) {
   return (
     <div className="flex items-start gap-3 rounded-2xl border border-[#D6D2C4]/60 bg-white/70 px-4 py-3 shadow-sm transition-all hover:shadow-md dark:border-[#1f1f1f] dark:bg-[#000000]">
-      <div className="mt-0.5 flex h-9 w-9 items-center justify-center rounded-xl bg-[#DCFCE7] text-[#16A34A] dark:bg-[#0f0f0f] dark:text-[#22c55e]">
+      <div className="mt-0.5 flex h-9 w-9 items-center justify-center rounded-xl bg-primary/10 text-primary dark:bg-primary/10 dark:text-primary">
         <Icon className="h-4 w-4" />
       </div>
       <div className="min-w-0 flex-1">
@@ -98,7 +98,7 @@ function EditableFieldRow({
             onChange={(e) => onChange?.(e.target.value)}
             disabled={disabled}
             placeholder={placeholder}
-            className="mt-2 h-11 rounded-xl border-2 border-[#D6D2C4]/70 bg-white/80 text-sm shadow-sm transition-all focus-visible:border-[#22C55E] focus-visible:ring-[#22C55E]/20 disabled:opacity-70 dark:border-[#1f1f1f] dark:bg-[#0f0f0f] dark:text-white"
+            className="mt-2 h-11 rounded-xl border-2 border-[#D6D2C4]/70 bg-white/80 text-sm shadow-sm transition-all focus-visible:border-primary focus-visible:ring-primary/20 disabled:opacity-70 dark:border-[#1f1f1f] dark:bg-[#0f0f0f] dark:text-white"
           />
         ) : (
           <p className="mt-1 truncate text-sm font-semibold text-[#2D3A1A] dark:text-[#E8E4D9]">
@@ -198,7 +198,7 @@ export default function AdminProfilePage() {
   if (loading) {
     return (
       <div className="flex items-center justify-center p-20">
-        <Loader2 className="h-8 w-8 animate-spin text-[#16A34A]" />
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
       </div>
     );
   }
@@ -303,7 +303,7 @@ export default function AdminProfilePage() {
               {t.settings?.profile?.actions?.editProfile || "Edit Profile"}
             </Button>
             <Button
-              className="w-full rounded-full bg-gradient-to-r from-[#22C55E] to-[#16A34A] text-white shadow-lg transition-all hover:shadow-xl hover:from-[#16A34A] hover:to-[#15803D] disabled:opacity-60 sm:w-auto"
+              className="w-full rounded-full bg-gradient-to-r from-primary to-primary/80 text-primary-foreground shadow-lg transition-all hover:shadow-xl hover:from-primary hover:to-primary/90 disabled:opacity-60 sm:w-auto"
               onClick={handleSaveProfile}
               disabled={!isEditing || saving || !editFullName.trim()}
             >
@@ -320,7 +320,7 @@ export default function AdminProfilePage() {
           <Card className="rounded-3xl border border-[#D6D2C4]/60 bg-gradient-to-br from-[#FAFAF5] via-[#F8F6EE] to-[#F0EDE4] shadow-xl dark:border-[#1f1f1f] dark:!bg-[#000000] dark:from-transparent dark:via-transparent dark:to-transparent">
             <CardHeader className="pb-3">
               <CardTitle className="flex items-center gap-2 text-lg font-semibold text-[#2D3A1A] dark:text-[#E8E4D9]">
-                <span className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-[#DCFCE7] text-[#16A34A] dark:bg-[#0f0f0f] dark:text-[#22c55e]">
+                <span className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-primary/10 text-primary dark:bg-primary/10 dark:text-primary">
                   <User className="h-4 w-4" />
                 </span>
                 {t.settings?.profile?.sections?.personalInformation ||
@@ -399,7 +399,7 @@ export default function AdminProfilePage() {
           <Card className="rounded-3xl border border-[#D6D2C4]/60 bg-gradient-to-br from-[#FAFAF5] via-[#F8F6EE] to-[#F0EDE4] shadow-xl dark:border-[#1f1f1f] dark:!bg-[#000000] dark:from-transparent dark:via-transparent dark:to-transparent">
             <CardHeader className="pb-3">
               <CardTitle className="flex items-center gap-2 text-lg font-semibold text-[#2D3A1A] dark:text-[#E8E4D9]">
-                <span className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-[#DCFCE7] text-[#16A34A] dark:bg-[#0f0f0f] dark:text-[#22c55e]">
+                <span className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-primary/10 text-primary dark:bg-primary/10 dark:text-primary">
                   <MapPin className="h-4 w-4" />
                 </span>
                 {t.settings?.profile?.sections?.addressInformation ||
@@ -465,7 +465,7 @@ export default function AdminProfilePage() {
         <Card className="rounded-3xl border border-[#D6D2C4]/60 bg-gradient-to-br from-[#FAFAF5] via-[#F8F6EE] to-[#F0EDE4] shadow-xl dark:border-[#1f1f1f] dark:!bg-[#000000] dark:from-transparent dark:via-transparent dark:to-transparent">
           <CardHeader className="pb-3">
             <CardTitle className="flex items-center gap-2 text-lg font-semibold text-[#2D3A1A] dark:text-[#E8E4D9]">
-              <span className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-[#DCFCE7] text-[#16A34A] dark:bg-[#0f0f0f] dark:text-[#22c55e]">
+              <span className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-primary/10 text-primary dark:bg-primary/10 dark:text-primary">
                 <Shield className="h-4 w-4" />
               </span>
               {t.settings?.profile?.sections?.additionalInformation ||

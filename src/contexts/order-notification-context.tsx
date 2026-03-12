@@ -11,8 +11,6 @@ import {
 } from "react";
 import { createClient } from "@/lib/supabase/client";
 
-const STORAGE_KEY = "dineeasy-order-notifications";
-
 interface OrderNotificationContextType {
   notificationCount: number;
   incrementNotification: () => void;
@@ -33,37 +31,25 @@ export function OrderNotificationProvider({
   restaurantId: string | null;
 }) {
   const [notificationCount, setNotificationCount] = useState(0);
-  const [mounted, setMounted] = useState(false);
   const incrementRef = useRef<() => void>();
+  const lastSeenRef = useRef<string | null>(null);
+  const pollRef = useRef<number | null>(null);
 
-  // Load from localStorage on mount
-  useEffect(() => {
-    setMounted(true);
-    const stored = localStorage.getItem(STORAGE_KEY);
-    if (stored) {
-      try {
-        const count = parseInt(stored, 10);
-        if (!isNaN(count) && count >= 0) {
-          setNotificationCount(count);
-        }
-      } catch {
-        // Invalid stored value, ignore
-      }
-    }
+  const recomputeCount = useCallback(async (supabase: ReturnType<typeof createClient>, rid: string) => {
+    const lastSeen = lastSeenRef.current;
+    if (!lastSeen) return;
+    const { count } = await supabase
+      .from("orders")
+      .select("id", { head: true, count: "exact" })
+      .eq("restaurant_id", rid)
+      .eq("status", "pending")
+      .gt("created_at", lastSeen);
+    setNotificationCount(count ?? 0);
   }, []);
 
-  // Save to localStorage whenever count changes
-  useEffect(() => {
-    if (mounted) {
-      localStorage.setItem(STORAGE_KEY, notificationCount.toString());
-    }
-  }, [notificationCount, mounted]);
-
   const incrementNotification = useCallback(() => {
-    console.log("[OrderNotification] Incrementing notification count");
     setNotificationCount((prev) => {
       const newCount = prev + 1;
-      console.log("[OrderNotification] Count updated:", prev, "->", newCount);
       return newCount;
     });
   }, []);
@@ -74,21 +60,104 @@ export function OrderNotificationProvider({
   }, [incrementNotification]);
 
   const resetNotification = useCallback(() => {
-    console.log("[OrderNotification] Resetting notification count");
     setNotificationCount(0);
-    if (mounted) {
-      localStorage.removeItem(STORAGE_KEY);
-    }
-  }, [mounted]);
+    if (!restaurantId) return;
+    const supabase = createClient();
+    supabase.auth.getUser().then(async ({ data }) => {
+      const user = data.user;
+      if (!user) return;
+      const now = new Date().toISOString();
+      lastSeenRef.current = now;
+      await supabase
+        .from("admin_notification_state")
+        .upsert(
+          {
+            user_id: user.id,
+            restaurant_id: restaurantId,
+            last_seen_orders_at: now,
+          },
+          { onConflict: "user_id,restaurant_id" }
+        );
+    });
+  }, [restaurantId]);
+
+  // Load last-seen and initial count from DB
+  useEffect(() => {
+    if (!restaurantId) return;
+    const supabase = createClient();
+    let cancelled = false;
+
+    (async () => {
+      try {
+        const {
+          data: { user },
+        } = await supabase.auth.getUser();
+        if (!user) return;
+
+        const { data: row } = await supabase
+          .from("admin_notification_state")
+          .select("last_seen_orders_at")
+          .eq("user_id", user.id)
+          .eq("restaurant_id", restaurantId)
+          .maybeSingle();
+
+        let lastSeen = row?.last_seen_orders_at as string | undefined;
+        if (!lastSeen) {
+          // First time: initialize last-seen to now (so badge reflects "new" items going forward)
+          lastSeen = new Date().toISOString();
+          await supabase.from("admin_notification_state").insert({
+            user_id: user.id,
+            restaurant_id: restaurantId,
+            last_seen_orders_at: lastSeen,
+            last_seen_bookings_at: lastSeen,
+          });
+        }
+
+        if (cancelled) return;
+        lastSeenRef.current = lastSeen;
+        await recomputeCount(supabase, restaurantId);
+
+        // Poll fallback (covers missed realtime events)
+        if (pollRef.current) window.clearInterval(pollRef.current);
+        pollRef.current = window.setInterval(() => {
+          recomputeCount(supabase, restaurantId).catch(() => {});
+        }, 12000);
+      } catch {
+        // If notification-state table isn't available yet, still allow realtime increments
+        lastSeenRef.current = lastSeenRef.current ?? new Date().toISOString();
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+      if (pollRef.current) {
+        window.clearInterval(pollRef.current);
+        pollRef.current = null;
+      }
+    };
+  }, [restaurantId, recomputeCount]);
+
+  // Refresh count on tab focus
+  useEffect(() => {
+    if (!restaurantId) return;
+    const supabase = createClient();
+    const onFocus = () => {
+      recomputeCount(supabase, restaurantId).catch(() => {});
+    };
+    window.addEventListener("focus", onFocus);
+    document.addEventListener("visibilitychange", onFocus);
+    return () => {
+      window.removeEventListener("focus", onFocus);
+      document.removeEventListener("visibilitychange", onFocus);
+    };
+  }, [restaurantId, recomputeCount]);
 
   // Set up Supabase realtime listener for new orders
   useEffect(() => {
-    if (!restaurantId || !mounted) {
-      console.log("[OrderNotification] Skipping subscription - restaurantId:", restaurantId, "mounted:", mounted);
+    if (!restaurantId) {
       return;
     }
 
-    console.log("[OrderNotification] Setting up realtime subscription for restaurant:", restaurantId);
     const supabase = createClient();
 
     // Create a unique channel name to avoid conflicts
@@ -104,41 +173,27 @@ export function OrderNotificationProvider({
           filter: `restaurant_id=eq.${restaurantId}`,
         },
         (payload) => {
-          console.log("[OrderNotification] New order received:", payload);
-          const newOrder = payload.new as { status?: string; restaurant_id?: string };
-          console.log("[OrderNotification] Order details:", {
-            status: newOrder.status,
-            restaurant_id: newOrder.restaurant_id,
-            expected_restaurant_id: restaurantId,
-          });
+          const newOrder = payload.new as { status?: string; restaurant_id?: string; created_at?: string };
           
           // Only increment if order status is "pending" and restaurant matches
           if (newOrder.status === "pending" && newOrder.restaurant_id === restaurantId) {
-            console.log("[OrderNotification] Incrementing count for pending order");
-            incrementRef.current?.();
+            const lastSeen = lastSeenRef.current;
+            if (!lastSeen || !newOrder.created_at || newOrder.created_at > lastSeen) {
+              incrementRef.current?.();
+            }
           } else {
-            console.log("[OrderNotification] Skipping - status:", newOrder.status, "restaurant match:", newOrder.restaurant_id === restaurantId);
+            // ignore
           }
         }
       )
       .subscribe((status) => {
-        console.log("[OrderNotification] Subscription status:", status);
-        if (status === "SUBSCRIBED") {
-          console.log("[OrderNotification] Successfully subscribed to orders table");
-        } else if (status === "CHANNEL_ERROR") {
-          console.warn("[OrderNotification] Channel subscription error (non-fatal)");
-        } else if (status === "TIMED_OUT") {
-          console.warn("[OrderNotification] Subscription timed out (non-fatal)");
-        } else if (status === "CLOSED") {
-          console.log("[OrderNotification] Subscription closed");
-        }
+        // ignore noisy statuses
       });
 
     return () => {
-      console.log("[OrderNotification] Cleaning up subscription");
       supabase.removeChannel(channel);
     };
-  }, [restaurantId, mounted]); // Removed incrementNotification from deps to prevent re-subscription
+  }, [restaurantId]); // Removed incrementNotification from deps to prevent re-subscription
 
   return (
     <OrderNotificationContext.Provider

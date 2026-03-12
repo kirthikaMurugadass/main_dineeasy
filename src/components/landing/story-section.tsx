@@ -75,7 +75,7 @@ export function StorySection() {
               <article className="group relative flex h-full flex-col rounded-2xl border border-border/50 bg-card/80 px-6 py-7 text-left shadow-card backdrop-blur-xl transition-all duration-300 ease-out hover:-translate-y-1 hover:shadow-[0_22px_45px_rgba(15,23,42,0.18)] dark:bg-[#111111] dark:border-[#1f1f1f] dark:shadow-none dark:hover:-translate-y-1 dark:hover:border-[#2a2a2a] dark:hover:shadow-[0_8px_24px_rgba(0,0,0,0.4)]">
                 <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-white/35 via-white/10 to-white/0 opacity-70 mix-blend-screen dark:hidden" />
                 <div className="relative flex items-start gap-3">
-                  <div className="flex h-9 w-9 items-center justify-center rounded-2xl bg-primary/10 text-primary shadow-soft group-hover:bg-primary/15 dark:bg-[rgba(34,197,94,0.15)] dark:text-[#22c55e]">
+                  <div className="flex h-9 w-9 items-center justify-center rounded-2xl bg-primary/10 text-primary shadow-soft group-hover:bg-primary/15 dark:bg-primary/15 dark:text-primary">
                     {item.icon}
                   </div>
                   <div className="flex-1">

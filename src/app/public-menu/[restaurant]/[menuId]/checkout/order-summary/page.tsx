@@ -14,7 +14,7 @@ import type { Language } from "@/types/database";
 
 type Step1Data = {
   customerName: string;
-  orderType: "dine_in" | "takeaway";
+  orderType: "dine_in" | "takeaway" | "delivery";
   tableNumber?: string;
   deliveryAddress?: string;
   phoneNumber?: string;
@@ -94,8 +94,10 @@ export default function CheckoutOrderSummaryPage({
     if (!step1) return "—";
     return step1.orderType === "dine_in"
       ? (summaryT?.orderTypes?.dineIn || "Dine-in")
-      : (summaryT?.orderTypes?.takeaway || "Takeaway");
-  }, [step1, summaryT?.orderTypes?.dineIn, summaryT?.orderTypes?.takeaway]);
+      : step1.orderType === "delivery"
+        ? (summaryT?.orderTypes?.delivery || "Delivery")
+        : (summaryT?.orderTypes?.takeaway || "Takeaway");
+  }, [step1, summaryT?.orderTypes?.dineIn, summaryT?.orderTypes?.takeaway, summaryT?.orderTypes?.delivery]);
 
   async function handlePlaceOrder() {
     if (!resolvedParams || !step1) return;
@@ -111,7 +113,7 @@ export default function CheckoutOrderSummaryPage({
     setSubmitting(true);
     try {
       const locationSuffix =
-        step1.orderType === "takeaway" && step1.deliveryLocation
+        step1.orderType === "delivery" && step1.deliveryLocation
           ? ` (Location: ${step1.deliveryLocation.lat.toFixed(5)}, ${step1.deliveryLocation.lng.toFixed(5)})`
           : "";
 
@@ -127,11 +129,11 @@ export default function CheckoutOrderSummaryPage({
               ? parseInt(step1.tableNumber || "", 10)
               : null,
           deliveryAddress:
-            step1.orderType === "takeaway"
+            step1.orderType === "delivery"
               ? `${(step1.deliveryAddress || "").trim()}${locationSuffix}`
               : null,
           phoneNumber:
-            step1.orderType === "takeaway"
+            step1.orderType === "delivery"
               ? (step1.phoneNumber?.trim() || null)
               : null,
           items: items.map((item) => ({

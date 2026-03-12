@@ -18,7 +18,8 @@
   },
   "type": {
     "dineIn": "Al tavolo",
-    "takeaway": "Da asporto"
+    "takeaway": "Da asporto",
+    "delivery": "Consegna"
   },
   "status": {
     "pending": "In attesa",
@@ -78,6 +79,29 @@
     "orderNotFound": "Ordine non trovato"
   },
   "public": {
+    "pos": {
+      "orderTitle": "Ordine",
+      "itemSingular": "articolo",
+      "itemPlural": "articoli",
+      "emptyCart": "Nessun articolo",
+      "emptyCartHint": "Aggiungi articoli dal menu per iniziare",
+      "subtotal": "Subtotale",
+      "tax": "Tassa",
+      "totalAmount": "Totale",
+      "paymentMethods": "Pagamento",
+      "payment": {
+        "cash": "Contanti",
+        "card": "Carta",
+        "qr": "QR"
+      },
+      "placeOrder": "Effettua ordine",
+      "veg": "Veg",
+      "nonVeg": "Non Veg",
+      "unknownDiet": "—",
+      "toasts": {
+        "selectItemBeforeOrder": "Seleziona almeno un articolo prima di effettuare l’ordine."
+      }
+    },
     "cart": {
       "title": "Il Tuo Carrello",
       "emptyTitle": "Il tuo carrello e vuoto",
@@ -96,7 +120,42 @@
       "title": "Checkout",
       "description": "Inserisci i tuoi dati per completare l'ordine",
       "sections": {
-        "orderSummary": "Riepilogo ordine"
+        "orderSummary": "Riepilogo ordine",
+        "items": "Articoli"
+      },
+      "celebration": {
+        "title": "Ordine riuscito!",
+        "message": "Il tuo ordine è stato effettuato con successo.",
+        "viewReceipt": "Vedi ricevuta",
+        "backToMenu": "Torna al menu"
+      },
+      "card": {
+        "title": "Dettagli carta",
+        "labels": {
+          "optional": "(opzionale)"
+        },
+        "fields": {
+          "cardholderName": "Nome intestatario",
+          "cardNumber": "Numero carta",
+          "expiry": "Scadenza (MM/AA)",
+          "cvv": "CVV",
+          "billingName": "Nome fatturazione"
+        },
+        "placeholders": {
+          "cardholderName": "Nome sulla carta",
+          "cardNumber": "1234 5678 9012 3456",
+          "expiry": "MM/AA",
+          "cvv": "123",
+          "billingName": "Nome fatturazione"
+        },
+        "validation": {
+          "fixErrors": "Correggi i dettagli della carta",
+          "cardholderNameRequired": "Il nome intestatario è obbligatorio",
+          "cardNumberInvalid": "Inserisci un numero di carta valido",
+          "expiryInvalid": "Inserisci la scadenza come MM/AA",
+          "expiryExpired": "La carta è scaduta",
+          "cvvInvalid": "Inserisci un CVV valido"
+        }
       },
       "fields": {
         "total": "Totale",
@@ -111,7 +170,8 @@
       },
       "orderTypes": {
         "dineIn": "Al tavolo",
-        "takeaway": "Da asporto"
+        "takeaway": "Da asporto",
+        "delivery": "Consegna"
       },
       "placeholders": {
         "yourName": "Inserisci il tuo nome",
@@ -127,25 +187,51 @@
       "validation": {
         "nameRequired": "Inserisci il tuo nome",
         "tableNumberRequired": "Inserisci un numero tavolo",
-        "deliveryAddressRequired": "Inserisci un indirizzo di consegna",
+        "deliveryAddressRequired": "Inserisci il tuo indirizzo di consegna",
         "phoneRequired": "Inserisci il tuo numero di telefono",
         "invalidPhone": "Numero di telefono non valido"
       },
       "actions": {
         "pleaseWait": "Attendere...",
         "continue": "Continua",
+        "payNow": "Paga ora",
         "returnToMenu": "Torna al menu"
       },
       "messages": {
         "restaurantInfoMissing": "Informazioni ristorante mancanti",
         "continueFailed": "Impossibile continuare. Riprova.",
+        "failedPlaceOrder": "Impossibile effettuare l'ordine",
         "adjustPin": "Tocca la mappa per regolare il punto di consegna.",
         "enterValidAddress": "Inserisci un indirizzo valido per vedere l'anteprima mappa"
+      },
+      "successModal": {
+        "title": "Ordine riuscito",
+        "message": "Il tuo ordine è stato effettuato con successo.",
+        "orderNumberLabel": "Numero ordine",
+        "viewOrder": "Vedi ordine",
+        "close": "Chiudi"
       },
       "success": {
         "title": "Ordine effettuato con successo!",
         "description": "Reindirizzamento al menu tra pochi secondi..."
       }
+    },
+    "receipt": {
+      "title": "Ricevuta",
+      "orderNumberLabel": "Numero ordine",
+      "orderDateLabel": "Data",
+      "orderTypeLabel": "Tipo ordine",
+      "tableNumberLabel": "Numero tavolo",
+      "paymentMethodLabel": "Metodo di pagamento",
+      "itemsHeader": {
+        "name": "Articolo",
+        "qty": "Qtà",
+        "price": "Prezzo"
+      },
+      "downloadReceipt": "Scarica ricevuta",
+      "printReceipt": "Stampa ricevuta",
+      "backToMenu": "Torna al menu",
+      "missingReceipt": "I dati della ricevuta non sono disponibili. Puoi comunque tornare al menu."
     },
     "summary": {
       "title": "Riepilogo ordine",
@@ -163,7 +249,8 @@
       },
       "orderTypes": {
         "dineIn": "Al tavolo",
-        "takeaway": "Da asporto"
+        "takeaway": "Da asporto",
+        "delivery": "Consegna"
       },
       "actions": {
         "placeOrder": "Effettua ordine",
