@@ -94,6 +94,36 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    // Enforce exact table capacity match when a specific table is selected.
+    if (tableId) {
+      const { data: table, error: tableError } = await admin
+        .from("restaurant_tables")
+        .select("id, capacity, restaurant_id, is_active")
+        .eq("id", tableId)
+        .single();
+
+      if (tableError || !table) {
+        return NextResponse.json(
+          { error: "Selected table not found." },
+          { status: 400 }
+        );
+      }
+
+      if ((table as any).restaurant_id !== restaurantId || !(table as any).is_active) {
+        return NextResponse.json(
+          { error: "Selected table is not available for this restaurant." },
+          { status: 400 }
+        );
+      }
+
+      if (Number((table as any).capacity) !== Number(guestCount)) {
+        return NextResponse.json(
+          { error: "Selected table capacity does not match the number of guests." },
+          { status: 400 }
+        );
+      }
+    }
+
     // Create booking (optionally with table_id for multi-step flow)
     const { data: booking, error: bookingError } = await admin
       .from("bookings")

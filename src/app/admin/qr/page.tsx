@@ -310,6 +310,28 @@ export default function QRPage() {
     }
   }
 
+  function handleBookTablePrint() {
+    if (!isPro) {
+      toast.error(proUpgradeMessage);
+      return;
+    }
+    const w = window.open();
+    if (w && bookTableQrDataUrl) {
+      w.document.write(`
+        <html>
+          <head><title>${qrT?.printTitle || "QR Code"} — ${restaurantName}</title></head>
+          <body style="display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;margin:0;font-family:system-ui,sans-serif;">
+            <img src="${bookTableQrDataUrl}" style="width:100%;max-width:500px;" />
+            <p style="margin-top:24px;font-size:18px;font-weight:600;color:#333;">${restaurantName}</p>
+            <p style="margin-top:4px;font-size:13px;color:#888;">${qrT?.scanToBookTable || "Scan to book a table"}</p>
+          </body>
+        </html>
+      `);
+      w.document.close();
+      w.print();
+    }
+  }
+
   if (loading || subscriptionLoading) {
     return (
       <div className="flex h-[60vh] items-center justify-center">
@@ -557,6 +579,14 @@ export default function QRPage() {
                     >
                       <Download size={14} />
                       <span>SVG</span>
+                    </Button>
+                    <Button
+                      variant="outline"
+                      onClick={handleBookTablePrint}
+                      className="gap-2"
+                    >
+                      <Printer size={14} />
+                      <span>{qrT?.printAction || "Print"}</span>
                     </Button>
                   </div>
                 </div>

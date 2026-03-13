@@ -495,7 +495,7 @@ export function PosDashboard({
 
               {/* Top bar */}
               <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                <div className="relative w-full sm:max-w-xl">
+                <div className="relative w-full sm:flex-1 sm:max-w-none">
                   <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                   <Input
                     value={query}
@@ -511,7 +511,7 @@ export function PosDashboard({
 
                 {/* Actions (theme / language / cart) */}
                 {menuId && (
-                  <div className="grid w-full grid-cols-[44px_44px_1fr] items-center gap-2 sm:flex sm:w-auto sm:justify-end">
+                  <div className="flex w-full flex-wrap items-center gap-2 sm:w-auto sm:flex-nowrap sm:justify-end">
                     {/* Language */}
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
@@ -588,10 +588,19 @@ export function PosDashboard({
                       </DropdownMenuContent>
                     </DropdownMenu>
 
+                    {/* Reserve table */}
+                    <Button
+                      type="button"
+                      onClick={() => router.push(`/r/${restaurantSlug}/book-table`)}
+                      className="h-11 flex-1 rounded-2xl px-5 text-sm font-semibold sm:min-w-[190px] sm:flex-none"
+                    >
+                      {menuPublicT?.reserveTable || "Reserve a Table"}
+                    </Button>
+
                     {/* Mobile: Cart drawer trigger */}
                     <Sheet>
                       <SheetTrigger asChild>
-                        <Button variant="outline" className="h-11 w-full rounded-2xl lg:hidden">
+                        <Button variant="outline" className="h-11 rounded-2xl lg:hidden">
                           <ShoppingCart className="mr-2 h-4 w-4" />
                           {menuPublicT?.cart || "Cart"}
                           {hasCart && (

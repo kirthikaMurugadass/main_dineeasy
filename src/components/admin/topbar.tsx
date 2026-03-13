@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
-import { Moon, Sun, Monitor, User, Globe, Crown, LogOut } from "lucide-react";
+import { Moon, Sun, Monitor, User, Globe, Crown, LogOut, Bell } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useTheme } from "@/components/providers/theme-provider";
 import { Button } from "@/components/ui/button";
@@ -70,10 +70,10 @@ export function AdminTopbar() {
         initial={{ opacity: 0, y: -8 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.25, ease: "easeOut" }}
-        className="mx-auto flex h-16 w-full max-w-6xl items-center justify-between px-4 lg:px-6"
+        className="flex h-16 w-full items-center justify-between px-4 lg:px-6"
       >
         {/* Left: Sidebar trigger + Plan badge */}
-        <div className="flex flex-1 items-center gap-3">
+        <div className="flex items-center gap-3">
           <SidebarTrigger className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-border/60 bg-card shadow-sm transition duration-200 hover:opacity-80" />
           {!planLoading && (
             <span
@@ -96,11 +96,8 @@ export function AdminTopbar() {
           )}
         </div>
 
-        {/* Center: empty for balance */}
-        <div className="hidden flex-1 justify-center md:flex" />
-
         {/* Right: actions */}
-        <div className="flex flex-1 items-center justify-end gap-2">
+        <div className="ml-auto flex items-center justify-end gap-4">
           {!planLoading && !isPro && (
             <Button
               size="sm"
@@ -189,6 +186,16 @@ export function AdminTopbar() {
             </DropdownMenuContent>
           </DropdownMenu>
           )}
+
+          {/* Notifications */}
+          <Button
+            variant="ghost"
+            size="icon"
+            className="relative h-9 w-9 rounded-full border border-border/60 bg-card shadow-sm transition duration-200 hover:opacity-80"
+            aria-label="Notifications"
+          >
+            <Bell className="h-4 w-4" />
+          </Button>
 
           {/* Profile menu with avatar */}
           {mounted && (
