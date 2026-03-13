@@ -60,10 +60,11 @@ export function AdminSidebar() {
   const { t } = useI18n();
   const router = useRouter();
   const { setOpenMobile, isMobile } = useSidebar();
-  const { notificationCount } = useOrderNotification();
-  const { bookingNotificationCount } = useBookingNotification();
+  const { notificationCount, resetNotification } = useOrderNotification();
+  const { bookingNotificationCount, resetBookingNotification } = useBookingNotification();
    const { isPro, loading } = useSubscription();
    const [upgradeOpen, setUpgradeOpen] = useState(false);
+  const [restaurantName, setRestaurantName] = useState("");
 
   // Close sidebar on mobile when pathname changes
   useEffect(() => {
@@ -72,8 +73,44 @@ export function AdminSidebar() {
     }
   }, [pathname, isMobile, setOpenMobile]);
 
+  useEffect(() => {
+    if (pathname.startsWith("/admin/orders")) {
+      resetNotification();
+    }
+    if (pathname.startsWith("/admin/bookings")) {
+      resetBookingNotification();
+    }
+  }, [pathname, resetNotification, resetBookingNotification]);
+
+  useEffect(() => {
+    let mounted = true;
+    const supabase = createClient();
+
+    async function loadRestaurantName() {
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+      if (!user) return;
+
+      const { data: restaurant } = await supabase
+        .from("restaurants")
+        .select("name")
+        .eq("owner_id", user.id)
+        .single();
+
+      if (mounted) {
+        setRestaurantName(restaurant?.name || "");
+      }
+    }
+
+    loadRestaurantName();
+    return () => {
+      mounted = false;
+    };
+  }, []);
+
   const labels: Record<string, string> = {
-    dashboard: t.admin.dashboard.title,
+    dashboard: "Overview",
     menus: t.admin.menus.title,
     orders: t.admin.orders.title,
     bookings: "Bookings",
@@ -107,7 +144,7 @@ export function AdminSidebar() {
         >
           <AppLogo
             href="/admin"
-            subtitle={t.admin.sidebar.adminPanel}
+            subtitle={restaurantName || t.admin.sidebar.adminPanel}
             variant="light"
             className="w-full justify-start md:group-data-[collapsible=icon]:justify-center [&>div:first-child]:h-11 [&>div:first-child]:w-11 [&>div:first-child]:rounded-full"
           />
@@ -168,20 +205,20 @@ export function AdminSidebar() {
                             {/* Notification badge for Orders - positioned on icon */}
                             {item.key === "orders" && notificationCount > 0 && (
                               <span 
-                                className="absolute -right-1 -top-1 z-[100] flex h-5 min-w-5 items-center justify-center rounded-full bg-primary px-1.5 text-[11px] font-bold leading-none text-primary-foreground shadow-lg ring-2 ring-sidebar transition-all animate-in fade-in zoom-in duration-200 md:group-data-[collapsible=icon]:right-0 md:group-data-[collapsible=icon]:top-0"
+                                className="absolute -right-1 -top-1 z-[100] flex h-4.5 min-w-4.5 items-center justify-center rounded-full bg-red-500 px-1 text-[10px] font-semibold leading-none text-white shadow-sm ring-2 ring-sidebar transition-all animate-in fade-in zoom-in duration-200 md:group-data-[collapsible=icon]:right-0 md:group-data-[collapsible=icon]:top-0"
                                 aria-label={`${notificationCount} new orders`}
                               >
-                                {notificationCount > 99 ? "99+" : notificationCount}
+                                {notificationCount > 9 ? "9+" : notificationCount}
                               </span>
                             )}
                             {/* Notification badge for Bookings - positioned on icon */}
                             {item.key === "bookings" &&
                               bookingNotificationCount > 0 && (
                               <span 
-                                className="absolute -right-1 -top-1 z-[100] flex h-5 min-w-5 items-center justify-center rounded-full bg-primary px-1.5 text-[11px] font-bold leading-none text-primary-foreground shadow-lg ring-2 ring-sidebar transition-all animate-in fade-in zoom-in duration-200 md:group-data-[collapsible=icon]:right-0 md:group-data-[collapsible=icon]:top-0"
+                                className="absolute -right-1 -top-1 z-[100] flex h-4.5 min-w-4.5 items-center justify-center rounded-full bg-red-500 px-1 text-[10px] font-semibold leading-none text-white shadow-sm ring-2 ring-sidebar transition-all animate-in fade-in zoom-in duration-200 md:group-data-[collapsible=icon]:right-0 md:group-data-[collapsible=icon]:top-0"
                                 aria-label={`${bookingNotificationCount} new bookings`}
                               >
-                                {bookingNotificationCount > 99 ? "99+" : bookingNotificationCount}
+                                {bookingNotificationCount > 9 ? "9+" : bookingNotificationCount}
                               </span>
                             )}
                           </div>

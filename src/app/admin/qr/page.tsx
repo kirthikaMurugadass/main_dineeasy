@@ -176,6 +176,14 @@ export default function QRPage() {
     }
   }, [generateQR, generateBookTableQR, isPro, loading, restaurantSlug, logoUrl]);
 
+  // Keep both QR outputs visually consistent by regenerating Book Table QR
+  // whenever the shared QR style colors change.
+  useEffect(() => {
+    if (!loading && isPro && restaurantSlug) {
+      generateBookTableQR();
+    }
+  }, [qrColor, bgColor, loading, isPro, restaurantSlug, generateBookTableQR]);
+
   async function copyUrl() {
     const url = getQrUrl();
     if (!url) return;
@@ -352,11 +360,19 @@ export default function QRPage() {
 
       {/* Menu QR Section */}
       <FadeIn delay={0.1}>
-        <Card className="border-border/50 mb-8">
+        <Card className="mb-8 rounded-2xl border border-border/50 bg-card shadow-sm dark:border-[#1f1f1f] dark:bg-[#111111]">
           <CardHeader>
             <CardTitle className="text-lg">
               {qrT?.menuQrCode || "Menu QR Code"}
             </CardTitle>
+            <p className="mt-2 text-sm leading-6 text-muted-foreground">
+              <span className="block">
+                Share this QR code so customers can instantly open your digital menu.
+              </span>
+              <span className="block">
+                They can browse categories, view prices, and place orders quickly.
+              </span>
+            </p>
           </CardHeader>
           <CardContent>
             <div className="grid gap-8 lg:grid-cols-2">
@@ -505,14 +521,22 @@ export default function QRPage() {
       {/* Book Table QR Section (Pro only) */}
       <FadeIn delay={0.2}>
         {isPro ? (
-          <Card className="border-border/50">
+          <Card className="rounded-2xl border border-border/50 bg-card shadow-sm dark:border-[#1f1f1f] dark:bg-[#111111]">
             <CardHeader>
               <CardTitle className="text-lg">
                 {qrT?.bookTableQrCode || "Book a Table QR Code"}
               </CardTitle>
+              <p className="mt-2 text-sm leading-6 text-muted-foreground">
+                <span className="block">
+                  Use this QR code to let customers reserve tables directly from their phones.
+                </span>
+                <span className="block">
+                  It opens your booking flow with date, time, guests, and table selection.
+                </span>
+              </p>
             </CardHeader>
             <CardContent>
-              <div className="grid gap-8 lg:grid-cols-2">
+              <div className="grid items-start gap-8 lg:grid-cols-2">
                 {/* Settings */}
                 <div className="space-y-6">
                   {/* QR URL display */}
@@ -535,10 +559,46 @@ export default function QRPage() {
                         "Customers scan this QR code to book a table"}
                     </p>
                   </div>
+
+                  {/* Color customization (same as Menu QR) */}
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label>{qrT?.qrColor || "QR Color"}</Label>
+                      <div className="flex gap-2">
+                        <input
+                          type="color"
+                          value={qrColor}
+                          onChange={(e) => setQrColor(e.target.value)}
+                          className="h-10 w-10 cursor-pointer rounded border border-border"
+                        />
+                        <Input
+                          value={qrColor}
+                          onChange={(e) => setQrColor(e.target.value)}
+                          className="font-mono text-xs uppercase"
+                        />
+                      </div>
+                    </div>
+                    <div className="space-y-2">
+                      <Label>{qrT?.background || "Background"}</Label>
+                      <div className="flex gap-2">
+                        <input
+                          type="color"
+                          value={bgColor}
+                          onChange={(e) => setBgColor(e.target.value)}
+                          className="h-10 w-10 cursor-pointer rounded border border-border"
+                        />
+                        <Input
+                          value={bgColor}
+                          onChange={(e) => setBgColor(e.target.value)}
+                          className="font-mono text-xs uppercase"
+                        />
+                      </div>
+                    </div>
+                  </div>
                 </div>
 
                 {/* Preview & Download */}
-                <div className="flex flex-col items-center space-y-6">
+                <div className="flex flex-col items-center space-y-6 self-start lg:-mt-6">
                   {bookTableQrDataUrl ? (
                     <HoverScale>
                       <div className="rounded-2xl bg-white p-8 shadow-premium">
@@ -594,11 +654,19 @@ export default function QRPage() {
             </CardContent>
           </Card>
         ) : (
-          <Card className="border-border/50">
+          <Card className="rounded-2xl border border-border/50 bg-card shadow-sm dark:border-[#1f1f1f] dark:bg-[#111111]">
             <CardHeader>
               <CardTitle className="text-lg">
                 {qrT?.bookTableQrCode || "Book a Table QR Code"}
               </CardTitle>
+              <p className="mt-2 text-sm leading-6 text-muted-foreground">
+                <span className="block">
+                  Use this QR code to let customers reserve tables directly from their phones.
+                </span>
+                <span className="block">
+                  It opens your booking flow with date, time, guests, and table selection.
+                </span>
+              </p>
             </CardHeader>
             <CardContent>
               <p className="text-sm text-muted-foreground">{proUpgradeMessage}</p>

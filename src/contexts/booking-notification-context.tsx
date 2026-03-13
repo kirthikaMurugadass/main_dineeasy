@@ -42,7 +42,6 @@ export function BookingNotificationProvider({
       .from("bookings")
       .select("id", { head: true, count: "exact" })
       .eq("restaurant_id", rid)
-      .eq("status", "pending")
       .gt("created_at", lastSeen);
     setBookingNotificationCount(count ?? 0);
   }, []);
@@ -171,16 +170,12 @@ export function BookingNotificationProvider({
           filter: `restaurant_id=eq.${restaurantId}`,
         },
         (payload) => {
-          const newBooking = payload.new as { status?: string; restaurant_id?: string; created_at?: string };
-          
-          // Only increment if booking status is "pending" and restaurant matches
-          if (newBooking.status === "pending" && newBooking.restaurant_id === restaurantId) {
+          const newBooking = payload.new as { restaurant_id?: string; created_at?: string };
+          if (newBooking.restaurant_id === restaurantId) {
             const lastSeen = lastSeenRef.current;
             if (!lastSeen || !newBooking.created_at || newBooking.created_at > lastSeen) {
               incrementRef.current?.();
             }
-          } else {
-            // ignore
           }
         }
       )

@@ -1,17 +1,25 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { motion } from "framer-motion";
-import { Plus, ExternalLink, Loader2 } from "lucide-react";
+import {
+  Plus,
+  ExternalLink,
+  Loader2,
+  Search,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { PageTitle } from "@/components/ui/page-title";
+import { Input } from "@/components/ui/input";
+import { Card, CardContent } from "@/components/ui/card";
 import { FadeIn, StaggerContainer, StaggerItem } from "@/components/motion";
 import { CategoryCard as CategoryCardComponent } from "@/components/admin/categories/category-card";
 import { AddCategoryCard } from "@/components/admin/categories/add-category-card";
 import { CategoriesEmptyState } from "@/components/admin/categories/empty-state";
 import { useI18n } from "@/lib/i18n/context";
+import { cn } from "@/lib/utils";
 import { createClient } from "@/lib/supabase/client";
 import { toast } from "sonner";
 
@@ -44,6 +52,8 @@ export default function CategoriesPage() {
   const [categories, setCategories] = useState<CategoryCard[]>([]);
   const [loading, setLoading] = useState(true);
   const [deleting, setDeleting] = useState<string | null>(null);
+  const [query, setQuery] = useState("");
+  const [activeCategory, setActiveCategory] = useState<string>("all");
 
   // Auto-create menu if it doesn't exist
   const ensureMenuExists = useCallback(async (restaurantId: string) => {
@@ -287,6 +297,24 @@ export default function CategoriesPage() {
     }
   }
 
+  const filteredCategories = useMemo(() => {
+    const normalizedQuery = query.trim().toLowerCase();
+    const categoryScoped =
+      activeCategory === "all"
+        ? categories
+        : categories.filter((c) => c.id === activeCategory);
+
+    if (!normalizedQuery) return categoryScoped;
+
+    return categoryScoped.filter((c) => {
+      const inCategoryName = c.name.toLowerCase().includes(normalizedQuery);
+      const inItems = c.items.some((i) =>
+        i.name.toLowerCase().includes(normalizedQuery)
+      );
+      return inCategoryName || inItems;
+    });
+  }, [categories, activeCategory, query]);
+
   if (loading) {
     return (
       <div className="flex items-center justify-center p-20">
@@ -298,30 +326,43 @@ export default function CategoriesPage() {
   return (
     <div className="space-y-8">
       <FadeIn>
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div className="space-y-4">
           <PageTitle description={t.admin.categories.description}>
             {t.admin.categories.title}
           </PageTitle>
-          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-3">
-            {restaurantSlug && (
-              <a
-                href={`/r/${restaurantSlug}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="w-full sm:w-auto"
-              >
-                <Button variant="outline" className="gap-2 w-full sm:w-auto">
-                  <ExternalLink size={14} />
-                  <span>{t.admin.categories.viewPublic}</span>
+
+          <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+            <div className="relative w-full lg:max-w-2xl">
+              <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+              <Input
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+                placeholder="Search product here..."
+                className="h-11 rounded-2xl pl-10 text-sm"
+              />
+            </div>
+
+            <div className="flex w-full flex-wrap items-center gap-2 sm:w-auto sm:flex-nowrap sm:justify-end">
+              {restaurantSlug && (
+                <a
+                  href={`/r/${restaurantSlug}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="w-full sm:w-auto"
+                >
+                  <Button variant="outline" className="h-11 gap-2 rounded-2xl w-full sm:w-auto">
+                    <ExternalLink size={14} />
+                    <span>{t.admin.categories.viewPublic}</span>
+                  </Button>
+                </a>
+              )}
+              <Link href="/admin/menu/category/new" className="w-full sm:w-auto">
+                <Button className="h-11 gap-2 rounded-2xl bg-primary text-white hover:bg-primary/90 dark:bg-primary dark:text-white dark:hover:bg-primary/90 w-full sm:w-auto">
+                  <Plus size={16} />
+                  {t.admin.categories.addCategory}
                 </Button>
-              </a>
-            )}
-            <Link href="/admin/menu/category/new" className="w-full sm:w-auto">
-              <Button className="gap-2 bg-primary text-white hover:bg-primary/90 dark:bg-primary dark:text-white dark:hover:bg-primary/90 w-full sm:w-auto">
-                <Plus size={16} />
-                {t.admin.categories.addCategory}
-              </Button>
-            </Link>
+              </Link>
+            </div>
           </div>
         </div>
       </FadeIn>
@@ -331,32 +372,92 @@ export default function CategoriesPage() {
           <CategoriesEmptyState />
         </FadeIn>
       ) : (
-        <StaggerContainer className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-          {/* Category Cards */}
-          {categories.map((category, index) => (
-            <StaggerItem key={category.id}>
-              <CategoryCardComponent
-                id={category.id}
-                name={category.name}
-                itemCount={category.itemCount}
-                activeItemCount={category.activeItemCount}
-                is_active={category.is_active}
-                image_url={category.image_url}
-                items={category.items}
-                avgPrice={category.avgPrice}
-                language={language}
-                onToggleActive={toggleCategoryActive}
-                onDelete={handleDeleteCategory}
-                deleting={deleting === category.id}
-              />
-            </StaggerItem>
-          ))}
+        <div className="space-y-4">
+          {/* Horizontal category list */}
+          <div className="-mx-1 flex snap-x snap-mandatory gap-3 overflow-x-auto px-1 pb-1 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
+            <button
+              type="button"
+              onClick={() => setActiveCategory("all")}
+              className={cn(
+                "snap-start flex min-w-[170px] items-center gap-3 rounded-2xl border px-3 py-3 text-sm font-semibold transition",
+                activeCategory === "all"
+                  ? "border-primary/20 bg-primary/10 shadow-card"
+                  : "border-border/60 bg-card"
+              )}
+            >
+              <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-muted text-xs font-bold">
+                C
+              </div>
+              <div className="min-w-0 flex-1 text-left">
+                <div className="truncate">{t.admin.categories.title}</div>
+                <div className="text-xs text-muted-foreground">
+                  {categories.reduce((sum, c) => sum + c.itemCount, 0)}{" "}
+                  {t.admin.categories.items}
+                </div>
+              </div>
+            </button>
 
-          {/* Add Category Card - After existing categories */}
-          <StaggerItem>
-            <AddCategoryCard />
-          </StaggerItem>
-        </StaggerContainer>
+            {categories.map((cat) => (
+              <button
+                key={cat.id}
+                type="button"
+                onClick={() => setActiveCategory(cat.id)}
+                className={cn(
+                  "snap-start flex min-w-[200px] items-center gap-3 rounded-2xl border px-3 py-3 text-sm font-semibold transition",
+                  activeCategory === cat.id
+                    ? "border-primary/20 bg-primary/10 shadow-card"
+                    : "border-border/60 bg-card"
+                )}
+              >
+                <div className="flex h-9 w-9 items-center justify-center overflow-hidden rounded-xl bg-muted">
+                  {cat.image_url ? (
+                    <img
+                      src={cat.image_url}
+                      alt={cat.name}
+                      className="h-9 w-9 object-cover"
+                    />
+                  ) : (
+                    <span className="text-xs font-bold">
+                      {cat.name.slice(0, 1).toUpperCase()}
+                    </span>
+                  )}
+                </div>
+                <div className="min-w-0 flex-1 text-left">
+                  <div className="truncate">{cat.name}</div>
+                  <div className="text-xs text-muted-foreground">
+                    {cat.itemCount} {t.admin.categories.items}
+                  </div>
+                </div>
+              </button>
+            ))}
+          </div>
+
+          {/* Cards grid */}
+          <StaggerContainer className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+            {filteredCategories.map((category) => (
+              <StaggerItem key={category.id}>
+                <CategoryCardComponent
+                  id={category.id}
+                  name={category.name}
+                  itemCount={category.itemCount}
+                  activeItemCount={category.activeItemCount}
+                  is_active={category.is_active}
+                  image_url={category.image_url}
+                  items={category.items}
+                  avgPrice={category.avgPrice}
+                  language={language}
+                  onToggleActive={toggleCategoryActive}
+                  onDelete={handleDeleteCategory}
+                  deleting={deleting === category.id}
+                />
+              </StaggerItem>
+            ))}
+
+            <StaggerItem>
+              <AddCategoryCard />
+            </StaggerItem>
+          </StaggerContainer>
+        </div>
       )}
     </div>
   );

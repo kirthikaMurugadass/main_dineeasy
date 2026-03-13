@@ -42,7 +42,6 @@ export function OrderNotificationProvider({
       .from("orders")
       .select("id", { head: true, count: "exact" })
       .eq("restaurant_id", rid)
-      .eq("status", "pending")
       .gt("created_at", lastSeen);
     setNotificationCount(count ?? 0);
   }, []);
@@ -173,16 +172,12 @@ export function OrderNotificationProvider({
           filter: `restaurant_id=eq.${restaurantId}`,
         },
         (payload) => {
-          const newOrder = payload.new as { status?: string; restaurant_id?: string; created_at?: string };
-          
-          // Only increment if order status is "pending" and restaurant matches
-          if (newOrder.status === "pending" && newOrder.restaurant_id === restaurantId) {
+          const newOrder = payload.new as { restaurant_id?: string; created_at?: string };
+          if (newOrder.restaurant_id === restaurantId) {
             const lastSeen = lastSeenRef.current;
             if (!lastSeen || !newOrder.created_at || newOrder.created_at > lastSeen) {
               incrementRef.current?.();
             }
-          } else {
-            // ignore
           }
         }
       )
