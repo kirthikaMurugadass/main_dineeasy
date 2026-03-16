@@ -95,6 +95,8 @@ interface Dictionary {
       deleteConfirm: string; deleteSuccess: string; deleteError: string;
       noItemsYet: string; edit: string; addItem: string; activate: string; deactivate: string;
       delete: string; deleting: string; loadError: string; initError: string;
+      searchPlaceholder: string;
+      updateError: string;
       // Add Category page
       newCategory: string; editCategory: string;
       newCategorySubtitle: string; editCategorySubtitle: string;
@@ -163,7 +165,8 @@ interface Dictionary {
       preview: string; downloadQr: string; printQr: string; copied: string;
       bookTableQrCode?: string; bookTableDescription?: string; bookTableDescription2?: string;
       menuQrCode?: string; menuQrDescription?: string; menuQrDescription2?: string;
-      menuQrCodeUrl?: string; scanToViewMenu?: string; scanToBookTable?: string;
+      menuQrCodeUrl?: string; bookTableQrCodeUrl?: string;
+      scanToViewMenu?: string; scanToBookTable?: string;
       printTitle?: string; printAction?: string; customersScanToBook?: string;
     };
     orders: {

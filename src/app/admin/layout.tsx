@@ -9,6 +9,7 @@ import { OrderNotificationProvider } from "@/contexts/order-notification-context
 import { BookingNotificationProvider } from "@/contexts/booking-notification-context";
 import { createClient } from "@/lib/supabase/client";
 import { SubscriptionProvider } from "@/contexts/subscription-context";
+import { ScrollToTop } from "@/components/ui/scroll-to-top";
 
 function AdminLayoutInner({ children }: { children: React.ReactNode }) {
   const [restaurantId, setRestaurantId] = useState<string | null>(null);
@@ -49,6 +50,7 @@ function AdminLayoutInner({ children }: { children: React.ReactNode }) {
                   <PageTransition>{children}</PageTransition>
                 </div>
               </main>
+              <ScrollToTop />
             </SidebarInset>
           </BookingNotificationProvider>
         </OrderNotificationProvider>
