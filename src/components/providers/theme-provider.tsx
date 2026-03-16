@@ -36,6 +36,9 @@ export function ThemeProvider({
     const mediaQuery = window.matchMedia("(prefers-color-scheme: dark)");
 
     function apply() {
+      // Public/preview pages can temporarily lock theme control at root level.
+      // When locked, this provider should not override light/dark classes.
+      if (root.dataset.publicThemeLock === "true") return;
       const resolved = theme === "system"
         ? (mediaQuery.matches ? "dark" : "light")
         : theme;

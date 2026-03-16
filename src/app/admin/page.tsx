@@ -117,6 +117,7 @@ export default function AdminDashboard() {
   const { t, language } = useI18n();
   const router = useRouter();
   const [loading, setLoading] = useState(true);
+  const [overviewLoading, setOverviewLoading] = useState(true);
   const [restaurantId, setRestaurantId] = useState<string | null>(null);
   const [userName, setUserName] = useState<string>("");
   const [restaurantName, setRestaurantName] = useState<string>("");
@@ -171,6 +172,7 @@ export default function AdminDashboard() {
       Array.from({ length: 24 }, (_, hour) => `${hour.toString().padStart(2, "0")}:00`),
     []
   );
+  const getStatsCacheKey = useCallback((restId: string) => `dineeasy-dashboard-stats:${restId}`, []);
 
   // Load initial data and set up real-time subscriptions
   useEffect(() => {
@@ -215,8 +217,22 @@ export default function AdminDashboard() {
         setRestaurantLogo(`${restaurant.logo_url}?t=${Date.now()}`);
       }
 
-      // Load initial data
-      await loadDashboardData(restaurant.id);
+      if (typeof window !== "undefined") {
+        const cachedStats = window.sessionStorage.getItem(getStatsCacheKey(restaurant.id));
+        if (cachedStats) {
+          try {
+            const parsed = JSON.parse(cachedStats) as Partial<BusinessStats>;
+            setStats((prev) => ({ ...prev, ...parsed }));
+            setOverviewLoading(false);
+          } catch {
+            // Ignore invalid cache and continue with fresh network data.
+          }
+        }
+      }
+
+      // Load initial data without blocking first paint.
+      loadDashboardData(restaurant.id);
+      setLoading(false);
 
       // Set up real-time subscriptions
       if (isPro) {
@@ -272,7 +288,6 @@ export default function AdminDashboard() {
           .subscribe();
       }
 
-      setLoading(false);
     }
 
     async function loadDashboardData(restId: string) {
@@ -284,9 +299,10 @@ export default function AdminDashboard() {
       startOfToday.setHours(0, 0, 0, 0);
       setCurrentDateKey(todayStr);
 
-      // Load orders (Pro only)
+      // Load recent orders details in background so overview metrics can render first.
       if (isPro) {
-        try {
+        void (async () => {
+          try {
           // First, fetch orders
           const { data: ordersData, error: ordersError } = await supabase
             .from("orders")
@@ -389,10 +405,11 @@ export default function AdminDashboard() {
               setOrders(formattedOrders);
             }
           }
-        } catch (error) {
-          console.error("Unexpected error loading orders:", error);
-          setOrders([]);
-        }
+          } catch (error) {
+            console.error("Unexpected error loading orders:", error);
+            setOrders([]);
+          }
+        })();
 
         // Calculate stats from orders
         const { data: todayOrders } = await supabase
@@ -526,7 +543,7 @@ export default function AdminDashboard() {
         }
 
         // Always set stats, ensuring all values default to 0
-        setStats({
+        const nextStats: BusinessStats = {
           todayRevenue: revenue || 0,
           pendingOrders: pendingOrdersCount || 0,
           completedOrders: completedOrdersCount || 0,
@@ -539,7 +556,12 @@ export default function AdminDashboard() {
           totalTables: tablesData?.length || 0,
           totalCategories: 0, // Will be loaded separately
           activeCategories: 0,
-        });
+        };
+        setStats(nextStats);
+        setOverviewLoading(false);
+        if (typeof window !== "undefined") {
+          window.sessionStorage.setItem(getStatsCacheKey(restId), JSON.stringify(nextStats));
+        }
 
         // Generate chart data for orders over time (today) - real-time
         generateOrdersChartData(todayOrders || []);
@@ -780,7 +802,7 @@ export default function AdminDashboard() {
             .select("id, is_active")
             .eq("menu_id", menu.id);
 
-          setStats({
+          const nextStats: BusinessStats = {
             todayRevenue: 0,
             pendingOrders: 0,
             completedOrders: 0,
@@ -793,7 +815,14 @@ export default function AdminDashboard() {
             totalTables: 0,
             totalCategories: categories?.length || 0,
             activeCategories: categories?.filter((c) => c.is_active).length || 0,
-          });
+          };
+          setStats(nextStats);
+          setOverviewLoading(false);
+          if (typeof window !== "undefined") {
+            window.sessionStorage.setItem(getStatsCacheKey(restId), JSON.stringify(nextStats));
+          }
+        } else {
+          setOverviewLoading(false);
         }
         
         // Generate revenue chart data (dummy data) for free plan too
@@ -1337,23 +1366,38 @@ export default function AdminDashboard() {
         </div>
 
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-5">
-          {overviewCards.map((metric, i) => (
+          {overviewLoading
+            ? overviewCards.map((metric) => (
+                <Card
+                  key={`overview-skeleton-${metric.title}`}
+                  className="rounded-lg border border-[#E5E7EB] bg-[#FFFFFF] shadow-sm dark:border-[#1f1f1f] dark:bg-[#0b0b0b]"
+                >
+                  <CardContent className="flex h-[64px] items-center gap-2 p-2">
+                    <div className="h-7 w-7 animate-pulse rounded-md bg-primary/12 dark:bg-primary/20" />
+                    <div className="min-w-0 flex-1 space-y-1">
+                      <div className="h-2 w-24 animate-pulse rounded bg-muted/60 dark:bg-[#1a1a1a]" />
+                      <div className="h-4 w-12 animate-pulse rounded bg-muted/60 dark:bg-[#1a1a1a]" />
+                    </div>
+                  </CardContent>
+                </Card>
+              ))
+            : overviewCards.map((metric, i) => (
             <motion.div
               key={metric.title}
               initial={{ opacity: 0, y: 16 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.25 + i * 0.04 }}
             >
-              <Card className="rounded-lg border border-[#E5E7EB] bg-[#FFFFFF] shadow-sm dark:border-[#2A2A2A] dark:bg-[#FFFFFF]">
+              <Card className="rounded-lg border border-[#E5E7EB] bg-[#FFFFFF] shadow-sm dark:border-[#1f1f1f] dark:bg-[#0b0b0b]">
                 <CardContent className="flex h-[64px] items-center gap-2 p-2">
-                  <div className="rounded-md bg-primary/12 p-1.5">
-                    <metric.icon className="h-3.5 w-3.5 text-primary" />
+                  <div className="rounded-md bg-primary/12 p-1.5 dark:bg-primary/20">
+                    <metric.icon className="h-3.5 w-3.5 text-primary dark:text-primary" />
                   </div>
                   <div className="min-w-0">
-                    <p className="truncate text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
+                    <p className="truncate text-[10px] font-semibold uppercase tracking-wide text-muted-foreground dark:text-[#9ca3af]">
                       {metric.title}
                     </p>
-                    <p className="mt-0.5 text-[30px] font-bold leading-none text-foreground dark:text-[#ffffff]">
+                    <p className="mt-0.5 text-[30px] font-bold leading-none text-foreground dark:text-[#f9fafb]">
                       {metric.isCurrency ? "$" : ""}
                       <AnimatedCounter
                         value={Math.round(metric.value || 0)}

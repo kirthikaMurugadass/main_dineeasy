@@ -78,6 +78,15 @@ const nextConfig: NextConfig = {
           },
         ],
       },
+      {
+        source: "/r/:slug/book-table",
+        headers: [
+          {
+            key: "X-Frame-Options",
+            value: "SAMEORIGIN", // Allow admin live preview iframe for Book a Table page
+          },
+        ],
+      },
     ];
   },
   webpack(config: any, { isServer }) {

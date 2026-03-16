@@ -26,7 +26,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
-import { useTheme } from "@/components/providers/theme-provider";
+import { usePublicTheme } from "@/components/providers/public-theme-provider";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -297,7 +297,7 @@ export function PosDashboard({
 }) {
   const router = useRouter();
   const { t, language, setLanguage, languages } = useI18n();
-  const { theme, setTheme } = useTheme();
+  const { theme, setTheme } = usePublicTheme();
   const menuPublicT = (t.menu as any)?.public;
   const posMenuT = (t.menu as any)?.public?.pos;
   const posOrderT = (t.order as any)?.public?.pos;

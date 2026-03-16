@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
-import { Moon, Sun, Monitor, User, Globe, Crown, LogOut, Bell } from "lucide-react";
+import { Moon, Sun, Monitor, User, Globe, Crown, LogOut } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useTheme } from "@/components/providers/theme-provider";
 import { Button } from "@/components/ui/button";
@@ -70,12 +70,14 @@ export function AdminTopbar() {
         initial={{ opacity: 0, y: -8 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.25, ease: "easeOut" }}
-        className="flex min-h-16 w-full flex-wrap items-center justify-between gap-y-2 px-3 py-2 sm:px-4 sm:py-0 lg:px-6"
+        className="flex min-h-16 w-full items-center justify-between gap-2 px-3 py-2 sm:px-4 sm:py-0 lg:px-6"
       >
         {/* Left: Sidebar trigger + Plan badge */}
         <div className="flex min-w-0 items-center gap-2 sm:gap-3">
           <SidebarTrigger className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-border/60 bg-card shadow-sm transition duration-200 hover:opacity-80" />
-          {!planLoading && (
+          {planLoading ? (
+            <span className="inline-flex h-7 w-24 animate-pulse rounded-full border border-border/60 bg-muted/60" />
+          ) : (
             <span
               className={cn(
                 "inline-flex items-center gap-1.5 whitespace-nowrap rounded-full border px-2 py-1 text-[11px] font-semibold sm:px-2.5 sm:text-xs",
@@ -97,8 +99,10 @@ export function AdminTopbar() {
         </div>
 
         {/* Right: actions */}
-        <div className="ml-auto flex w-full items-center justify-start gap-2 overflow-x-auto pb-0.5 sm:w-auto sm:justify-end sm:overflow-visible sm:pb-0">
-          {!planLoading && !isPro && (
+        <div className="ml-auto flex shrink-0 items-center justify-end gap-2">
+          {planLoading ? (
+            <div className="hidden h-9 w-32 animate-pulse rounded-full bg-muted/60 sm:block" />
+          ) : !isPro ? (
             <Button
               size="sm"
               className="hidden rounded-full bg-primary text-primary-foreground hover:bg-primary/90 sm:inline-flex"
@@ -106,7 +110,7 @@ export function AdminTopbar() {
             >
               {t.dashboard?.upgrade?.button || t.admin.topbar?.upgradeToPro || "Upgrade to Pro"}
             </Button>
-          )}
+          ) : null}
           {/* Language / globe */}
           {mounted && (
           <DropdownMenu>
@@ -185,16 +189,6 @@ export function AdminTopbar() {
             </DropdownMenuContent>
           </DropdownMenu>
           )}
-
-          {/* Notifications */}
-          <Button
-            variant="ghost"
-            size="icon"
-            className="relative h-9 w-9 shrink-0 rounded-full border border-border/60 bg-card shadow-sm transition duration-200 hover:opacity-80"
-            aria-label={t.admin.topbar?.notifications || "Notifications"}
-          >
-            <Bell className="h-4 w-4" />
-          </Button>
 
           {/* Profile menu with avatar */}
           {mounted && (

@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { useParams, useRouter } from "next/navigation";
+import { useParams, useRouter, useSearchParams } from "next/navigation";
 import Image from "next/image";
 import { motion } from "framer-motion";
 import {
@@ -21,7 +21,7 @@ import {
 import { format, isValid, parse, startOfDay } from "date-fns";
 import { toast } from "sonner";
 import { createClient } from "@/lib/supabase/client";
-import { useTheme } from "@/components/providers/theme-provider";
+import { usePublicTheme } from "@/components/providers/public-theme-provider";
 import { useI18n } from "@/lib/i18n/context";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -44,6 +44,7 @@ import {
   getCountryByCode,
   validatePhoneNumber,
 } from "@/lib/data/country-codes";
+import { defaultThemeConfig, type ThemeConfig } from "@/types/database";
 
 interface Restaurant {
   id: string;
@@ -87,15 +88,26 @@ const TIME_SLOTS = [
   "22:00",
 ];
 
+function getContrastForeground(hex: string): string {
+  const cleaned = hex.replace("#", "");
+  const r = Number.parseInt(cleaned.slice(0, 2), 16);
+  const g = Number.parseInt(cleaned.slice(2, 4), 16);
+  const b = Number.parseInt(cleaned.slice(4, 6), 16);
+  const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+  return luminance > 0.6 ? "#111111" : "#FFFFFF";
+}
+
 export default function BookTablePage() {
   const params = useParams();
+  const searchParams = useSearchParams();
   const router = useRouter();
   const slug = params.slug as string;
   const supabase = useMemo(() => createClient(), []);
   const { t, language, setLanguage, languages } = useI18n();
   const flowT = t.booking?.publicFlow;
-  const { theme, setTheme, resolvedTheme } = useTheme();
-  const currentTheme = resolvedTheme || (theme === "system" ? "light" : theme);
+  const { theme, setTheme } = usePublicTheme();
+  const currentTheme = theme === "system" ? "light" : theme;
+  const isDarkTheme = currentTheme === "dark";
   const ThemeIcon = currentTheme === "light" ? Sun : currentTheme === "dark" ? Moon : Monitor;
 
   const [mounted, setMounted] = useState(false);
@@ -131,10 +143,59 @@ export default function BookTablePage() {
         })()
       : "";
 
+  const previewSectionConfig = useMemo<Partial<ThemeConfig> | null>(() => {
+    const raw = searchParams.get("config");
+    if (!raw) return null;
+    try {
+      return JSON.parse(atob(decodeURIComponent(raw))) as Partial<ThemeConfig>;
+    } catch {
+      try {
+        // Backward compatibility for unencoded config values
+        return JSON.parse(atob(raw)) as Partial<ThemeConfig>;
+      } catch {
+        return null;
+      }
+    }
+  }, [searchParams]);
+  const isIframePreview = searchParams.get("iframe") === "true";
+
+  const bookTableAppearance = useMemo<ThemeConfig>(() => {
+    const restaurantTheme = (restaurant?.theme_config ?? {}) as ThemeConfig;
+    const sectionTheme = (restaurantTheme.bookTableAppearance || {}) as Partial<ThemeConfig>;
+    return {
+      ...defaultThemeConfig,
+      ...sectionTheme,
+      ...(previewSectionConfig || {}),
+    };
+  }, [restaurant?.theme_config, previewSectionConfig]);
+
+  useEffect(() => {
+    if (!bookTableAppearance.mode) return;
+    const desiredTheme = bookTableAppearance.mode === "auto" ? "system" : bookTableAppearance.mode;
+    // Sync admin-configured default without persisting as user preference.
+    setTheme(desiredTheme, { persist: false });
+  }, [bookTableAppearance.mode, setTheme]);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const root = document.documentElement;
+    const primary = bookTableAppearance.primaryColor || defaultThemeConfig.primaryColor;
+    const accent = bookTableAppearance.accentColor || defaultThemeConfig.accentColor;
+    // Apply after theme provider updates to avoid preview colors being overridden.
+    const frame = requestAnimationFrame(() => {
+      root.style.setProperty("--primary", primary);
+      root.style.setProperty("--primary-foreground", getContrastForeground(primary));
+      root.style.setProperty("--accent", accent);
+      root.style.setProperty("--accent-foreground", getContrastForeground(accent));
+      root.style.setProperty("--ring", primary);
+    });
+    return () => cancelAnimationFrame(frame);
+  }, [bookTableAppearance.primaryColor, bookTableAppearance.accentColor, theme]);
+
   const settings = (restaurant?.theme_config ?? {})?.settings ?? {};
   const heroImageUrl: string =
-    (restaurant?.theme_config ?? {})?.headerImageUrl ||
-    (restaurant?.theme_config ?? {})?.heroBanner?.backgroundImage ||
+    bookTableAppearance.headerImageUrl ||
+    bookTableAppearance.heroBanner?.backgroundImage ||
     "/images/hero.jpg";
   const business = settings.business ?? {};
   const address = settings.address ?? {};
@@ -496,13 +557,19 @@ export default function BookTablePage() {
         </div>
 
         {mounted && (
-          <div className="fixed top-4 right-4 z-50 flex items-center gap-2">
+          <div className={cn(
+            "fixed z-50 flex items-center gap-2",
+            isIframePreview ? "right-2 top-2" : "right-4 top-4",
+          )}>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button
                   variant="ghost"
                   size="icon"
-                  className="h-9 w-9 rounded-full border border-border/60 bg-card shadow-sm transition duration-200 hover:opacity-80 dark:bg-[#111111] dark:border-[#1f1f1f]"
+                  className={cn(
+                    "rounded-full border border-border/60 bg-card shadow-sm transition duration-200 hover:opacity-80 dark:bg-[#111111] dark:border-[#1f1f1f]",
+                    isIframePreview ? "h-8 w-8" : "h-9 w-9",
+                  )}
                   aria-label="Switch language"
                 >
                   <Globe className="h-[18px] w-[18px]" />
@@ -531,7 +598,10 @@ export default function BookTablePage() {
                 <Button
                   variant="ghost"
                   size="icon"
-                  className="h-9 w-9 rounded-full border border-border/60 bg-card shadow-sm transition duration-200 hover:opacity-80 dark:bg-[#111111] dark:border-[#1f1f1f]"
+                  className={cn(
+                    "rounded-full border border-border/60 bg-card shadow-sm transition duration-200 hover:opacity-80 dark:bg-[#111111] dark:border-[#1f1f1f]",
+                    isIframePreview ? "h-8 w-8" : "h-9 w-9",
+                  )}
                   aria-label="Toggle theme"
                 >
                   <ThemeIcon className="h-[18px] w-[18px]" />
@@ -552,7 +622,12 @@ export default function BookTablePage() {
           </div>
         )}
 
-        <div className="relative mx-auto flex min-h-screen w-full max-w-6xl flex-col px-4 py-10 sm:px-6 lg:px-10">
+        <div
+          className={cn(
+            "relative mx-auto flex min-h-screen w-full max-w-6xl flex-col sm:px-6 lg:px-10",
+            isIframePreview ? "px-3 pb-5 pt-12" : "px-4 py-10",
+          )}
+        >
           <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.35 }} className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               {restaurant.logo_url ? (
@@ -571,10 +646,15 @@ export default function BookTablePage() {
             </div>
           </motion.div>
 
-          <div className="mt-12 grid flex-1 items-center gap-10 lg:grid-cols-2">
-            <motion.div initial={{ opacity: 0, y: 18 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.55, ease: [0.23, 1, 0.32, 1] }} className="space-y-4">
+          <div className={cn("grid flex-1 items-center lg:grid-cols-2", isIframePreview ? "mt-5 gap-4" : "mt-12 gap-10")}>
+            <motion.div
+              initial={{ opacity: 0, y: 18 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.55, ease: [0.23, 1, 0.32, 1] }}
+              className={cn("space-y-4", isIframePreview && "hidden")}
+            >
               <p className="text-xs font-semibold uppercase tracking-[0.28em] text-white/70">{flowT?.intro?.premiumDining || "PREMIUM DINING"}</p>
-              <h1 className="text-4xl font-bold tracking-tight text-white sm:text-5xl">
+              <h1 className={cn("font-bold tracking-tight text-white", isIframePreview ? "text-3xl sm:text-4xl" : "text-4xl sm:text-5xl")}>
                 {flowT?.intro?.headline || "Reserve an Unforgettable Dining Experience"}
               </h1>
               <p className="max-w-xl text-base leading-relaxed text-white/70 sm:text-lg">
@@ -582,35 +662,63 @@ export default function BookTablePage() {
               </p>
             </motion.div>
 
-            <motion.div initial={{ opacity: 0, y: 22 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.55, delay: 0.05, ease: [0.23, 1, 0.32, 1] }} className="mx-auto w-full max-w-xl">
-              <Card className="overflow-hidden rounded-[20px] border border-white/12 bg-white/[0.06] shadow-2xl backdrop-blur-xl">
-                <CardHeader className="pb-2">
-                  <CardTitle className="text-xl font-semibold text-white">{flowT?.intro?.findTableTitle || "Find a Table"}</CardTitle>
-                  <p className="text-sm text-white/70">{flowT?.intro?.findTableSubtitle || "Select your preferred date, time, and guests."}</p>
+            <motion.div
+              initial={{ opacity: 0, y: 22 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.55, delay: 0.05, ease: [0.23, 1, 0.32, 1] }}
+              className={cn("mx-auto w-full max-w-xl", isIframePreview && "max-w-none")}
+            >
+              <Card className={cn("overflow-hidden border border-white/12 bg-white/[0.06] shadow-2xl backdrop-blur-xl", isIframePreview ? "rounded-2xl" : "rounded-[20px]")}>
+                <CardHeader className={cn(isIframePreview ? "pb-1 pt-4" : "pb-2")}>
+                  <CardTitle className={cn("font-semibold text-white", isIframePreview ? "text-lg" : "text-xl")}>
+                    {flowT?.intro?.findTableTitle || "Find a Table"}
+                  </CardTitle>
+                  <p className={cn("text-white/70", isIframePreview ? "text-sm" : "text-sm")}>
+                    {flowT?.intro?.findTableSubtitle || "Select your preferred date, time, and guests."}
+                  </p>
                 </CardHeader>
-                <CardContent className="space-y-5">
-                  <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+                <CardContent className={cn(isIframePreview ? "space-y-2.5 pb-4" : "space-y-5")}>
+                  <div className={cn("grid grid-cols-1 sm:grid-cols-3", isIframePreview ? "gap-2.5" : "gap-4")}>
                     <div className="min-w-0">
-                      <Label className="mb-2 block h-5 text-sm font-medium leading-5 text-white">{flowT?.fields?.date || "Date"}</Label>
+                      <Label className={cn("mb-1.5 block h-5 font-medium leading-5 text-white", isIframePreview ? "text-sm" : "text-sm")}>
+                        {flowT?.fields?.date || "Date"}
+                      </Label>
                       <Popover>
                         <PopoverTrigger asChild>
                           <Button
                             id="intro-date"
                             type="button"
-                            variant="outline"
+                            variant="ghost"
                             disabled={submitting}
                             className={cn(
-                              "relative h-[52px] w-full min-w-0 justify-start rounded-xl border border-white/35 bg-black/20 px-4 pr-11 text-left text-sm font-normal text-white shadow-none transition-all hover:bg-black/25 focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/30",
-                              !date && "text-white/70",
+                              "relative w-full min-w-0 justify-start rounded-xl px-4 pr-11 text-left text-sm font-normal shadow-none transition-all focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/30",
+                              isIframePreview ? "h-[42px]" : "h-[52px]",
+                              isDarkTheme
+                                ? "border-white/35 bg-black/45 text-white hover:bg-black/55"
+                                : "border-white/45 bg-white/90 text-slate-900 hover:bg-white",
+                              !date && (isDarkTheme ? "text-white/70" : "text-slate-500"),
                             )}
                           >
                             <span className="block w-full truncate text-left leading-none">
                               {date ? formattedDateLabel : (flowT?.placeholders?.select || "Select")}
                             </span>
-                            <CalendarIcon className="absolute right-4 top-1/2 h-[18px] w-[18px] -translate-y-1/2 text-white/70" />
+                            <CalendarIcon
+                              className={cn(
+                                "absolute right-4 top-1/2 h-[18px] w-[18px] -translate-y-1/2",
+                                isDarkTheme ? "text-white/70" : "text-slate-500",
+                              )}
+                            />
                           </Button>
                         </PopoverTrigger>
-                        <PopoverContent align="start" className="w-auto p-2">
+                        <PopoverContent
+                          align="start"
+                          className={cn(
+                            "w-auto rounded-2xl p-2 shadow-2xl backdrop-blur-xl",
+                            isDarkTheme
+                              ? "border border-white/20 bg-[#0f1116]/95 text-white"
+                              : "border border-white/70 bg-white/95 text-slate-900",
+                          )}
+                        >
                           <Calendar
                             mode="single"
                             selected={selectedDateObj}
@@ -627,12 +735,40 @@ export default function BookTablePage() {
                     <div className="min-w-0">
                       <Label className="mb-2 block h-5 text-sm font-medium leading-5 text-white">{flowT?.fields?.time || "Time"}</Label>
                       <Select value={time} onValueChange={setTime}>
-                        <SelectTrigger className="h-[50px] data-[size=default]:h-[50px] w-full min-w-0 justify-between rounded-xl border border-white/35 bg-black/20 px-4 py-0 text-left text-sm font-normal text-white shadow-none transition-all hover:bg-black/25 focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/30 [&>span]:truncate [&>span]:text-left">
+                        <SelectTrigger
+                          className={cn(
+                            "w-full min-w-0 justify-between rounded-xl px-4 py-0 text-left text-sm font-normal shadow-none transition-all focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/30 [&>span]:truncate [&>span]:text-left",
+                            isIframePreview ? "h-[42px] data-[size=default]:h-[42px]" : "h-[50px] data-[size=default]:h-[50px]",
+                            isDarkTheme
+                              ? "border border-white/35 bg-black/45 text-white hover:bg-black/55 data-[placeholder]:text-white/65"
+                              : "border border-white/45 bg-white/90 text-slate-900 hover:bg-white data-[placeholder]:text-slate-500",
+                          )}
+                        >
                           <SelectValue placeholder={flowT?.placeholders?.select || "Select"} />
                         </SelectTrigger>
-                        <SelectContent position="popper" align="start" className="w-(--radix-select-trigger-width) rounded-2xl border border-border/70 shadow-premium">
+                        <SelectContent
+                          position="popper"
+                          align="start"
+                          className={cn(
+                            "w-(--radix-select-trigger-width) rounded-2xl shadow-2xl backdrop-blur-xl",
+                            isDarkTheme
+                              ? "border border-white/20 bg-[#0f1116]/95 text-white"
+                              : "border border-white/70 bg-white/95 text-slate-900",
+                          )}
+                        >
                           {TIME_SLOTS.map((slot) => (
-                            <SelectItem key={slot} value={slot} className="rounded-lg">{slot}</SelectItem>
+                            <SelectItem
+                              key={slot}
+                              value={slot}
+                              className={cn(
+                                "rounded-lg",
+                                isDarkTheme
+                                  ? "text-white focus:bg-white/10 focus:text-white"
+                                  : "text-slate-900 focus:bg-slate-100 focus:text-slate-900",
+                              )}
+                            >
+                              {slot}
+                            </SelectItem>
                           ))}
                         </SelectContent>
                       </Select>
@@ -640,12 +776,38 @@ export default function BookTablePage() {
                     <div className="min-w-0">
                       <Label className="mb-2 block h-5 text-sm font-medium leading-5 text-white">{flowT?.fields?.guests || "Guests"}</Label>
                       <Select value={guestCount} onValueChange={setGuestCount}>
-                        <SelectTrigger className="h-[50px] data-[size=default]:h-[50px] w-full min-w-0 justify-between rounded-xl border border-white/35 bg-black/20 px-4 py-0 text-left text-sm font-normal text-white shadow-none transition-all hover:bg-black/25 focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/30 [&>span]:truncate [&>span]:text-left">
+                        <SelectTrigger
+                          className={cn(
+                            "w-full min-w-0 justify-between rounded-xl px-4 py-0 text-left text-sm font-normal shadow-none transition-all focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/30 [&>span]:truncate [&>span]:text-left",
+                            isIframePreview ? "h-[42px] data-[size=default]:h-[42px]" : "h-[50px] data-[size=default]:h-[50px]",
+                            isDarkTheme
+                              ? "border border-white/35 bg-black/45 text-white hover:bg-black/55 data-[placeholder]:text-white/65"
+                              : "border border-white/45 bg-white/90 text-slate-900 hover:bg-white data-[placeholder]:text-slate-500",
+                          )}
+                        >
                           <SelectValue placeholder={flowT?.placeholders?.select || "Select"} />
                         </SelectTrigger>
-                        <SelectContent position="popper" align="start" className="w-(--radix-select-trigger-width) rounded-2xl border border-border/70 shadow-premium">
+                        <SelectContent
+                          position="popper"
+                          align="start"
+                          className={cn(
+                            "w-(--radix-select-trigger-width) rounded-2xl shadow-2xl backdrop-blur-xl",
+                            isDarkTheme
+                              ? "border border-white/20 bg-[#0f1116]/95 text-white"
+                              : "border border-white/70 bg-white/95 text-slate-900",
+                          )}
+                        >
                           {Array.from({ length: 10 }, (_, i) => i + 1).map((num) => (
-                            <SelectItem key={num} value={String(num)} className="rounded-lg">
+                            <SelectItem
+                              key={num}
+                              value={String(num)}
+                              className={cn(
+                                "rounded-lg",
+                                isDarkTheme
+                                  ? "text-white focus:bg-white/10 focus:text-white"
+                                  : "text-slate-900 focus:bg-slate-100 focus:text-slate-900",
+                              )}
+                            >
                               {num} {num === 1 ? (t.booking?.labels?.guestSingular || "Guest") : (t.booking?.labels?.guestPlural || "Guests")}
                             </SelectItem>
                           ))}
@@ -653,57 +815,80 @@ export default function BookTablePage() {
                       </Select>
                     </div>
                   </div>
-                  <Button type="button" onClick={handleFindTable} className="h-12 w-full rounded-xl bg-gradient-to-r from-primary to-primary/80 text-primary-foreground text-base font-semibold shadow-xl transition-all hover:shadow-2xl">
+                  <Button
+                    type="button"
+                    onClick={handleFindTable}
+                    className={cn(
+                      "w-full rounded-xl bg-gradient-to-r from-primary to-primary/80 text-primary-foreground font-semibold shadow-xl transition-all hover:shadow-2xl",
+                      isIframePreview ? "h-9 text-sm" : "h-12 text-base",
+                    )}
+                  >
                     {flowT?.actions?.findTable || "Find Table"}
                   </Button>
-                  <p className="text-xs text-white/60">{flowT?.intro?.nextStepHint || "You'll enter your name and contact details in the next step."}</p>
+                  <p className={cn("text-white/60", isIframePreview ? "text-[10px]" : "text-xs")}>
+                    {flowT?.intro?.nextStepHint || "You'll enter your name and contact details in the next step."}
+                  </p>
                 </CardContent>
               </Card>
             </motion.div>
           </div>
 
-          <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.45, delay: 0.12 }} className="mt-12">
-            <div className="rounded-3xl border border-white/10 bg-white/[0.06] p-6 shadow-xl backdrop-blur-xl sm:p-8">
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.45, delay: 0.12 }}
+            className={cn(isIframePreview ? "mt-7" : "mt-12")}
+          >
+            <div
+              className={cn(
+                "border border-white/10 bg-white/[0.06] shadow-xl backdrop-blur-xl",
+                isIframePreview ? "rounded-2xl p-4" : "rounded-3xl p-6 sm:p-8",
+              )}
+            >
               <div>
                 <p className="text-xs font-semibold uppercase tracking-[0.28em] text-white/60">{flowT?.intro?.premiumDiningTitle || "Premium Dining"}</p>
-                <h2 className="mt-3 text-2xl font-semibold tracking-tight text-white">{flowT?.intro?.premiumDiningHeading || "A premium dining moment - curated for you"}</h2>
-                <p className="mt-3 max-w-3xl text-sm leading-relaxed text-white/65">
+                <h2 className={cn("mt-3 font-semibold tracking-tight text-white", isIframePreview ? "text-xl" : "text-2xl")}>
+                  {flowT?.intro?.premiumDiningHeading || "A premium dining moment - curated for you"}
+                </h2>
+                <p className={cn("mt-3 max-w-3xl leading-relaxed text-white/65", isIframePreview ? "text-xs" : "text-sm")}>
                   {settings.description || flowT?.intro?.premiumDiningDescription || "Enjoy an elevated dining experience with warm hospitality and calm ambience."}
                 </p>
               </div>
-              <div className="mt-6 h-px w-full bg-white/10" />
-              <div className="mt-6 grid gap-4 md:grid-cols-3">
-                <div className="flex items-start gap-3 rounded-2xl border border-white/10 bg-black/20 p-4">
-                  <div className="mt-0.5 inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-white/10 bg-black/25">
-                    <Clock className="h-5 w-5 text-white/80" />
+              <div className={cn("h-px w-full bg-white/10", isIframePreview ? "mt-4" : "mt-6")} />
+              <div className={cn("grid gap-4", isIframePreview ? "mt-4 gap-3" : "mt-6 md:grid-cols-3")}>
+                <div className={cn("flex items-start gap-3 border border-white/10 bg-black/20", isIframePreview ? "rounded-xl p-3" : "rounded-2xl p-4")}>
+                  <div className={cn("mt-0.5 inline-flex shrink-0 items-center justify-center border border-white/10 bg-black/25", isIframePreview ? "h-9 w-9 rounded-lg" : "h-10 w-10 rounded-xl")}>
+                    <Clock className={cn("text-white/80", isIframePreview ? "h-4 w-4" : "h-5 w-5")} />
                   </div>
                   <div className="min-w-0">
                     <p className="text-sm font-semibold text-white">{flowT?.sections?.hours || "Hours"}</p>
-                    <p className="mt-1 text-xs leading-relaxed text-white/65">
+                    <p className={cn("mt-1 leading-relaxed text-white/65", isIframePreview ? "text-sm" : "text-xs")}>
                       {(business.openingHours && business.closingHours)
                         ? `Mon–Sun: ${business.openingHours} – ${business.closingHours}`
                         : flowT?.messages?.setOpeningClosingHours || "Set opening and closing hours in Admin Settings"}
                     </p>
                   </div>
                 </div>
-                <div className="flex items-start gap-3 rounded-2xl border border-white/10 bg-black/20 p-4">
-                  <div className="mt-0.5 inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-white/10 bg-black/25">
-                    <MapPin className="h-5 w-5 text-white/80" />
+                <div className={cn("flex items-start gap-3 border border-white/10 bg-black/20", isIframePreview ? "rounded-xl p-3" : "rounded-2xl p-4")}>
+                  <div className={cn("mt-0.5 inline-flex shrink-0 items-center justify-center border border-white/10 bg-black/25", isIframePreview ? "h-9 w-9 rounded-lg" : "h-10 w-10 rounded-xl")}>
+                    <MapPin className={cn("text-white/80", isIframePreview ? "h-4 w-4" : "h-5 w-5")} />
                   </div>
                   <div className="min-w-0">
                     <p className="text-sm font-semibold text-white">{flowT?.sections?.location || "Location"}</p>
-                    <p className="mt-1 text-xs leading-relaxed text-white/65">
+                    <p className={cn("mt-1 break-words leading-relaxed text-white/65", isIframePreview ? "text-sm" : "text-xs")}>
                       {[address.street, address.city, address.state, address.country, address.postalCode].filter(Boolean).join(", ") || flowT?.messages?.setAddress || "Set restaurant address in Admin Settings"}
                     </p>
                   </div>
                 </div>
-                <div className="flex items-start gap-3 rounded-2xl border border-white/10 bg-black/20 p-4">
-                  <div className="mt-0.5 inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-white/10 bg-black/25">
-                    <Phone className="h-5 w-5 text-white/80" />
+                <div className={cn("flex items-start gap-3 border border-white/10 bg-black/20", isIframePreview ? "rounded-xl p-3" : "rounded-2xl p-4")}>
+                  <div className={cn("mt-0.5 inline-flex shrink-0 items-center justify-center border border-white/10 bg-black/25", isIframePreview ? "h-9 w-9 rounded-lg" : "h-10 w-10 rounded-xl")}>
+                    <Phone className={cn("text-white/80", isIframePreview ? "h-4 w-4" : "h-5 w-5")} />
                   </div>
                   <div className="min-w-0">
                     <p className="text-sm font-semibold text-white">{flowT?.sections?.contact || "Contact"}</p>
-                    <p className="mt-1 text-xs leading-relaxed text-white/65">{settings.contactPhone || flowT?.messages?.setContactPhone || "Set contact phone in Admin Settings"}</p>
+                    <p className={cn("mt-1 break-words leading-relaxed text-white/65", isIframePreview ? "text-sm" : "text-xs")}>
+                      {settings.contactPhone || flowT?.messages?.setContactPhone || "Set contact phone in Admin Settings"}
+                    </p>
                   </div>
                 </div>
               </div>
@@ -807,14 +992,19 @@ export default function BookTablePage() {
                   <Label htmlFor="customerName">{flowT?.fields?.fullName || "Full Name"}</Label>
                   <div className="relative">
                     <User className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-                    <Input id="customerName" value={name} onChange={(e) => setName(e.target.value)} className="h-12 w-full rounded-xl pl-10" />
+                    <Input
+                      id="customerName"
+                      value={name}
+                      onChange={(e) => setName(e.target.value)}
+                      className="h-12 w-full rounded-xl border-border/70 bg-background text-foreground placeholder:text-muted-foreground dark:border-white/20 dark:bg-[#0f1116] dark:text-white dark:placeholder:text-white/55 pl-10"
+                    />
                   </div>
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="phone">{flowT?.fields?.phoneNumber || "Phone Number"}</Label>
-                  <div className="flex h-12 w-full overflow-hidden rounded-xl border border-input bg-transparent shadow-xs">
+                  <div className="flex h-12 w-full overflow-hidden rounded-xl border border-input bg-transparent shadow-xs dark:border-white/20 dark:bg-[#0f1116]">
                     <Select value={phoneCountryCode} onValueChange={setPhoneCountryCode}>
-                      <SelectTrigger className="h-full w-[30%] min-w-[102px] max-w-[120px] rounded-none border-0 border-r border-input bg-transparent px-3 shadow-none focus:ring-0">
+                      <SelectTrigger className="h-full w-[30%] min-w-[102px] max-w-[120px] rounded-none border-0 border-r border-input bg-transparent px-3 shadow-none focus:ring-0 dark:border-white/20 dark:text-white">
                         <SelectValue>
                           <span className="inline-flex items-center gap-2 whitespace-nowrap">
                             <CountryFlag code={phoneCountryCode} className="h-4 w-4" />
@@ -822,9 +1012,15 @@ export default function BookTablePage() {
                           </span>
                         </SelectValue>
                       </SelectTrigger>
-                      <SelectContent className="max-h-[280px]">
+                      <SelectContent className="max-h-[280px] dark:border-white/20 dark:bg-[#0f1116] dark:text-white">
                         {countryCodes.map((country) => (
-                          <SelectItem key={country.code} value={country.code}>{country.name} {country.dialCode}</SelectItem>
+                          <SelectItem
+                            key={country.code}
+                            value={country.code}
+                            className="dark:text-white dark:focus:bg-white/10 dark:focus:text-white"
+                          >
+                            {country.name} {country.dialCode}
+                          </SelectItem>
                         ))}
                       </SelectContent>
                     </Select>
@@ -832,14 +1028,20 @@ export default function BookTablePage() {
                       id="phone"
                       value={phone}
                       onChange={(e) => setPhone(e.target.value)}
-                      className="h-full flex-1 rounded-none border-0 shadow-none focus-visible:ring-0"
+                      className="h-full flex-1 rounded-none border-0 shadow-none focus-visible:ring-0 dark:bg-[#0f1116] dark:text-white dark:placeholder:text-white/55"
                     />
                   </div>
                   {phoneValidationError ? <p className="text-xs text-red-500">{phoneValidationError}</p> : null}
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="email">{flowT?.fields?.email || "Email"}</Label>
-                  <Input id="email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} className="h-12 w-full rounded-xl" />
+                  <Input
+                    id="email"
+                    type="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    className="h-12 w-full rounded-xl border-border/70 bg-background text-foreground placeholder:text-muted-foreground dark:border-white/20 dark:bg-[#0f1116] dark:text-white dark:placeholder:text-white/55"
+                  />
                 </div>
               </div>
             </CardContent>
@@ -853,12 +1055,19 @@ export default function BookTablePage() {
                   <Label>{flowT?.fields?.date || "Date"}</Label>
                   <Popover>
                     <PopoverTrigger asChild>
-                      <Button type="button" variant="outline" className="h-12 w-full rounded-xl justify-start text-left">
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        className="h-12 w-full justify-start rounded-xl border-border/70 bg-background text-left text-foreground hover:bg-muted/60 dark:border-white/20 dark:bg-[#0f1116] dark:text-white dark:hover:bg-[#151922]"
+                      >
                         <span className="truncate">{date || `${flowT?.placeholders?.select || "Select"} ${flowT?.fields?.date || "date"}`}</span>
-                        <CalendarIcon className="ml-auto h-4 w-4 text-muted-foreground" />
+                        <CalendarIcon className="ml-auto h-4 w-4 text-muted-foreground dark:text-white/70" />
                       </Button>
                     </PopoverTrigger>
-                    <PopoverContent align="start" className="w-auto p-2">
+                    <PopoverContent
+                      align="start"
+                      className="w-auto rounded-2xl border border-border/70 bg-popover p-2 shadow-xl dark:border-white/20 dark:bg-[#0f1116] dark:text-white"
+                    >
                       <Calendar
                         mode="single"
                         selected={selectedDateObj}
@@ -875,12 +1084,12 @@ export default function BookTablePage() {
                 <div className="space-y-2">
                   <Label>{flowT?.fields?.time || "Time"}</Label>
                   <Select value={time} onValueChange={setTime}>
-                    <SelectTrigger className="h-12 data-[size=default]:h-12 w-full rounded-xl border border-input bg-transparent px-4 shadow-xs">
+                    <SelectTrigger className="h-12 data-[size=default]:h-12 w-full rounded-xl border border-input bg-transparent px-4 shadow-xs dark:border-white/20 dark:bg-[#0f1116] dark:text-white data-[placeholder]:dark:text-white/60">
                       <SelectValue placeholder={flowT?.placeholders?.selectTime || "Select time"} />
                     </SelectTrigger>
-                    <SelectContent>
+                    <SelectContent className="dark:border-white/20 dark:bg-[#0f1116] dark:text-white">
                       {TIME_SLOTS.map((slot) => (
-                        <SelectItem key={slot} value={slot}>{slot}</SelectItem>
+                        <SelectItem key={slot} value={slot} className="dark:text-white dark:focus:bg-white/10 dark:focus:text-white">{slot}</SelectItem>
                       ))}
                     </SelectContent>
                   </Select>
@@ -888,12 +1097,12 @@ export default function BookTablePage() {
                 <div className="space-y-2">
                   <Label>{flowT?.fields?.numberOfGuests || "Number of Guests"}</Label>
                   <Select value={guestCount} onValueChange={setGuestCount}>
-                    <SelectTrigger className="h-12 data-[size=default]:h-12 w-full rounded-xl border border-input bg-transparent px-4 shadow-xs">
+                    <SelectTrigger className="h-12 data-[size=default]:h-12 w-full rounded-xl border border-input bg-transparent px-4 shadow-xs dark:border-white/20 dark:bg-[#0f1116] dark:text-white data-[placeholder]:dark:text-white/60">
                       <SelectValue />
                     </SelectTrigger>
-                    <SelectContent>
+                    <SelectContent className="dark:border-white/20 dark:bg-[#0f1116] dark:text-white">
                       {Array.from({ length: 10 }, (_, i) => i + 1).map((num) => (
-                        <SelectItem key={num} value={String(num)}>
+                        <SelectItem key={num} value={String(num)} className="dark:text-white dark:focus:bg-white/10 dark:focus:text-white">
                           {num} {num === 1 ? (t.booking?.labels?.guestSingular || "Guest") : (t.booking?.labels?.guestPlural || "Guests")}
                         </SelectItem>
                       ))}

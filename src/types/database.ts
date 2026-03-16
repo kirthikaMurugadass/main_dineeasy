@@ -59,7 +59,7 @@ export interface TypographyConfig {
   preset?: "modern" | "elegant" | "minimal" | "classic" | "premium" | null;
 }
 
-export interface ThemeConfig {
+export interface AppearanceSectionConfig {
   mode: "light" | "dark" | "auto";
   primaryColor: string;
   accentColor: string;
@@ -69,6 +69,10 @@ export interface ThemeConfig {
   showLogo: boolean;
   heroBanner?: HeroBannerConfig;
   typography?: TypographyConfig;
+}
+
+export interface ThemeConfig extends AppearanceSectionConfig {
+  bookTableAppearance?: AppearanceSectionConfig;
 }
 
 export const defaultHeroBannerConfig: HeroBannerConfig = {
@@ -115,8 +119,8 @@ export const defaultTypographyConfig: TypographyConfig = {
 
 export const defaultThemeConfig: ThemeConfig = {
   mode: "light",
-  primaryColor: "#3E2723",
-  accentColor: "#C6A75E",
+  primaryColor: "#16A34A",
+  accentColor: "#16A34A",
   fontHeading: "playfair",
   fontBody: "inter",
   headerImageUrl: null,

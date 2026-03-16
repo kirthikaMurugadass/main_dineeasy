@@ -34,9 +34,11 @@ const SubscriptionContext = createContext<SubscriptionContextValue>({
 
 export function SubscriptionProvider({
   restaurantId,
+  restaurantResolved = true,
   children,
 }: {
   restaurantId: string | null;
+  restaurantResolved?: boolean;
   children: ReactNode;
 }) {
   const [state, setState] = useState<SubscriptionState>({
@@ -48,6 +50,11 @@ export function SubscriptionProvider({
 
   useEffect(() => {
     let isCancelled = false;
+    if (!restaurantResolved) {
+      setState((prev) => ({ ...prev, loading: true }));
+      return;
+    }
+
     if (!restaurantId) {
       setState({
         planType: null,
@@ -121,7 +128,7 @@ export function SubscriptionProvider({
       isCancelled = true;
       supabase.removeChannel(channel);
     };
-  }, [restaurantId]);
+  }, [restaurantId, restaurantResolved]);
 
   const value: SubscriptionContextValue = useMemo(
     () => ({

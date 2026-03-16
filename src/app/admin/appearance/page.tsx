@@ -15,9 +15,17 @@ import { FadeIn } from "@/components/motion";
 import { useI18n } from "@/lib/i18n/context";
 import { createClient } from "@/lib/supabase/client";
 import { toast } from "sonner";
-import { defaultThemeConfig, defaultHeroBannerConfig, defaultTypographyConfig, type ThemeConfig, type TypographyConfig } from "@/types/database";
+import {
+  defaultThemeConfig,
+  defaultHeroBannerConfig,
+  defaultTypographyConfig,
+  type AppearanceSectionConfig,
+  type ThemeConfig,
+  type TypographyConfig,
+} from "@/types/database";
 
 const colorPresets = [
+  { name: "Default", primary: "#16A34A", accent: "#16A34A" },
   { name: "Espresso", primary: "#3E2723", accent: "#C6A75E" },
   { name: "Ocean", primary: "#1B3A4B", accent: "#4A9DA8" },
   { name: "Forest", primary: "#2D4A2D", accent: "#8BC34A" },
@@ -121,6 +129,7 @@ const typographyPresets = {
 export default function AppearancePage() {
   const { t, language } = useI18n();
   const router = useRouter();
+  const [appearanceTarget, setAppearanceTarget] = useState<"menu" | "bookTable">("menu");
   const [config, setConfig] = useState<ThemeConfig>(() => ({
     ...defaultThemeConfig,
     typography: defaultTypographyConfig,
@@ -187,6 +196,20 @@ export default function AppearancePage() {
         if (!savedConfig.typography) {
           savedConfig.typography = defaultTypographyConfig;
         }
+        // Ensure Book a Table appearance has complete defaults
+        const existingBook = (savedConfig.bookTableAppearance || {}) as Partial<AppearanceSectionConfig>;
+        savedConfig.bookTableAppearance = {
+          ...defaultThemeConfig,
+          ...existingBook,
+          heroBanner: {
+            ...defaultHeroBannerConfig,
+            ...(existingBook.heroBanner || {}),
+          },
+          typography: {
+            ...defaultTypographyConfig,
+            ...(existingBook.typography || {}),
+          },
+        };
         setConfig(savedConfig);
 
         // Fetch menu ID for preview
@@ -204,21 +227,49 @@ export default function AppearancePage() {
     load();
   }, []);
 
-  // Generate preview URL with current config - memoized to update when config changes
+  const activeSectionConfig = useMemo<AppearanceSectionConfig>(() => {
+    if (appearanceTarget === "menu") {
+      return {
+        ...defaultThemeConfig,
+        ...config,
+      };
+    }
+    return {
+      ...defaultThemeConfig,
+      ...(config.bookTableAppearance || {}),
+    };
+  }, [appearanceTarget, config]);
+
+  function updateActiveSectionConfig(updates: Partial<AppearanceSectionConfig>) {
+    if (appearanceTarget === "menu") {
+      setConfig((prev) => ({ ...prev, ...updates }));
+      return;
+    }
+    setConfig((prev) => ({
+      ...prev,
+      bookTableAppearance: {
+        ...defaultThemeConfig,
+        ...(prev.bookTableAppearance || {}),
+        ...updates,
+      },
+    }));
+  }
+
+  // Generate preview URL with current section config
   const previewUrl = useMemo(() => {
-    if (!restaurantSlug || !menuId) return null;
+    if (!restaurantSlug) return null;
 
     const previewConfig = {
-      mode: config.mode,
-      primaryColor: config.primaryColor,
-      accentColor: config.accentColor,
-      fontHeading: config.fontHeading,
-      fontBody: config.fontBody,
-      showLogo: config.showLogo,
-      headerImageUrl: config.headerImageUrl,
+      mode: activeSectionConfig.mode,
+      primaryColor: activeSectionConfig.primaryColor,
+      accentColor: activeSectionConfig.accentColor,
+      fontHeading: activeSectionConfig.fontHeading,
+      fontBody: activeSectionConfig.fontBody,
+      showLogo: activeSectionConfig.showLogo,
+      headerImageUrl: activeSectionConfig.headerImageUrl,
       logoUrl: logoUrl, // Include current logo URL in preview config
-      heroBanner: config.heroBanner, // Include hero banner config
-      typography: config.typography, // Include typography config
+      heroBanner: activeSectionConfig.heroBanner,
+      typography: activeSectionConfig.typography,
     };
 
     try {
@@ -226,16 +277,19 @@ export default function AppearancePage() {
       if (!previewConfig.typography) {
         previewConfig.typography = {
           ...defaultTypographyConfig,
-          headingFont: config.fontHeading || defaultTypographyConfig.headingFont,
-          bodyFont: config.fontBody || defaultTypographyConfig.bodyFont,
+          headingFont: activeSectionConfig.fontHeading || defaultTypographyConfig.headingFont,
+          bodyFont: activeSectionConfig.fontBody || defaultTypographyConfig.bodyFont,
         };
       }
       
-      const encoded = btoa(JSON.stringify(previewConfig));
+      const encoded = encodeURIComponent(btoa(JSON.stringify(previewConfig)));
       // Add cache-busting timestamp and language for preview sync
       const timestamp = Date.now();
-      const url = `/preview/${restaurantSlug}/${menuId}?config=${encoded}&iframe=true&lang=${language}&t=${timestamp}`;
-      return url;
+      if (appearanceTarget === "menu") {
+        if (!menuId) return null;
+        return `/preview/${restaurantSlug}/${menuId}?config=${encoded}&iframe=true&lang=${language}&t=${timestamp}`;
+      }
+      return `/r/${restaurantSlug}/book-table?config=${encoded}&previewTheme=1&iframe=true&lang=${language}&t=${timestamp}`;
     } catch (error) {
       console.error("Error generating preview URL:", error);
       return null;
@@ -243,32 +297,33 @@ export default function AppearancePage() {
   }, [
     restaurantSlug, 
     menuId, 
-    config.mode, 
-    config.primaryColor, 
-    config.accentColor, 
-    config.fontHeading, 
-    config.fontBody, 
-    config.showLogo, 
-    config.headerImageUrl, 
-    config.heroBanner, 
-    config.typography?.headingFont,
-    config.typography?.bodyFont,
-    config.typography?.accentFont,
-    config.typography?.headingWeight,
-    config.typography?.bodyWeight,
-    config.typography?.heroTitleSize,
-    config.typography?.sectionHeadingSize,
-    config.typography?.categoryTitleSize,
-    config.typography?.itemNameSize,
-    config.typography?.itemDescriptionSize,
-    config.typography?.priceSize,
-    config.typography?.lineHeight,
-    config.typography?.letterSpacing,
-    config.typography?.paragraphSpacing,
-    config.typography?.textPrimary,
-    config.typography?.textSecondary,
-    config.typography?.textMuted,
-    config.typography?.readableMode,
+    appearanceTarget,
+    activeSectionConfig.mode,
+    activeSectionConfig.primaryColor,
+    activeSectionConfig.accentColor,
+    activeSectionConfig.fontHeading,
+    activeSectionConfig.fontBody,
+    activeSectionConfig.showLogo,
+    activeSectionConfig.headerImageUrl,
+    activeSectionConfig.heroBanner,
+    activeSectionConfig.typography?.headingFont,
+    activeSectionConfig.typography?.bodyFont,
+    activeSectionConfig.typography?.accentFont,
+    activeSectionConfig.typography?.headingWeight,
+    activeSectionConfig.typography?.bodyWeight,
+    activeSectionConfig.typography?.heroTitleSize,
+    activeSectionConfig.typography?.sectionHeadingSize,
+    activeSectionConfig.typography?.categoryTitleSize,
+    activeSectionConfig.typography?.itemNameSize,
+    activeSectionConfig.typography?.itemDescriptionSize,
+    activeSectionConfig.typography?.priceSize,
+    activeSectionConfig.typography?.lineHeight,
+    activeSectionConfig.typography?.letterSpacing,
+    activeSectionConfig.typography?.paragraphSpacing,
+    activeSectionConfig.typography?.textPrimary,
+    activeSectionConfig.typography?.textSecondary,
+    activeSectionConfig.typography?.textMuted,
+    activeSectionConfig.typography?.readableMode,
     logoUrl,
     language
   ]);
@@ -293,6 +348,18 @@ export default function AppearancePage() {
           ...defaultTypographyConfig,
           headingFont: config.fontHeading || defaultTypographyConfig.headingFont,
           bodyFont: config.fontBody || defaultTypographyConfig.bodyFont,
+        },
+        bookTableAppearance: {
+          ...defaultThemeConfig,
+          ...(config.bookTableAppearance || {}),
+          heroBanner: {
+            ...defaultHeroBannerConfig,
+            ...((config.bookTableAppearance || {}).heroBanner || {}),
+          },
+          typography: {
+            ...defaultTypographyConfig,
+            ...((config.bookTableAppearance || {}).typography || {}),
+          },
         },
       };
       
@@ -410,12 +477,56 @@ export default function AppearancePage() {
     toast.success(t.admin.appearance.logoRemoved);
   }
 
+  async function handleHeroImageUpload(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const supabase = createClient();
+    const ext = file.name.split(".").pop();
+    const path = `hero-banners/${restaurantId}-${appearanceTarget}.${ext}`;
+
+    const { error } = await supabase.storage.from("public").upload(path, file, {
+      upsert: true,
+    });
+
+    if (error) {
+      toast.error(t.admin.appearance.heroUploadError || "Failed to upload hero image");
+      return;
+    }
+
+    const {
+      data: { publicUrl },
+    } = supabase.storage.from("public").getPublicUrl(path);
+
+    const imageUrl = `${publicUrl}?t=${Date.now()}`;
+    updateActiveSectionConfig({
+      headerImageUrl: imageUrl,
+      heroBanner: {
+        ...(activeSectionConfig.heroBanner || defaultHeroBannerConfig),
+        backgroundImage: imageUrl,
+      },
+    });
+
+    toast.success(t.admin.appearance.heroUploaded || "Hero image uploaded");
+  }
+
+  function handleHeroImageRemove() {
+    updateActiveSectionConfig({
+      headerImageUrl: null,
+      heroBanner: {
+        ...(activeSectionConfig.heroBanner || defaultHeroBannerConfig),
+        backgroundImage: null,
+      },
+    });
+    toast.success(t.admin.appearance.heroRemoved || "Hero image removed");
+  }
+
   function updateTypography(updates: Partial<TypographyConfig>) {
     // Ensure typography always exists with proper defaults
-    const currentTypography = config.typography || {
+    const currentTypography = activeSectionConfig.typography || {
       ...defaultTypographyConfig,
-      headingFont: config.fontHeading || defaultTypographyConfig.headingFont,
-      bodyFont: config.fontBody || defaultTypographyConfig.bodyFont,
+      headingFont: activeSectionConfig.fontHeading || defaultTypographyConfig.headingFont,
+      bodyFont: activeSectionConfig.fontBody || defaultTypographyConfig.bodyFont,
     };
     
     // Create a new typography object to ensure React detects the change
@@ -425,34 +536,35 @@ export default function AppearancePage() {
     };
     
     // Also update legacy font fields if headingFont or bodyFont changed
-    const newConfig: ThemeConfig = {
-      ...config,
+    const sectionUpdates: Partial<AppearanceSectionConfig> = {
       typography: newTypography,
     };
     
     if (updates.headingFont !== undefined) {
-      newConfig.fontHeading = updates.headingFont;
+      sectionUpdates.fontHeading = updates.headingFont;
     }
     if (updates.bodyFont !== undefined) {
-      newConfig.fontBody = updates.bodyFont;
+      sectionUpdates.fontBody = updates.bodyFont;
     }
     
-    setConfig(newConfig);
+    updateActiveSectionConfig(sectionUpdates);
   }
 
   function applyTypographyPreset(preset: keyof typeof typographyPresets) {
     const presetConfig = typographyPresets[preset];
-    setConfig({
-      ...config,
+    updateActiveSectionConfig({
       typography: { ...defaultTypographyConfig, ...presetConfig, preset },
+      fontHeading: presetConfig.headingFont,
+      fontBody: presetConfig.bodyFont,
     });
     toast.success(t.admin.appearance.typographyApplied.replace("{preset}", t.admin.appearance[preset]));
   }
 
   function resetTypography() {
-    setConfig({
-      ...config,
+    updateActiveSectionConfig({
       typography: defaultTypographyConfig,
+      fontHeading: defaultTypographyConfig.headingFont,
+      fontBody: defaultTypographyConfig.bodyFont,
     });
     toast.success(t.admin.appearance.typographyReset);
   }
@@ -466,24 +578,44 @@ export default function AppearancePage() {
   }
 
   return (
-    <div className="space-y-8 overflow-x-hidden">
+    <div className="space-y-6 overflow-x-hidden px-3 sm:space-y-8 sm:px-4 lg:px-6">
       <FadeIn>
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4">
+        <div className="flex flex-col gap-3 sm:gap-4 lg:flex-row lg:items-center lg:justify-between">
           <PageTitle description={t.admin.appearance.description}>
             {t.admin.appearance.title}
           </PageTitle>
-          <Button
-            onClick={handleSave}
-            disabled={saving}
-            className="gap-2 bg-primary text-white hover:bg-primary/90 dark:bg-primary dark:text-white dark:hover:bg-primary/90 w-full sm:w-auto justify-center"
-          >
-            {saving ? <Loader2 size={16} className="animate-spin" /> : <Save size={16} />}
-            {t.admin.appearance.save}
-          </Button>
+          <div className="flex w-full flex-col gap-2 md:flex-row md:flex-wrap md:items-center md:justify-end lg:w-auto">
+            <div className="grid w-full grid-cols-2 items-center gap-1 rounded-xl border border-border/60 bg-muted/20 p-1 sm:w-auto sm:min-w-[220px] sm:grid-cols-2">
+              <Button
+                type="button"
+                variant={appearanceTarget === "menu" ? "default" : "ghost"}
+                className="rounded-lg px-3 text-xs sm:text-sm"
+                onClick={() => setAppearanceTarget("menu")}
+              >
+                Menu
+              </Button>
+              <Button
+                type="button"
+                variant={appearanceTarget === "bookTable" ? "default" : "ghost"}
+                className="rounded-lg px-3 text-xs sm:text-sm"
+                onClick={() => setAppearanceTarget("bookTable")}
+              >
+                Book a Table
+              </Button>
+            </div>
+            <Button
+              onClick={handleSave}
+              disabled={saving}
+              className="w-full justify-center gap-2 bg-primary text-white hover:bg-primary/90 dark:bg-primary dark:text-white dark:hover:bg-primary/90 sm:w-auto md:min-w-[140px]"
+            >
+              {saving ? <Loader2 size={16} className="animate-spin" /> : <Save size={16} />}
+              {t.admin.appearance.save}
+            </Button>
+          </div>
         </div>
       </FadeIn>
 
-      <div className="grid gap-8 lg:grid-cols-[1fr_1fr] max-w-6xl mx-auto px-4 sm:px-6 lg:px-0">
+      <div className="mx-auto grid w-full max-w-6xl gap-6 xl:grid-cols-[minmax(0,1fr)_minmax(360px,420px)] xl:items-start xl:gap-8">
         {/* Left Column: Settings */}
         <div className="space-y-6">
           {/* Theme mode */}
@@ -501,14 +633,14 @@ export default function AppearancePage() {
                 ] as const).map(({ value, labelKey, icon: Icon }) => (
                   <button
                     key={value}
-                    onClick={() => setConfig({ ...config, mode: value })}
+                    onClick={() => updateActiveSectionConfig({ mode: value })}
                     className={`flex flex-col items-center gap-2 rounded-xl border-2 p-4 transition-all ${
-                      config.mode === value
+                      activeSectionConfig.mode === value
                         ? "border-gold bg-gold/5"
                         : "border-border/50 hover:border-border"
                     }`}
                   >
-                    <Icon size={20} className={config.mode === value ? "text-gold" : "text-muted-foreground dark:text-muted-foreground"} />
+                    <Icon size={20} className={activeSectionConfig.mode === value ? "text-gold" : "text-muted-foreground dark:text-muted-foreground"} />
                     <span className="text-xs font-medium text-foreground dark:text-foreground">{t.admin.appearance[labelKey]}</span>
                   </button>
                 ))}
@@ -529,15 +661,12 @@ export default function AppearancePage() {
                 {colorPresets.map((preset) => (
                   <button
                     key={preset.name}
-                    onClick={() =>
-                      setConfig({
-                        ...config,
-                        primaryColor: preset.primary,
-                        accentColor: preset.accent,
-                      })
-                    }
+                    onClick={() => updateActiveSectionConfig({
+                      primaryColor: preset.primary,
+                      accentColor: preset.accent,
+                    })}
                     className={`flex items-center gap-2 rounded-lg border p-2 sm:p-2.5 transition-all ${
-                      config.primaryColor === preset.primary
+                      activeSectionConfig.primaryColor === preset.primary
                         ? "border-gold bg-gold/5"
                         : "border-border/50 hover:border-border"
                     }`}
@@ -564,17 +693,13 @@ export default function AppearancePage() {
                   <div className="flex gap-2">
                     <input
                       type="color"
-                      value={config.primaryColor}
-                      onChange={(e) =>
-                        setConfig({ ...config, primaryColor: e.target.value })
-                      }
+                      value={activeSectionConfig.primaryColor}
+                      onChange={(e) => updateActiveSectionConfig({ primaryColor: e.target.value })}
                       className="h-9 w-9 cursor-pointer rounded border"
                     />
                     <Input
-                      value={config.primaryColor}
-                      onChange={(e) =>
-                        setConfig({ ...config, primaryColor: e.target.value })
-                      }
+                      value={activeSectionConfig.primaryColor}
+                      onChange={(e) => updateActiveSectionConfig({ primaryColor: e.target.value })}
                       className="font-mono text-xs uppercase"
                     />
                   </div>
@@ -584,17 +709,13 @@ export default function AppearancePage() {
                   <div className="flex gap-2">
                     <input
                       type="color"
-                      value={config.accentColor}
-                      onChange={(e) =>
-                        setConfig({ ...config, accentColor: e.target.value })
-                      }
+                      value={activeSectionConfig.accentColor}
+                      onChange={(e) => updateActiveSectionConfig({ accentColor: e.target.value })}
                       className="h-9 w-9 cursor-pointer rounded border"
                     />
                     <Input
-                      value={config.accentColor}
-                      onChange={(e) =>
-                        setConfig({ ...config, accentColor: e.target.value })
-                      }
+                      value={activeSectionConfig.accentColor}
+                      onChange={(e) => updateActiveSectionConfig({ accentColor: e.target.value })}
                       className="font-mono text-xs uppercase"
                     />
                   </div>
@@ -613,10 +734,8 @@ export default function AppearancePage() {
             <CardContent className="space-y-4">
               <div className="flex flex-col sm:flex-row sm:items-center gap-3">
                 <Switch
-                  checked={config.showLogo}
-                  onCheckedChange={(checked) =>
-                    setConfig({ ...config, showLogo: checked })
-                  }
+                  checked={activeSectionConfig.showLogo}
+                  onCheckedChange={(checked) => updateActiveSectionConfig({ showLogo: checked })}
                 />
                 <Label className="text-sm">{t.admin.appearance.showLogoOnMenu}</Label>
               </div>
@@ -634,8 +753,8 @@ export default function AppearancePage() {
                       unoptimized={logoUrl.includes("127.0.0.1") || logoUrl.includes("localhost")}
                     />
                   </div>
-                  <div className="mt-4 flex gap-2">
-                    <label className="flex-1">
+                  <div className="mt-4 flex flex-col gap-2 sm:flex-row">
+                    <label className="w-full sm:flex-1">
                       <input
                         type="file"
                         accept="image/*"
@@ -653,7 +772,7 @@ export default function AppearancePage() {
                       variant="outline"
                       size="sm"
                       onClick={handleLogoRemove}
-                      className="gap-2 text-destructive hover:text-destructive"
+                      className="w-full gap-2 text-destructive hover:text-destructive sm:w-auto"
                     >
                       <X size={14} />
                       {t.admin.appearance.remove}
@@ -684,6 +803,78 @@ export default function AppearancePage() {
           </Card>
         </FadeIn>
 
+        {/* Hero Banner (Book a Table only) */}
+        {appearanceTarget === "bookTable" && (
+        <FadeIn delay={0.28}>
+          <Card className="border-border/50">
+            <CardHeader>
+              <CardTitle className="text-lg">
+                Book a Table Hero Banner
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              {(activeSectionConfig.headerImageUrl || activeSectionConfig.heroBanner?.backgroundImage) ? (
+                <div className="relative rounded-xl border-2 border-border/50 p-4">
+                  <div className="relative mx-auto aspect-video max-w-full overflow-hidden rounded-lg bg-muted/30">
+                    <Image
+                      src={(activeSectionConfig.headerImageUrl || activeSectionConfig.heroBanner?.backgroundImage) as string}
+                      alt="Hero banner"
+                      fill
+                      className="object-cover"
+                      sizes="(max-width: 768px) 100vw, 600px"
+                      unoptimized
+                    />
+                  </div>
+                  <div className="mt-4 flex flex-col gap-2 sm:flex-row">
+                    <label className="w-full sm:flex-1">
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={handleHeroImageUpload}
+                        className="hidden"
+                      />
+                      <Button variant="outline" size="sm" className="w-full gap-2" asChild>
+                        <span>
+                          <Upload size={14} />
+                          {t.admin.appearance.replaceImage || "Replace Image"}
+                        </span>
+                      </Button>
+                    </label>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={handleHeroImageRemove}
+                      className="w-full gap-2 text-destructive hover:text-destructive sm:w-auto"
+                    >
+                      <X size={14} />
+                      {t.admin.appearance.remove}
+                    </Button>
+                  </div>
+                </div>
+              ) : (
+                <div className="flex flex-col items-center justify-center rounded-xl border-2 border-dashed border-border/50 p-8">
+                  <Upload size={24} className="mb-2 text-muted-foreground" />
+                  <p className="mb-3 text-sm text-muted-foreground">
+                    Upload booking hero image
+                  </p>
+                  <label>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={handleHeroImageUpload}
+                      className="hidden"
+                    />
+                    <Button variant="outline" size="sm" asChild>
+                      <span>{t.admin.appearance.chooseFile}</span>
+                    </Button>
+                  </label>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </FadeIn>
+        )}
+
         {/* Typography */}
         <FadeIn delay={0.3}>
           <Card className="border-border/50">
@@ -707,13 +898,13 @@ export default function AppearancePage() {
               {/* Typography Presets */}
               <div className="space-y-2">
                 <Label className="text-xs">{t.admin.appearance.presetStyles}</Label>
-                <div className="grid grid-cols-5 gap-2">
+                <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-5">
                   {(["modern", "elegant", "minimal", "classic", "premium"] as const).map((preset) => (
                     <button
                       key={preset}
                       onClick={() => applyTypographyPreset(preset)}
                       className={`rounded-lg border-2 p-2 text-xs font-medium transition-all ${
-                        config.typography?.preset === preset
+                        activeSectionConfig.typography?.preset === preset
                           ? "border-gold bg-gold/5"
                           : "border-border/50 hover:border-border"
                       }`}
@@ -731,11 +922,11 @@ export default function AppearancePage() {
                   <div className="space-y-1.5">
                     <Label className="text-xs">{t.admin.appearance.headingFont}</Label>
                     <Select
-                      value={config.typography?.headingFont || config.fontHeading || "playfair"}
+                      value={activeSectionConfig.typography?.headingFont || activeSectionConfig.fontHeading || "playfair"}
                       onValueChange={(v) => {
                         updateTypography({ headingFont: v });
                         // Also update legacy fontHeading for backward compatibility
-                        setConfig({ ...config, fontHeading: v });
+                        updateActiveSectionConfig({ fontHeading: v });
                       }}
                     >
                       <SelectTrigger>
@@ -751,18 +942,18 @@ export default function AppearancePage() {
                         ))}
                       </SelectContent>
                     </Select>
-                    <p className="text-[10px] text-muted-foreground" style={{ fontFamily: config.typography?.headingFont === "playfair" ? "Playfair Display" : fontOptions.find(f => f.value === config.typography?.headingFont)?.label }}>
+                    <p className="text-[10px] text-muted-foreground" style={{ fontFamily: activeSectionConfig.typography?.headingFont === "playfair" ? "Playfair Display" : fontOptions.find(f => f.value === activeSectionConfig.typography?.headingFont)?.label }}>
                       Sample: The Quick Brown Fox
                     </p>
                   </div>
                   <div className="space-y-1.5">
                     <Label className="text-xs">{t.admin.appearance.bodyFont}</Label>
                     <Select
-                      value={config.typography?.bodyFont || config.fontBody || "inter"}
+                      value={activeSectionConfig.typography?.bodyFont || activeSectionConfig.fontBody || "inter"}
                       onValueChange={(v) => {
                         updateTypography({ bodyFont: v });
                         // Also update legacy fontBody for backward compatibility
-                        setConfig({ ...config, fontBody: v });
+                        updateActiveSectionConfig({ fontBody: v });
                       }}
                     >
                       <SelectTrigger>
@@ -778,7 +969,7 @@ export default function AppearancePage() {
                         ))}
                       </SelectContent>
                     </Select>
-                    <p className="text-[10px] text-muted-foreground" style={{ fontFamily: config.typography?.bodyFont === "inter" ? "Inter" : fontOptions.find(f => f.value === config.typography?.bodyFont)?.label }}>
+                    <p className="text-[10px] text-muted-foreground" style={{ fontFamily: activeSectionConfig.typography?.bodyFont === "inter" ? "Inter" : fontOptions.find(f => f.value === activeSectionConfig.typography?.bodyFont)?.label }}>
                       Sample: Lorem ipsum dolor sit amet
                     </p>
                   </div>
@@ -786,7 +977,7 @@ export default function AppearancePage() {
                 <div className="space-y-1.5">
                   <Label className="text-xs">{t.admin.appearance.accentFont}</Label>
                   <Select
-                    value={config.typography?.accentFont || "none"}
+                    value={activeSectionConfig.typography?.accentFont || "none"}
                     onValueChange={(v) => updateTypography({ accentFont: v === "none" ? undefined : v })}
                   >
                     <SelectTrigger>
@@ -811,7 +1002,7 @@ export default function AppearancePage() {
                   <div className="space-y-1.5">
                     <Label className="text-xs">{t.admin.appearance.headingWeight}</Label>
                     <Select
-                      value={config.typography?.headingWeight || "400"}
+                      value={activeSectionConfig.typography?.headingWeight || "400"}
                       onValueChange={(v) => updateTypography({ headingWeight: v as TypographyConfig["headingWeight"] })}
                     >
                       <SelectTrigger>
@@ -830,7 +1021,7 @@ export default function AppearancePage() {
                   <div className="space-y-1.5">
                     <Label className="text-xs">{t.admin.appearance.bodyWeight}</Label>
                     <Select
-                      value={config.typography?.bodyWeight || "400"}
+                      value={activeSectionConfig.typography?.bodyWeight || "400"}
                       onValueChange={(v) => updateTypography({ bodyWeight: v as TypographyConfig["bodyWeight"] })}
                     >
                       <SelectTrigger>
@@ -854,11 +1045,11 @@ export default function AppearancePage() {
                 <Label className="text-xs">{t.admin.appearance.fontSizes}</Label>
                 <div className="space-y-4">
                   <div className="space-y-1.5">
-                  image.png                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1 sm:gap-0">
-                      <Label className="text-xs">{t.admin.appearance.heroTitle}: {config.typography?.heroTitleSize || 4.5}rem</Label>
+                    <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between sm:gap-0">
+                      <Label className="text-xs">{t.admin.appearance.heroTitle}: {activeSectionConfig.typography?.heroTitleSize || 4.5}rem</Label>
                       <Select
                         value={(() => {
-                          const heroSize = config.typography?.heroTitleSize || 4.5;
+                          const heroSize = activeSectionConfig.typography?.heroTitleSize || 4.5;
                           if (heroSize <= 3.5) return "compact";
                           if (heroSize >= 5.5) return "spacious";
                           return "balanced";
@@ -888,67 +1079,67 @@ export default function AppearancePage() {
                       min="2"
                       max="8"
                       step="0.25"
-                      value={config.typography?.heroTitleSize || 4.5}
+                      value={activeSectionConfig.typography?.heroTitleSize || 4.5}
                       onChange={(e) => updateTypography({ heroTitleSize: parseFloat(e.target.value) })}
                       className="w-full"
                     />
                   </div>
                   <div className="space-y-1.5">
-                    <Label className="text-xs">{t.admin.appearance.sectionHeading}: {config.typography?.sectionHeadingSize || 2.5}rem</Label>
+                    <Label className="text-xs">{t.admin.appearance.sectionHeading}: {activeSectionConfig.typography?.sectionHeadingSize || 2.5}rem</Label>
                     <input
                       type="range"
                       min="1.5"
                       max="4"
                       step="0.25"
-                      value={config.typography?.sectionHeadingSize || 2.5}
+                      value={activeSectionConfig.typography?.sectionHeadingSize || 2.5}
                       onChange={(e) => updateTypography({ sectionHeadingSize: parseFloat(e.target.value) })}
                       className="w-full"
                     />
                   </div>
                   <div className="space-y-1.5">
-                    <Label className="text-xs">{t.admin.appearance.categoryTitle}: {config.typography?.categoryTitleSize || 1.5}rem</Label>
+                    <Label className="text-xs">{t.admin.appearance.categoryTitle}: {activeSectionConfig.typography?.categoryTitleSize || 1.5}rem</Label>
                     <input
                       type="range"
                       min="1"
                       max="2.5"
                       step="0.125"
-                      value={config.typography?.categoryTitleSize || 1.5}
+                      value={activeSectionConfig.typography?.categoryTitleSize || 1.5}
                       onChange={(e) => updateTypography({ categoryTitleSize: parseFloat(e.target.value) })}
                       className="w-full"
                     />
                   </div>
                   <div className="space-y-1.5">
-                    <Label className="text-xs">{t.admin.appearance.itemName}: {config.typography?.itemNameSize || 1.1}rem</Label>
+                    <Label className="text-xs">{t.admin.appearance.itemName}: {activeSectionConfig.typography?.itemNameSize || 1.1}rem</Label>
                     <input
                       type="range"
                       min="0.875"
                       max="1.5"
                       step="0.125"
-                      value={config.typography?.itemNameSize || 1.1}
+                      value={activeSectionConfig.typography?.itemNameSize || 1.1}
                       onChange={(e) => updateTypography({ itemNameSize: parseFloat(e.target.value) })}
                       className="w-full"
                     />
                   </div>
                   <div className="space-y-1.5">
-                    <Label className="text-xs">{t.admin.appearance.itemDescription}: {config.typography?.itemDescriptionSize || 0.875}rem</Label>
+                    <Label className="text-xs">{t.admin.appearance.itemDescription}: {activeSectionConfig.typography?.itemDescriptionSize || 0.875}rem</Label>
                     <input
                       type="range"
                       min="0.75"
                       max="1.125"
                       step="0.0625"
-                      value={config.typography?.itemDescriptionSize || 0.875}
+                      value={activeSectionConfig.typography?.itemDescriptionSize || 0.875}
                       onChange={(e) => updateTypography({ itemDescriptionSize: parseFloat(e.target.value) })}
                       className="w-full"
                     />
                   </div>
                   <div className="space-y-1.5">
-                    <Label className="text-xs">{t.admin.appearance.price}: {config.typography?.priceSize || 1.125}rem</Label>
+                    <Label className="text-xs">{t.admin.appearance.price}: {activeSectionConfig.typography?.priceSize || 1.125}rem</Label>
                     <input
                       type="range"
                       min="0.875"
                       max="1.5"
                       step="0.125"
-                      value={config.typography?.priceSize || 1.125}
+                      value={activeSectionConfig.typography?.priceSize || 1.125}
                       onChange={(e) => updateTypography({ priceSize: parseFloat(e.target.value) })}
                       className="w-full"
                     />
@@ -961,25 +1152,25 @@ export default function AppearancePage() {
                 <Label className="text-xs">{t.admin.appearance.lineHeightSpacing}</Label>
                 <div className="space-y-4">
                   <div className="space-y-1.5">
-                    <Label className="text-xs">{t.admin.appearance.lineHeight}: {config.typography?.lineHeight || 1.6}x</Label>
+                    <Label className="text-xs">{t.admin.appearance.lineHeight}: {activeSectionConfig.typography?.lineHeight || 1.6}x</Label>
                     <input
                       type="range"
                       min="1.2"
                       max="2.2"
                       step="0.1"
-                      value={config.typography?.lineHeight || 1.6}
+                      value={activeSectionConfig.typography?.lineHeight || 1.6}
                       onChange={(e) => updateTypography({ lineHeight: parseFloat(e.target.value) })}
                       className="w-full"
                     />
                   </div>
                   <div className="space-y-1.5">
-                    <Label className="text-xs">{t.admin.appearance.letterSpacing}: {config.typography?.letterSpacing || 0}em</Label>
+                    <Label className="text-xs">{t.admin.appearance.letterSpacing}: {activeSectionConfig.typography?.letterSpacing || 0}em</Label>
                     <input
                       type="range"
                       min="-0.02"
                       max="0.05"
                       step="0.005"
-                      value={config.typography?.letterSpacing || 0}
+                      value={activeSectionConfig.typography?.letterSpacing || 0}
                       onChange={(e) => updateTypography({ letterSpacing: parseFloat(e.target.value) })}
                       className="w-full"
                     />
@@ -987,7 +1178,7 @@ export default function AppearancePage() {
                   <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1 sm:gap-0">
                     <Label className="text-xs">{t.admin.appearance.paragraphSpacing}</Label>
                     <Switch
-                      checked={config.typography?.paragraphSpacing !== false}
+                      checked={activeSectionConfig.typography?.paragraphSpacing !== false}
                       onCheckedChange={(checked) => updateTypography({ paragraphSpacing: checked })}
                     />
                   </div>
@@ -1003,12 +1194,12 @@ export default function AppearancePage() {
                     <div className="flex gap-2">
                       <input
                         type="color"
-                        value={config.typography?.textPrimary || "#000000"}
+                        value={activeSectionConfig.typography?.textPrimary || "#000000"}
                         onChange={(e) => updateTypography({ textPrimary: e.target.value })}
                         className="h-9 w-9 cursor-pointer rounded border"
                       />
                       <Input
-                        value={config.typography?.textPrimary || ""}
+                        value={activeSectionConfig.typography?.textPrimary || ""}
                         onChange={(e) => updateTypography({ textPrimary: e.target.value || null })}
                         placeholder="Auto"
                         className="font-mono text-xs uppercase"
@@ -1020,12 +1211,12 @@ export default function AppearancePage() {
                     <div className="flex gap-2">
                       <input
                         type="color"
-                        value={config.typography?.textSecondary || "#000000"}
+                        value={activeSectionConfig.typography?.textSecondary || "#000000"}
                         onChange={(e) => updateTypography({ textSecondary: e.target.value })}
                         className="h-9 w-9 cursor-pointer rounded border"
                       />
                       <Input
-                        value={config.typography?.textSecondary || ""}
+                        value={activeSectionConfig.typography?.textSecondary || ""}
                         onChange={(e) => updateTypography({ textSecondary: e.target.value || null })}
                         placeholder="Auto"
                         className="font-mono text-xs uppercase"
@@ -1037,12 +1228,12 @@ export default function AppearancePage() {
                     <div className="flex gap-2">
                       <input
                         type="color"
-                        value={config.typography?.textMuted || "#000000"}
+                        value={activeSectionConfig.typography?.textMuted || "#000000"}
                         onChange={(e) => updateTypography({ textMuted: e.target.value })}
                         className="h-9 w-9 cursor-pointer rounded border"
                       />
                       <Input
-                        value={config.typography?.textMuted || ""}
+                        value={activeSectionConfig.typography?.textMuted || ""}
                         onChange={(e) => updateTypography({ textMuted: e.target.value || null })}
                         placeholder="Auto"
                         className="font-mono text-xs uppercase"
@@ -1062,7 +1253,7 @@ export default function AppearancePage() {
                     </p>
                   </div>
                   <Switch
-                    checked={config.typography?.readableMode || false}
+                    checked={activeSectionConfig.typography?.readableMode || false}
                     onCheckedChange={(checked) => {
                       if (checked) {
                         updateTypography({
@@ -1090,24 +1281,24 @@ export default function AppearancePage() {
         {/* Right Column: Live Preview */}
         <FadeIn delay={0.2}>
           {/* Sticky only on large screens to avoid clipping on mobile */}
-          <Card className="border-border/50 lg:sticky lg:top-6 h-fit w-full max-w-full overflow-hidden">
+          <Card className="h-fit w-full max-w-full overflow-hidden border-border/50 xl:sticky xl:top-6">
             <CardHeader>
               <div className="flex items-center justify-between">
                 <CardTitle className="text-lg flex items-center gap-2">
                   <Eye size={18} />
                   {t.admin.appearance.livePreview}
                 </CardTitle>
-                {!menuId && (
+                {appearanceTarget === "menu" && !menuId && (
                   <p className="text-xs text-muted-foreground">
                     {t.admin.appearance.createMenuToPreview}
                   </p>
                 )}
               </div>
             </CardHeader>
-            <CardContent className="p-3 sm:p-6 overflow-x-hidden">
-              {menuId && previewUrl ? (
-                <div className="flex justify-center">
-                  <div className="relative w-full max-w-full sm:max-w-[420px] overflow-hidden rounded-lg border border-border/50 bg-muted/20">
+            <CardContent className="overflow-x-hidden p-3 sm:p-4 lg:p-6">
+              {previewUrl ? (
+                <div className="flex w-full justify-center">
+                  <div className="relative w-full overflow-hidden rounded-lg border border-border/50 bg-muted/20">
                     {previewLoading && (
                       <div className="absolute inset-0 z-10 flex items-center justify-center bg-muted/50">
                         <Loader2 className="h-8 w-8 animate-spin text-gold" />
@@ -1125,7 +1316,9 @@ export default function AppearancePage() {
                             setPreviewError(null);
                             setPreviewLoading(true);
                             // Force iframe reload by updating key
-                            const iframe = document.querySelector('iframe[title="Menu Preview"]') as HTMLIFrameElement;
+                            const iframe = document.querySelector(
+                              `iframe[title="${appearanceTarget === "menu" ? "Menu Preview" : "Book Table Preview"}"]`
+                            ) as HTMLIFrameElement;
                             if (iframe) {
                               iframe.src = iframe.src;
                             }
@@ -1136,13 +1329,13 @@ export default function AppearancePage() {
                       </div>
                     )}
                     {/* Simple responsive preview container */}
-                    <div className="relative py-4">
-                      <div className="relative mx-auto w-full max-w-[420px] aspect-[9/16] overflow-hidden rounded-[32px] shadow-lg bg-background">
+                    <div className="relative px-1 py-2 sm:px-2 sm:py-4">
+                      <div className="relative mx-auto aspect-[9/19] w-full max-w-[min(100%,430px)] overflow-hidden rounded-[24px] bg-background shadow-lg sm:rounded-[32px]">
                         <iframe
-                          key={`${previewUrl}-${language}-${config.typography?.headingFont}-${config.typography?.bodyFont}-${config.typography?.headingWeight}-${config.typography?.bodyWeight}`}
+                          key={`${previewUrl}-${language}-${activeSectionConfig.typography?.headingFont}-${activeSectionConfig.typography?.bodyFont}-${activeSectionConfig.typography?.headingWeight}-${activeSectionConfig.typography?.bodyWeight}`}
                           src={previewUrl}
                           className="block w-full h-full border-0 rounded-[32px]"
-                          title="Menu Preview"
+                          title={appearanceTarget === "menu" ? "Menu Preview" : "Book Table Preview"}
                           style={{
                             backgroundColor: "transparent",
                           }}
@@ -1171,7 +1364,7 @@ export default function AppearancePage() {
                     {t.admin.appearance.noPreviewAvailable}
                   </p>
                   <p className="text-xs text-muted-foreground">
-                    {!menuId
+                    {appearanceTarget === "menu" && !menuId
                       ? t.admin.appearance.createMenuFirst
                       : t.admin.appearance.unableToLoadPreview}
                   </p>

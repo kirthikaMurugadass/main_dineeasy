@@ -13,25 +13,30 @@ import { ScrollToTop } from "@/components/ui/scroll-to-top";
 
 function AdminLayoutInner({ children }: { children: React.ReactNode }) {
   const [restaurantId, setRestaurantId] = useState<string | null>(null);
+  const [restaurantResolved, setRestaurantResolved] = useState(false);
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
     setMounted(true);
     async function loadRestaurantId() {
-      const supabase = createClient();
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
-      if (!user) return;
+      try {
+        const supabase = createClient();
+        const {
+          data: { user },
+        } = await supabase.auth.getUser();
+        if (!user) return;
 
-      const { data: restaurant } = await supabase
-        .from("restaurants")
-        .select("id")
-        .eq("owner_id", user.id)
-        .single();
+        const { data: restaurant } = await supabase
+          .from("restaurants")
+          .select("id")
+          .eq("owner_id", user.id)
+          .single();
 
-      if (restaurant) {
-        setRestaurantId(restaurant.id);
+        if (restaurant) {
+          setRestaurantId(restaurant.id);
+        }
+      } finally {
+        setRestaurantResolved(true);
       }
     }
     loadRestaurantId();
@@ -39,7 +44,7 @@ function AdminLayoutInner({ children }: { children: React.ReactNode }) {
 
   return (
     <SidebarProvider>
-      <SubscriptionProvider restaurantId={restaurantId}>
+      <SubscriptionProvider restaurantId={restaurantId} restaurantResolved={restaurantResolved}>
         <OrderNotificationProvider restaurantId={restaurantId}>
           <BookingNotificationProvider restaurantId={restaurantId}>
             <AdminSidebar />

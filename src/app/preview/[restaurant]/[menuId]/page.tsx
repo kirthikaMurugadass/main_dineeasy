@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { PublicMenuView } from "@/components/menu/public-menu-view";
 import { PreviewBanner } from "@/components/menu/preview-banner";
+import { PublicThemeProvider } from "@/components/providers/public-theme-provider";
 import type { PublicRestaurantData, Language, ThemeConfig } from "@/types/database";
 import { defaultThemeConfig } from "@/types/database";
 import type { Metadata } from "next";
@@ -216,10 +217,17 @@ export default async function PreviewPage({ params, searchParams }: PageProps) {
   let previewConfig: ThemeConfig & { logoUrl?: string | null } | null = null;
   if (configParam) {
     try {
-      const decoded = JSON.parse(atob(configParam));
+      const maybeDecoded = decodeURIComponent(configParam);
+      const decoded = JSON.parse(atob(maybeDecoded));
       previewConfig = decoded as ThemeConfig & { logoUrl?: string | null };
     } catch {
-      // Invalid config, ignore
+      try {
+        // Backward compatibility for unencoded config values
+        const decoded = JSON.parse(atob(configParam));
+        previewConfig = decoded as ThemeConfig & { logoUrl?: string | null };
+      } catch {
+        // Invalid config, ignore
+      }
     }
   }
 
@@ -260,19 +268,29 @@ export default async function PreviewPage({ params, searchParams }: PageProps) {
   // For iframe mode, wrap in a container that ensures proper rendering
   if (isIframe) {
     return (
-      <div style={{ minHeight: "100vh", backgroundColor: "transparent" }}>
-        <PublicMenuView
-          data={viewData}
-          restaurantId={data.restaurantId}
-          menuId={menuId}
-          initialLang={validatedLang}
-        />
-      </div>
+      <PublicThemeProvider
+        restaurantSlug={restaurant}
+        themeConfig={viewData.restaurant.theme_config}
+        persistUserPreference={false}
+      >
+        <div style={{ minHeight: "100vh", backgroundColor: "transparent" }}>
+          <PublicMenuView
+            data={viewData}
+            restaurantId={data.restaurantId}
+            menuId={menuId}
+            initialLang={validatedLang}
+          />
+        </div>
+      </PublicThemeProvider>
     );
   }
 
   return (
-    <>
+    <PublicThemeProvider
+      restaurantSlug={restaurant}
+      themeConfig={viewData.restaurant.theme_config}
+      persistUserPreference={false}
+    >
       <PreviewBanner restaurantSlug={restaurant} menuId={menuId} />
       <PublicMenuView
         data={viewData}
@@ -280,6 +298,6 @@ export default async function PreviewPage({ params, searchParams }: PageProps) {
         menuId={menuId}
         initialLang={validatedLang}
       />
-    </>
+    </PublicThemeProvider>
   );
 }
