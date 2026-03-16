@@ -27,6 +27,8 @@ import {
   Lock,
   Clock,
   CheckCircle,
+  Search,
+  CalendarDays,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -1197,7 +1199,7 @@ export default function AdminDashboard() {
 
   return (
     <div
-      className="space-y-6 pb-8 text-[13px] dark:bg-[#000000]"
+      className="space-y-6 overflow-x-hidden pb-8 text-[13px] dark:bg-[#000000]"
       style={{ fontFamily: "Inter, ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif" }}
     >
       {/* Welcome Card */}
@@ -1205,56 +1207,61 @@ export default function AdminDashboard() {
         initial={{ opacity: 0, y: 30 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.7, ease: [0.4, 0, 0.2, 1] }}
-        className="group relative overflow-hidden rounded-3xl border border-primary/20 bg-gradient-to-r from-primary/12 via-primary/8 to-primary/10 px-6 py-5 shadow-lg transition-all duration-500 sm:px-8 sm:py-6"
+        className="group relative overflow-hidden rounded-3xl border border-primary/20 bg-gradient-to-r from-primary/12 via-primary/8 to-primary/10 px-4 py-5 shadow-lg transition-all duration-500 sm:px-6 sm:py-6 lg:px-8"
       >
         {/* Decorative green circles (reference-style) */}
         <div className="pointer-events-none absolute -left-10 bottom-0 h-24 w-24 rounded-full bg-primary/30" />
         <div className="pointer-events-none absolute left-[52%] top-[34%] h-3.5 w-3.5 rounded-full bg-primary/35" />
         <div className="pointer-events-none absolute left-[47%] bottom-[22%] h-4.5 w-4.5 rounded-full bg-primary/30" />
-        <div className="pointer-events-none absolute right-0 top-0 hidden h-full w-[320px] sm:block">
-          <div className="absolute right-20 top-[56%] flex -translate-y-1/2 items-center justify-center">
+        <div className="pointer-events-none absolute right-0 top-0 hidden h-full w-[320px] md:block">
+          <div className="absolute right-0 top-0 h-full w-full bg-gradient-to-l from-primary/10 to-transparent" />
+        </div>
+
+        <div className="relative z-10 flex w-full items-start justify-between gap-4 sm:gap-6 md:items-center">
+          <div className="min-w-0 flex-1">
+            <motion.p
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.2 }}
+              className="text-sm font-bold tracking-wide text-foreground/90 sm:text-base"
+            >
+              {greetingPrefix}
+              <span className="text-primary">{userName || "Admin"}</span>
+              {greetingSuffix}
+            </motion.p>
+            <motion.h1
+              initial={{ opacity: 0, y: 12 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.3 }}
+              className="mt-2.5 text-3xl font-bold tracking-tight text-foreground sm:text-4xl md:text-[42px]"
+            >
+              {welcomeHeadline}
+            </motion.h1>
+            <motion.p
+              initial={{ opacity: 0, y: 12 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.4 }}
+              className="mt-3 max-w-4xl text-sm text-muted-foreground sm:text-base"
+            >
+              {t.dashboard?.welcomeSubtitle || "Manage your restaurant operations, orders, and reservations easily."}
+            </motion.p>
+          </div>
+
+          <div className="relative h-11 w-11 shrink-0 overflow-hidden rounded-full border border-primary/20 bg-background/70 shadow-sm sm:h-14 sm:w-14 md:h-20 md:w-20">
             {restaurantLogo ? (
-              <img
+              <Image
                 src={restaurantLogo}
                 alt="Restaurant logo"
-                className="h-20 w-20 rounded-full object-cover ring-1 ring-primary/20"
+                fill
+                sizes="(max-width: 640px) 44px, (max-width: 768px) 56px, 80px"
+                className="object-cover"
               />
             ) : (
-              <span className="text-lg font-semibold text-primary/70">
+              <span className="flex h-full w-full items-center justify-center text-lg font-semibold text-primary/70 sm:text-xl">
                 {(restaurantName || "R").charAt(0).toUpperCase()}
               </span>
             )}
           </div>
-          <div className="absolute right-0 top-0 h-full w-full bg-gradient-to-l from-primary/10 to-transparent" />
-        </div>
-
-        <div className="relative z-10 w-full pr-0">
-          <motion.p
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.2 }}
-            className="text-sm font-bold tracking-wide text-foreground/90 sm:text-base"
-          >
-            {greetingPrefix}
-            <span className="text-primary">{userName || "Admin"}</span>
-            {greetingSuffix}
-          </motion.p>
-          <motion.h1
-            initial={{ opacity: 0, y: 12 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.3 }}
-            className="mt-2.5 text-3xl font-bold tracking-tight text-foreground sm:text-[42px]"
-          >
-            {welcomeHeadline}
-          </motion.h1>
-          <motion.p
-            initial={{ opacity: 0, y: 12 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.4 }}
-            className="mt-3 max-w-4xl text-sm text-muted-foreground sm:text-base"
-          >
-            {t.dashboard?.welcomeSubtitle || "Manage your restaurant operations, orders, and reservations easily."}
-          </motion.p>
         </div>
       </motion.div>
 
@@ -1319,7 +1326,7 @@ export default function AdminDashboard() {
         transition={{ delay: 0.2 }}
         className="space-y-4"
       >
-        <div className="flex items-center justify-between">
+          <div className="flex flex-col items-start justify-between gap-2 sm:flex-row sm:items-center">
           <h2 className="text-xl font-bold text-foreground dark:text-[#ffffff]">
             {t.dashboard?.liveBusinessOverview || "Live Business Overview"}
           </h2>
@@ -1372,18 +1379,66 @@ export default function AdminDashboard() {
                 <CardTitle className="text-base font-bold tracking-tight text-foreground dark:text-[#ffffff]">
                   {t.dashboard?.recentOrders?.title || "Recent Orders"}
                 </CardTitle>
-                <div className="flex w-full items-center gap-2 sm:w-auto">
-                  <div className="flex h-7 min-w-[200px] items-center rounded-lg border border-border/80 bg-muted/20 px-2.5 text-[11px] text-muted-foreground">
+                <div className="flex w-full flex-wrap items-center gap-2 sm:w-auto sm:flex-nowrap">
+                  <div className="flex h-8 w-full min-w-0 items-center gap-2 rounded-lg border border-border/80 bg-muted/20 px-2.5 text-[11px] text-muted-foreground sm:h-7 sm:min-w-[220px] sm:w-auto">
+                    <Search className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
                     {t.dashboard?.recentOrders?.searchPlaceholder || "Search placeholder"}
                   </div>
-                  <Button variant="outline" size="sm" className="h-7 rounded-lg px-3 text-[11px] font-semibold">
+                  <Button variant="outline" size="sm" className="h-8 w-full rounded-lg px-3 text-[11px] font-semibold sm:h-7 sm:w-auto">
                     {t.dashboard?.recentOrders?.seeAllOrders || "See All Orders"}
                   </Button>
                 </div>
               </div>
             </CardHeader>
             <CardContent className="pt-0">
-              <div className="overflow-x-auto" style={{ fontFamily: "Inter, ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif" }}>
+              <div className="space-y-2 md:hidden">
+                {loading ? (
+                  <div className="rounded-xl border border-border/70 p-4 text-center text-sm text-muted-foreground">
+                    {t.dashboard?.liveOrderActivity?.loading || "Loading orders..."}
+                  </div>
+                ) : orders.length === 0 ? (
+                  <div className="rounded-xl border border-border/70 p-4 text-center text-sm text-muted-foreground">
+                    {t.dashboard?.liveOrderActivity?.noOrders || "No orders yet"}
+                  </div>
+                ) : (
+                  orders.map((order) => {
+                    const amount = order.items?.reduce((sum, item) => sum + ((item.price || 0) * (item.quantity || 0)), 0) || 0;
+                    const orderType = (order.order_type || "").toLowerCase();
+                    const typeLabel =
+                      orderType === "dine_in" || orderType === "dine-in"
+                        ? (t.dashboard?.recentOrders?.dineIn || "Dine-in")
+                        : orderType === "takeaway"
+                        ? (t.dashboard?.recentOrders?.takeaway || "Takeaway")
+                        : (t.dashboard?.recentOrders?.delivery || "Delivery");
+
+                    return (
+                      <div key={order.id} className="rounded-xl border border-border/70 p-3">
+                        <div className="flex items-start justify-between gap-3">
+                          <div className="min-w-0">
+                            <p className="text-xs text-muted-foreground">{t.dashboard?.recentOrders?.orderId || "Order ID"}</p>
+                            <p className="truncate text-sm font-semibold text-foreground dark:text-[#ffffff]">
+                              #{order.id.slice(0, 8).toLowerCase()}
+                            </p>
+                          </div>
+                          <span className="inline-flex items-center rounded-full border border-green-200/70 bg-green-50/70 px-2 py-0.5 text-[11px] font-medium text-green-700 dark:border-green-900/40 dark:bg-green-900/20 dark:text-green-300">
+                            {typeLabel}
+                          </span>
+                        </div>
+                        <div className="mt-3 flex items-center justify-between gap-3">
+                          <p className="truncate text-sm font-semibold text-foreground dark:text-[#ffffff]">
+                            {order.customer_name || t.dashboard?.recentOrders?.guest || "Guest"}
+                          </p>
+                          <p className="shrink-0 text-sm font-semibold text-foreground dark:text-[#ffffff]">
+                            CHF {amount.toFixed(2)}
+                          </p>
+                        </div>
+                      </div>
+                    );
+                  })
+                )}
+              </div>
+
+              <div className="hidden overflow-x-auto md:block" style={{ fontFamily: "Inter, ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif" }}>
                 <table className="w-full min-w-full text-[12px]">
                   <thead>
                     <tr className="border-b border-border/70 text-left text-[10px] uppercase tracking-[0.08em] text-muted-foreground/80">
@@ -1479,7 +1534,7 @@ export default function AdminDashboard() {
                 <CardTitle className="text-base font-bold text-foreground dark:text-[#ffffff]">
                   {t.dashboard?.todaysBookings?.title || "Today's Bookings"}
                 </CardTitle>
-                <span className="text-xs font-medium text-muted-foreground">{currentDateKey}</span>
+                <span className="whitespace-nowrap text-xs font-medium text-muted-foreground">{currentDateKey}</span>
               </div>
             </CardHeader>
             <CardContent className="pt-0">
@@ -1488,27 +1543,50 @@ export default function AdminDashboard() {
                   {t.dashboard?.todaysBookings?.empty || "No bookings scheduled for today."}
                 </div>
               ) : (
-                <div className="overflow-x-auto">
-                  <table className="w-full min-w-[620px] text-sm">
-                    <thead>
-                      <tr className="border-b border-border/80 text-left text-xs uppercase tracking-wide text-muted-foreground">
-                        <th className="py-3 pr-3 font-semibold">{t.dashboard?.todaysBookings?.customerName || "Customer Name"}</th>
-                        <th className="py-3 pr-3 font-semibold">{t.dashboard?.todaysBookings?.bookingTime || "Booking Time"}</th>
-                        <th className="py-3 pr-3 font-semibold">{t.dashboard?.todaysBookings?.numberOfGuests || "Number of Guests"}</th>
-                        <th className="py-3 font-semibold">{t.dashboard?.todaysBookings?.tableNumber || "Table Number"}</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {todaysBookingsList.map((booking, idx) => (
-                        <tr key={`${booking.table_id}-${booking.booking_time}-${idx}`} className="border-b border-border/60 transition-colors hover:bg-muted/20 last:border-b-0">
-                          <td className="py-3 pr-3 text-foreground dark:text-[#ffffff]">{booking.customer_name || t.dashboard?.recentOrders?.guest || "Guest"}</td>
-                          <td className="py-3 pr-3 text-muted-foreground">{booking.booking_time || "-"}</td>
-                          <td className="py-3 pr-3 text-muted-foreground">{booking.guest_count ?? "-"}</td>
-                          <td className="py-3 text-muted-foreground">{tableNameById.get(booking.table_id) || "-"}</td>
+                <div className="space-y-2">
+                  <div className="space-y-2 md:hidden">
+                    {todaysBookingsList.map((booking, idx) => (
+                      <div key={`${booking.table_id}-${booking.booking_time}-${idx}`} className="rounded-xl border border-border/70 p-3">
+                        <p className="truncate text-sm font-semibold text-foreground dark:text-[#ffffff]">
+                          {booking.customer_name || t.dashboard?.recentOrders?.guest || "Guest"}
+                        </p>
+                        <div className="mt-2 grid grid-cols-2 gap-2 text-xs">
+                          <p className="text-muted-foreground">
+                            {t.dashboard?.todaysBookings?.bookingTime || "Booking Time"}: {booking.booking_time || "-"}
+                          </p>
+                          <p className="text-muted-foreground">
+                            {t.dashboard?.todaysBookings?.numberOfGuests || "Number of Guests"}: {booking.guest_count ?? "-"}
+                          </p>
+                          <p className="col-span-2 text-muted-foreground">
+                            {t.dashboard?.todaysBookings?.tableNumber || "Table Number"}: {tableNameById.get(booking.table_id) || "-"}
+                          </p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+
+                  <div className="hidden overflow-x-auto md:block">
+                    <table className="w-full min-w-[620px] text-sm">
+                      <thead>
+                        <tr className="border-b border-border/80 text-left text-xs uppercase tracking-wide text-muted-foreground">
+                          <th className="py-3 pr-3 font-semibold">{t.dashboard?.todaysBookings?.customerName || "Customer Name"}</th>
+                          <th className="py-3 pr-3 font-semibold">{t.dashboard?.todaysBookings?.bookingTime || "Booking Time"}</th>
+                          <th className="py-3 pr-3 font-semibold">{t.dashboard?.todaysBookings?.numberOfGuests || "Number of Guests"}</th>
+                          <th className="py-3 font-semibold">{t.dashboard?.todaysBookings?.tableNumber || "Table Number"}</th>
                         </tr>
-                      ))}
-                    </tbody>
-                  </table>
+                      </thead>
+                      <tbody>
+                        {todaysBookingsList.map((booking, idx) => (
+                          <tr key={`${booking.table_id}-${booking.booking_time}-${idx}`} className="border-b border-border/60 transition-colors hover:bg-muted/20 last:border-b-0">
+                            <td className="py-3 pr-3 text-foreground dark:text-[#ffffff]">{booking.customer_name || t.dashboard?.recentOrders?.guest || "Guest"}</td>
+                            <td className="py-3 pr-3 text-muted-foreground">{booking.booking_time || "-"}</td>
+                            <td className="py-3 pr-3 text-muted-foreground">{booking.guest_count ?? "-"}</td>
+                            <td className="py-3 text-muted-foreground">{tableNameById.get(booking.table_id) || "-"}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
                 </div>
               )}
             </CardContent>
@@ -1553,7 +1631,7 @@ export default function AdminDashboard() {
                 trendingMenus.map((dish) => (
                   <div
                     key={dish.id}
-                    className="flex items-center gap-3 rounded-xl border border-border/70 bg-[#FFFFFF] p-3 shadow-sm dark:border-[#1f1f1f] dark:bg-[#0f0f0f]"
+                    className="flex flex-col items-start gap-3 rounded-xl border border-border/70 bg-[#FFFFFF] p-3 shadow-sm sm:flex-row sm:items-center dark:border-[#1f1f1f] dark:bg-[#0f0f0f]"
                   >
                     <div className="h-14 w-14 overflow-hidden rounded-lg bg-muted/40">
                       {dish.image_url ? (
@@ -1568,7 +1646,7 @@ export default function AdminDashboard() {
                         {dish.rating.toFixed(1)} {t.dashboard?.trendingMenus?.rating || "rating"} • {dish.orders} {t.dashboard?.trendingMenus?.orders || "orders"}
                       </p>
                     </div>
-                    <p className="text-sm font-semibold text-foreground dark:text-[#ffffff]">
+                    <p className="self-end text-sm font-semibold text-foreground sm:self-auto dark:text-[#ffffff]">
                       CHF {dish.price.toFixed(2)}
                     </p>
                   </div>
@@ -1619,21 +1697,24 @@ export default function AdminDashboard() {
 
           <Card className="rounded-2xl border border-border bg-card shadow-sm dark:border-[#1f1f1f] dark:bg-[#111111]">
             <CardHeader>
-              <div className="flex items-center justify-between gap-3">
+              <div className="flex flex-col items-start justify-between gap-3 sm:flex-row sm:items-center">
                 <CardTitle className="text-base font-bold text-foreground dark:text-[#ffffff]">
                   {t.dashboard?.tableStatus?.title || "Table Status"}
                 </CardTitle>
-                <div className="flex items-center gap-2">
-                  <input
-                    type="date"
-                    value={selectedDate}
-                    onChange={(e) => setSelectedDate(e.target.value)}
-                    className="h-8 rounded-md border border-border bg-background px-2 text-xs font-medium text-foreground outline-none focus:border-primary dark:border-[#2a2a2a] dark:bg-[#0f0f0f]"
-                  />
+                <div className="grid w-full grid-cols-1 gap-2 sm:w-auto sm:grid-cols-2">
+                  <div className="relative min-w-0">
+                    <CalendarDays className="pointer-events-none absolute left-2 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
+                    <input
+                      type="date"
+                      value={selectedDate}
+                      onChange={(e) => setSelectedDate(e.target.value)}
+                      className="h-9 w-full min-w-0 rounded-md border border-border bg-background pl-7 pr-2 text-xs font-medium text-foreground outline-none focus:border-primary dark:border-[#2a2a2a] dark:bg-[#0f0f0f] sm:h-8 sm:min-w-[150px]"
+                    />
+                  </div>
                   <select
                     value={selectedTime}
                     onChange={(e) => setSelectedTime(e.target.value)}
-                    className="h-8 rounded-md border border-border bg-background px-2 text-xs font-medium text-foreground outline-none focus:border-primary dark:border-[#2a2a2a] dark:bg-[#0f0f0f]"
+                    className="h-9 w-full rounded-md border border-border bg-background px-2 text-xs font-medium text-foreground outline-none focus:border-primary dark:border-[#2a2a2a] dark:bg-[#0f0f0f] sm:h-8 sm:min-w-[110px]"
                   >
                     {timeSlots.map((slot) => (
                       <option key={slot} value={slot}>
@@ -1663,7 +1744,7 @@ export default function AdminDashboard() {
                   {t.dashboard?.tableStatus?.noTables || "No tables configured. Add tables in the Tables section."}
                 </div>
               ) : (
-                <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+                <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
                   {dashboardTables.map((table) => (
                     <div
                       key={table.id}
@@ -1829,7 +1910,7 @@ function SimpleLineAreaChart({ data, loading }: { data: AnalyticsPoint[]; loadin
   if (!data.length) return <div className="flex h-64 items-center justify-center text-sm text-muted-foreground">{t.dashboard?.charts?.noData || "No data available"}</div>;
 
   const maxValue = Math.max(...data.map((d) => d.value), 1);
-  const width = Math.max(600, data.length * 34);
+  const width = Math.max(360, data.length * 28);
   const height = 240;
   const padding = 28;
 
@@ -1842,7 +1923,7 @@ function SimpleLineAreaChart({ data, loading }: { data: AnalyticsPoint[]; loadin
 
   return (
     <div className="w-full overflow-x-auto">
-      <svg viewBox={`0 0 ${width} ${height}`} className="h-64 w-full min-w-[600px]">
+      <svg viewBox={`0 0 ${width} ${height}`} className="h-52 w-full sm:h-64">
         <defs>
           <linearGradient id="greenAreaDashboard" x1="0%" y1="0%" x2="0%" y2="100%">
             <stop offset="0%" stopColor="var(--primary)" stopOpacity="0.35" />
@@ -1875,7 +1956,7 @@ function SimpleBarChart({
   if (!data.length) return <div className="flex h-56 items-center justify-center text-sm text-muted-foreground">{t.dashboard?.charts?.noData || "No data available"}</div>;
 
   const maxValue = Math.max(...data.map((d) => d.value), 1);
-  const width = Math.max(560, data.length * 30);
+  const width = Math.max(360, data.length * 24);
   const height = 230;
   const padding = 28;
   const chartW = width - padding * 2;
@@ -1883,7 +1964,7 @@ function SimpleBarChart({
 
   return (
     <div className="w-full overflow-x-auto">
-      <svg viewBox={`0 0 ${width} ${height}`} className="h-56 w-full min-w-[560px]">
+      <svg viewBox={`0 0 ${width} ${height}`} className="h-52 w-full sm:h-56">
         {data.map((d, i) => {
           const x = padding + i * (chartW / data.length) + 4;
           const h = (d.value / maxValue) * (height - padding * 2);

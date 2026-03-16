@@ -31,6 +31,22 @@ function ensureServerChunks() {
   }
 }
 
+function cleanupNextTypesForWindows() {
+  if (process.platform !== "win32") return;
+
+  // Workaround: Next.js can crash on Windows/OneDrive with:
+  // EINVAL: invalid argument, readlink '.next/...'
+  // Clearing stale build artifacts avoids this startup failure.
+  const nextDir = path.join(process.cwd(), ".next");
+  try {
+    fs.rmSync(nextDir, { recursive: true, force: true });
+  } catch {
+    // ignore file lock/transient errors; Next may still start successfully
+  }
+}
+
+cleanupNextTypesForWindows();
+
 // On Windows + newer Node versions, spawning `next.cmd` directly can throw `spawn EINVAL`.
 // Running it through `cmd.exe /c` is the most reliable approach.
 const child =

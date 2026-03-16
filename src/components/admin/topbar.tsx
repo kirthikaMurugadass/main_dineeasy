@@ -65,20 +65,20 @@ export function AdminTopbar() {
   }
 
   return (
-    <header className="sticky top-0 z-30 border-b border-border/60 bg-background dark:bg-background backdrop-blur-xl shadow-sm">
+    <header className="sticky top-0 z-30 border-b border-border/60 bg-background/95 shadow-sm backdrop-blur-xl dark:bg-background/95">
       <motion.div
         initial={{ opacity: 0, y: -8 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.25, ease: "easeOut" }}
-        className="flex h-16 w-full items-center justify-between px-4 lg:px-6"
+        className="flex min-h-16 w-full flex-wrap items-center justify-between gap-y-2 px-3 py-2 sm:px-4 sm:py-0 lg:px-6"
       >
         {/* Left: Sidebar trigger + Plan badge */}
-        <div className="flex items-center gap-3">
+        <div className="flex min-w-0 items-center gap-2 sm:gap-3">
           <SidebarTrigger className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-border/60 bg-card shadow-sm transition duration-200 hover:opacity-80" />
           {!planLoading && (
             <span
               className={cn(
-                "inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs font-semibold",
+                "inline-flex items-center gap-1.5 whitespace-nowrap rounded-full border px-2 py-1 text-[11px] font-semibold sm:px-2.5 sm:text-xs",
                 isPro
                   ? "border-primary/40 bg-primary/10 text-primary"
                   : "border-border/60 bg-muted/50 text-muted-foreground"
@@ -97,7 +97,7 @@ export function AdminTopbar() {
         </div>
 
         {/* Right: actions */}
-        <div className="ml-auto flex items-center justify-end gap-4">
+        <div className="ml-auto flex w-full items-center justify-start gap-2 overflow-x-auto pb-0.5 sm:w-auto sm:justify-end sm:overflow-visible sm:pb-0">
           {!planLoading && !isPro && (
             <Button
               size="sm"
@@ -190,7 +190,7 @@ export function AdminTopbar() {
           <Button
             variant="ghost"
             size="icon"
-            className="relative h-9 w-9 rounded-full border border-border/60 bg-card shadow-sm transition duration-200 hover:opacity-80"
+            className="relative h-9 w-9 shrink-0 rounded-full border border-border/60 bg-card shadow-sm transition duration-200 hover:opacity-80"
             aria-label={t.admin.topbar?.notifications || "Notifications"}
           >
             <Bell className="h-4 w-4" />
@@ -203,7 +203,7 @@ export function AdminTopbar() {
               <Button
                 variant="ghost"
                 size="icon"
-                className="h-9 w-9 rounded-full border border-border/60 bg-card text-foreground shadow-md transition duration-200 hover:opacity-90"
+                className="h-9 w-9 shrink-0 rounded-full border border-border/60 bg-card text-foreground shadow-md transition duration-200 hover:opacity-90"
                 aria-label={t.admin.topbar?.openProfileMenu || "Open profile menu"}
               >
                 <Avatar size="sm" className="border border-white/20 bg-transparent">
