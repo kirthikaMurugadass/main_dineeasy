@@ -58,7 +58,10 @@ export async function getModularDictionary(
         table: translations.table,
         booking: translations.booking,
         analytics: translations.analytics,
-        appearance: translations.appearance,
+        appearance: {
+          ...(oldDict.admin?.appearance || {}),
+          ...(translations.appearance || {}),
+        },
         qr: translations.qr,
         settings: translations.settings,
         // Merge auth translations - new modular takes precedence but keep old structure for compatibility

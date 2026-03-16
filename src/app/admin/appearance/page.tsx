@@ -13,6 +13,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Switch } from "@/components/ui/switch";
 import { FadeIn } from "@/components/motion";
 import { useI18n } from "@/lib/i18n/context";
+import { getDictionary } from "@/lib/i18n/dictionaries";
 import { createClient } from "@/lib/supabase/client";
 import { toast } from "sonner";
 import {
@@ -25,13 +26,13 @@ import {
 } from "@/types/database";
 
 const colorPresets = [
-  { name: "Default", primary: "#16A34A", accent: "#16A34A" },
-  { name: "Espresso", primary: "#3E2723", accent: "#C6A75E" },
-  { name: "Ocean", primary: "#1B3A4B", accent: "#4A9DA8" },
-  { name: "Forest", primary: "#2D4A2D", accent: "#8BC34A" },
-  { name: "Berry", primary: "#4A1942", accent: "#C850C0" },
-  { name: "Midnight", primary: "#1A1A2E", accent: "#E94560" },
-  { name: "Terracotta", primary: "#8B4513", accent: "#DAA520" },
+  { key: "default", primary: "#16A34A", accent: "#16A34A" },
+  { key: "espresso", primary: "#3E2723", accent: "#C6A75E" },
+  { key: "ocean", primary: "#1B3A4B", accent: "#4A9DA8" },
+  { key: "forest", primary: "#2D4A2D", accent: "#8BC34A" },
+  { key: "berry", primary: "#4A1942", accent: "#C850C0" },
+  { key: "midnight", primary: "#1A1A2E", accent: "#E94560" },
+  { key: "terracotta", primary: "#8B4513", accent: "#DAA520" },
 ];
 
 const fontOptions = [
@@ -129,6 +130,10 @@ const typographyPresets = {
 export default function AppearancePage() {
   const { t, language } = useI18n();
   const router = useRouter();
+  const appearanceT = useMemo(
+    () => getDictionary(language).admin.appearance as Record<string, any>,
+    [language]
+  );
   const [appearanceTarget, setAppearanceTarget] = useState<"menu" | "bookTable">("menu");
   const [config, setConfig] = useState<ThemeConfig>(() => ({
     ...defaultThemeConfig,
@@ -143,6 +148,29 @@ export default function AppearancePage() {
   const [loading, setLoading] = useState(true);
   const [previewError, setPreviewError] = useState<string | null>(null);
   const [previewLoading, setPreviewLoading] = useState(true);
+  const sectionMenuLabel = appearanceT.sectionMenu;
+  const sectionBookTableLabel = appearanceT.sectionBookTable;
+
+  function getColorPresetLabel(key: string): string {
+    switch (key) {
+      case "default":
+        return appearanceT.presetDefault;
+      case "espresso":
+        return appearanceT.presetEspresso;
+      case "ocean":
+        return appearanceT.presetOcean;
+      case "forest":
+        return appearanceT.presetForest;
+      case "berry":
+        return appearanceT.presetBerry;
+      case "midnight":
+        return appearanceT.presetMidnight;
+      case "terracotta":
+        return appearanceT.presetTerracotta;
+      default:
+        return key;
+    }
+  }
 
   useEffect(() => {
     async function load() {
@@ -393,10 +421,10 @@ export default function AppearancePage() {
         body: JSON.stringify({ restaurantSlug, menuId }),
       }).catch(() => {});
 
-      toast.success(t.admin.appearance.saved);
+      toast.success(appearanceT.saved);
     } catch (error: any) {
       console.error("Save error:", error);
-      toast.error(t.admin.appearance.error);
+      toast.error(appearanceT.error);
     } finally {
       setSaving(false);
     }
@@ -415,7 +443,7 @@ export default function AppearancePage() {
     });
 
     if (error) {
-      toast.error(t.admin.appearance.logoUploadError);
+      toast.error(appearanceT.logoUploadError);
       return;
     }
 
@@ -433,7 +461,7 @@ export default function AppearancePage() {
       .eq("id", restaurantId);
 
     if (updateError) {
-      toast.error(t.admin.appearance.logoUrlError);
+      toast.error(appearanceT.logoUrlError);
       return;
     }
 
@@ -447,7 +475,7 @@ export default function AppearancePage() {
       body: JSON.stringify({ restaurantSlug }),
     }).catch(() => {});
 
-    toast.success(t.admin.appearance.logoUploaded);
+    toast.success(appearanceT.logoUploaded);
   }
 
   async function handleLogoRemove() {
@@ -461,7 +489,7 @@ export default function AppearancePage() {
       .eq("id", restaurantId);
 
     if (error) {
-      toast.error(t.admin.appearance.logoRemoveError);
+      toast.error(appearanceT.logoRemoveError);
       return;
     }
 
@@ -474,7 +502,7 @@ export default function AppearancePage() {
       body: JSON.stringify({ restaurantSlug }),
     }).catch(() => {});
 
-    toast.success(t.admin.appearance.logoRemoved);
+    toast.success(appearanceT.logoRemoved);
   }
 
   async function handleHeroImageUpload(e: React.ChangeEvent<HTMLInputElement>) {
@@ -490,7 +518,7 @@ export default function AppearancePage() {
     });
 
     if (error) {
-      toast.error(t.admin.appearance.heroUploadError || "Failed to upload hero image");
+      toast.error(appearanceT.heroUploadError);
       return;
     }
 
@@ -507,7 +535,7 @@ export default function AppearancePage() {
       },
     });
 
-    toast.success(t.admin.appearance.heroUploaded || "Hero image uploaded");
+    toast.success(appearanceT.heroUploaded);
   }
 
   function handleHeroImageRemove() {
@@ -518,7 +546,7 @@ export default function AppearancePage() {
         backgroundImage: null,
       },
     });
-    toast.success(t.admin.appearance.heroRemoved || "Hero image removed");
+    toast.success(appearanceT.heroRemoved);
   }
 
   function updateTypography(updates: Partial<TypographyConfig>) {
@@ -557,7 +585,7 @@ export default function AppearancePage() {
       fontHeading: presetConfig.headingFont,
       fontBody: presetConfig.bodyFont,
     });
-    toast.success(t.admin.appearance.typographyApplied.replace("{preset}", t.admin.appearance[preset]));
+    toast.success(appearanceT.typographyApplied.replace("{preset}", appearanceT[preset]));
   }
 
   function resetTypography() {
@@ -566,7 +594,7 @@ export default function AppearancePage() {
       fontHeading: defaultTypographyConfig.headingFont,
       fontBody: defaultTypographyConfig.bodyFont,
     });
-    toast.success(t.admin.appearance.typographyReset);
+    toast.success(appearanceT.typographyReset);
   }
 
   if (loading) {
@@ -578,11 +606,16 @@ export default function AppearancePage() {
   }
 
   return (
-    <div className="space-y-6 overflow-x-hidden px-3 sm:space-y-8 sm:px-4 lg:px-6">
+    <div
+      key={language}
+      lang={language}
+      translate="no"
+      className="space-y-6 overflow-x-hidden px-3 sm:space-y-8 sm:px-4 lg:px-6"
+    >
       <FadeIn>
         <div className="flex flex-col gap-3 sm:gap-4 lg:flex-row lg:items-center lg:justify-between">
-          <PageTitle description={t.admin.appearance.description}>
-            {t.admin.appearance.title}
+          <PageTitle description={appearanceT.description}>
+            {appearanceT.title}
           </PageTitle>
           <div className="flex w-full flex-col gap-2 md:flex-row md:flex-wrap md:items-center md:justify-end lg:w-auto">
             <div className="grid w-full grid-cols-2 items-center gap-1 rounded-xl border border-border/60 bg-muted/20 p-1 sm:w-auto sm:min-w-[220px] sm:grid-cols-2">
@@ -592,7 +625,7 @@ export default function AppearancePage() {
                 className="rounded-lg px-3 text-xs sm:text-sm"
                 onClick={() => setAppearanceTarget("menu")}
               >
-                Menu
+                {sectionMenuLabel}
               </Button>
               <Button
                 type="button"
@@ -600,7 +633,7 @@ export default function AppearancePage() {
                 className="rounded-lg px-3 text-xs sm:text-sm"
                 onClick={() => setAppearanceTarget("bookTable")}
               >
-                Book a Table
+                {sectionBookTableLabel}
               </Button>
             </div>
             <Button
@@ -609,7 +642,7 @@ export default function AppearancePage() {
               className="w-full justify-center gap-2 bg-primary text-white hover:bg-primary/90 dark:bg-primary dark:text-white dark:hover:bg-primary/90 sm:w-auto md:min-w-[140px]"
             >
               {saving ? <Loader2 size={16} className="animate-spin" /> : <Save size={16} />}
-              {t.admin.appearance.save}
+              {appearanceT.save}
             </Button>
           </div>
         </div>
@@ -622,7 +655,7 @@ export default function AppearancePage() {
           <FadeIn delay={0.1}>
           <Card className="border-border/50">
             <CardHeader>
-              <CardTitle className="text-lg">{t.admin.appearance.theme}</CardTitle>
+              <CardTitle className="text-lg">{appearanceT.theme}</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
@@ -641,7 +674,7 @@ export default function AppearancePage() {
                     }`}
                   >
                     <Icon size={20} className={activeSectionConfig.mode === value ? "text-gold" : "text-muted-foreground dark:text-muted-foreground"} />
-                    <span className="text-xs font-medium text-foreground dark:text-foreground">{t.admin.appearance[labelKey]}</span>
+                    <span className="text-xs font-medium text-foreground dark:text-foreground">{appearanceT[labelKey]}</span>
                   </button>
                 ))}
               </div>
@@ -653,14 +686,14 @@ export default function AppearancePage() {
         <FadeIn delay={0.15}>
           <Card className="border-border/50">
             <CardHeader>
-              <CardTitle className="text-lg">{t.admin.appearance.colors}</CardTitle>
+              <CardTitle className="text-lg">{appearanceT.colors}</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               {/* Presets */}
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
                 {colorPresets.map((preset) => (
                   <button
-                    key={preset.name}
+                    key={preset.key}
                     onClick={() => updateActiveSectionConfig({
                       primaryColor: preset.primary,
                       accentColor: preset.accent,
@@ -681,7 +714,7 @@ export default function AppearancePage() {
                         style={{ backgroundColor: preset.accent }}
                       />
                     </div>
-                    <span className="text-xs text-foreground dark:text-foreground">{preset.name}</span>
+                    <span className="text-xs text-foreground dark:text-foreground">{getColorPresetLabel(preset.key)}</span>
                   </button>
                 ))}
               </div>
@@ -689,7 +722,7 @@ export default function AppearancePage() {
               {/* Custom colors */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
                 <div className="space-y-1.5">
-                  <Label className="text-xs">{t.admin.appearance.primary}</Label>
+                  <Label className="text-xs">{appearanceT.primary}</Label>
                   <div className="flex gap-2">
                     <input
                       type="color"
@@ -705,7 +738,7 @@ export default function AppearancePage() {
                   </div>
                 </div>
                 <div className="space-y-1.5">
-                  <Label className="text-xs">{t.admin.appearance.accent}</Label>
+                  <Label className="text-xs">{appearanceT.accent}</Label>
                   <div className="flex gap-2">
                     <input
                       type="color"
@@ -729,7 +762,7 @@ export default function AppearancePage() {
         <FadeIn delay={0.25}>
           <Card className="border-border/50">
             <CardHeader>
-              <CardTitle className="text-lg">{t.admin.appearance.logo}</CardTitle>
+              <CardTitle className="text-lg">{appearanceT.logo}</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="flex flex-col sm:flex-row sm:items-center gap-3">
@@ -737,7 +770,11 @@ export default function AppearancePage() {
                   checked={activeSectionConfig.showLogo}
                   onCheckedChange={(checked) => updateActiveSectionConfig({ showLogo: checked })}
                 />
-                <Label className="text-sm">{t.admin.appearance.showLogoOnMenu}</Label>
+                <Label className="text-sm">
+                  {appearanceTarget === "menu"
+                    ? appearanceT.showLogoOnMenu
+                    : appearanceT.showLogoOnBookTable}
+                </Label>
               </div>
 
               {logoUrl ? (
@@ -764,7 +801,7 @@ export default function AppearancePage() {
                       <Button variant="outline" size="sm" className="w-full gap-2" asChild>
                         <span>
                           <Upload size={14} />
-                          {t.admin.appearance.replaceLogo}
+                          {appearanceT.replaceLogo}
                         </span>
                       </Button>
                     </label>
@@ -775,14 +812,14 @@ export default function AppearancePage() {
                       className="w-full gap-2 text-destructive hover:text-destructive sm:w-auto"
                     >
                       <X size={14} />
-                      {t.admin.appearance.remove}
+                      {appearanceT.remove}
                     </Button>
                   </div>
                 </div>
               ) : (
                 <div className="flex flex-col items-center justify-center rounded-xl border-2 border-dashed border-border/50 p-8">
                   <Upload size={24} className="mb-2 text-muted-foreground" />
-                  <p className="text-sm text-muted-foreground mb-3">{t.admin.appearance.uploadLogo}</p>
+                  <p className="text-sm text-muted-foreground mb-3">{appearanceT.uploadLogo}</p>
                   <label>
                     <input
                       type="file"
@@ -791,11 +828,11 @@ export default function AppearancePage() {
                       className="hidden"
                     />
                     <Button variant="outline" size="sm" asChild>
-                      <span>{t.admin.appearance.chooseFile}</span>
+                      <span>{appearanceT.chooseFile}</span>
                     </Button>
                   </label>
                   <p className="mt-2 text-[10px] text-muted-foreground">
-                    {t.admin.appearance.logoSizeHint}
+                    {appearanceT.logoSizeHint}
                   </p>
                 </div>
               )}
@@ -809,7 +846,7 @@ export default function AppearancePage() {
           <Card className="border-border/50">
             <CardHeader>
               <CardTitle className="text-lg">
-                Book a Table Hero Banner
+                {appearanceT.bookTableHeroBannerTitle}
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
@@ -836,7 +873,7 @@ export default function AppearancePage() {
                       <Button variant="outline" size="sm" className="w-full gap-2" asChild>
                         <span>
                           <Upload size={14} />
-                          {t.admin.appearance.replaceImage || "Replace Image"}
+                          {appearanceT.replaceImage}
                         </span>
                       </Button>
                     </label>
@@ -847,7 +884,7 @@ export default function AppearancePage() {
                       className="w-full gap-2 text-destructive hover:text-destructive sm:w-auto"
                     >
                       <X size={14} />
-                      {t.admin.appearance.remove}
+                      {appearanceT.remove}
                     </Button>
                   </div>
                 </div>
@@ -855,7 +892,7 @@ export default function AppearancePage() {
                 <div className="flex flex-col items-center justify-center rounded-xl border-2 border-dashed border-border/50 p-8">
                   <Upload size={24} className="mb-2 text-muted-foreground" />
                   <p className="mb-3 text-sm text-muted-foreground">
-                    Upload booking hero image
+                    {appearanceT.uploadBookingHeroImage}
                   </p>
                   <label>
                     <input
@@ -865,7 +902,7 @@ export default function AppearancePage() {
                       className="hidden"
                     />
                     <Button variant="outline" size="sm" asChild>
-                      <span>{t.admin.appearance.chooseFile}</span>
+                      <span>{appearanceT.chooseFile}</span>
                     </Button>
                   </label>
                 </div>
@@ -880,7 +917,7 @@ export default function AppearancePage() {
           <Card className="border-border/50">
             <CardHeader>
               <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-0">
-                <CardTitle className="text-lg">{t.admin.appearance.advancedTypography}</CardTitle>
+                <CardTitle className="text-lg">{appearanceT.advancedTypography}</CardTitle>
                 <div className="flex gap-2">
                   <Button
                     variant="ghost"
@@ -889,7 +926,7 @@ export default function AppearancePage() {
                     className="text-xs text-muted-foreground hover:text-foreground"
                   >
                     <RotateCw size={14} className="mr-1" />
-                    {t.admin.appearance.reset}
+                    {appearanceT.reset}
                   </Button>
                 </div>
               </div>
@@ -897,7 +934,7 @@ export default function AppearancePage() {
             <CardContent className="space-y-6">
               {/* Typography Presets */}
               <div className="space-y-2">
-                <Label className="text-xs">{t.admin.appearance.presetStyles}</Label>
+                <Label className="text-xs">{appearanceT.presetStyles}</Label>
                 <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-5">
                   {(["modern", "elegant", "minimal", "classic", "premium"] as const).map((preset) => (
                     <button
@@ -909,7 +946,7 @@ export default function AppearancePage() {
                           : "border-border/50 hover:border-border"
                       }`}
                     >
-                      {t.admin.appearance[preset]}
+                      {appearanceT[preset]}
                     </button>
                   ))}
                 </div>
@@ -917,10 +954,10 @@ export default function AppearancePage() {
 
               {/* Font Families */}
               <div className="space-y-4 border-t pt-4">
-                <Label className="text-xs">{t.admin.appearance.fontFamilies}</Label>
+                <Label className="text-xs">{appearanceT.fontFamilies}</Label>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div className="space-y-1.5">
-                    <Label className="text-xs">{t.admin.appearance.headingFont}</Label>
+                    <Label className="text-xs">{appearanceT.headingFont}</Label>
                     <Select
                       value={activeSectionConfig.typography?.headingFont || activeSectionConfig.fontHeading || "playfair"}
                       onValueChange={(v) => {
@@ -943,11 +980,11 @@ export default function AppearancePage() {
                       </SelectContent>
                     </Select>
                     <p className="text-[10px] text-muted-foreground" style={{ fontFamily: activeSectionConfig.typography?.headingFont === "playfair" ? "Playfair Display" : fontOptions.find(f => f.value === activeSectionConfig.typography?.headingFont)?.label }}>
-                      Sample: The Quick Brown Fox
+                      {appearanceT.typographySampleHeading}
                     </p>
                   </div>
                   <div className="space-y-1.5">
-                    <Label className="text-xs">{t.admin.appearance.bodyFont}</Label>
+                    <Label className="text-xs">{appearanceT.bodyFont}</Label>
                     <Select
                       value={activeSectionConfig.typography?.bodyFont || activeSectionConfig.fontBody || "inter"}
                       onValueChange={(v) => {
@@ -970,21 +1007,21 @@ export default function AppearancePage() {
                       </SelectContent>
                     </Select>
                     <p className="text-[10px] text-muted-foreground" style={{ fontFamily: activeSectionConfig.typography?.bodyFont === "inter" ? "Inter" : fontOptions.find(f => f.value === activeSectionConfig.typography?.bodyFont)?.label }}>
-                      Sample: Lorem ipsum dolor sit amet
+                      {appearanceT.typographySampleBody}
                     </p>
                   </div>
                 </div>
                 <div className="space-y-1.5">
-                  <Label className="text-xs">{t.admin.appearance.accentFont}</Label>
+                  <Label className="text-xs">{appearanceT.accentFont}</Label>
                   <Select
                     value={activeSectionConfig.typography?.accentFont || "none"}
                     onValueChange={(v) => updateTypography({ accentFont: v === "none" ? undefined : v })}
                   >
                     <SelectTrigger>
-                      <SelectValue placeholder={t.admin.appearance.sameAsBody} />
+                      <SelectValue placeholder={appearanceT.sameAsBody} />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="none">{t.admin.appearance.sameAsBody}</SelectItem>
+                      <SelectItem value="none">{appearanceT.sameAsBody}</SelectItem>
                       {fontOptions.map((f) => (
                         <SelectItem key={f.value} value={f.value}>
                           {f.label}
@@ -997,10 +1034,10 @@ export default function AppearancePage() {
 
               {/* Font Weights */}
               <div className="space-y-4 border-t pt-4">
-                <Label className="text-xs">{t.admin.appearance.fontWeights}</Label>
+                <Label className="text-xs">{appearanceT.fontWeights}</Label>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div className="space-y-1.5">
-                    <Label className="text-xs">{t.admin.appearance.headingWeight}</Label>
+                    <Label className="text-xs">{appearanceT.headingWeight}</Label>
                     <Select
                       value={activeSectionConfig.typography?.headingWeight || "400"}
                       onValueChange={(v) => updateTypography({ headingWeight: v as TypographyConfig["headingWeight"] })}
@@ -1009,17 +1046,17 @@ export default function AppearancePage() {
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="300">{t.admin.appearance.light300}</SelectItem>
-                        <SelectItem value="400">{t.admin.appearance.regular400}</SelectItem>
-                        <SelectItem value="500">{t.admin.appearance.medium500}</SelectItem>
-                        <SelectItem value="600">{t.admin.appearance.semiBold600}</SelectItem>
-                        <SelectItem value="700">{t.admin.appearance.bold700}</SelectItem>
-                        <SelectItem value="800">{t.admin.appearance.extraBold800}</SelectItem>
+                        <SelectItem value="300">{appearanceT.light300}</SelectItem>
+                        <SelectItem value="400">{appearanceT.regular400}</SelectItem>
+                        <SelectItem value="500">{appearanceT.medium500}</SelectItem>
+                        <SelectItem value="600">{appearanceT.semiBold600}</SelectItem>
+                        <SelectItem value="700">{appearanceT.bold700}</SelectItem>
+                        <SelectItem value="800">{appearanceT.extraBold800}</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
                   <div className="space-y-1.5">
-                    <Label className="text-xs">{t.admin.appearance.bodyWeight}</Label>
+                    <Label className="text-xs">{appearanceT.bodyWeight}</Label>
                     <Select
                       value={activeSectionConfig.typography?.bodyWeight || "400"}
                       onValueChange={(v) => updateTypography({ bodyWeight: v as TypographyConfig["bodyWeight"] })}
@@ -1028,12 +1065,12 @@ export default function AppearancePage() {
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="300">{t.admin.appearance.light300}</SelectItem>
-                        <SelectItem value="400">{t.admin.appearance.regular400}</SelectItem>
-                        <SelectItem value="500">{t.admin.appearance.medium500}</SelectItem>
-                        <SelectItem value="600">{t.admin.appearance.semiBold600}</SelectItem>
-                        <SelectItem value="700">{t.admin.appearance.bold700}</SelectItem>
-                        <SelectItem value="800">{t.admin.appearance.extraBold800}</SelectItem>
+                        <SelectItem value="300">{appearanceT.light300}</SelectItem>
+                        <SelectItem value="400">{appearanceT.regular400}</SelectItem>
+                        <SelectItem value="500">{appearanceT.medium500}</SelectItem>
+                        <SelectItem value="600">{appearanceT.semiBold600}</SelectItem>
+                        <SelectItem value="700">{appearanceT.bold700}</SelectItem>
+                        <SelectItem value="800">{appearanceT.extraBold800}</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
@@ -1042,11 +1079,11 @@ export default function AppearancePage() {
 
               {/* Font Sizes */}
               <div className="space-y-4 border-t pt-4">
-                <Label className="text-xs">{t.admin.appearance.fontSizes}</Label>
+                <Label className="text-xs">{appearanceT.fontSizes}</Label>
                 <div className="space-y-4">
                   <div className="space-y-1.5">
                     <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between sm:gap-0">
-                      <Label className="text-xs">{t.admin.appearance.heroTitle}: {activeSectionConfig.typography?.heroTitleSize || 4.5}rem</Label>
+                      <Label className="text-xs">{appearanceT.heroTitle}: {activeSectionConfig.typography?.heroTitleSize || 4.5}rem</Label>
                       <Select
                         value={(() => {
                           const heroSize = activeSectionConfig.typography?.heroTitleSize || 4.5;
@@ -1068,9 +1105,9 @@ export default function AppearancePage() {
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="compact">{t.admin.appearance.compact}</SelectItem>
-                          <SelectItem value="balanced">{t.admin.appearance.balanced}</SelectItem>
-                          <SelectItem value="spacious">{t.admin.appearance.spacious}</SelectItem>
+                          <SelectItem value="compact">{appearanceT.compact}</SelectItem>
+                          <SelectItem value="balanced">{appearanceT.balanced}</SelectItem>
+                          <SelectItem value="spacious">{appearanceT.spacious}</SelectItem>
                         </SelectContent>
                       </Select>
                     </div>
@@ -1085,7 +1122,7 @@ export default function AppearancePage() {
                     />
                   </div>
                   <div className="space-y-1.5">
-                    <Label className="text-xs">{t.admin.appearance.sectionHeading}: {activeSectionConfig.typography?.sectionHeadingSize || 2.5}rem</Label>
+                    <Label className="text-xs">{appearanceT.sectionHeading}: {activeSectionConfig.typography?.sectionHeadingSize || 2.5}rem</Label>
                     <input
                       type="range"
                       min="1.5"
@@ -1097,7 +1134,7 @@ export default function AppearancePage() {
                     />
                   </div>
                   <div className="space-y-1.5">
-                    <Label className="text-xs">{t.admin.appearance.categoryTitle}: {activeSectionConfig.typography?.categoryTitleSize || 1.5}rem</Label>
+                    <Label className="text-xs">{appearanceT.categoryTitle}: {activeSectionConfig.typography?.categoryTitleSize || 1.5}rem</Label>
                     <input
                       type="range"
                       min="1"
@@ -1109,7 +1146,7 @@ export default function AppearancePage() {
                     />
                   </div>
                   <div className="space-y-1.5">
-                    <Label className="text-xs">{t.admin.appearance.itemName}: {activeSectionConfig.typography?.itemNameSize || 1.1}rem</Label>
+                    <Label className="text-xs">{appearanceT.itemName}: {activeSectionConfig.typography?.itemNameSize || 1.1}rem</Label>
                     <input
                       type="range"
                       min="0.875"
@@ -1121,7 +1158,7 @@ export default function AppearancePage() {
                     />
                   </div>
                   <div className="space-y-1.5">
-                    <Label className="text-xs">{t.admin.appearance.itemDescription}: {activeSectionConfig.typography?.itemDescriptionSize || 0.875}rem</Label>
+                    <Label className="text-xs">{appearanceT.itemDescription}: {activeSectionConfig.typography?.itemDescriptionSize || 0.875}rem</Label>
                     <input
                       type="range"
                       min="0.75"
@@ -1133,7 +1170,7 @@ export default function AppearancePage() {
                     />
                   </div>
                   <div className="space-y-1.5">
-                    <Label className="text-xs">{t.admin.appearance.price}: {activeSectionConfig.typography?.priceSize || 1.125}rem</Label>
+                    <Label className="text-xs">{appearanceT.price}: {activeSectionConfig.typography?.priceSize || 1.125}rem</Label>
                     <input
                       type="range"
                       min="0.875"
@@ -1149,10 +1186,10 @@ export default function AppearancePage() {
 
               {/* Line Height & Spacing */}
               <div className="space-y-4 border-t pt-4">
-                <Label className="text-xs">{t.admin.appearance.lineHeightSpacing}</Label>
+                <Label className="text-xs">{appearanceT.lineHeightSpacing}</Label>
                 <div className="space-y-4">
                   <div className="space-y-1.5">
-                    <Label className="text-xs">{t.admin.appearance.lineHeight}: {activeSectionConfig.typography?.lineHeight || 1.6}x</Label>
+                    <Label className="text-xs">{appearanceT.lineHeight}: {activeSectionConfig.typography?.lineHeight || 1.6}x</Label>
                     <input
                       type="range"
                       min="1.2"
@@ -1164,7 +1201,7 @@ export default function AppearancePage() {
                     />
                   </div>
                   <div className="space-y-1.5">
-                    <Label className="text-xs">{t.admin.appearance.letterSpacing}: {activeSectionConfig.typography?.letterSpacing || 0}em</Label>
+                    <Label className="text-xs">{appearanceT.letterSpacing}: {activeSectionConfig.typography?.letterSpacing || 0}em</Label>
                     <input
                       type="range"
                       min="-0.02"
@@ -1176,7 +1213,7 @@ export default function AppearancePage() {
                     />
                   </div>
                   <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1 sm:gap-0">
-                    <Label className="text-xs">{t.admin.appearance.paragraphSpacing}</Label>
+                    <Label className="text-xs">{appearanceT.paragraphSpacing}</Label>
                     <Switch
                       checked={activeSectionConfig.typography?.paragraphSpacing !== false}
                       onCheckedChange={(checked) => updateTypography({ paragraphSpacing: checked })}
@@ -1187,10 +1224,10 @@ export default function AppearancePage() {
 
               {/* Text Colors */}
               <div className="space-y-4 border-t pt-4">
-                <Label className="text-xs">{t.admin.appearance.textColors} ({t.admin.appearance.textColorsHint})</Label>
+                <Label className="text-xs">{appearanceT.textColors} ({appearanceT.textColorsHint})</Label>
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                   <div className="space-y-1.5">
-                    <Label className="text-xs">{t.admin.appearance.primary}</Label>
+                    <Label className="text-xs">{appearanceT.primary}</Label>
                     <div className="flex gap-2">
                       <input
                         type="color"
@@ -1201,13 +1238,13 @@ export default function AppearancePage() {
                       <Input
                         value={activeSectionConfig.typography?.textPrimary || ""}
                         onChange={(e) => updateTypography({ textPrimary: e.target.value || null })}
-                        placeholder="Auto"
+                        placeholder={appearanceT.autoValue}
                         className="font-mono text-xs uppercase"
                       />
                     </div>
                   </div>
                   <div className="space-y-1.5">
-                    <Label className="text-xs">{t.admin.appearance.secondary}</Label>
+                    <Label className="text-xs">{appearanceT.secondary}</Label>
                     <div className="flex gap-2">
                       <input
                         type="color"
@@ -1218,13 +1255,13 @@ export default function AppearancePage() {
                       <Input
                         value={activeSectionConfig.typography?.textSecondary || ""}
                         onChange={(e) => updateTypography({ textSecondary: e.target.value || null })}
-                        placeholder="Auto"
+                        placeholder={appearanceT.autoValue}
                         className="font-mono text-xs uppercase"
                       />
                     </div>
                   </div>
                   <div className="space-y-1.5">
-                    <Label className="text-xs">{t.admin.appearance.muted}</Label>
+                    <Label className="text-xs">{appearanceT.muted}</Label>
                     <div className="flex gap-2">
                       <input
                         type="color"
@@ -1235,7 +1272,7 @@ export default function AppearancePage() {
                       <Input
                         value={activeSectionConfig.typography?.textMuted || ""}
                         onChange={(e) => updateTypography({ textMuted: e.target.value || null })}
-                        placeholder="Auto"
+                        placeholder={appearanceT.autoValue}
                         className="font-mono text-xs uppercase"
                       />
                     </div>
@@ -1247,9 +1284,9 @@ export default function AppearancePage() {
               <div className="space-y-4 border-t pt-4">
                 <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-0">
                   <div className="space-y-0.5">
-                    <Label className="text-xs">{t.admin.appearance.readableMode}</Label>
+                    <Label className="text-xs">{appearanceT.readableMode}</Label>
                     <p className="text-[10px] text-muted-foreground mt-0.5">
-                      {t.admin.appearance.readableModeDesc}
+                      {appearanceT.readableModeDesc}
                     </p>
                   </div>
                   <Switch
@@ -1286,11 +1323,11 @@ export default function AppearancePage() {
               <div className="flex items-center justify-between">
                 <CardTitle className="text-lg flex items-center gap-2">
                   <Eye size={18} />
-                  {t.admin.appearance.livePreview}
+                  {appearanceT.livePreview}
                 </CardTitle>
                 {appearanceTarget === "menu" && !menuId && (
                   <p className="text-xs text-muted-foreground">
-                    {t.admin.appearance.createMenuToPreview}
+                    {appearanceT.createMenuToPreview}
                   </p>
                 )}
               </div>
@@ -1317,14 +1354,14 @@ export default function AppearancePage() {
                             setPreviewLoading(true);
                             // Force iframe reload by updating key
                             const iframe = document.querySelector(
-                              `iframe[title="${appearanceTarget === "menu" ? "Menu Preview" : "Book Table Preview"}"]`
+                              `iframe[title="${appearanceTarget === "menu" ? appearanceT.previewFrameMenuTitle : appearanceT.previewFrameBookTableTitle}"]`
                             ) as HTMLIFrameElement;
                             if (iframe) {
                               iframe.src = iframe.src;
                             }
                           }}
                         >
-                          {t.admin.appearance.retry}
+                          {appearanceT.retry}
                         </Button>
                       </div>
                     )}
@@ -1335,7 +1372,7 @@ export default function AppearancePage() {
                           key={`${previewUrl}-${language}-${activeSectionConfig.typography?.headingFont}-${activeSectionConfig.typography?.bodyFont}-${activeSectionConfig.typography?.headingWeight}-${activeSectionConfig.typography?.bodyWeight}`}
                           src={previewUrl}
                           className="block w-full h-full border-0 rounded-[32px]"
-                          title={appearanceTarget === "menu" ? "Menu Preview" : "Book Table Preview"}
+                          title={appearanceTarget === "menu" ? appearanceT.previewFrameMenuTitle : appearanceT.previewFrameBookTableTitle}
                           style={{
                             backgroundColor: "transparent",
                           }}
@@ -1345,12 +1382,12 @@ export default function AppearancePage() {
                           }}
                           onError={() => {
                             setPreviewLoading(false);
-                            setPreviewError(t.admin.appearance.previewLoadError);
+                            setPreviewError(appearanceT.previewLoadError);
                           }}
                         />
                         <div className="absolute top-3 right-4 rounded-md bg-yellow-500/20 px-2 py-1 z-20">
                           <p className="text-[10px] font-medium text-yellow-700 dark:text-yellow-300">
-                            {t.admin.appearance.livePreview}
+                            {appearanceT.livePreview}
                           </p>
                         </div>
                       </div>
@@ -1361,12 +1398,12 @@ export default function AppearancePage() {
                 <div className="flex h-96 flex-col items-center justify-center rounded-lg border border-dashed border-border/50 bg-muted/20">
                   <Eye size={48} className="mb-4 text-muted-foreground" />
                   <p className="text-sm font-medium text-muted-foreground mb-1">
-                    {t.admin.appearance.noPreviewAvailable}
+                    {appearanceT.noPreviewAvailable}
                   </p>
                   <p className="text-xs text-muted-foreground">
                     {appearanceTarget === "menu" && !menuId
-                      ? t.admin.appearance.createMenuFirst
-                      : t.admin.appearance.unableToLoadPreview}
+                      ? appearanceT.createMenuFirst
+                      : appearanceT.unableToLoadPreview}
                   </p>
                 </div>
               )}

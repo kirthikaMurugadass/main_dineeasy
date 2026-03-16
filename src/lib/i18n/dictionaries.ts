@@ -199,6 +199,14 @@ interface Dictionary {
       logoUploaded: string; logoRemoved: string; logoUploadError: string; logoUrlError: string;
       logoRemoveError: string; heroUploaded: string; heroUploadError: string;
       typographyReset: string;
+      sectionMenu: string; sectionBookTable: string;
+      showLogoOnBookTable: string;
+      bookTableHeroBannerTitle: string; uploadBookingHeroImage: string;
+      typographySampleHeading: string; typographySampleBody: string;
+      autoValue: string;
+      previewFrameMenuTitle: string; previewFrameBookTableTitle: string;
+      presetDefault: string; presetEspresso: string; presetOcean: string; presetForest: string;
+      presetBerry: string; presetMidnight: string; presetTerracotta: string;
     };
     qr: {
       title: string; description: string; generate: string; download: string; print: string;
@@ -814,6 +822,23 @@ const en: Dictionary = {
       heroUploaded: "Hero image uploaded!",
       heroUploadError: "Failed to upload hero image",
       typographyReset: "Typography reset to defaults",
+      sectionMenu: "Menu",
+      sectionBookTable: "Book a Table",
+      showLogoOnBookTable: "Show logo on booking page",
+      bookTableHeroBannerTitle: "Book a Table Hero Banner",
+      uploadBookingHeroImage: "Upload booking hero image",
+      typographySampleHeading: "Sample: The Quick Brown Fox",
+      typographySampleBody: "Sample: Lorem ipsum dolor sit amet",
+      autoValue: "Auto",
+      previewFrameMenuTitle: "Menu Preview",
+      previewFrameBookTableTitle: "Book Table Preview",
+      presetDefault: "Default",
+      presetEspresso: "Espresso",
+      presetOcean: "Ocean",
+      presetForest: "Forest",
+      presetBerry: "Berry",
+      presetMidnight: "Midnight",
+      presetTerracotta: "Terracotta",
     },
     qr: {
       title: "QR Codes",
@@ -1488,6 +1513,23 @@ const de: Dictionary = {
       heroUploaded: "Hero-Bild hochgeladen!",
       heroUploadError: "Hero-Bild konnte nicht hochgeladen werden",
       typographyReset: "Typografie auf Standard zurückgesetzt",
+      sectionMenu: "Menü",
+      sectionBookTable: "Tisch reservieren",
+      showLogoOnBookTable: "Logo auf Buchungsseite anzeigen",
+      bookTableHeroBannerTitle: "Hero-Banner für Tischreservierung",
+      uploadBookingHeroImage: "Hero-Bild für Buchung hochladen",
+      typographySampleHeading: "Beispiel: Franz jagt im komplett verwahrlosten Taxi quer durch Bayern",
+      typographySampleBody: "Beispiel: Lorem ipsum dolor sit amet",
+      autoValue: "Automatisch",
+      previewFrameMenuTitle: "Menüvorschau",
+      previewFrameBookTableTitle: "Buchungsvorschau",
+      presetDefault: "Standard",
+      presetEspresso: "Espresso",
+      presetOcean: "Ozean",
+      presetForest: "Wald",
+      presetBerry: "Beere",
+      presetMidnight: "Mitternacht",
+      presetTerracotta: "Terrakotta",
     },
     qr: {
       title: "QR-Codes",
@@ -2140,6 +2182,23 @@ const fr: Dictionary = {
       heroUploaded: "Image hero téléchargée!",
       heroUploadError: "Échec du téléchargement de l'image hero",
       typographyReset: "Typographie réinitialisée",
+      sectionMenu: "Menu",
+      sectionBookTable: "Réserver une table",
+      showLogoOnBookTable: "Afficher le logo sur la page de réservation",
+      bookTableHeroBannerTitle: "Bannière hero de réservation",
+      uploadBookingHeroImage: "Téléverser l'image hero de réservation",
+      typographySampleHeading: "Exemple : Portez ce vieux whisky au juge blond qui fume",
+      typographySampleBody: "Exemple : Lorem ipsum dolor sit amet",
+      autoValue: "Auto",
+      previewFrameMenuTitle: "Aperçu du menu",
+      previewFrameBookTableTitle: "Aperçu de réservation",
+      presetDefault: "Par défaut",
+      presetEspresso: "Espresso",
+      presetOcean: "Océan",
+      presetForest: "Forêt",
+      presetBerry: "Baie",
+      presetMidnight: "Minuit",
+      presetTerracotta: "Terracotta",
     },
     qr: {
       title: "Codes QR",
@@ -2792,6 +2851,23 @@ const it: Dictionary = {
       heroUploaded: "Immagine hero caricata!",
       heroUploadError: "Impossibile caricare l'immagine hero",
       typographyReset: "Tipografia reimpostata",
+      sectionMenu: "Menu",
+      sectionBookTable: "Prenota un tavolo",
+      showLogoOnBookTable: "Mostra logo nella pagina prenotazione",
+      bookTableHeroBannerTitle: "Banner hero prenotazione tavolo",
+      uploadBookingHeroImage: "Carica immagine hero per prenotazione",
+      typographySampleHeading: "Esempio: Ma la volpe col suo balzo ha raggiunto il quieto Fido",
+      typographySampleBody: "Esempio: Lorem ipsum dolor sit amet",
+      autoValue: "Auto",
+      previewFrameMenuTitle: "Anteprima menu",
+      previewFrameBookTableTitle: "Anteprima prenotazione",
+      presetDefault: "Predefinito",
+      presetEspresso: "Espresso",
+      presetOcean: "Oceano",
+      presetForest: "Foresta",
+      presetBerry: "Bacca",
+      presetMidnight: "Mezzanotte",
+      presetTerracotta: "Terracotta",
     },
     qr: {
       title: "Codici QR",
