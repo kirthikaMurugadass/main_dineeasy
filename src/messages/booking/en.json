@@ -109,6 +109,7 @@
       "billing": "Billing"
     },
     "fields": {
+      "restaurant": "Restaurant",
       "date": "Date",
       "time": "Time",
       "guests": "Guests",
@@ -156,6 +157,7 @@
       "continueToSelectTable": "Continue to Select Table",
       "continue": "Continue",
       "confirmBooking": "Confirm Booking",
+      "downloadReceipt": "Download Receipt",
       "processing": "Processing...",
       "backToMenu": "Back to menu",
       "backToHome": "Back to Home",

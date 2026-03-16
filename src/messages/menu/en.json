@@ -112,6 +112,7 @@
     "add": "Add",
     "addOrderingDisabled": "Add (ordering disabled)",
     "viewCart": "View cart",
+    "reserveTable": "Reserve a Table",
     "orderingNotAvailableTitle": "Ordering not available",
     "orderingNotAvailableDescription": "Online ordering is available only in the Pro plan. You can still view the full menu.",
     "pos": {

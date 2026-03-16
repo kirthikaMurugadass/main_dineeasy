@@ -3,7 +3,67 @@
   "welcome": "Willkommen zurück",
   "liveBusinessOverview": "Live-Geschäftsübersicht",
   "live": "Live",
+  "welcomeHeadline": "Willkommen in der Übersicht von {restaurant}",
+  "welcomeSubtitle": "Verwalten Sie Restaurantbetrieb, Bestellungen und Reservierungen ganz einfach.",
   "realtime": "Echtzeit",
+  "overviewCards": {
+    "todaysRevenue": "Heutiger Umsatz",
+    "takeawayOrders": "Takeaway-Bestellungen",
+    "dineInOrders": "Vor-Ort-Bestellungen",
+    "todaysTotalOrders": "Bestellungen heute gesamt",
+    "deliveryOrders": "Lieferbestellungen",
+    "totalTables": "Tische gesamt",
+    "availableTables": "Verfügbare Tische",
+    "occupiedTables": "Belegte Tische",
+    "pendingOrders": "Ausstehende Bestellungen",
+    "completedOrders": "Abgeschlossene Bestellungen"
+  },
+  "recentOrders": {
+    "title": "Letzte Bestellungen",
+    "searchPlaceholder": "Suchplatzhalter",
+    "seeAllOrders": "Alle Bestellungen anzeigen",
+    "orderId": "Bestell-ID",
+    "customerName": "Kundenname",
+    "orderType": "Bestellart",
+    "total": "Gesamt",
+    "status": "Status",
+    "dineIn": "Vor Ort",
+    "takeaway": "Takeaway",
+    "delivery": "Lieferung",
+    "guest": "Gast"
+  },
+  "todaysBookings": {
+    "title": "Heutige Buchungen",
+    "empty": "Für heute sind keine Buchungen geplant.",
+    "customerName": "Kundenname",
+    "bookingTime": "Buchungszeit",
+    "numberOfGuests": "Anzahl Gäste",
+    "tableNumber": "Tischnummer"
+  },
+  "revenueGraph": {
+    "title": "Umsatzdiagramm",
+    "daily": "Täglich",
+    "monthly": "Monatlich"
+  },
+  "trendingMenus": {
+    "title": "Trend-Menüs",
+    "empty": "Noch keine trendigen Menüs.",
+    "noImage": "Kein Bild",
+    "rating": "Bewertung",
+    "orders": "Bestellungen"
+  },
+  "ordersOverview": {
+    "title": "Bestellübersicht",
+    "today": "Heute",
+    "month": "Monat"
+  },
+  "topCategories": {
+    "title": "Top-Kategorien",
+    "empty": "Keine Kategoriedaten verfügbar."
+  },
+  "charts": {
+    "noData": "Keine Daten verfügbar"
+  },
   "statistics": {
     "todaysRevenue": "Heutiger Umsatz",
     "pendingOrders": "Ausstehende Bestellungen",
@@ -43,16 +103,22 @@
     "viewBookings": "Buchungen anzeigen",
     "analytics": "Analysen",
     "appearance": "Erscheinungsbild",
+    "settings": "Einstellungen",
     "qrCode": "QR-Code"
   },
   "tableStatus": {
     "title": "Tischstatus",
     "loading": "Tische werden geladen...",
     "noTables": "Keine Tische konfiguriert. Fügen Sie Tische im Bereich Tische hinzu.",
+    "availabilityFor": "Verfügbarkeit für",
+    "at": "um",
     "available": "Verfügbar",
     "occupied": "Belegt",
     "reserved": "Reserviert",
-    "totalTables": "Gesamte Tische"
+    "capacity": "Kapazität",
+    "totalTables": "Tische gesamt",
+    "bookingDetails": "Buchungsdetails",
+    "noBookingsForSelected": "Keine Buchungen für das ausgewählte Datum und die ausgewählte Uhrzeit."
   },
   "revenueAnalytics": {
     "title": "Umsatzanalysen",
@@ -83,7 +149,6 @@
   "activeCategories": "Aktive Kategorien",
   "quickCreate": "Neues Menü erstellen",
   "recentActivity": "Letzte Aktivitäten",
-  "quickActions": "Schnellaktionen",
   "analytics": "Analysen",
   "noMenu": "Kein Menü gefunden",
   "createMenu": "Menü erstellen",

@@ -25,6 +25,7 @@ type Point = {
 export default function AnalyticsPage() {
   const router = useRouter();
   const { t } = useI18n();
+  const analyticsT = t.analytics || t.admin?.analytics || {};
   const [loading, setLoading] = useState(true);
   const [revenueView, setRevenueView] = useState<"day" | "month">("day");
   const [ordersView, setOrdersView] = useState<"day" | "month">("day");
@@ -196,7 +197,7 @@ export default function AnalyticsPage() {
         );
       } catch (error) {
         console.error("Error loading analytics:", error);
-        toast.error("Failed to load analytics");
+        toast.error(analyticsT?.loadError || "Failed to load analytics");
       } finally {
         setLoading(false);
       }
@@ -216,14 +217,14 @@ export default function AnalyticsPage() {
 
   return (
     <div className="space-y-6 pb-8">
-      <PageTitle>{t.admin.analytics.title || "Analytics"}</PageTitle>
+      <PageTitle>{analyticsT?.title || "Analytics"}</PageTitle>
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         {[
-          { title: "Today's Revenue", value: `$${Math.round(todayRevenue)}`, icon: TrendingUp },
-          { title: "Today's Orders", value: todayOrders, icon: ShoppingCart },
-          { title: "Monthly Orders", value: monthlyOrdersCount, icon: Calendar },
-          { title: "Performance", value: `${dineInPct}% Dine-in`, icon: BarChart3 },
+          { title: analyticsT?.todaysRevenue || "Today's Revenue", value: `$${Math.round(todayRevenue)}`, icon: TrendingUp },
+          { title: analyticsT?.todaysOrders || "Today's Orders", value: todayOrders, icon: ShoppingCart },
+          { title: analyticsT?.monthlyOrders || "Monthly Orders", value: monthlyOrdersCount, icon: Calendar },
+          { title: analyticsT?.performance || "Performance", value: `${dineInPct}% ${analyticsT?.dineIn || "Dine-in"}`, icon: BarChart3 },
         ].map((item) => (
           <Card key={item.title} className="rounded-2xl border border-green-200/70 bg-gradient-to-r from-green-50/80 to-white shadow-sm dark:border-green-900/30 dark:from-green-950/25 dark:to-[#111111]">
             <CardContent className="p-4">
@@ -242,10 +243,10 @@ export default function AnalyticsPage() {
           <Card className="rounded-2xl border border-border bg-card shadow-sm dark:border-[#1f1f1f] dark:bg-[#111111]">
             <CardHeader className="pb-2">
               <div className="flex items-center justify-between">
-                <CardTitle className="text-base font-bold text-foreground dark:text-[#ffffff]">Revenue Graph</CardTitle>
+                <CardTitle className="text-base font-bold text-foreground dark:text-[#ffffff]">{analyticsT?.revenueGraph || "Revenue Graph"}</CardTitle>
                 <div className="flex items-center gap-2">
-                  <Button variant={revenueView === "day" ? "default" : "outline"} size="sm" className="h-7 text-xs" onClick={() => setRevenueView("day")}>Daily</Button>
-                  <Button variant={revenueView === "month" ? "default" : "outline"} size="sm" className="h-7 text-xs" onClick={() => setRevenueView("month")}>Monthly</Button>
+                  <Button variant={revenueView === "day" ? "default" : "outline"} size="sm" className="h-7 text-xs" onClick={() => setRevenueView("day")}>{analyticsT?.daily || "Daily"}</Button>
+                  <Button variant={revenueView === "month" ? "default" : "outline"} size="sm" className="h-7 text-xs" onClick={() => setRevenueView("month")}>{analyticsT?.monthly || "Monthly"}</Button>
                 </div>
               </div>
             </CardHeader>
@@ -257,10 +258,10 @@ export default function AnalyticsPage() {
           <Card className="rounded-2xl border border-border bg-card shadow-sm dark:border-[#1f1f1f] dark:bg-[#111111]">
             <CardHeader className="pb-2">
               <div className="flex items-center justify-between">
-                <CardTitle className="text-base font-bold text-foreground dark:text-[#ffffff]">Orders Statistics</CardTitle>
+                <CardTitle className="text-base font-bold text-foreground dark:text-[#ffffff]">{analyticsT?.ordersStatistics || "Orders Statistics"}</CardTitle>
                 <div className="flex items-center gap-2">
-                  <Button variant={ordersView === "day" ? "default" : "outline"} size="sm" className="h-7 text-xs" onClick={() => setOrdersView("day")}>Today</Button>
-                  <Button variant={ordersView === "month" ? "default" : "outline"} size="sm" className="h-7 text-xs" onClick={() => setOrdersView("month")}>Month</Button>
+                  <Button variant={ordersView === "day" ? "default" : "outline"} size="sm" className="h-7 text-xs" onClick={() => setOrdersView("day")}>{analyticsT?.today || "Today"}</Button>
+                  <Button variant={ordersView === "month" ? "default" : "outline"} size="sm" className="h-7 text-xs" onClick={() => setOrdersView("month")}>{analyticsT?.month || "Month"}</Button>
                 </div>
               </div>
             </CardHeader>
@@ -273,7 +274,7 @@ export default function AnalyticsPage() {
         <div className="space-y-6 xl:col-span-4">
           <Card className="rounded-2xl border border-border bg-card shadow-sm dark:border-[#1f1f1f] dark:bg-[#111111]">
             <CardHeader>
-              <CardTitle className="text-base font-bold text-foreground dark:text-[#ffffff]">Dine-in vs Takeaway</CardTitle>
+              <CardTitle className="text-base font-bold text-foreground dark:text-[#ffffff]">{analyticsT?.dineInVsTakeaway || "Dine-in vs Takeaway"}</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               <div
@@ -285,9 +286,9 @@ export default function AnalyticsPage() {
                 <div className="m-auto h-24 w-24 translate-y-10 rounded-full bg-card dark:bg-[#111111]" />
               </div>
               <div className="space-y-2 text-sm">
-                <div className="flex items-center justify-between"><span className="text-muted-foreground">Dine-in</span><span className="font-semibold">{dineInPct}%</span></div>
-                <div className="flex items-center justify-between"><span className="text-muted-foreground">Takeaway</span><span className="font-semibold">{takeawayPct}%</span></div>
-                <div className="flex items-center justify-between"><span className="text-muted-foreground">Delivery</span><span className="font-semibold">{deliveryPct}%</span></div>
+                <div className="flex items-center justify-between"><span className="text-muted-foreground">{analyticsT?.dineIn || "Dine-in"}</span><span className="font-semibold">{dineInPct}%</span></div>
+                <div className="flex items-center justify-between"><span className="text-muted-foreground">{analyticsT?.takeaway || "Takeaway"}</span><span className="font-semibold">{takeawayPct}%</span></div>
+                <div className="flex items-center justify-between"><span className="text-muted-foreground">{analyticsT?.delivery || "Delivery"}</span><span className="font-semibold">{deliveryPct}%</span></div>
               </div>
             </CardContent>
           </Card>
@@ -295,10 +296,10 @@ export default function AnalyticsPage() {
           <Card className="rounded-2xl border border-border bg-card shadow-sm dark:border-[#1f1f1f] dark:bg-[#111111]">
             <CardHeader className="pb-2">
               <div className="flex items-center justify-between">
-                <CardTitle className="text-base font-bold text-foreground dark:text-[#ffffff]">Performance Graph</CardTitle>
+                <CardTitle className="text-base font-bold text-foreground dark:text-[#ffffff]">{analyticsT?.performanceGraph || "Performance Graph"}</CardTitle>
                 <div className="flex items-center gap-2">
-                  <Button variant={performanceView === "week" ? "default" : "outline"} size="sm" className="h-7 text-xs" onClick={() => setPerformanceView("week")}>Weekly</Button>
-                  <Button variant={performanceView === "month" ? "default" : "outline"} size="sm" className="h-7 text-xs" onClick={() => setPerformanceView("month")}>Monthly</Button>
+                  <Button variant={performanceView === "week" ? "default" : "outline"} size="sm" className="h-7 text-xs" onClick={() => setPerformanceView("week")}>{analyticsT?.weekly || "Weekly"}</Button>
+                  <Button variant={performanceView === "month" ? "default" : "outline"} size="sm" className="h-7 text-xs" onClick={() => setPerformanceView("month")}>{analyticsT?.monthly || "Monthly"}</Button>
                 </div>
               </div>
             </CardHeader>
@@ -313,8 +314,10 @@ export default function AnalyticsPage() {
 }
 
 function SimpleLineAreaChart({ data, loading }: { data: Point[]; loading: boolean }) {
+  const { t } = useI18n();
+  const analyticsT = t.analytics || t.admin?.analytics || {};
   if (loading) return <div className="h-64 animate-pulse rounded-xl bg-muted/50" />;
-  if (!data.length) return <div className="h-64 flex items-center justify-center text-sm text-muted-foreground">No data available</div>;
+  if (!data.length) return <div className="h-64 flex items-center justify-center text-sm text-muted-foreground">{analyticsT?.noData || "No data available"}</div>;
 
   const maxValue = Math.max(...data.map((d) => d.value), 1);
   const width = Math.max(600, data.length * 34);
@@ -358,8 +361,10 @@ function SimpleBarChart({
   loading: boolean;
   highlightColor: string;
 }) {
+  const { t } = useI18n();
+  const analyticsT = t.analytics || t.admin?.analytics || {};
   if (loading) return <div className="h-56 animate-pulse rounded-xl bg-muted/50" />;
-  if (!data.length) return <div className="h-56 flex items-center justify-center text-sm text-muted-foreground">No data available</div>;
+  if (!data.length) return <div className="h-56 flex items-center justify-center text-sm text-muted-foreground">{analyticsT?.noData || "No data available"}</div>;
 
   const maxValue = Math.max(...data.map((d) => d.value), 1);
   const width = Math.max(560, data.length * 30);

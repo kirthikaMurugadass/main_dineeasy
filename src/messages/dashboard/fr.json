@@ -3,7 +3,67 @@
   "welcome": "Bienvenue",
   "liveBusinessOverview": "Aperçu en direct de l'entreprise",
   "live": "En direct",
+  "welcomeHeadline": "Bienvenue dans l'aperçu de {restaurant}",
+  "welcomeSubtitle": "Gérez facilement les opérations, commandes et réservations de votre restaurant.",
   "realtime": "Temps réel",
+  "overviewCards": {
+    "todaysRevenue": "Revenu du jour",
+    "takeawayOrders": "Commandes à emporter",
+    "dineInOrders": "Commandes sur place",
+    "todaysTotalOrders": "Total des commandes du jour",
+    "deliveryOrders": "Commandes en livraison",
+    "totalTables": "Total des tables",
+    "availableTables": "Tables disponibles",
+    "occupiedTables": "Tables occupées",
+    "pendingOrders": "Commandes en attente",
+    "completedOrders": "Commandes terminées"
+  },
+  "recentOrders": {
+    "title": "Commandes récentes",
+    "searchPlaceholder": "Espace de recherche",
+    "seeAllOrders": "Voir toutes les commandes",
+    "orderId": "ID commande",
+    "customerName": "Nom du client",
+    "orderType": "Type de commande",
+    "total": "Total",
+    "status": "Statut",
+    "dineIn": "Sur place",
+    "takeaway": "À emporter",
+    "delivery": "Livraison",
+    "guest": "Client"
+  },
+  "todaysBookings": {
+    "title": "Réservations d'aujourd'hui",
+    "empty": "Aucune réservation prévue pour aujourd'hui.",
+    "customerName": "Nom du client",
+    "bookingTime": "Heure de réservation",
+    "numberOfGuests": "Nombre de convives",
+    "tableNumber": "Numéro de table"
+  },
+  "revenueGraph": {
+    "title": "Graphique des revenus",
+    "daily": "Quotidien",
+    "monthly": "Mensuel"
+  },
+  "trendingMenus": {
+    "title": "Menus tendance",
+    "empty": "Aucun menu tendance pour le moment.",
+    "noImage": "Pas d'image",
+    "rating": "note",
+    "orders": "commandes"
+  },
+  "ordersOverview": {
+    "title": "Aperçu des commandes",
+    "today": "Aujourd'hui",
+    "month": "Mois"
+  },
+  "topCategories": {
+    "title": "Catégories principales",
+    "empty": "Aucune donnée de catégorie disponible."
+  },
+  "charts": {
+    "noData": "Aucune donnée disponible"
+  },
   "statistics": {
     "todaysRevenue": "Revenus d'aujourd'hui",
     "pendingOrders": "Commandes en attente",
@@ -43,16 +103,22 @@
     "viewBookings": "Voir les réservations",
     "analytics": "Analyses",
     "appearance": "Apparence",
+    "settings": "Paramètres",
     "qrCode": "Code QR"
   },
   "tableStatus": {
     "title": "Statut des tables",
     "loading": "Chargement des tables...",
     "noTables": "Aucune table configurée. Ajoutez des tables dans la section Tables.",
+    "availabilityFor": "Disponibilité pour",
+    "at": "à",
     "available": "Disponible",
     "occupied": "Occupée",
     "reserved": "Réservée",
-    "totalTables": "Total des tables"
+    "capacity": "Capacité",
+    "totalTables": "Total des tables",
+    "bookingDetails": "Détails de la réservation",
+    "noBookingsForSelected": "Aucune réservation pour la date et l'heure sélectionnées."
   },
   "revenueAnalytics": {
     "title": "Analyses des revenus",
@@ -83,7 +149,6 @@
   "activeCategories": "Catégories actives",
   "quickCreate": "Créer un menu",
   "recentActivity": "Activité récente",
-  "quickActions": "Actions rapides",
   "analytics": "Analyses",
   "noMenu": "Aucun menu trouvé",
   "createMenu": "Créer un menu",

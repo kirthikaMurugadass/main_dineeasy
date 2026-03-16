@@ -22,11 +22,12 @@
     "add": "Hinzufügen",
     "addOrderingDisabled": "Hinzufügen (Bestellung deaktiviert)",
     "viewCart": "Warenkorb anzeigen",
+    "reserveTable": "Tisch reservieren",
     "orderingNotAvailableTitle": "Bestellung nicht verfügbar",
     "orderingNotAvailableDescription": "Online-Bestellungen sind nur im Pro-Tarif verfügbar. Sie können die Speisekarte weiterhin ansehen.",
     "pos": {
       "posLabel": "POS",
-      "navigation": "Navigation",
+      "navigation": "Navigationsbereich",
       "allCategories": "Alle",
       "itemsLabel": "Artikel",
       "bottomBarTitle": "POS",

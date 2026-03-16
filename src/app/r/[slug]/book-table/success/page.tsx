@@ -28,6 +28,7 @@ export default function BookingSuccessPage() {
   const bookingId = searchParams.get("bookingId") || "N/A";
   const supabase = useMemo(() => createClient(), []);
   const { t } = useI18n();
+  const bookingT = t.booking;
   const flowT = t.booking?.publicFlow;
 
   const [receipt, setReceipt] = useState<ReceiptData>({
@@ -80,11 +81,11 @@ export default function BookingSuccessPage() {
   const handleDownloadPdf = () => {
     const doc = new jsPDF();
     doc.setFontSize(20);
-    doc.text(flowT?.detail?.infoCardTitle || "Booking Receipt", 20, 24);
+    doc.text(bookingT?.detail?.infoCardTitle || "Booking Receipt", 20, 24);
     doc.setFontSize(12);
 
     const rows: Array<[string, string]> = [
-      ["Restaurant", receipt.restaurantName],
+      [flowT?.fields?.restaurant || "Restaurant", receipt.restaurantName],
       [flowT?.fields?.customerName || "Customer", receipt.customerName],
       [flowT?.fields?.tableNumber || "Table", receipt.tableName],
       [flowT?.fields?.guests || "Guests", receipt.guests],
@@ -120,10 +121,10 @@ export default function BookingSuccessPage() {
 
         <Card className="mt-6 rounded-2xl border border-border/70 text-left shadow-sm">
           <CardHeader className="pb-3">
-            <CardTitle className="text-xl">{flowT?.detail?.infoCardTitle || "Booking Receipt"}</CardTitle>
+            <CardTitle className="text-xl">{bookingT?.detail?.infoCardTitle || "Booking Receipt"}</CardTitle>
           </CardHeader>
           <CardContent className="space-y-2 text-sm sm:text-base">
-            <div className="flex items-center justify-between"><span className="text-muted-foreground">Restaurant</span><span className="font-semibold text-right">{receipt.restaurantName}</span></div>
+            <div className="flex items-center justify-between"><span className="text-muted-foreground">{flowT?.fields?.restaurant || "Restaurant"}</span><span className="font-semibold text-right">{receipt.restaurantName}</span></div>
             <div className="flex items-center justify-between"><span className="text-muted-foreground">{flowT?.fields?.tableNumber || "Table"}</span><span className="font-semibold">{receipt.tableName}</span></div>
             <div className="flex items-center justify-between"><span className="text-muted-foreground">{flowT?.fields?.guests || "Guests"}</span><span className="font-semibold">{receipt.guests}</span></div>
             <div className="flex items-center justify-between"><span className="text-muted-foreground">{flowT?.fields?.date || "Date"}</span><span className="font-semibold">{receipt.date}</span></div>
@@ -135,7 +136,7 @@ export default function BookingSuccessPage() {
         <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:justify-center">
           <Button className="h-11 rounded-full px-6" onClick={handleDownloadPdf}>
             <Download className="mr-2 h-4 w-4" />
-            Download Receipt
+            {flowT?.actions?.downloadReceipt || "Download Receipt"}
           </Button>
           <Button className="h-11 rounded-full px-6" variant="outline" onClick={() => router.push(`/r/${slug}/book-table`)}>
             <Home className="mr-2 h-4 w-4" />

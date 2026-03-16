@@ -3,7 +3,67 @@
   "welcome": "Bentornato",
   "liveBusinessOverview": "Panoramica business in diretta",
   "live": "In diretta",
+  "welcomeHeadline": "Benvenuto nella panoramica di {restaurant}",
+  "welcomeSubtitle": "Gestisci facilmente operazioni, ordini e prenotazioni del tuo ristorante.",
   "realtime": "Tempo reale",
+  "overviewCards": {
+    "todaysRevenue": "Ricavi di oggi",
+    "takeawayOrders": "Ordini da asporto",
+    "dineInOrders": "Ordini al tavolo",
+    "todaysTotalOrders": "Totale ordini di oggi",
+    "deliveryOrders": "Ordini a domicilio",
+    "totalTables": "Tavoli totali",
+    "availableTables": "Tavoli disponibili",
+    "occupiedTables": "Tavoli occupati",
+    "pendingOrders": "Ordini in sospeso",
+    "completedOrders": "Ordini completati"
+  },
+  "recentOrders": {
+    "title": "Ordini recenti",
+    "searchPlaceholder": "Segnaposto ricerca",
+    "seeAllOrders": "Vedi tutti gli ordini",
+    "orderId": "ID ordine",
+    "customerName": "Nome cliente",
+    "orderType": "Tipo ordine",
+    "total": "Totale",
+    "status": "Stato",
+    "dineIn": "Al tavolo",
+    "takeaway": "Asporto",
+    "delivery": "Consegna",
+    "guest": "Ospite"
+  },
+  "todaysBookings": {
+    "title": "Prenotazioni di oggi",
+    "empty": "Nessuna prenotazione programmata per oggi.",
+    "customerName": "Nome cliente",
+    "bookingTime": "Orario prenotazione",
+    "numberOfGuests": "Numero ospiti",
+    "tableNumber": "Numero tavolo"
+  },
+  "revenueGraph": {
+    "title": "Grafico ricavi",
+    "daily": "Giornaliero",
+    "monthly": "Mensile"
+  },
+  "trendingMenus": {
+    "title": "Menu di tendenza",
+    "empty": "Nessun menu di tendenza al momento.",
+    "noImage": "Nessuna immagine",
+    "rating": "valutazione",
+    "orders": "ordini"
+  },
+  "ordersOverview": {
+    "title": "Panoramica ordini",
+    "today": "Oggi",
+    "month": "Mese"
+  },
+  "topCategories": {
+    "title": "Categorie principali",
+    "empty": "Nessun dato categoria disponibile."
+  },
+  "charts": {
+    "noData": "Nessun dato disponibile"
+  },
   "statistics": {
     "todaysRevenue": "Ricavi di oggi",
     "pendingOrders": "Ordini in attesa",
@@ -43,16 +103,22 @@
     "viewBookings": "Visualizza prenotazioni",
     "analytics": "Analisi",
     "appearance": "Aspetto",
+    "settings": "Impostazioni",
     "qrCode": "Codice QR"
   },
   "tableStatus": {
     "title": "Stato tavoli",
     "loading": "Caricamento tavoli...",
     "noTables": "Nessun tavolo configurato. Aggiungi tavoli nella sezione Tavoli.",
+    "availabilityFor": "Disponibilità per",
+    "at": "alle",
     "available": "Disponibile",
     "occupied": "Occupato",
     "reserved": "Prenotato",
-    "totalTables": "Totale tavoli"
+    "capacity": "Capacità",
+    "totalTables": "Tavoli totali",
+    "bookingDetails": "Dettagli prenotazione",
+    "noBookingsForSelected": "Nessuna prenotazione per la data e l'orario selezionati."
   },
   "revenueAnalytics": {
     "title": "Analisi dei ricavi",
@@ -83,7 +149,6 @@
   "activeCategories": "Categorie attive",
   "quickCreate": "Crea menu",
   "recentActivity": "Attività recente",
-  "quickActions": "Azioni rapide",
   "analytics": "Analisi",
   "noMenu": "Nessun menu trovato",
   "createMenu": "Crea menu",

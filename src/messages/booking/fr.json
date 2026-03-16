@@ -109,6 +109,7 @@
       "billing": "Facturation"
     },
     "fields": {
+      "restaurant": "Restaurant",
       "date": "Date",
       "time": "Heure",
       "guests": "Convives",
@@ -156,6 +157,7 @@
       "continueToSelectTable": "Continuer vers le choix de table",
       "continue": "Continuer",
       "confirmBooking": "Confirmer la réservation",
+      "downloadReceipt": "Télécharger le reçu",
       "processing": "Traitement...",
       "backToMenu": "Retour au menu",
       "backToHome": "Retour à l'accueil",

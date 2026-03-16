@@ -112,7 +112,7 @@ type AnalyticsPoint = {
 };
 
 export default function AdminDashboard() {
-  const { t } = useI18n();
+  const { t, language } = useI18n();
   const router = useRouter();
   const [loading, setLoading] = useState(true);
   const [restaurantId, setRestaurantId] = useState<string | null>(null);
@@ -311,7 +311,7 @@ export default function AdminDashboard() {
               // Still set orders but without items
               const formattedOrders: Order[] = ordersData.map((order: any) => ({
                 id: order.id,
-                customer_name: order.customer_name || "Guest",
+                customer_name: order.customer_name || "",
                 order_type: order.order_type,
                 table_number: order.table_number,
                 status: order.status,
@@ -333,16 +333,17 @@ export default function AdminDashboard() {
               
               if (itemIds.length > 0) {
                 const { data: translationsData, error: translationsError } = await supabase
-                  .from("menu_item_translations")
-                  .select("menu_item_id, title, language")
-                  .in("menu_item_id", itemIds);
+                  .from("translations")
+                  .select("entity_id, title, language")
+                  .eq("entity_type", "menu_item")
+                  .in("entity_id", itemIds);
                 
                 if (!translationsError && translationsData) {
                   translationsData.forEach((t: any) => {
-                    if (!translationMap.has(t.menu_item_id)) {
-                      translationMap.set(t.menu_item_id, []);
+                    if (!translationMap.has(t.entity_id)) {
+                      translationMap.set(t.entity_id, []);
                     }
-                    translationMap.get(t.menu_item_id)!.push({
+                    translationMap.get(t.entity_id)!.push({
                       title: t.title,
                       language: t.language,
                     });
@@ -374,7 +375,7 @@ export default function AdminDashboard() {
                 
                 return {
                   id: order.id,
-                  customer_name: order.customer_name || "Guest",
+                  customer_name: order.customer_name || "",
                   order_type: order.order_type,
                   table_number: order.table_number,
                   status: order.status,
@@ -592,21 +593,28 @@ export default function AdminDashboard() {
           const itemIds = (menuItems || []).map((m: any) => m.id).filter(Boolean);
           const { data: menuItemTitles } = itemIds.length
             ? await supabase
-                .from("menu_item_translations")
-                .select("menu_item_id, title, language")
-                .in("menu_item_id", itemIds)
+                .from("translations")
+                .select("entity_id, title, language")
+                .eq("entity_type", "menu_item")
+                .in("entity_id", itemIds)
             : { data: [] as any[] };
 
           const titleMap = new Map<string, string>();
           (menuItemTitles || []).forEach((tr: any) => {
-            const id = tr.menu_item_id;
-            if (!id || titleMap.has(id)) return;
-            titleMap.set(id, tr.title || "Menu Item");
+            const id = tr.entity_id;
+            if (!id || !tr.title) return;
+            if (tr.language === language) {
+              titleMap.set(id, tr.title);
+              return;
+            }
+            if (!titleMap.has(id)) {
+              titleMap.set(id, tr.title);
+            }
           });
 
           const fallbackTrending: TrendingMenuItem[] = (menuItems || []).map((m: any, idx: number) => ({
             id: m.id,
-            name: titleMap.get(m.id) || `Menu Item ${idx + 1}`,
+            name: titleMap.get(m.id) || `${t.menu?.untitled || "Untitled"} ${idx + 1}`,
             image_url: m.image_url || null,
             orders: Math.max(0, 12 - idx * 2),
             price: Number(m.price_chf || 0),
@@ -654,16 +662,23 @@ export default function AdminDashboard() {
               .select("id, image_url, price_chf, category_id")
               .in("id", itemIds),
             supabase
-              .from("menu_item_translations")
-              .select("menu_item_id, title, language")
-              .in("menu_item_id", itemIds),
+              .from("translations")
+              .select("entity_id, title, language")
+              .eq("entity_type", "menu_item")
+              .in("entity_id", itemIds),
           ]);
 
           const titleMap = new Map<string, string>();
           (menuItemTitles || []).forEach((tr: any) => {
-            const id = tr.menu_item_id;
-            if (!id || titleMap.has(id)) return;
-            titleMap.set(id, tr.title || "Menu Item");
+            const id = tr.entity_id;
+            if (!id || !tr.title) return;
+            if (tr.language === language) {
+              titleMap.set(id, tr.title);
+              return;
+            }
+            if (!titleMap.has(id)) {
+              titleMap.set(id, tr.title);
+            }
           });
 
           const menuMap = new Map<string, any>();
@@ -682,7 +697,7 @@ export default function AdminDashboard() {
               const rating = Number((4.1 + Math.min(0.8, agg.orders / 80)).toFixed(1));
               return {
                 id,
-                name: titleMap.get(id) || "Menu Item",
+                name: titleMap.get(id) || t.menu?.untitled || "Untitled",
                 image_url: menu?.image_url ?? null,
                 orders: agg.orders,
                 price: unitPrice,
@@ -712,21 +727,26 @@ export default function AdminDashboard() {
           if (categoryIds.length > 0) {
             const { data: categoryTitles } = await supabase
               .from("translations")
-              .select("entity_id, title")
+              .select("entity_id, title, language")
               .eq("entity_type", "category")
               .in("entity_id", categoryIds);
 
             const categoryNameMap = new Map<string, string>();
             (categoryTitles || []).forEach((tr: any) => {
+              if (!tr.entity_id || !tr.title) return;
+              if (tr.language === language) {
+                categoryNameMap.set(tr.entity_id, tr.title);
+                return;
+              }
               if (!categoryNameMap.has(tr.entity_id)) {
-                categoryNameMap.set(tr.entity_id, tr.title || "Category");
+                categoryNameMap.set(tr.entity_id, tr.title);
               }
             });
 
             const palette = ["#16a34a", "#22c55e", "#86efac", "#bbf7d0", "#dcfce7"];
             const donut = categoryIds
               .map((id, idx) => ({
-                label: categoryNameMap.get(id) || "Category",
+                label: categoryNameMap.get(id) || t.admin?.categories?.title || "Category",
                 value: catCounts.get(id) || 0,
                 color: palette[idx % palette.length],
               }))
@@ -967,7 +987,7 @@ export default function AdminDashboard() {
         supabase.removeChannel(tablesChannel);
     }
     };
-  }, [isPro, router]);
+  }, [isPro, router, language]);
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -1062,17 +1082,24 @@ export default function AdminDashboard() {
     { label: t.dashboard?.quickActions?.qrCode || t.dashboard.quickActions?.qrCode || "QR Code", icon: QrCode, href: "/admin/qr", pro: false },
   ];
 
+  const welcomeHeadlineTemplate =
+    t.dashboard?.welcomeHeadline || "Welcome to {restaurant} Overview";
+  const welcomeHeadline = welcomeHeadlineTemplate.replace(
+    "{restaurant}",
+    restaurantName || "Restaurant"
+  );
+
   const overviewCards = [
-    { title: "Today's Revenue", value: stats.todayRevenue, icon: DollarSign, isCurrency: true },
-    { title: "Takeaway Orders", value: stats.takeawayOrders, icon: ShoppingCart },
-    { title: "Dine-in Orders", value: stats.dineInOrders, icon: ChefHat },
-    { title: "Today's Total Orders", value: stats.totalOrdersToday, icon: Activity },
-    { title: "Delivery Orders", value: stats.deliveryOrders, icon: Users },
-    { title: "Total Tables", value: stats.totalTables, icon: Table },
-    { title: "Available Tables", value: stats.tablesAvailable, icon: CheckCircle },
-    { title: "Occupied Tables", value: stats.tablesOccupied, icon: Table },
-    { title: "Pending Orders", value: stats.pendingOrders, icon: Clock },
-    { title: "Completed Orders", value: stats.completedOrders, icon: CheckCircle },
+    { title: t.dashboard?.overviewCards?.todaysRevenue || "Today's Revenue", value: stats.todayRevenue, icon: DollarSign, isCurrency: true },
+    { title: t.dashboard?.overviewCards?.takeawayOrders || "Takeaway Orders", value: stats.takeawayOrders, icon: ShoppingCart },
+    { title: t.dashboard?.overviewCards?.dineInOrders || "Dine-in Orders", value: stats.dineInOrders, icon: ChefHat },
+    { title: t.dashboard?.overviewCards?.todaysTotalOrders || "Today's Total Orders", value: stats.totalOrdersToday, icon: Activity },
+    { title: t.dashboard?.overviewCards?.deliveryOrders || "Delivery Orders", value: stats.deliveryOrders, icon: Users },
+    { title: t.dashboard?.overviewCards?.totalTables || "Total Tables", value: stats.totalTables, icon: Table },
+    { title: t.dashboard?.overviewCards?.availableTables || "Available Tables", value: stats.tablesAvailable, icon: CheckCircle },
+    { title: t.dashboard?.overviewCards?.occupiedTables || "Occupied Tables", value: stats.tablesOccupied, icon: Table },
+    { title: t.dashboard?.overviewCards?.pendingOrders || "Pending Orders", value: stats.pendingOrders, icon: Clock },
+    { title: t.dashboard?.overviewCards?.completedOrders || "Completed Orders", value: stats.completedOrders, icon: CheckCircle },
   ];
 
   const categoryTotal = stats.takeawayOrders + stats.dineInOrders + stats.deliveryOrders;
@@ -1218,7 +1245,7 @@ export default function AdminDashboard() {
             transition={{ delay: 0.3 }}
             className="mt-2.5 text-3xl font-bold tracking-tight text-foreground sm:text-[42px]"
           >
-            Welcome to {restaurantName || "Restaurant"} Overview
+            {welcomeHeadline}
           </motion.h1>
           <motion.p
             initial={{ opacity: 0, y: 12 }}
@@ -1226,7 +1253,7 @@ export default function AdminDashboard() {
             transition={{ delay: 0.4 }}
             className="mt-3 max-w-4xl text-sm text-muted-foreground sm:text-base"
           >
-            Manage your restaurant operations, orders, and reservations easily.
+            {t.dashboard?.welcomeSubtitle || "Manage your restaurant operations, orders, and reservations easily."}
           </motion.p>
         </div>
       </motion.div>
@@ -1343,14 +1370,14 @@ export default function AdminDashboard() {
             <CardHeader className="pb-1.5">
               <div className="flex flex-wrap items-center justify-between gap-3">
                 <CardTitle className="text-base font-bold tracking-tight text-foreground dark:text-[#ffffff]">
-                  Recent Orders
+                  {t.dashboard?.recentOrders?.title || "Recent Orders"}
                 </CardTitle>
                 <div className="flex w-full items-center gap-2 sm:w-auto">
                   <div className="flex h-7 min-w-[200px] items-center rounded-lg border border-border/80 bg-muted/20 px-2.5 text-[11px] text-muted-foreground">
-                    Search placeholder
+                    {t.dashboard?.recentOrders?.searchPlaceholder || "Search placeholder"}
                   </div>
                   <Button variant="outline" size="sm" className="h-7 rounded-lg px-3 text-[11px] font-semibold">
-                    See All Orders
+                    {t.dashboard?.recentOrders?.seeAllOrders || "See All Orders"}
                   </Button>
                 </div>
               </div>
@@ -1360,11 +1387,11 @@ export default function AdminDashboard() {
                 <table className="w-full min-w-full text-[12px]">
                   <thead>
                     <tr className="border-b border-border/70 text-left text-[10px] uppercase tracking-[0.08em] text-muted-foreground/80">
-                      <th className="py-2.5 pr-3 font-medium">Order ID</th>
-                      <th className="py-2.5 pr-3 font-medium">Customer Name</th>
-                      <th className="py-2.5 pr-3 font-medium">Order Type</th>
-                      <th className="py-2.5 pr-3 font-medium">Total</th>
-                      <th className="py-2.5 font-medium">Status</th>
+                      <th className="py-2.5 pr-3 font-medium">{t.dashboard?.recentOrders?.orderId || "Order ID"}</th>
+                      <th className="py-2.5 pr-3 font-medium">{t.dashboard?.recentOrders?.customerName || "Customer Name"}</th>
+                      <th className="py-2.5 pr-3 font-medium">{t.dashboard?.recentOrders?.orderType || "Order Type"}</th>
+                      <th className="py-2.5 pr-3 font-medium">{t.dashboard?.recentOrders?.total || "Total"}</th>
+                      <th className="py-2.5 font-medium">{t.dashboard?.recentOrders?.status || "Status"}</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -1386,10 +1413,10 @@ export default function AdminDashboard() {
                         const orderType = (order.order_type || "").toLowerCase();
                         const typeLabel =
                           orderType === "dine_in" || orderType === "dine-in"
-                            ? "Dine-in"
+                            ? (t.dashboard?.recentOrders?.dineIn || "Dine-in")
                             : orderType === "takeaway"
-                            ? "Takeaway"
-                            : "Delivery";
+                            ? (t.dashboard?.recentOrders?.takeaway || "Takeaway")
+                            : (t.dashboard?.recentOrders?.delivery || "Delivery");
 
                         return (
                           <tr key={order.id} className="border-b border-border/50 transition-colors hover:bg-muted/15 last:border-b-0">
@@ -1402,7 +1429,7 @@ export default function AdminDashboard() {
                                   {(order.customer_name || "G").charAt(0).toUpperCase()}
                                 </div>
                                 <span className="text-[13px] font-semibold text-foreground dark:text-[#ffffff]">
-                                  {order.customer_name || "Guest"}
+                                  {order.customer_name || t.dashboard?.recentOrders?.guest || "Guest"}
                                 </span>
                               </div>
                             </td>
@@ -1450,7 +1477,7 @@ export default function AdminDashboard() {
             <CardHeader className="pb-3">
               <div className="flex items-center justify-between">
                 <CardTitle className="text-base font-bold text-foreground dark:text-[#ffffff]">
-                  Today&apos;s Bookings
+                  {t.dashboard?.todaysBookings?.title || "Today's Bookings"}
                 </CardTitle>
                 <span className="text-xs font-medium text-muted-foreground">{currentDateKey}</span>
               </div>
@@ -1458,23 +1485,23 @@ export default function AdminDashboard() {
             <CardContent className="pt-0">
               {todaysBookingsList.length === 0 ? (
                 <div className="rounded-lg border border-dashed border-border p-6 text-center text-sm text-muted-foreground">
-                  No bookings scheduled for today.
+                  {t.dashboard?.todaysBookings?.empty || "No bookings scheduled for today."}
                 </div>
               ) : (
                 <div className="overflow-x-auto">
                   <table className="w-full min-w-[620px] text-sm">
                     <thead>
                       <tr className="border-b border-border/80 text-left text-xs uppercase tracking-wide text-muted-foreground">
-                        <th className="py-3 pr-3 font-semibold">Customer Name</th>
-                        <th className="py-3 pr-3 font-semibold">Booking Time</th>
-                        <th className="py-3 pr-3 font-semibold">Number of Guests</th>
-                        <th className="py-3 font-semibold">Table Number</th>
+                        <th className="py-3 pr-3 font-semibold">{t.dashboard?.todaysBookings?.customerName || "Customer Name"}</th>
+                        <th className="py-3 pr-3 font-semibold">{t.dashboard?.todaysBookings?.bookingTime || "Booking Time"}</th>
+                        <th className="py-3 pr-3 font-semibold">{t.dashboard?.todaysBookings?.numberOfGuests || "Number of Guests"}</th>
+                        <th className="py-3 font-semibold">{t.dashboard?.todaysBookings?.tableNumber || "Table Number"}</th>
                       </tr>
                     </thead>
                     <tbody>
                       {todaysBookingsList.map((booking, idx) => (
                         <tr key={`${booking.table_id}-${booking.booking_time}-${idx}`} className="border-b border-border/60 transition-colors hover:bg-muted/20 last:border-b-0">
-                          <td className="py-3 pr-3 text-foreground dark:text-[#ffffff]">{booking.customer_name || "Guest"}</td>
+                          <td className="py-3 pr-3 text-foreground dark:text-[#ffffff]">{booking.customer_name || t.dashboard?.recentOrders?.guest || "Guest"}</td>
                           <td className="py-3 pr-3 text-muted-foreground">{booking.booking_time || "-"}</td>
                           <td className="py-3 pr-3 text-muted-foreground">{booking.guest_count ?? "-"}</td>
                           <td className="py-3 text-muted-foreground">{tableNameById.get(booking.table_id) || "-"}</td>
@@ -1490,10 +1517,10 @@ export default function AdminDashboard() {
           <Card className="rounded-2xl border border-border bg-card shadow-sm dark:border-[#1f1f1f] dark:bg-[#111111]">
             <CardHeader className="pb-2">
               <div className="flex items-center justify-between">
-                <CardTitle className="text-base font-bold text-foreground dark:text-[#ffffff]">Revenue Graph</CardTitle>
+                <CardTitle className="text-base font-bold text-foreground dark:text-[#ffffff]">{t.dashboard?.revenueGraph?.title || "Revenue Graph"}</CardTitle>
                 <div className="flex items-center gap-2">
-                  <Button variant={revenueView === "day" ? "default" : "outline"} size="sm" className="h-7 text-xs" onClick={() => setRevenueView("day")}>Daily</Button>
-                  <Button variant={revenueView === "month" ? "default" : "outline"} size="sm" className="h-7 text-xs" onClick={() => setRevenueView("month")}>Monthly</Button>
+                  <Button variant={revenueView === "day" ? "default" : "outline"} size="sm" className="h-7 text-xs" onClick={() => setRevenueView("day")}>{t.dashboard?.revenueGraph?.daily || "Daily"}</Button>
+                  <Button variant={revenueView === "month" ? "default" : "outline"} size="sm" className="h-7 text-xs" onClick={() => setRevenueView("month")}>{t.dashboard?.revenueGraph?.monthly || "Monthly"}</Button>
                 </div>
               </div>
             </CardHeader>
@@ -1514,13 +1541,13 @@ export default function AdminDashboard() {
           <Card className="overflow-hidden rounded-2xl border border-border/70 bg-[#FFFFFF] shadow-sm dark:border-[#1f1f1f] dark:bg-[#111111]">
             <CardHeader>
               <CardTitle className="text-base font-bold text-foreground dark:text-[#ffffff]">
-                Trending Menus
+                {t.dashboard?.trendingMenus?.title || "Trending Menus"}
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-3">
               {trendingMenus.length === 0 ? (
                 <div className="rounded-xl border border-dashed border-border p-5 text-center text-sm text-muted-foreground">
-                  No trending menus yet.
+                  {t.dashboard?.trendingMenus?.empty || "No trending menus yet."}
                 </div>
               ) : (
                 trendingMenus.map((dish) => (
@@ -1532,13 +1559,13 @@ export default function AdminDashboard() {
                       {dish.image_url ? (
                         <img src={dish.image_url} alt={dish.name} className="h-full w-full object-cover" />
                       ) : (
-                        <div className="flex h-full w-full items-center justify-center text-xs text-muted-foreground">No Image</div>
+                        <div className="flex h-full w-full items-center justify-center text-xs text-muted-foreground">{t.dashboard?.trendingMenus?.noImage || "No Image"}</div>
                       )}
                     </div>
                     <div className="min-w-0 flex-1">
                       <p className="truncate text-sm font-semibold text-foreground dark:text-[#ffffff]">{dish.name}</p>
                       <p className="mt-0.5 text-xs text-muted-foreground">
-                        {dish.rating.toFixed(1)} rating • {dish.orders} orders
+                        {dish.rating.toFixed(1)} {t.dashboard?.trendingMenus?.rating || "rating"} • {dish.orders} {t.dashboard?.trendingMenus?.orders || "orders"}
                       </p>
                     </div>
                     <p className="text-sm font-semibold text-foreground dark:text-[#ffffff]">
@@ -1553,7 +1580,7 @@ export default function AdminDashboard() {
           <Card className="rounded-2xl border border-border/70 bg-card shadow-sm dark:border-[#1f1f1f] dark:bg-[#111111]">
             <CardHeader className="pb-2">
               <CardTitle className="text-base font-bold text-foreground dark:text-[#ffffff]">
-                {t.dashboard?.quickActions?.title || t.dashboard.quickActions || "Quick Actions"}
+                {t.dashboard?.quickActions?.title || "Quick Actions"}
               </CardTitle>
             </CardHeader>
             <CardContent className="pt-0">
@@ -1594,7 +1621,7 @@ export default function AdminDashboard() {
             <CardHeader>
               <div className="flex items-center justify-between gap-3">
                 <CardTitle className="text-base font-bold text-foreground dark:text-[#ffffff]">
-                  Table Status
+                  {t.dashboard?.tableStatus?.title || "Table Status"}
                 </CardTitle>
                 <div className="flex items-center gap-2">
                   <input
@@ -1617,16 +1644,16 @@ export default function AdminDashboard() {
                 </div>
               </div>
               <p className="text-xs text-muted-foreground">
-                Availability for {selectedDate} at {selectedTime}
+                {(t.dashboard?.tableStatus?.availabilityFor || "Availability for")} {selectedDate} {(t.dashboard?.tableStatus?.at || "at")} {selectedTime}
               </p>
               <div className="flex items-center gap-4 pt-1 text-xs">
                 <span className="inline-flex items-center gap-1.5 text-muted-foreground">
                   <span className="h-2 w-2 rounded-full bg-primary" />
-                  Available
+                  {t.dashboard?.tableStatus?.available || "Available"}
                 </span>
                 <span className="inline-flex items-center gap-1.5 text-muted-foreground">
                   <span className="h-2 w-2 rounded-full bg-red-500" />
-                  Occupied
+                  {t.dashboard?.tableStatus?.occupied || "Occupied"}
                 </span>
               </div>
             </CardHeader>
@@ -1651,7 +1678,7 @@ export default function AdminDashboard() {
                           {table.table_name}
                         </p>
                         <p className="mt-1 text-xs text-muted-foreground">
-                          Capacity: {table.capacity}
+                          {t.dashboard?.tableStatus?.capacity || "Capacity"}: {table.capacity}
                         </p>
                         <div className="inline-flex items-center gap-1.5 rounded-full bg-background/80 px-2.5 py-1 text-[11px] font-semibold">
                           <span
@@ -1666,7 +1693,9 @@ export default function AdminDashboard() {
                                 : "text-red-700 dark:text-red-300"
                             }
                           >
-                            {table.status === "available" ? "Available" : "Occupied"}
+                            {table.status === "available"
+                              ? (t.dashboard?.tableStatus?.available || "Available")
+                              : (t.dashboard?.tableStatus?.occupied || "Occupied")}
                           </span>
                         </div>
                       </div>
@@ -1676,11 +1705,11 @@ export default function AdminDashboard() {
               )}
               <div className="mt-5 border-t border-border/70 pt-4">
                 <h4 className="text-sm font-semibold text-foreground dark:text-[#ffffff]">
-                  Booking Details
+                  {t.dashboard?.tableStatus?.bookingDetails || "Booking Details"}
                 </h4>
                 {selectedSlotBookings.length === 0 ? (
                   <p className="mt-2 text-xs text-muted-foreground">
-                    No bookings for the selected date and time.
+                    {t.dashboard?.tableStatus?.noBookingsForSelected || "No bookings for the selected date and time."}
                   </p>
                 ) : (
                   <div className="mt-3 space-y-2">
@@ -1690,19 +1719,19 @@ export default function AdminDashboard() {
                         className="rounded-lg border border-border/70 bg-background/40 p-2.5 text-xs"
                       >
                         <p className="text-muted-foreground">
-                          Customer Name:{" "}
+                          {(t.dashboard?.todaysBookings?.customerName || "Customer Name")}:{" "}
                           <span className="font-medium text-foreground dark:text-[#ffffff]">
                             {booking.customer_name || "-"}
                           </span>
                         </p>
                         <p className="mt-0.5 text-muted-foreground">
-                          Booking Time:{" "}
+                          {(t.dashboard?.todaysBookings?.bookingTime || "Booking Time")}:{" "}
                           <span className="font-medium text-foreground dark:text-[#ffffff]">
                             {booking.booking_time || "-"}
                           </span>
                         </p>
                         <p className="mt-0.5 text-muted-foreground">
-                          Number of Guests:{" "}
+                          {(t.dashboard?.todaysBookings?.numberOfGuests || "Number of Guests")}:{" "}
                           <span className="font-medium text-foreground dark:text-[#ffffff]">
                             {booking.guest_count ?? "-"}
                           </span>
@@ -1724,11 +1753,11 @@ export default function AdminDashboard() {
             <CardHeader className="pb-2">
               <div className="flex items-center justify-between">
                 <CardTitle className="text-base font-bold text-foreground dark:text-[#ffffff]">
-                  Revenue Analytics
+                  {t.dashboard?.analytics || "Revenue Analytics"}
                 </CardTitle>
                 <div className="flex items-center gap-2">
-                  <Button variant={revenueView === "day" ? "default" : "outline"} size="sm" className="h-7 text-xs" onClick={() => setRevenueView("day")}>Daily</Button>
-                  <Button variant={revenueView === "month" ? "default" : "outline"} size="sm" className="h-7 text-xs" onClick={() => setRevenueView("month")}>Monthly</Button>
+                  <Button variant={revenueView === "day" ? "default" : "outline"} size="sm" className="h-7 text-xs" onClick={() => setRevenueView("day")}>{t.dashboard?.revenueGraph?.daily || "Daily"}</Button>
+                  <Button variant={revenueView === "month" ? "default" : "outline"} size="sm" className="h-7 text-xs" onClick={() => setRevenueView("month")}>{t.dashboard?.revenueGraph?.monthly || "Monthly"}</Button>
                 </div>
               </div>
             </CardHeader>
@@ -1741,11 +1770,11 @@ export default function AdminDashboard() {
             <CardHeader className="pb-2">
               <div className="flex items-center justify-between">
                 <CardTitle className="text-base font-bold text-foreground dark:text-[#ffffff]">
-                  Orders Overview
+                  {t.dashboard?.ordersOverview?.title || "Orders Overview"}
                 </CardTitle>
                 <div className="flex items-center gap-2">
-                  <Button variant={ordersView === "day" ? "default" : "outline"} size="sm" className="h-7 text-xs" onClick={() => setOrdersView("day")}>Today</Button>
-                  <Button variant={ordersView === "month" ? "default" : "outline"} size="sm" className="h-7 text-xs" onClick={() => setOrdersView("month")}>Month</Button>
+                  <Button variant={ordersView === "day" ? "default" : "outline"} size="sm" className="h-7 text-xs" onClick={() => setOrdersView("day")}>{t.dashboard?.ordersOverview?.today || "Today"}</Button>
+                  <Button variant={ordersView === "month" ? "default" : "outline"} size="sm" className="h-7 text-xs" onClick={() => setOrdersView("month")}>{t.dashboard?.ordersOverview?.month || "Month"}</Button>
                 </div>
               </div>
             </CardHeader>
@@ -1758,7 +1787,7 @@ export default function AdminDashboard() {
         <div className="space-y-6 xl:col-span-4">
           <Card className="rounded-2xl border border-green-200/70 bg-gradient-to-br from-green-50/80 to-white shadow-sm dark:border-[#1f1f1f] dark:from-[#111111] dark:to-[#111111]">
             <CardHeader>
-              <CardTitle className="text-base font-bold text-foreground dark:text-[#ffffff]">Top Categories</CardTitle>
+              <CardTitle className="text-base font-bold text-foreground dark:text-[#ffffff]">{t.dashboard?.topCategories?.title || "Top Categories"}</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               <div
@@ -1769,7 +1798,7 @@ export default function AdminDashboard() {
               </div>
               <div className="space-y-2 text-sm">
                 {categoryDonutData.length === 0 ? (
-                  <p className="text-sm text-muted-foreground">No category data available.</p>
+                  <p className="text-sm text-muted-foreground">{t.dashboard?.topCategories?.empty || "No category data available."}</p>
                 ) : (
                   categoryDonutData.map((cat) => (
                     <div key={cat.label} className="flex items-center justify-between">
@@ -1795,8 +1824,9 @@ export default function AdminDashboard() {
 
 // Revenue Chart Component
 function SimpleLineAreaChart({ data, loading }: { data: AnalyticsPoint[]; loading: boolean }) {
+  const { t } = useI18n();
   if (loading) return <div className="h-64 animate-pulse rounded-xl bg-muted/50" />;
-  if (!data.length) return <div className="flex h-64 items-center justify-center text-sm text-muted-foreground">No data available</div>;
+  if (!data.length) return <div className="flex h-64 items-center justify-center text-sm text-muted-foreground">{t.dashboard?.charts?.noData || "No data available"}</div>;
 
   const maxValue = Math.max(...data.map((d) => d.value), 1);
   const width = Math.max(600, data.length * 34);
@@ -1840,8 +1870,9 @@ function SimpleBarChart({
   loading: boolean;
   highlightColor: string;
 }) {
+  const { t } = useI18n();
   if (loading) return <div className="h-56 animate-pulse rounded-xl bg-muted/50" />;
-  if (!data.length) return <div className="flex h-56 items-center justify-center text-sm text-muted-foreground">No data available</div>;
+  if (!data.length) return <div className="flex h-56 items-center justify-center text-sm text-muted-foreground">{t.dashboard?.charts?.noData || "No data available"}</div>;
 
   const maxValue = Math.max(...data.map((d) => d.value), 1);
   const width = Math.max(560, data.length * 30);

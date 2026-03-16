@@ -109,6 +109,7 @@
       "billing": "Riepilogo costi"
     },
     "fields": {
+      "restaurant": "Ristorante",
       "date": "Data",
       "time": "Ora",
       "guests": "Ospiti",
@@ -156,6 +157,7 @@
       "continueToSelectTable": "Continua alla selezione tavolo",
       "continue": "Continua",
       "confirmBooking": "Conferma prenotazione",
+      "downloadReceipt": "Scarica ricevuta",
       "processing": "Elaborazione...",
       "backToMenu": "Torna al menu",
       "backToHome": "Torna alla home",

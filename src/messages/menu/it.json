@@ -22,6 +22,7 @@
     "add": "Aggiungi",
     "addOrderingDisabled": "Aggiungi (ordini disabilitati)",
     "viewCart": "Visualizza carrello",
+    "reserveTable": "Prenota un tavolo",
     "orderingNotAvailableTitle": "Ordini non disponibili",
     "orderingNotAvailableDescription": "Gli ordini online sono disponibili solo con il piano Pro. Puoi comunque visualizzare il menu completo.",
     "pos": {

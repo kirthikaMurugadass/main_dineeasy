@@ -109,6 +109,7 @@
       "billing": "Abrechnung"
     },
     "fields": {
+      "restaurant": "Restaurant",
       "date": "Datum",
       "time": "Uhrzeit",
       "guests": "Gäste",
@@ -156,6 +157,7 @@
       "continueToSelectTable": "Weiter zur Tischauswahl",
       "continue": "Weiter",
       "confirmBooking": "Reservierung bestätigen",
+      "downloadReceipt": "Beleg herunterladen",
       "processing": "Wird verarbeitet...",
       "backToMenu": "Zurück zum Menü",
       "backToHome": "Zurück zur Startseite",

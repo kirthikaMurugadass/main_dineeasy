@@ -110,7 +110,7 @@ export function AdminSidebar() {
   }, []);
 
   const labels: Record<string, string> = {
-    dashboard: "Overview",
+    dashboard: t.admin.sidebar?.overview || "Overview",
     menus: t.admin.menus.title,
     orders: t.admin.orders.title,
     bookings: t.booking?.title || "Bookings",

@@ -63,7 +63,7 @@ interface Dictionary {
   menu: { language: string; currency: string; poweredBy: string; untitled: string; menuSection: string };
   admin: {
     sidebar: {
-      navigation: string; adminPanel: string; settings: string; signOut: string;
+      navigation: string; overview?: string; adminPanel: string; settings: string; signOut: string;
       proBadge?: string; upgradeToPro?: string;
     };
     topbar: {
@@ -75,11 +75,53 @@ interface Dictionary {
     };
     dashboard: {
       title: string; welcome: string; totalCategories: string; activeCategories: string; quickCreate: string;
-      recentActivity: string; quickActions: string; analytics: string;
+      recentActivity: string;
+      quickActions:
+        | string
+        | {
+            title?: string;
+            manageMenu?: string; viewOrders?: string; manageTables?: string; viewBookings?: string;
+            analytics?: string; appearance?: string; settings?: string; qrCode?: string;
+          };
+      analytics: string;
       noMenu: string; createMenu: string; viewPublic: string;
       noRecentActivity: string; smartInsights: string;
       addCategory: string; generateQr: string; manageMenu: string; viewAnalytics: string;
       categoryGrowth: string; qrActivity: string;
+      welcomeHeadline?: string; welcomeSubtitle?: string;
+      liveBusinessOverview?: string; live?: string;
+      overviewCards?: {
+        todaysRevenue?: string; takeawayOrders?: string; dineInOrders?: string; todaysTotalOrders?: string;
+        deliveryOrders?: string; totalTables?: string; availableTables?: string; occupiedTables?: string;
+        pendingOrders?: string; completedOrders?: string;
+      };
+      recentOrders?: {
+        title?: string; searchPlaceholder?: string; seeAllOrders?: string;
+        orderId?: string; customerName?: string; orderType?: string; total?: string; status?: string;
+        dineIn?: string; takeaway?: string; delivery?: string; guest?: string;
+      };
+      todaysBookings?: {
+        title?: string; empty?: string; customerName?: string; bookingTime?: string;
+        numberOfGuests?: string; tableNumber?: string;
+      };
+      revenueGraph?: { title?: string; daily?: string; monthly?: string };
+      trendingMenus?: {
+        title?: string; empty?: string; noImage?: string; rating?: string; orders?: string;
+      };
+      tableStatus?: {
+        title?: string; availabilityFor?: string; at?: string;
+        available?: string; occupied?: string; capacity?: string;
+        totalTables?: string; noTables?: string; bookingDetails?: string; noBookingsForSelected?: string;
+      };
+      ordersOverview?: { title?: string; today?: string; month?: string };
+      topCategories?: { title?: string; empty?: string };
+      charts?: { noData?: string };
+      status?: { pending?: string; preparing?: string; completed?: string };
+      liveOrderActivity?: {
+        loading?: string; noOrders?: string;
+        timeAgo?: { justNow?: string; minutesAgo?: string; hoursAgo?: string };
+      };
+      upgrade?: { title?: string; description?: string; button?: string; dialogTitle?: string };
       activity: {
         categoryAdded: string; qrGenerated: string; menuUpdated: string;
       };
@@ -394,6 +436,7 @@ const en: Dictionary = {
   admin: {
     sidebar: {
       navigation: "Navigation",
+      overview: "Overview",
       adminPanel: "Admin Panel",
       settings: "Settings",
       signOut: "Sign Out",
@@ -422,7 +465,17 @@ const en: Dictionary = {
       activeCategories: "Active Categories",
       quickCreate: "Create New Menu",
       recentActivity: "Recent Activity",
-      quickActions: "Quick Actions",
+      quickActions: {
+        title: "Quick Actions",
+        manageMenu: "Manage Menu",
+        viewOrders: "View Orders",
+        manageTables: "Manage Tables",
+        viewBookings: "View Bookings",
+        analytics: "Analytics",
+        appearance: "Appearance",
+        settings: "Settings",
+        qrCode: "QR Code",
+      },
       analytics: "Analytics",
       noMenu: "No menu found",
       createMenu: "Create Menu",
@@ -435,6 +488,100 @@ const en: Dictionary = {
       viewAnalytics: "View Analytics",
       categoryGrowth: "Category Growth",
       qrActivity: "QR Code Activity",
+      welcomeHeadline: "Welcome to {restaurant} Overview",
+      welcomeSubtitle: "Manage your restaurant operations, orders, and reservations easily.",
+      liveBusinessOverview: "Live Business Overview",
+      live: "Live",
+      overviewCards: {
+        todaysRevenue: "Today's Revenue",
+        takeawayOrders: "Takeaway Orders",
+        dineInOrders: "Dine-in Orders",
+        todaysTotalOrders: "Today's Total Orders",
+        deliveryOrders: "Delivery Orders",
+        totalTables: "Total Tables",
+        availableTables: "Available Tables",
+        occupiedTables: "Occupied Tables",
+        pendingOrders: "Pending Orders",
+        completedOrders: "Completed Orders",
+      },
+      recentOrders: {
+        title: "Recent Orders",
+        searchPlaceholder: "Search placeholder",
+        seeAllOrders: "See All Orders",
+        orderId: "Order ID",
+        customerName: "Customer Name",
+        orderType: "Order Type",
+        total: "Total",
+        status: "Status",
+        dineIn: "Dine-in",
+        takeaway: "Takeaway",
+        delivery: "Delivery",
+        guest: "Guest",
+      },
+      todaysBookings: {
+        title: "Today's Bookings",
+        empty: "No bookings scheduled for today.",
+        customerName: "Customer Name",
+        bookingTime: "Booking Time",
+        numberOfGuests: "Number of Guests",
+        tableNumber: "Table Number",
+      },
+      revenueGraph: {
+        title: "Revenue Graph",
+        daily: "Daily",
+        monthly: "Monthly",
+      },
+      trendingMenus: {
+        title: "Trending Menus",
+        empty: "No trending menus yet.",
+        noImage: "No Image",
+        rating: "rating",
+        orders: "orders",
+      },
+      tableStatus: {
+        title: "Table Status",
+        availabilityFor: "Availability for",
+        at: "at",
+        available: "Available",
+        occupied: "Occupied",
+        capacity: "Capacity",
+        totalTables: "Total Tables",
+        noTables: "No tables configured. Add tables in the Tables section.",
+        bookingDetails: "Booking Details",
+        noBookingsForSelected: "No bookings for the selected date and time.",
+      },
+      ordersOverview: {
+        title: "Orders Overview",
+        today: "Today",
+        month: "Month",
+      },
+      topCategories: {
+        title: "Top Categories",
+        empty: "No category data available.",
+      },
+      charts: {
+        noData: "No data available",
+      },
+      status: {
+        pending: "Pending",
+        preparing: "Preparing",
+        completed: "Completed",
+      },
+      liveOrderActivity: {
+        loading: "Loading orders...",
+        noOrders: "No orders yet",
+        timeAgo: {
+          justNow: "Just now",
+          minutesAgo: "m ago",
+          hoursAgo: "h ago",
+        },
+      },
+      upgrade: {
+        title: "Upgrade to Pro to unlock advanced analytics",
+        description: "Get real-time orders, table management, and booking notifications with Pro.",
+        button: "Upgrade to Pro",
+        dialogTitle: "Upgrade to Pro",
+      },
       activity: {
         categoryAdded: "Category added",
         qrGenerated: "QR code generated",
@@ -962,7 +1109,8 @@ const de: Dictionary = {
   },
   admin: {
     sidebar: {
-      navigation: "Navigation",
+      navigation: "Navigationsbereich",
+      overview: "Übersicht",
       adminPanel: "Admin-Bereich",
       settings: "Einstellungen",
       signOut: "Abmelden",
@@ -991,7 +1139,17 @@ const de: Dictionary = {
       activeCategories: "Aktive Kategorien",
       quickCreate: "Neues Menü erstellen",
       recentActivity: "Letzte Aktivitäten",
-      quickActions: "Schnellaktionen",
+      quickActions: {
+        title: "Schnellaktionen",
+        manageMenu: "Menü verwalten",
+        viewOrders: "Bestellungen anzeigen",
+        manageTables: "Tische verwalten",
+        viewBookings: "Buchungen anzeigen",
+        analytics: "Analysen",
+        appearance: "Design",
+        settings: "Einstellungen",
+        qrCode: "QR-Code",
+      },
       analytics: "Analysen",
       noMenu: "Kein Menü gefunden",
       createMenu: "Menü erstellen",
@@ -1004,6 +1162,100 @@ const de: Dictionary = {
       viewAnalytics: "Analysen anzeigen",
       categoryGrowth: "Kategoriewachstum",
       qrActivity: "QR-Code-Aktivität",
+      welcomeHeadline: "Willkommen in der Übersicht von {restaurant}",
+      welcomeSubtitle: "Verwalten Sie Restaurantbetrieb, Bestellungen und Reservierungen ganz einfach.",
+      liveBusinessOverview: "Live-Geschäftsübersicht",
+      live: "Live",
+      overviewCards: {
+        todaysRevenue: "Heutiger Umsatz",
+        takeawayOrders: "Takeaway-Bestellungen",
+        dineInOrders: "Vor-Ort-Bestellungen",
+        todaysTotalOrders: "Bestellungen heute gesamt",
+        deliveryOrders: "Lieferbestellungen",
+        totalTables: "Tische gesamt",
+        availableTables: "Verfügbare Tische",
+        occupiedTables: "Belegte Tische",
+        pendingOrders: "Ausstehende Bestellungen",
+        completedOrders: "Abgeschlossene Bestellungen",
+      },
+      recentOrders: {
+        title: "Letzte Bestellungen",
+        searchPlaceholder: "Suchplatzhalter",
+        seeAllOrders: "Alle Bestellungen anzeigen",
+        orderId: "Bestell-ID",
+        customerName: "Kundenname",
+        orderType: "Bestellart",
+        total: "Gesamt",
+        status: "Status",
+        dineIn: "Vor Ort",
+        takeaway: "Takeaway",
+        delivery: "Lieferung",
+        guest: "Gast",
+      },
+      todaysBookings: {
+        title: "Heutige Buchungen",
+        empty: "Für heute sind keine Buchungen geplant.",
+        customerName: "Kundenname",
+        bookingTime: "Buchungszeit",
+        numberOfGuests: "Anzahl Gäste",
+        tableNumber: "Tischnummer",
+      },
+      revenueGraph: {
+        title: "Umsatzdiagramm",
+        daily: "Täglich",
+        monthly: "Monatlich",
+      },
+      trendingMenus: {
+        title: "Trend-Menüs",
+        empty: "Noch keine trendigen Menüs.",
+        noImage: "Kein Bild",
+        rating: "Bewertung",
+        orders: "Bestellungen",
+      },
+      tableStatus: {
+        title: "Tischstatus",
+        availabilityFor: "Verfügbarkeit für",
+        at: "um",
+        available: "Verfügbar",
+        occupied: "Belegt",
+        capacity: "Kapazität",
+        totalTables: "Tische gesamt",
+        noTables: "Keine Tische konfiguriert. Fügen Sie Tische im Bereich „Tische“ hinzu.",
+        bookingDetails: "Buchungsdetails",
+        noBookingsForSelected: "Keine Buchungen für das ausgewählte Datum und die ausgewählte Uhrzeit.",
+      },
+      ordersOverview: {
+        title: "Bestellübersicht",
+        today: "Heute",
+        month: "Monat",
+      },
+      topCategories: {
+        title: "Top-Kategorien",
+        empty: "Keine Kategoriedaten verfügbar.",
+      },
+      charts: {
+        noData: "Keine Daten verfügbar",
+      },
+      status: {
+        pending: "Ausstehend",
+        preparing: "In Vorbereitung",
+        completed: "Abgeschlossen",
+      },
+      liveOrderActivity: {
+        loading: "Bestellungen werden geladen...",
+        noOrders: "Noch keine Bestellungen",
+        timeAgo: {
+          justNow: "Gerade eben",
+          minutesAgo: " Min.",
+          hoursAgo: " Std.",
+        },
+      },
+      upgrade: {
+        title: "Upgrade auf Pro, um erweiterte Analysen freizuschalten",
+        description: "Erhalten Sie Echtzeit-Bestellungen, Tischverwaltung und Buchungsbenachrichtigungen mit Pro.",
+        button: "Auf Pro upgraden",
+        dialogTitle: "Auf Pro upgraden",
+      },
       activity: {
         categoryAdded: "Kategorie hinzugefügt",
         qrGenerated: "QR-Code generiert",
@@ -1510,6 +1762,7 @@ const fr: Dictionary = {
   admin: {
     sidebar: {
       navigation: "Navigation",
+      overview: "Vue d'ensemble",
       adminPanel: "Panneau d'administration",
       settings: "Paramètres",
       signOut: "Se déconnecter",
@@ -1538,7 +1791,17 @@ const fr: Dictionary = {
       activeCategories: "Catégories actives",
       quickCreate: "Créer un menu",
       recentActivity: "Activité récente",
-      quickActions: "Actions rapides",
+      quickActions: {
+        title: "Actions rapides",
+        manageMenu: "Gérer le menu",
+        viewOrders: "Voir les commandes",
+        manageTables: "Gérer les tables",
+        viewBookings: "Voir les réservations",
+        analytics: "Analyses",
+        appearance: "Apparence",
+        settings: "Paramètres",
+        qrCode: "Code QR",
+      },
       analytics: "Analyses",
       noMenu: "Aucun menu trouvé",
       createMenu: "Créer un menu",
@@ -1551,6 +1814,100 @@ const fr: Dictionary = {
       viewAnalytics: "Voir les analyses",
       categoryGrowth: "Croissance des catégories",
       qrActivity: "Activité des codes QR",
+      welcomeHeadline: "Bienvenue dans l'aperçu de {restaurant}",
+      welcomeSubtitle: "Gérez facilement les opérations, commandes et réservations de votre restaurant.",
+      liveBusinessOverview: "Aperçu de l'activité en direct",
+      live: "En direct",
+      overviewCards: {
+        todaysRevenue: "Revenu du jour",
+        takeawayOrders: "Commandes à emporter",
+        dineInOrders: "Commandes sur place",
+        todaysTotalOrders: "Total des commandes du jour",
+        deliveryOrders: "Commandes en livraison",
+        totalTables: "Total des tables",
+        availableTables: "Tables disponibles",
+        occupiedTables: "Tables occupées",
+        pendingOrders: "Commandes en attente",
+        completedOrders: "Commandes terminées",
+      },
+      recentOrders: {
+        title: "Commandes récentes",
+        searchPlaceholder: "Espace de recherche",
+        seeAllOrders: "Voir toutes les commandes",
+        orderId: "ID commande",
+        customerName: "Nom du client",
+        orderType: "Type de commande",
+        total: "Total",
+        status: "Statut",
+        dineIn: "Sur place",
+        takeaway: "À emporter",
+        delivery: "Livraison",
+        guest: "Client",
+      },
+      todaysBookings: {
+        title: "Réservations d'aujourd'hui",
+        empty: "Aucune réservation prévue pour aujourd'hui.",
+        customerName: "Nom du client",
+        bookingTime: "Heure de réservation",
+        numberOfGuests: "Nombre de convives",
+        tableNumber: "Numéro de table",
+      },
+      revenueGraph: {
+        title: "Graphique des revenus",
+        daily: "Quotidien",
+        monthly: "Mensuel",
+      },
+      trendingMenus: {
+        title: "Menus tendance",
+        empty: "Aucun menu tendance pour le moment.",
+        noImage: "Pas d'image",
+        rating: "note",
+        orders: "commandes",
+      },
+      tableStatus: {
+        title: "État des tables",
+        availabilityFor: "Disponibilité pour",
+        at: "à",
+        available: "Disponible",
+        occupied: "Occupée",
+        capacity: "Capacité",
+        totalTables: "Total des tables",
+        noTables: "Aucune table configurée. Ajoutez des tables dans la section Tables.",
+        bookingDetails: "Détails de la réservation",
+        noBookingsForSelected: "Aucune réservation pour la date et l'heure sélectionnées.",
+      },
+      ordersOverview: {
+        title: "Aperçu des commandes",
+        today: "Aujourd'hui",
+        month: "Mois",
+      },
+      topCategories: {
+        title: "Catégories principales",
+        empty: "Aucune donnée de catégorie disponible.",
+      },
+      charts: {
+        noData: "Aucune donnée disponible",
+      },
+      status: {
+        pending: "En attente",
+        preparing: "En préparation",
+        completed: "Terminée",
+      },
+      liveOrderActivity: {
+        loading: "Chargement des commandes...",
+        noOrders: "Aucune commande pour le moment",
+        timeAgo: {
+          justNow: "À l'instant",
+          minutesAgo: " min",
+          hoursAgo: " h",
+        },
+      },
+      upgrade: {
+        title: "Passez à Pro pour débloquer des analyses avancées",
+        description: "Obtenez les commandes en temps réel, la gestion des tables et les notifications de réservation avec Pro.",
+        button: "Passer à Pro",
+        dialogTitle: "Passer à Pro",
+      },
       activity: {
         categoryAdded: "Catégorie ajoutée",
         qrGenerated: "Code QR généré",
@@ -2057,6 +2414,7 @@ const it: Dictionary = {
   admin: {
     sidebar: {
       navigation: "Navigazione",
+      overview: "Panoramica",
       adminPanel: "Pannello di amministrazione",
       settings: "Impostazioni",
       signOut: "Esci",
@@ -2085,7 +2443,17 @@ const it: Dictionary = {
       activeCategories: "Categorie attive",
       quickCreate: "Crea menu",
       recentActivity: "Attività recente",
-      quickActions: "Azioni rapide",
+      quickActions: {
+        title: "Azioni rapide",
+        manageMenu: "Gestisci menu",
+        viewOrders: "Visualizza ordini",
+        manageTables: "Gestisci tavoli",
+        viewBookings: "Visualizza prenotazioni",
+        analytics: "Analisi",
+        appearance: "Aspetto",
+        settings: "Impostazioni",
+        qrCode: "Codice QR",
+      },
       analytics: "Analisi",
       noMenu: "Nessun menu trovato",
       createMenu: "Crea menu",
@@ -2098,6 +2466,100 @@ const it: Dictionary = {
       viewAnalytics: "Vedi analisi",
       categoryGrowth: "Crescita categorie",
       qrActivity: "Attività codice QR",
+      welcomeHeadline: "Benvenuto nella panoramica di {restaurant}",
+      welcomeSubtitle: "Gestisci facilmente operazioni, ordini e prenotazioni del tuo ristorante.",
+      liveBusinessOverview: "Panoramica attività in tempo reale",
+      live: "Live",
+      overviewCards: {
+        todaysRevenue: "Ricavi di oggi",
+        takeawayOrders: "Ordini da asporto",
+        dineInOrders: "Ordini al tavolo",
+        todaysTotalOrders: "Totale ordini di oggi",
+        deliveryOrders: "Ordini a domicilio",
+        totalTables: "Tavoli totali",
+        availableTables: "Tavoli disponibili",
+        occupiedTables: "Tavoli occupati",
+        pendingOrders: "Ordini in sospeso",
+        completedOrders: "Ordini completati",
+      },
+      recentOrders: {
+        title: "Ordini recenti",
+        searchPlaceholder: "Segnaposto ricerca",
+        seeAllOrders: "Vedi tutti gli ordini",
+        orderId: "ID ordine",
+        customerName: "Nome cliente",
+        orderType: "Tipo ordine",
+        total: "Totale",
+        status: "Stato",
+        dineIn: "Al tavolo",
+        takeaway: "Asporto",
+        delivery: "Consegna",
+        guest: "Ospite",
+      },
+      todaysBookings: {
+        title: "Prenotazioni di oggi",
+        empty: "Nessuna prenotazione programmata per oggi.",
+        customerName: "Nome cliente",
+        bookingTime: "Orario prenotazione",
+        numberOfGuests: "Numero ospiti",
+        tableNumber: "Numero tavolo",
+      },
+      revenueGraph: {
+        title: "Grafico ricavi",
+        daily: "Giornaliero",
+        monthly: "Mensile",
+      },
+      trendingMenus: {
+        title: "Menu di tendenza",
+        empty: "Nessun menu di tendenza al momento.",
+        noImage: "Nessuna immagine",
+        rating: "valutazione",
+        orders: "ordini",
+      },
+      tableStatus: {
+        title: "Stato tavoli",
+        availabilityFor: "Disponibilità per",
+        at: "alle",
+        available: "Disponibile",
+        occupied: "Occupato",
+        capacity: "Capacità",
+        totalTables: "Tavoli totali",
+        noTables: "Nessun tavolo configurato. Aggiungi tavoli nella sezione Tavoli.",
+        bookingDetails: "Dettagli prenotazione",
+        noBookingsForSelected: "Nessuna prenotazione per la data e l'orario selezionati.",
+      },
+      ordersOverview: {
+        title: "Panoramica ordini",
+        today: "Oggi",
+        month: "Mese",
+      },
+      topCategories: {
+        title: "Categorie principali",
+        empty: "Nessun dato categoria disponibile.",
+      },
+      charts: {
+        noData: "Nessun dato disponibile",
+      },
+      status: {
+        pending: "In attesa",
+        preparing: "In preparazione",
+        completed: "Completato",
+      },
+      liveOrderActivity: {
+        loading: "Caricamento ordini...",
+        noOrders: "Nessun ordine ancora",
+        timeAgo: {
+          justNow: "Proprio ora",
+          minutesAgo: " min fa",
+          hoursAgo: " h fa",
+        },
+      },
+      upgrade: {
+        title: "Passa a Pro per sbloccare analisi avanzate",
+        description: "Ottieni ordini in tempo reale, gestione dei tavoli e notifiche prenotazioni con Pro.",
+        button: "Passa a Pro",
+        dialogTitle: "Passa a Pro",
+      },
       activity: {
         categoryAdded: "Categoria aggiunta",
         qrGenerated: "Codice QR generato",

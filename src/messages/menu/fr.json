@@ -22,6 +22,7 @@
     "add": "Ajouter",
     "addOrderingDisabled": "Ajouter (commande désactivée)",
     "viewCart": "Voir le panier",
+    "reserveTable": "Réserver une table",
     "orderingNotAvailableTitle": "Commande non disponible",
     "orderingNotAvailableDescription": "La commande en ligne est disponible uniquement avec l'offre Pro. Vous pouvez toujours consulter le menu complet.",
     "pos": {
