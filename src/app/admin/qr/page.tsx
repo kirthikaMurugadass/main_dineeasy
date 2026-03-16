@@ -367,10 +367,10 @@ export default function QRPage() {
             </CardTitle>
             <p className="mt-2 text-sm leading-6 text-muted-foreground">
               <span className="block">
-                Share this QR code so customers can instantly open your digital menu.
+                {qrT?.menuQrDescription || "Share this QR code so customers can instantly open your digital menu."}
               </span>
               <span className="block">
-                They can browse categories, view prices, and place orders quickly.
+                {qrT?.menuQrDescription2 || "They can browse categories, view prices, and place orders quickly."}
               </span>
             </p>
           </CardHeader>
@@ -528,10 +528,10 @@ export default function QRPage() {
               </CardTitle>
               <p className="mt-2 text-sm leading-6 text-muted-foreground">
                 <span className="block">
-                  Use this QR code to let customers reserve tables directly from their phones.
+                  {qrT?.bookTableDescription || "Use this QR code to let customers reserve tables directly from their phones."}
                 </span>
                 <span className="block">
-                  It opens your booking flow with date, time, guests, and table selection.
+                  {qrT?.bookTableDescription2 || "It opens your booking flow with date, time, guests, and table selection."}
                 </span>
               </p>
             </CardHeader>
@@ -661,10 +661,10 @@ export default function QRPage() {
               </CardTitle>
               <p className="mt-2 text-sm leading-6 text-muted-foreground">
                 <span className="block">
-                  Use this QR code to let customers reserve tables directly from their phones.
+                  {qrT?.bookTableDescription || "Use this QR code to let customers reserve tables directly from their phones."}
                 </span>
                 <span className="block">
-                  It opens your booking flow with date, time, guests, and table selection.
+                  {qrT?.bookTableDescription2 || "It opens your booking flow with date, time, guests, and table selection."}
                 </span>
               </p>
             </CardHeader>

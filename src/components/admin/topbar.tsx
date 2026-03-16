@@ -87,10 +87,10 @@ export function AdminTopbar() {
               {isPro ? (
                 <>
                   <Crown className="h-3.5 w-3.5" />
-                  Pro Plan
+                  {t.admin.topbar?.proPlan || "Pro Plan"}
                 </>
               ) : (
-                "Free Plan"
+                t.admin.topbar?.freePlan || "Free Plan"
               )}
             </span>
           )}
@@ -104,7 +104,7 @@ export function AdminTopbar() {
               className="hidden rounded-full bg-primary text-primary-foreground hover:bg-primary/90 sm:inline-flex"
               onClick={() => router.push("/admin/checkout")}
             >
-              Upgrade to Pro
+              {t.dashboard?.upgrade?.button || t.admin.topbar?.upgradeToPro || "Upgrade to Pro"}
             </Button>
           )}
           {/* Language / globe */}
@@ -128,7 +128,6 @@ export function AdminTopbar() {
                   key={lang.code}
                   onClick={() => {
                     setLanguage(lang.code);
-                    router.refresh();
                   }}
                   className={cn(
                     "flex items-center gap-2 rounded-lg px-3 py-2.5 text-sm transition-colors",
@@ -192,7 +191,7 @@ export function AdminTopbar() {
             variant="ghost"
             size="icon"
             className="relative h-9 w-9 rounded-full border border-border/60 bg-card shadow-sm transition duration-200 hover:opacity-80"
-            aria-label="Notifications"
+            aria-label={t.admin.topbar?.notifications || "Notifications"}
           >
             <Bell className="h-4 w-4" />
           </Button>
@@ -205,7 +204,7 @@ export function AdminTopbar() {
                 variant="ghost"
                 size="icon"
                 className="h-9 w-9 rounded-full border border-border/60 bg-card text-foreground shadow-md transition duration-200 hover:opacity-90"
-                aria-label="Open profile menu"
+                aria-label={t.admin.topbar?.openProfileMenu || "Open profile menu"}
               >
                 <Avatar size="sm" className="border border-white/20 bg-transparent">
                   <AvatarFallback className="bg-transparent text-[11px] font-semibold tracking-wide">
@@ -233,7 +232,7 @@ export function AdminTopbar() {
                 onClick={() => router.push("/admin/profile")}
                 className="mt-0.5 rounded-lg py-2.5 text-sm"
               >
-                Profile
+                {t.settings?.profile?.title || t.admin.topbar?.profile || "Profile"}
               </DropdownMenuItem>
               <DropdownMenuItem
                 onClick={() => router.push("/admin/settings")}

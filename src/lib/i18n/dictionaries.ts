@@ -64,11 +64,14 @@ interface Dictionary {
   admin: {
     sidebar: {
       navigation: string; adminPanel: string; settings: string; signOut: string;
+      proBadge?: string; upgradeToPro?: string;
     };
     topbar: {
       light: string; dark: string; system: string;
       theme?: string;
       goodMorning: string; goodAfternoon: string; goodEvening: string;
+      proPlan?: string; freePlan?: string; upgradeToPro?: string;
+      profile?: string; notifications?: string; openProfileMenu?: string;
     };
     dashboard: {
       title: string; welcome: string; totalCategories: string; activeCategories: string; quickCreate: string;
@@ -158,6 +161,10 @@ interface Dictionary {
       settings: string; qrCodeUrl: string; qrColor: string; background: string;
       regenerate: string; loading: string; urlDescription: string; urlDescriptionMenu: string;
       preview: string; downloadQr: string; printQr: string; copied: string;
+      bookTableQrCode?: string; bookTableDescription?: string; bookTableDescription2?: string;
+      menuQrCode?: string; menuQrDescription?: string; menuQrDescription2?: string;
+      menuQrCodeUrl?: string; scanToViewMenu?: string; scanToBookTable?: string;
+      printTitle?: string; printAction?: string; customersScanToBook?: string;
     };
     orders: {
       title: string; description: string; noOrders: string; customerName: string;
@@ -387,6 +394,8 @@ const en: Dictionary = {
       adminPanel: "Admin Panel",
       settings: "Settings",
       signOut: "Sign Out",
+      proBadge: "PRO",
+      upgradeToPro: "Upgrade to Pro",
     },
     topbar: {
       light: "Light",
@@ -396,6 +405,12 @@ const en: Dictionary = {
       goodMorning: "Good Morning, {name}",
       goodAfternoon: "Good Afternoon, {name}",
       goodEvening: "Good Evening, {name}",
+      proPlan: "Pro Plan",
+      freePlan: "Free Plan",
+      upgradeToPro: "Upgrade to Pro",
+      profile: "Profile",
+      notifications: "Notifications",
+      openProfileMenu: "Open profile menu",
     },
     dashboard: {
       title: "Dashboard",
@@ -458,6 +473,8 @@ const en: Dictionary = {
       deleting: "Deleting...",
       loadError: "Failed to load categories",
       initError: "Failed to initialize menu",
+      searchPlaceholder: "Search product here...",
+      updateError: "Failed to update category",
       // Add Category page
       newCategory: "New Category",
       editCategory: "Edit Category",
@@ -666,6 +683,19 @@ const en: Dictionary = {
       downloadQr: "Download QR Code",
       printQr: "Print QR Code",
       copied: "Copied!",
+      bookTableQrCode: "Book a Table QR Code",
+      bookTableDescription: "Use this QR code to let customers reserve tables directly from their phones.",
+      bookTableDescription2: "It opens your booking flow with date, time, guests, and table selection.",
+      menuQrCode: "Menu QR Code",
+      menuQrDescription: "Share this QR code so customers can instantly open your digital menu.",
+      menuQrDescription2: "They can browse categories, view prices, and place orders quickly.",
+      menuQrCodeUrl: "Menu QR Code URL",
+      bookTableQrCodeUrl: "Book Table QR Code URL",
+      scanToViewMenu: "Scan to view menu",
+      scanToBookTable: "Scan to book a table",
+      printTitle: "QR Code",
+      printAction: "Print",
+      customersScanToBook: "Customers scan this QR code to book a table",
     },
     orders: {
       title: "Orders",
@@ -933,6 +963,8 @@ const de: Dictionary = {
       adminPanel: "Admin-Bereich",
       settings: "Einstellungen",
       signOut: "Abmelden",
+      proBadge: "PRO",
+      upgradeToPro: "Auf Pro upgraden",
     },
     topbar: {
       light: "Hell",
@@ -942,6 +974,12 @@ const de: Dictionary = {
       goodMorning: "Guten Morgen, {name}",
       goodAfternoon: "Guten Tag, {name}",
       goodEvening: "Guten Abend, {name}",
+      proPlan: "Pro-Plan",
+      freePlan: "Kostenloser Plan",
+      upgradeToPro: "Auf Pro upgraden",
+      profile: "Profil",
+      notifications: "Benachrichtigungen",
+      openProfileMenu: "Profilmenü öffnen",
     },
     dashboard: {
       title: "Dashboard",
@@ -1004,6 +1042,8 @@ const de: Dictionary = {
       deleting: "Wird gelöscht...",
       loadError: "Kategorien konnten nicht geladen werden",
       initError: "Menü konnte nicht initialisiert werden",
+      searchPlaceholder: "Produkt hier suchen...",
+      updateError: "Kategorie konnte nicht aktualisiert werden",
       // Add Category page
       newCategory: "Neue Kategorie",
       editCategory: "Kategorie bearbeiten",
@@ -1212,6 +1252,19 @@ const de: Dictionary = {
       downloadQr: "QR-Code herunterladen",
       printQr: "QR-Code drucken",
       copied: "Kopiert!",
+      bookTableQrCode: "Tischbuchungs-QR-Code",
+      bookTableDescription: "Verwenden Sie diesen QR-Code, damit Kunden Tische direkt von ihren Telefonen aus reservieren können.",
+      bookTableDescription2: "Er öffnet Ihren Buchungsablauf mit Datum, Uhrzeit, Gästen und Tischauswahl.",
+      menuQrCode: "Menü-QR-Code",
+      menuQrDescription: "Teilen Sie diesen QR-Code, damit Kunden sofort Ihr digitales Menü öffnen können.",
+      menuQrDescription2: "Sie können Kategorien durchsuchen, Preise anzeigen und schnell Bestellungen aufgeben.",
+      menuQrCodeUrl: "Menü-QR-Code-URL",
+      bookTableQrCodeUrl: "Tischbuchungs-QR-Code-URL",
+      scanToViewMenu: "Scannen, um das Menü zu sehen",
+      scanToBookTable: "Scannen, um einen Tisch zu reservieren",
+      printTitle: "QR-Code",
+      printAction: "Drucken",
+      customersScanToBook: "Kunden scannen diesen QR-Code, um einen Tisch zu reservieren",
     },
     orders: {
       title: "Bestellungen",
@@ -1457,6 +1510,8 @@ const fr: Dictionary = {
       adminPanel: "Panneau d'administration",
       settings: "Paramètres",
       signOut: "Se déconnecter",
+      proBadge: "PRO",
+      upgradeToPro: "Passer à Pro",
     },
     topbar: {
       light: "Clair",
@@ -1466,6 +1521,12 @@ const fr: Dictionary = {
       goodMorning: "Bonjour, {name}",
       goodAfternoon: "Bon après-midi, {name}",
       goodEvening: "Bonsoir, {name}",
+      proPlan: "Plan Pro",
+      freePlan: "Plan gratuit",
+      upgradeToPro: "Passer à Pro",
+      profile: "Profil",
+      notifications: "Notifications",
+      openProfileMenu: "Ouvrir le menu du profil",
     },
     dashboard: {
       title: "Tableau de bord",
@@ -1528,6 +1589,8 @@ const fr: Dictionary = {
       deleting: "Suppression...",
       loadError: "Échec du chargement des catégories",
       initError: "Échec de l'initialisation du menu",
+      searchPlaceholder: "Rechercher un produit ici...",
+      updateError: "Échec de la mise à jour de la catégorie",
       // Page Ajouter une catégorie
       newCategory: "Nouvelle catégorie",
       editCategory: "Modifier la catégorie",
@@ -1736,6 +1799,19 @@ const fr: Dictionary = {
       downloadQr: "Télécharger le code QR",
       printQr: "Imprimer le code QR",
       copied: "Copié!",
+      bookTableQrCode: "Code QR de réservation de table",
+      bookTableDescription: "Utilisez ce code QR pour permettre aux clients de réserver des tables directement depuis leurs téléphones.",
+      bookTableDescription2: "Il ouvre votre processus de réservation avec la date, l'heure, les invités et la sélection de table.",
+      menuQrCode: "Code QR du menu",
+      menuQrDescription: "Partagez ce code QR pour que les clients puissent ouvrir instantanément votre menu numérique.",
+      menuQrDescription2: "Ils peuvent parcourir les catégories, voir les prix et passer des commandes rapidement.",
+      menuQrCodeUrl: "URL du code QR du menu",
+      bookTableQrCodeUrl: "URL du code QR de réservation de table",
+      scanToViewMenu: "Scannez pour voir le menu",
+      scanToBookTable: "Scannez pour réserver une table",
+      printTitle: "Code QR",
+      printAction: "Imprimer",
+      customersScanToBook: "Les clients scannent ce code QR pour réserver une table",
     },
     onboarding: {
       title: "Configurez votre restaurant",
@@ -1981,6 +2057,8 @@ const it: Dictionary = {
       adminPanel: "Pannello di amministrazione",
       settings: "Impostazioni",
       signOut: "Esci",
+      proBadge: "PRO",
+      upgradeToPro: "Passa a Pro",
     },
     topbar: {
       light: "Chiaro",
@@ -1990,6 +2068,12 @@ const it: Dictionary = {
       goodMorning: "Buongiorno, {name}",
       goodAfternoon: "Buon pomeriggio, {name}",
       goodEvening: "Buonasera, {name}",
+      proPlan: "Piano Pro",
+      freePlan: "Piano gratuito",
+      upgradeToPro: "Passa a Pro",
+      profile: "Profilo",
+      notifications: "Notifiche",
+      openProfileMenu: "Apri menu profilo",
     },
     dashboard: {
       title: "Dashboard",
@@ -2052,6 +2136,8 @@ const it: Dictionary = {
       deleting: "Eliminazione...",
       loadError: "Impossibile caricare le categorie",
       initError: "Impossibile inizializzare il menu",
+      searchPlaceholder: "Cerca prodotto qui...",
+      updateError: "Impossibile aggiornare la categoria",
       // Pagina Aggiungi categoria
       newCategory: "Nuova categoria",
       editCategory: "Modifica categoria",
@@ -2260,6 +2346,19 @@ const it: Dictionary = {
       downloadQr: "Scarica codice QR",
       printQr: "Stampa codice QR",
       copied: "Copiato!",
+      bookTableQrCode: "Codice QR prenotazione tavolo",
+      bookTableDescription: "Usa questo codice QR per permettere ai clienti di prenotare tavoli direttamente dai loro telefoni.",
+      bookTableDescription2: "Apre il tuo flusso di prenotazione con data, ora, ospiti e selezione tavolo.",
+      menuQrCode: "Codice QR menu",
+      menuQrDescription: "Condividi questo codice QR affinché i clienti possano aprire istantaneamente il tuo menu digitale.",
+      menuQrDescription2: "Possono sfogliare le categorie, visualizzare i prezzi e effettuare ordini rapidamente.",
+      menuQrCodeUrl: "URL codice QR menu",
+      bookTableQrCodeUrl: "URL codice QR prenotazione tavolo",
+      scanToViewMenu: "Scansiona per vedere il menu",
+      scanToBookTable: "Scansiona per prenotare un tavolo",
+      printTitle: "Codice QR",
+      printAction: "Stampa",
+      customersScanToBook: "I clienti scansionano questo codice QR per prenotare un tavolo",
     },
     orders: {
       title: "Ordini",

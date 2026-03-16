@@ -110,12 +110,12 @@ export function AdminSidebar() {
   }, []);
 
   const labels: Record<string, string> = {
-    dashboard: "Overview",
+    dashboard: t.admin.dashboard?.title || t.dashboard?.title || "Overview",
     menus: t.admin.menus.title,
     orders: t.admin.orders.title,
-    bookings: "Bookings",
-    tables: "Tables",
-    analytics: t.admin.analytics?.title || "Analytics",
+    bookings: t.booking?.title || "Bookings",
+    tables: t.table?.title || "Tables",
+    analytics: t.admin.analytics?.title || t.analytics?.title || "Analytics",
     appearance: t.admin.appearance.title,
     qr: t.admin.qr.title,
   };
@@ -205,7 +205,7 @@ export function AdminSidebar() {
                             {/* Notification badge for Orders - positioned on icon */}
                             {item.key === "orders" && notificationCount > 0 && (
                               <span 
-                                className="absolute -right-1 -top-1 z-[100] flex h-4.5 min-w-4.5 items-center justify-center rounded-full bg-red-500 px-1 text-[10px] font-semibold leading-none text-white shadow-sm ring-2 ring-sidebar transition-all animate-in fade-in zoom-in duration-200 md:group-data-[collapsible=icon]:right-0 md:group-data-[collapsible=icon]:top-0"
+                                className="absolute -right-1 -top-1 z-[100] flex h-5 min-w-5 items-center justify-center rounded-full bg-red-500 px-1 text-[10px] font-semibold leading-none text-white shadow-md ring-2 ring-background transition-all duration-200 md:group-data-[collapsible=icon]:right-0 md:group-data-[collapsible=icon]:top-0"
                                 aria-label={`${notificationCount} new orders`}
                               >
                                 {notificationCount > 9 ? "9+" : notificationCount}
@@ -215,7 +215,7 @@ export function AdminSidebar() {
                             {item.key === "bookings" &&
                               bookingNotificationCount > 0 && (
                               <span 
-                                className="absolute -right-1 -top-1 z-[100] flex h-4.5 min-w-4.5 items-center justify-center rounded-full bg-red-500 px-1 text-[10px] font-semibold leading-none text-white shadow-sm ring-2 ring-sidebar transition-all animate-in fade-in zoom-in duration-200 md:group-data-[collapsible=icon]:right-0 md:group-data-[collapsible=icon]:top-0"
+                                className="absolute -right-1 -top-1 z-[100] flex h-5 min-w-5 items-center justify-center rounded-full bg-red-500 px-1 text-[10px] font-semibold leading-none text-white shadow-md ring-2 ring-background transition-all duration-200 md:group-data-[collapsible=icon]:right-0 md:group-data-[collapsible=icon]:top-0"
                                 aria-label={`${bookingNotificationCount} new bookings`}
                               >
                                 {bookingNotificationCount > 9 ? "9+" : bookingNotificationCount}
@@ -238,7 +238,7 @@ export function AdminSidebar() {
                             </span>
                             {isDisabled && (
                               <span className="ml-2 inline-flex items-center rounded-full bg-primary/10 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.18em] text-primary">
-                                PRO
+                                {t.admin.sidebar?.proBadge || "PRO"}
                               </span>
                             )}
                           </span>
@@ -296,7 +296,7 @@ export function AdminSidebar() {
       <Dialog open={upgradeOpen} onOpenChange={setUpgradeOpen}>
         <DialogContent className="max-w-md">
           <DialogHeader>
-            <DialogTitle>Upgrade to Pro</DialogTitle>
+            <DialogTitle>{t.dashboard?.upgrade?.dialogTitle || t.admin.sidebar?.upgradeToPro || "Upgrade to Pro"}</DialogTitle>
           </DialogHeader>
           <ProCheckoutForm
             compact

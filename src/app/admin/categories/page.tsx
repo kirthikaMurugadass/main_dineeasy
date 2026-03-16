@@ -273,7 +273,7 @@ export default function CategoriesPage() {
       toast.success(currentActive ? t.admin.menus.inactive : t.admin.menus.active);
       await loadCategories();
     } catch (err) {
-      toast.error("Failed to update category");
+      toast.error(t.admin.categories.updateError || "Failed to update category");
     }
   }
 
@@ -337,7 +337,7 @@ export default function CategoriesPage() {
               <Input
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
-                placeholder="Search product here..."
+                placeholder={t.admin.categories?.searchPlaceholder || "Search product here..."}
                 className="h-11 rounded-2xl pl-10 text-sm"
               />
             </div>

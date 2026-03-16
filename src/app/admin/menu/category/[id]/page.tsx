@@ -1189,12 +1189,12 @@ export default function CategoryDetailPage() {
               {saving ? (
                 <>
                   <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                  <span>Saving...</span>
+                  <span>{t.admin.categories.saving || "Saving..."}</span>
                 </>
               ) : (
                 <>
                   <Save className="h-4 w-4 mr-2" />
-                  <span>{isNew ? "Add Category" : t.admin.categories.saveCategory}</span>
+                  <span>{isNew ? t.admin.categories.addCategory : t.admin.categories.saveCategory}</span>
                 </>
               )}
             </Button>
