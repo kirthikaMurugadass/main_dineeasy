@@ -2,6 +2,21 @@ import { NextRequest, NextResponse } from "next/server";
 import bcrypt from "bcrypt";
 import { createAdminClient } from "@/lib/supabase/admin";
 
+function isInfraConnectionError(error: { message?: string; details?: string; code?: string } | null | undefined) {
+  const message = (error?.message || "").toLowerCase();
+  const details = (error?.details || "").toLowerCase();
+  const code = (error?.code || "").toLowerCase();
+  const haystack = `${message} ${details} ${code}`;
+
+  return (
+    haystack.includes("fetch failed") ||
+    haystack.includes("failed to fetch") ||
+    haystack.includes("econnrefused") ||
+    haystack.includes("enotfound") ||
+    haystack.includes("etimedout")
+  );
+}
+
 /**
  * Login API Route
  * 
@@ -64,6 +79,13 @@ export async function POST(req: NextRequest) {
     // Handle database errors
     if (fetchError) {
       console.error("[LOGIN] Database error:", fetchError);
+
+      if (isInfraConnectionError(fetchError)) {
+        return NextResponse.json(
+          { error: "Authentication service is currently unavailable. Please try again shortly." },
+          { status: 503 }
+        );
+      }
       
       // Check if table doesn't exist
       if (

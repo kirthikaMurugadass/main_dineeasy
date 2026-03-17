@@ -72,6 +72,9 @@ export function AdminLoginClient({ registered }: { registered?: string }) {
 
       if (authError) {
         console.error("Supabase Auth session creation failed:", authError);
+        if (authError.message?.toLowerCase().includes("fetch")) {
+          throw new Error("Authentication service is currently unavailable. Please try again shortly.");
+        }
         // Try one more time after a short delay
         await new Promise((resolve) => setTimeout(resolve, 500));
         const { error: retryError } = await supabase.auth.signInWithPassword({
@@ -80,6 +83,9 @@ export function AdminLoginClient({ registered }: { registered?: string }) {
         });
 
         if (retryError) {
+          if (retryError.message?.toLowerCase().includes("fetch")) {
+            throw new Error("Authentication service is currently unavailable. Please try again shortly.");
+          }
           throw new Error("Failed to create session. Please try again.");
         }
       }

@@ -33,15 +33,33 @@ export default function LoginPage() {
     try {
       const supabase = createClient();
       const normalizedEmail = email.toLowerCase().trim();
+      const i18nErrors = t.auth?.login?.errors;
+      const defaultGenericError = i18nErrors?.genericError || "Something went wrong. Please try again.";
 
       // Primary login path: Supabase Auth (used by current signup flow).
-      let { data: authData, error: authError } = await supabase.auth.signInWithPassword({
-        email: normalizedEmail,
-        password,
-      });
+      let authData: Awaited<ReturnType<typeof supabase.auth.signInWithPassword>>["data"] | null = null;
+      let authError: Awaited<ReturnType<typeof supabase.auth.signInWithPassword>>["error"] | null = null;
+      let authNetworkFailure = false;
+      try {
+        const result = await supabase.auth.signInWithPassword({
+          email: normalizedEmail,
+          password,
+        });
+        authData = result.data;
+        authError = result.error;
+      } catch (error: unknown) {
+        // Browser/network failures can throw directly instead of returning `result.error`.
+        // Treat any thrown sign-in error as a temporary auth transport failure.
+        const message = error instanceof Error ? error.message : String(error ?? "");
+        const normalizedMessage = message.toLowerCase();
+        authNetworkFailure = true;
+        if (!normalizedMessage.includes("fetch")) {
+          console.warn("Supabase sign-in threw non-fetch error, handling as network failure:", error);
+        }
+      }
 
       // Legacy fallback: old custom users table API verifies bcrypt and syncs auth account.
-      if (authError || !authData?.session) {
+      if (authNetworkFailure || authError || !authData?.session) {
         const loginResponse = await fetch("/api/auth/login", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -54,20 +72,30 @@ export default function LoginPage() {
         }
 
         // After legacy verification/sync, retry Supabase session creation.
-        await new Promise((resolve) => setTimeout(resolve, 250));
-        const retry = await supabase.auth.signInWithPassword({
-          email: normalizedEmail,
-          password,
-        });
-        authData = retry.data;
-        authError = retry.error;
+        if (!authNetworkFailure) {
+          await new Promise((resolve) => setTimeout(resolve, 250));
+          try {
+            const retry = await supabase.auth.signInWithPassword({
+              email: normalizedEmail,
+              password,
+            });
+            authData = retry.data;
+            authError = retry.error;
+            if (retry.error?.message?.toLowerCase().includes("fetch")) {
+              authNetworkFailure = true;
+            }
+          } catch {
+            authNetworkFailure = true;
+          }
+        }
+      }
+
+      if (authNetworkFailure) {
+        throw new Error("Authentication service is currently unavailable. Please try again shortly.");
       }
 
       if (authError || !authData?.session) {
-        const sessionError =
-          (t.auth?.login?.errors as any)?.sessionError ||
-          t.auth.login.errors.genericError ||
-          "Failed to create session. Please try again.";
+        const sessionError = defaultGenericError || "Failed to create session. Please try again.";
         throw new Error(sessionError);
       }
 
@@ -86,21 +114,24 @@ export default function LoginPage() {
         router.refresh();
       }
     } catch (err: unknown) {
+      const i18nErrors = t.auth?.login?.errors;
+      const defaultGenericError = i18nErrors?.genericError || "Something went wrong. Please try again.";
       const message =
         err && typeof err === "object" && "message" in err
           ? (err as { message: string }).message
           : "";
 
-      if (message === "Failed to fetch" || message.includes("fetch")) {
-        const connectionError = (t.auth?.login?.errors as any)?.connectionError || t.auth.login.errors.genericError || "Cannot reach server. Please check your connection and try again.";
+      if (message === "Failed to fetch" || message.toLowerCase().includes("fetch")) {
+        const connectionError =
+          defaultGenericError || "Cannot reach server. Please check your connection and try again.";
         toast.error(connectionError);
       } else {
         const errorMessage =
           message.includes("Invalid") || message.includes("password")
-            ? t.auth?.login?.errors?.invalidCredentials || t.auth.login.errors.invalidCredentials
+            ? i18nErrors?.invalidCredentials || defaultGenericError
             : message.includes("session") || message.includes("Failed to create session")
-            ? (t.auth?.login?.errors as any)?.sessionError || t.auth.login.errors.genericError
-            : message || t.auth?.login?.errors?.genericError || t.auth.login.errors.genericError;
+            ? defaultGenericError
+            : message || defaultGenericError;
         toast.error(errorMessage);
       }
     } finally {

@@ -1332,10 +1332,10 @@ export default function AppearancePage() {
                 )}
               </div>
             </CardHeader>
-            <CardContent className="overflow-x-hidden p-3 sm:p-4 lg:p-6">
+            <CardContent className="overflow-hidden p-3 sm:p-4 lg:p-6">
               {previewUrl ? (
                 <div className="flex w-full justify-center">
-                  <div className="relative w-full overflow-hidden rounded-lg border border-border/50 bg-muted/20">
+                  <div className="relative isolate w-full overflow-hidden rounded-lg border border-border/50 bg-muted/20">
                     {previewLoading && (
                       <div className="absolute inset-0 z-10 flex items-center justify-center bg-muted/50">
                         <Loader2 className="h-8 w-8 animate-spin text-gold" />
@@ -1366,12 +1366,12 @@ export default function AppearancePage() {
                       </div>
                     )}
                     {/* Simple responsive preview container */}
-                    <div className="relative px-1 py-2 sm:px-2 sm:py-4">
-                      <div className="relative mx-auto aspect-[9/19] w-full max-w-[min(100%,430px)] overflow-hidden rounded-[24px] bg-background shadow-lg sm:rounded-[32px]">
+                    <div className="relative overflow-x-hidden px-1 py-2 sm:px-2 sm:py-4">
+                      <div className="relative isolate mx-auto aspect-[9/19] w-full max-w-[min(100%,430px)] overflow-hidden rounded-[24px] bg-background shadow-lg box-border sm:rounded-[32px]">
                         <iframe
                           key={`${previewUrl}-${language}-${activeSectionConfig.typography?.headingFont}-${activeSectionConfig.typography?.bodyFont}-${activeSectionConfig.typography?.headingWeight}-${activeSectionConfig.typography?.bodyWeight}`}
                           src={previewUrl}
-                          className="block w-full h-full border-0 rounded-[32px]"
+                          className="absolute inset-0 block h-full w-full box-border border-0"
                           title={appearanceTarget === "menu" ? appearanceT.previewFrameMenuTitle : appearanceT.previewFrameBookTableTitle}
                           style={{
                             backgroundColor: "transparent",
@@ -1385,7 +1385,7 @@ export default function AppearancePage() {
                             setPreviewError(appearanceT.previewLoadError);
                           }}
                         />
-                        <div className="absolute top-3 right-4 rounded-md bg-yellow-500/20 px-2 py-1 z-20">
+                        <div className="pointer-events-none absolute right-3 top-3 z-20 rounded-md bg-yellow-500/20 px-2 py-1">
                           <p className="text-[10px] font-medium text-yellow-700 dark:text-yellow-300">
                             {appearanceT.livePreview}
                           </p>

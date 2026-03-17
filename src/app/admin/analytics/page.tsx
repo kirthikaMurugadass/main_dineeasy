@@ -216,10 +216,10 @@ export default function AnalyticsPage() {
   const performanceData = performanceView === "week" ? performanceWeekData : performanceMonthData;
 
   return (
-    <div className="space-y-6 pb-8">
+    <div className="space-y-4 pb-6 sm:space-y-6 sm:pb-8">
       <PageTitle>{analyticsT?.title || "Analytics"}</PageTitle>
 
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="grid gap-3 sm:grid-cols-2 sm:gap-4 lg:grid-cols-4">
         {[
           { title: analyticsT?.todaysRevenue || "Today's Revenue", value: `$${Math.round(todayRevenue)}`, icon: TrendingUp },
           { title: analyticsT?.todaysOrders || "Today's Orders", value: todayOrders, icon: ShoppingCart },
@@ -227,63 +227,63 @@ export default function AnalyticsPage() {
           { title: analyticsT?.performance || "Performance", value: `${dineInPct}% ${analyticsT?.dineIn || "Dine-in"}`, icon: BarChart3 },
         ].map((item) => (
           <Card key={item.title} className="rounded-2xl border border-green-200/70 bg-gradient-to-r from-green-50/80 to-white shadow-sm dark:border-green-900/30 dark:from-green-950/25 dark:to-[#111111]">
-            <CardContent className="p-4">
+            <CardContent className="p-3 sm:p-4">
               <div className="flex items-center justify-between">
                 <p className="text-sm font-semibold text-muted-foreground">{item.title}</p>
                 <item.icon className="h-4 w-4 text-primary" />
               </div>
-              <p className="mt-2 text-3xl font-bold text-foreground dark:text-[#ffffff]">{item.value}</p>
+              <p className="mt-2 text-2xl font-bold text-foreground dark:text-[#ffffff] sm:text-3xl">{item.value}</p>
             </CardContent>
           </Card>
         ))}
       </div>
 
-      <div className="grid gap-6 xl:grid-cols-12">
-        <div className="space-y-6 xl:col-span-8">
-          <Card className="rounded-2xl border border-border bg-card shadow-sm dark:border-[#1f1f1f] dark:bg-[#111111]">
+      <div className="grid gap-4 sm:gap-6 xl:grid-cols-12">
+        <div className="min-w-0 space-y-4 sm:space-y-6 xl:col-span-8">
+          <Card className="w-full min-w-0 overflow-hidden rounded-2xl border border-border bg-card shadow-sm dark:border-[#1f1f1f] dark:bg-[#111111]">
             <CardHeader className="pb-2">
-              <div className="flex items-center justify-between">
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                 <CardTitle className="text-base font-bold text-foreground dark:text-[#ffffff]">{analyticsT?.revenueGraph || "Revenue Graph"}</CardTitle>
-                <div className="flex items-center gap-2">
-                  <Button variant={revenueView === "day" ? "default" : "outline"} size="sm" className="h-7 text-xs" onClick={() => setRevenueView("day")}>{analyticsT?.daily || "Daily"}</Button>
-                  <Button variant={revenueView === "month" ? "default" : "outline"} size="sm" className="h-7 text-xs" onClick={() => setRevenueView("month")}>{analyticsT?.monthly || "Monthly"}</Button>
+                <div className="grid w-full grid-cols-2 gap-2 sm:flex sm:w-auto sm:justify-end">
+                  <Button variant={revenueView === "day" ? "default" : "outline"} size="sm" className="h-8 w-full min-w-0 px-2 text-xs sm:w-auto sm:px-3" onClick={() => setRevenueView("day")}>{analyticsT?.daily || "Daily"}</Button>
+                  <Button variant={revenueView === "month" ? "default" : "outline"} size="sm" className="h-8 w-full min-w-0 px-2 text-xs sm:w-auto sm:px-3" onClick={() => setRevenueView("month")}>{analyticsT?.monthly || "Monthly"}</Button>
                 </div>
               </div>
             </CardHeader>
-            <CardContent>
+            <CardContent className="px-3 pb-4 pt-0 sm:px-6">
               <SimpleLineAreaChart data={revenueData} loading={loading} />
             </CardContent>
           </Card>
 
-          <Card className="rounded-2xl border border-border bg-card shadow-sm dark:border-[#1f1f1f] dark:bg-[#111111]">
+          <Card className="w-full min-w-0 overflow-hidden rounded-2xl border border-border bg-card shadow-sm dark:border-[#1f1f1f] dark:bg-[#111111]">
             <CardHeader className="pb-2">
-              <div className="flex items-center justify-between">
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                 <CardTitle className="text-base font-bold text-foreground dark:text-[#ffffff]">{analyticsT?.ordersStatistics || "Orders Statistics"}</CardTitle>
-                <div className="flex items-center gap-2">
-                  <Button variant={ordersView === "day" ? "default" : "outline"} size="sm" className="h-7 text-xs" onClick={() => setOrdersView("day")}>{analyticsT?.today || "Today"}</Button>
-                  <Button variant={ordersView === "month" ? "default" : "outline"} size="sm" className="h-7 text-xs" onClick={() => setOrdersView("month")}>{analyticsT?.month || "Month"}</Button>
+                <div className="grid w-full grid-cols-2 gap-2 sm:flex sm:w-auto sm:justify-end">
+                  <Button variant={ordersView === "day" ? "default" : "outline"} size="sm" className="h-8 w-full min-w-0 px-2 text-xs sm:w-auto sm:px-3" onClick={() => setOrdersView("day")}>{analyticsT?.today || "Today"}</Button>
+                  <Button variant={ordersView === "month" ? "default" : "outline"} size="sm" className="h-8 w-full min-w-0 px-2 text-xs sm:w-auto sm:px-3" onClick={() => setOrdersView("month")}>{analyticsT?.month || "Month"}</Button>
                 </div>
               </div>
             </CardHeader>
-            <CardContent>
+            <CardContent className="px-3 pb-4 pt-0 sm:px-6">
               <SimpleBarChart data={ordersData} loading={loading} highlightColor="var(--primary)" />
             </CardContent>
           </Card>
         </div>
 
-        <div className="space-y-6 xl:col-span-4">
-          <Card className="rounded-2xl border border-border bg-card shadow-sm dark:border-[#1f1f1f] dark:bg-[#111111]">
+        <div className="min-w-0 space-y-4 sm:space-y-6 xl:col-span-4">
+          <Card className="w-full min-w-0 overflow-hidden rounded-2xl border border-border bg-card shadow-sm dark:border-[#1f1f1f] dark:bg-[#111111]">
             <CardHeader>
               <CardTitle className="text-base font-bold text-foreground dark:text-[#ffffff]">{analyticsT?.dineInVsTakeaway || "Dine-in vs Takeaway"}</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               <div
-                className="mx-auto h-44 w-44 rounded-full"
+                className="mx-auto h-36 w-36 rounded-full sm:h-44 sm:w-44"
                 style={{
                   background: `conic-gradient(var(--primary) 0 ${dineInPct}%, #86efac ${dineInPct}% ${dineInPct + takeawayPct}%, #dcfce7 ${dineInPct + takeawayPct}% 100%)`,
                 }}
               >
-                <div className="m-auto h-24 w-24 translate-y-10 rounded-full bg-card dark:bg-[#111111]" />
+                <div className="m-auto h-20 w-20 translate-y-8 rounded-full bg-card sm:h-24 sm:w-24 sm:translate-y-10 dark:bg-[#111111]" />
               </div>
               <div className="space-y-2 text-sm">
                 <div className="flex items-center justify-between"><span className="text-muted-foreground">{analyticsT?.dineIn || "Dine-in"}</span><span className="font-semibold">{dineInPct}%</span></div>
@@ -293,17 +293,17 @@ export default function AnalyticsPage() {
             </CardContent>
           </Card>
 
-          <Card className="rounded-2xl border border-border bg-card shadow-sm dark:border-[#1f1f1f] dark:bg-[#111111]">
+          <Card className="w-full min-w-0 overflow-hidden rounded-2xl border border-border bg-card shadow-sm dark:border-[#1f1f1f] dark:bg-[#111111]">
             <CardHeader className="pb-2">
-              <div className="flex items-center justify-between">
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                 <CardTitle className="text-base font-bold text-foreground dark:text-[#ffffff]">{analyticsT?.performanceGraph || "Performance Graph"}</CardTitle>
-                <div className="flex items-center gap-2">
-                  <Button variant={performanceView === "week" ? "default" : "outline"} size="sm" className="h-7 text-xs" onClick={() => setPerformanceView("week")}>{analyticsT?.weekly || "Weekly"}</Button>
-                  <Button variant={performanceView === "month" ? "default" : "outline"} size="sm" className="h-7 text-xs" onClick={() => setPerformanceView("month")}>{analyticsT?.monthly || "Monthly"}</Button>
+                <div className="grid w-full grid-cols-2 gap-2 sm:flex sm:w-auto sm:justify-end">
+                  <Button variant={performanceView === "week" ? "default" : "outline"} size="sm" className="h-8 w-full min-w-0 px-2 text-xs sm:w-auto sm:px-3" onClick={() => setPerformanceView("week")}>{analyticsT?.weekly || "Weekly"}</Button>
+                  <Button variant={performanceView === "month" ? "default" : "outline"} size="sm" className="h-8 w-full min-w-0 px-2 text-xs sm:w-auto sm:px-3" onClick={() => setPerformanceView("month")}>{analyticsT?.monthly || "Monthly"}</Button>
                 </div>
               </div>
             </CardHeader>
-            <CardContent>
+            <CardContent className="px-3 pb-4 pt-0 sm:px-6">
               <SimpleBarChart data={performanceData} loading={loading} highlightColor="#86efac" />
             </CardContent>
           </Card>
@@ -316,24 +316,26 @@ export default function AnalyticsPage() {
 function SimpleLineAreaChart({ data, loading }: { data: Point[]; loading: boolean }) {
   const { t } = useI18n();
   const analyticsT = t.analytics || t.admin?.analytics || {};
-  if (loading) return <div className="h-64 animate-pulse rounded-xl bg-muted/50" />;
-  if (!data.length) return <div className="h-64 flex items-center justify-center text-sm text-muted-foreground">{analyticsT?.noData || "No data available"}</div>;
+  if (loading) return <div className="h-36 animate-pulse rounded-xl bg-muted/50 sm:h-56 lg:h-64" />;
+  if (!data.length) return <div className="flex h-36 items-center justify-center text-sm text-muted-foreground sm:h-56 lg:h-64">{analyticsT?.noData || "No data available"}</div>;
 
   const maxValue = Math.max(...data.map((d) => d.value), 1);
-  const width = Math.max(600, data.length * 34);
-  const height = 240;
-  const padding = 28;
+  const width = 100;
+  const height = 100;
+  const paddingX = 4;
+  const topPadding = 8;
+  const bottomPadding = 16;
 
   const points = data.map((d, i) => {
-    const x = padding + (i * (width - padding * 2)) / Math.max(data.length - 1, 1);
-    const y = height - padding - (d.value / maxValue) * (height - padding * 2);
+    const x = paddingX + (i * (width - paddingX * 2)) / Math.max(data.length - 1, 1);
+    const y = height - bottomPadding - (d.value / maxValue) * (height - topPadding - bottomPadding);
     return `${x},${y}`;
   });
-  const areaPoints = `M${padding},${height - padding} L${points.join(" L")} L${width - padding},${height - padding} Z`;
+  const areaPoints = `M${paddingX},${height - bottomPadding} L${points.join(" L")} L${width - paddingX},${height - bottomPadding} Z`;
 
   return (
-    <div className="w-full overflow-x-auto">
-      <svg viewBox={`0 0 ${width} ${height}`} className="h-64 w-full min-w-[600px]">
+    <div className="w-full min-w-0">
+      <svg viewBox={`0 0 ${width} ${height}`} className="h-36 w-full sm:h-56 lg:h-64" preserveAspectRatio="none">
         <defs>
           <linearGradient id="greenArea" x1="0%" y1="0%" x2="0%" y2="100%">
             <stop offset="0%" stopColor="var(--primary)" stopOpacity="0.35" />
@@ -341,11 +343,11 @@ function SimpleLineAreaChart({ data, loading }: { data: Point[]; loading: boolea
           </linearGradient>
         </defs>
         <path d={areaPoints} fill="url(#greenArea)" />
-        <polyline fill="none" stroke="var(--primary)" strokeWidth="3" points={points.join(" ")} />
+        <polyline fill="none" stroke="var(--primary)" strokeWidth="1.2" points={points.join(" ")} />
         {data.map((d, i) => {
-          const x = padding + (i * (width - padding * 2)) / Math.max(data.length - 1, 1);
-          const y = height - padding - (d.value / maxValue) * (height - padding * 2);
-          return <circle key={`${d.label}-${i}`} cx={x} cy={y} r="4" fill="var(--primary)" />;
+          const x = paddingX + (i * (width - paddingX * 2)) / Math.max(data.length - 1, 1);
+          const y = height - bottomPadding - (d.value / maxValue) * (height - topPadding - bottomPadding);
+          return <circle key={`${d.label}-${i}`} cx={x} cy={y} r="0.75" fill="var(--primary)" />;
         })}
       </svg>
     </div>
@@ -363,27 +365,30 @@ function SimpleBarChart({
 }) {
   const { t } = useI18n();
   const analyticsT = t.analytics || t.admin?.analytics || {};
-  if (loading) return <div className="h-56 animate-pulse rounded-xl bg-muted/50" />;
-  if (!data.length) return <div className="h-56 flex items-center justify-center text-sm text-muted-foreground">{analyticsT?.noData || "No data available"}</div>;
+  if (loading) return <div className="h-32 animate-pulse rounded-xl bg-muted/50 sm:h-48 lg:h-56" />;
+  if (!data.length) return <div className="flex h-32 items-center justify-center text-sm text-muted-foreground sm:h-48 lg:h-56">{analyticsT?.noData || "No data available"}</div>;
 
   const maxValue = Math.max(...data.map((d) => d.value), 1);
-  const width = Math.max(560, data.length * 30);
-  const height = 230;
-  const padding = 28;
-  const chartW = width - padding * 2;
-  const barW = Math.max(8, chartW / data.length - 8);
+  const width = 100;
+  const height = 100;
+  const paddingX = 6;
+  const topPadding = 10;
+  const bottomPadding = 18;
+  const chartW = width - paddingX * 2;
+  const slotW = chartW / Math.max(data.length, 1);
+  const barW = Math.max(1.2, slotW * 0.55);
 
   return (
-    <div className="w-full overflow-x-auto">
-      <svg viewBox={`0 0 ${width} ${height}`} className="h-56 w-full min-w-[560px]">
+    <div className="w-full min-w-0">
+      <svg viewBox={`0 0 ${width} ${height}`} className="h-32 w-full sm:h-48 lg:h-56" preserveAspectRatio="none">
         {data.map((d, i) => {
-          const x = padding + i * (chartW / data.length) + 4;
-          const h = (d.value / maxValue) * (height - padding * 2);
-          const y = height - padding - h;
+          const x = paddingX + i * slotW + (slotW - barW) / 2;
+          const h = (d.value / maxValue) * (height - topPadding - bottomPadding);
+          const y = height - bottomPadding - h;
           return (
             <g key={`${d.label}-${i}`}>
-              <rect x={x} y={y} width={barW} height={h} rx="4" fill={highlightColor} opacity={i === data.length - 1 ? 1 : 0.65} />
-              <text x={x + barW / 2} y={height - 8} textAnchor="middle" className="fill-muted-foreground text-[10px]">
+              <rect x={x} y={y} width={barW} height={h} rx="1" fill={highlightColor} opacity={i === data.length - 1 ? 1 : 0.65} />
+              <text x={x + barW / 2} y={height - 6} textAnchor="middle" className="fill-muted-foreground text-[4px]">
                 {d.label}
               </text>
             </g>

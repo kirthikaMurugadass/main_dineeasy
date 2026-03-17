@@ -540,8 +540,39 @@ export default function BookTablePage() {
   // Keep existing landing page layout/design intact.
   if (showIntro) {
     return (
-      <div className="relative min-h-screen overflow-hidden bg-[#000000] font-sans">
-        <div className="pointer-events-none absolute inset-0">
+      <div
+        className={cn(
+          "relative isolate bg-[#000000] font-sans",
+          isIframePreview
+            ? "h-screen overflow-y-auto overflow-x-hidden preview-scroll"
+            : "min-h-screen overflow-x-hidden",
+        )}
+      >
+        {isIframePreview ? (
+          <style jsx global>{`
+            html,
+            body {
+              max-width: 100%;
+              overflow-x: hidden !important;
+            }
+            nextjs-portal,
+            [data-nextjs-dev-tools-button],
+            [data-nextjs-toast-wrapper] {
+              display: none !important;
+            }
+            .preview-scroll {
+              scrollbar-width: thin;
+            }
+            .preview-scroll::-webkit-scrollbar {
+              width: 6px;
+            }
+            .preview-scroll::-webkit-scrollbar-thumb {
+              background: rgba(255, 255, 255, 0.22);
+              border-radius: 999px;
+            }
+          `}</style>
+        ) : null}
+          <div className="pointer-events-none absolute inset-0 overflow-hidden">
           <Image
             src={heroImageUrl}
             alt=""
@@ -552,15 +583,16 @@ export default function BookTablePage() {
             unoptimized={heroImageUrl.includes("127.0.0.1") || heroImageUrl.includes("localhost")}
           />
           <div className="absolute inset-0 bg-gradient-to-b from-black/75 via-black/55 to-black/90" />
-          <div className="absolute -top-24 left-1/2 h-[560px] w-[560px] -translate-x-1/2 rounded-full bg-primary/10 blur-3xl" />
-          <div className="absolute -bottom-40 right-[-140px] h-[560px] w-[560px] rounded-full bg-white/5 blur-3xl" />
+          {!isIframePreview ? (
+            <>
+              <div className="absolute -top-24 left-1/2 h-[560px] w-[560px] -translate-x-1/2 rounded-full bg-primary/10 blur-3xl" />
+              <div className="absolute -bottom-40 right-[-140px] h-[560px] w-[560px] rounded-full bg-white/5 blur-3xl" />
+            </>
+          ) : null}
         </div>
 
-        {mounted && (
-          <div className={cn(
-            "fixed z-50 flex items-center gap-2",
-            isIframePreview ? "right-2 top-2" : "right-4 top-4",
-          )}>
+        {mounted && !isIframePreview && (
+          <div className="fixed right-4 top-4 z-50 flex items-center gap-2">
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button
@@ -622,12 +654,12 @@ export default function BookTablePage() {
           </div>
         )}
 
-        <div
-          className={cn(
-            "relative mx-auto flex min-h-screen w-full max-w-6xl flex-col sm:px-6 lg:px-10",
-            isIframePreview ? "px-3 pb-5 pt-12" : "px-4 py-10",
-          )}
-        >
+          <div
+            className={cn(
+              "relative mx-auto flex w-full max-w-6xl box-border flex-col overflow-x-hidden sm:px-6 lg:px-10",
+              isIframePreview ? "min-h-full px-3 pb-5 pt-12" : "min-h-screen px-4 py-10",
+            )}
+          >
           <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.35 }} className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               {restaurant.logo_url ? (
@@ -666,9 +698,16 @@ export default function BookTablePage() {
               initial={{ opacity: 0, y: 22 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.55, delay: 0.05, ease: [0.23, 1, 0.32, 1] }}
-              className={cn("mx-auto w-full max-w-xl", isIframePreview && "max-w-none")}
+              className={cn("mx-auto w-full max-w-xl", isIframePreview && "relative z-10 max-w-none")}
             >
-              <Card className={cn("overflow-hidden border border-white/12 bg-white/[0.06] shadow-2xl backdrop-blur-xl", isIframePreview ? "rounded-2xl" : "rounded-[20px]")}>
+              <Card
+                className={cn(
+                  "w-full box-border overflow-hidden border border-white/12",
+                  isIframePreview
+                    ? "rounded-2xl bg-black/35 shadow-none backdrop-blur-none"
+                    : "rounded-[20px] bg-white/[0.06] shadow-2xl backdrop-blur-xl",
+                )}
+              >
                 <CardHeader className={cn(isIframePreview ? "pb-1 pt-4" : "pb-2")}>
                   <CardTitle className={cn("font-semibold text-white", isIframePreview ? "text-lg" : "text-xl")}>
                     {flowT?.intro?.findTableTitle || "Find a Table"}
@@ -841,8 +880,10 @@ export default function BookTablePage() {
           >
             <div
               className={cn(
-                "border border-white/10 bg-white/[0.06] shadow-xl backdrop-blur-xl",
-                isIframePreview ? "rounded-2xl p-4" : "rounded-3xl p-6 sm:p-8",
+                "w-full box-border border border-white/10",
+                isIframePreview
+                  ? "rounded-2xl bg-black/35 p-4 shadow-none backdrop-blur-none"
+                  : "rounded-3xl bg-white/[0.06] p-6 shadow-xl backdrop-blur-xl sm:p-8",
               )}
             >
               <div>
