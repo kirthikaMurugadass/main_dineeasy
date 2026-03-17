@@ -19,6 +19,7 @@ import { cn } from "@/lib/utils";
 import { createClient } from "@/lib/supabase/client";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { useSubscription } from "@/contexts/subscription-context";
+import { clearCachedRestaurant } from "@/lib/restaurant-cache";
 
 export function AdminTopbar() {
   const router = useRouter();
@@ -60,6 +61,7 @@ export function AdminTopbar() {
   async function handleLogout() {
     const supabase = createClient();
     await supabase.auth.signOut();
+    clearCachedRestaurant();
     router.push("/login");
     router.refresh();
   }

@@ -13,6 +13,7 @@ import { createClient } from "@/lib/supabase/client";
 import { toast } from "sonner";
 import { useI18n } from "@/lib/i18n/context";
 import { AuthSplitPanel } from "@/components/auth/auth-split-panel";
+import { setCachedRestaurant } from "@/lib/restaurant-cache";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -30,51 +31,59 @@ export default function LoginPage() {
     }
     setLoading(true);
     try {
-      // Step 1: Verify credentials with our custom API (bcrypt)
-      const loginResponse = await fetch("/api/auth/login", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password }),
-      });
-
-      const loginData = await loginResponse.json();
-
-      if (!loginResponse.ok) {
-        throw new Error(loginData.error || "Login failed");
-      }
-
-      // Step 2: Create Supabase Auth session for compatibility
       const supabase = createClient();
-      const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
-        email: email.toLowerCase().trim(),
-        password, // Password is synced in Supabase Auth by our API
+      const normalizedEmail = email.toLowerCase().trim();
+
+      // Primary login path: Supabase Auth (used by current signup flow).
+      let { data: authData, error: authError } = await supabase.auth.signInWithPassword({
+        email: normalizedEmail,
+        password,
       });
 
-      if (authError) {
-        console.error("Supabase Auth session creation failed:", authError);
-        // Even though our API verified credentials, we need Supabase Auth session
-        // Try one more time after a short delay
-        await new Promise((resolve) => setTimeout(resolve, 500));
-        const { error: retryError } = await supabase.auth.signInWithPassword({
-          email: email.toLowerCase().trim(),
+      // Legacy fallback: old custom users table API verifies bcrypt and syncs auth account.
+      if (authError || !authData?.session) {
+        const loginResponse = await fetch("/api/auth/login", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email: normalizedEmail, password }),
+        });
+
+        if (!loginResponse.ok) {
+          const loginData = await loginResponse.json().catch(() => ({} as any));
+          throw new Error(loginData?.error || "Invalid email or password");
+        }
+
+        // After legacy verification/sync, retry Supabase session creation.
+        await new Promise((resolve) => setTimeout(resolve, 250));
+        const retry = await supabase.auth.signInWithPassword({
+          email: normalizedEmail,
           password,
         });
-        
-        if (retryError) {
-          const sessionError = (t.auth?.login?.errors as any)?.sessionError || t.auth.login.errors.genericError || "Failed to create session. Please try again.";
-          throw new Error(sessionError);
-        }
+        authData = retry.data;
+        authError = retry.error;
       }
 
-      if (loginData.success && authData?.session) {
+      if (authError || !authData?.session) {
+        const sessionError =
+          (t.auth?.login?.errors as any)?.sessionError ||
+          t.auth.login.errors.genericError ||
+          "Failed to create session. Please try again.";
+        throw new Error(sessionError);
+      }
+
+      if (authData?.session) {
+        const authUserId = authData.session.user.id;
+        const { data: restaurant } = await supabase
+          .from("restaurants")
+          .select("id, name")
+          .eq("owner_id", authUserId)
+          .maybeSingle();
+        if (restaurant) {
+          setCachedRestaurant({ id: restaurant.id, name: restaurant.name });
+        }
         toast.success(t.auth?.login?.success || t.auth.login.success || "Welcome back!");
         router.push("/admin");
         router.refresh();
-      } else if (loginData.success) {
-        // Credentials verified but no session - wait a bit and refresh
-        await new Promise((resolve) => setTimeout(resolve, 1000));
-        router.refresh();
-        router.push("/admin");
       }
     } catch (err: unknown) {
       const message =

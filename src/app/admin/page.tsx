@@ -27,8 +27,9 @@ import {
   Lock,
   Clock,
   CheckCircle,
-  Search,
   CalendarDays,
+  Truck,
+  ShoppingBag,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -37,6 +38,7 @@ import { useI18n } from "@/lib/i18n/context";
 import { createClient } from "@/lib/supabase/client";
 import { getGreeting } from "@/lib/utils/greeting";
 import { useSubscription } from "@/contexts/subscription-context";
+import { getCachedRestaurantName, setCachedRestaurant } from "@/lib/restaurant-cache";
 import { ProCheckoutForm } from "@/components/subscription/pro-checkout-form";
 import {
   Dialog,
@@ -120,7 +122,7 @@ export default function AdminDashboard() {
   const [overviewLoading, setOverviewLoading] = useState(true);
   const [restaurantId, setRestaurantId] = useState<string | null>(null);
   const [userName, setUserName] = useState<string>("");
-  const [restaurantName, setRestaurantName] = useState<string>("");
+  const [restaurantName, setRestaurantName] = useState<string>(() => getCachedRestaurantName());
   const [restaurantLogo, setRestaurantLogo] = useState<string | null>(null);
   const { isPro, loading: planLoading } = useSubscription();
   const [upgradeModalOpen, setUpgradeModalOpen] = useState(false);
@@ -167,6 +169,23 @@ export default function AdminDashboard() {
   const [ordersView, setOrdersView] = useState<"day" | "month">("day");
   const [revenueView, setRevenueView] = useState<"day" | "month">("day");
   const [bookingsView, setBookingsView] = useState<"day" | "month">("day");
+  const orderManagementCards = [
+    {
+      title: "Dine In",
+      icon: UtensilsCrossed,
+      href: "/admin/orders?type=dine_in",
+    },
+    {
+      title: "Delivery",
+      icon: Truck,
+      href: "/admin/orders?type=delivery",
+    },
+    {
+      title: "Takeaway",
+      icon: ShoppingBag,
+      href: "/admin/orders?type=takeaway",
+    },
+  ] as const;
   const timeSlots = useMemo(
     () =>
       Array.from({ length: 24 }, (_, hour) => `${hour.toString().padStart(2, "0")}:00`),
@@ -213,6 +232,7 @@ export default function AdminDashboard() {
 
       setRestaurantId(restaurant.id);
       setRestaurantName(restaurant.name);
+      setCachedRestaurant({ id: restaurant.id, name: restaurant.name });
       if (restaurant.logo_url) {
         setRestaurantLogo(`${restaurant.logo_url}?t=${Date.now()}`);
       }
@@ -1348,68 +1368,38 @@ export default function AdminDashboard() {
         </DialogContent>
       </Dialog>
 
-      {/* Live Business Overview */}
       <motion.section
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.2 }}
-        className="space-y-4"
+        className="space-y-8"
       >
-          <div className="flex flex-col items-start justify-between gap-2 sm:flex-row sm:items-center">
-          <h2 className="text-xl font-bold text-foreground dark:text-[#ffffff]">
-            {t.dashboard?.liveBusinessOverview || "Live Business Overview"}
+        <div className="space-y-4">
+          <h2 className="text-xl font-bold text-foreground dark:text-white">
+            Order Management
           </h2>
-          <div className="flex items-center gap-2 text-sm text-muted-foreground dark:text-[#9ca3af]">
-            <span className="h-2 w-2 rounded-full bg-primary" />
-            <span className="font-medium">{t.dashboard?.live || "Live"}</span>
-          </div>
-        </div>
-
-        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-5">
-          {overviewLoading
-            ? overviewCards.map((metric) => (
-                <Card
-                  key={`overview-skeleton-${metric.title}`}
-                  className="rounded-lg border border-[#E5E7EB] bg-[#FFFFFF] shadow-sm dark:border-[#1f1f1f] dark:bg-[#0b0b0b]"
-                >
-                  <CardContent className="flex h-[64px] items-center gap-2 p-2">
-                    <div className="h-7 w-7 animate-pulse rounded-md bg-primary/12 dark:bg-primary/20" />
-                    <div className="min-w-0 flex-1 space-y-1">
-                      <div className="h-2 w-24 animate-pulse rounded bg-muted/60 dark:bg-[#1a1a1a]" />
-                      <div className="h-4 w-12 animate-pulse rounded bg-muted/60 dark:bg-[#1a1a1a]" />
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {orderManagementCards.map((card) => (
+              <Card
+                key={card.title}
+                onClick={() => router.push(card.href)}
+                className="cursor-pointer gap-0 rounded-xl border border-gray-200 bg-white py-0 transition-all hover:border-primary hover:shadow-lg dark:border-gray-700 dark:bg-gray-900"
+              >
+                <CardContent className="p-4 sm:p-5">
+                  <div className="flex items-center gap-3">
+                    <div className="rounded-lg bg-primary/10 p-1.5 text-primary">
+                      <card.icon className="h-4 w-4" />
                     </div>
-                  </CardContent>
-                </Card>
-              ))
-            : overviewCards.map((metric, i) => (
-            <motion.div
-              key={metric.title}
-              initial={{ opacity: 0, y: 16 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.25 + i * 0.04 }}
-            >
-              <Card className="rounded-lg border border-[#E5E7EB] bg-[#FFFFFF] shadow-sm dark:border-[#1f1f1f] dark:bg-[#0b0b0b]">
-                <CardContent className="flex h-[64px] items-center gap-2 p-2">
-                  <div className="rounded-md bg-primary/12 p-1.5 dark:bg-primary/20">
-                    <metric.icon className="h-3.5 w-3.5 text-primary dark:text-primary" />
-                  </div>
-                  <div className="min-w-0">
-                    <p className="truncate text-[10px] font-semibold uppercase tracking-wide text-muted-foreground dark:text-[#9ca3af]">
-                      {metric.title}
-                    </p>
-                    <p className="mt-0.5 text-[30px] font-bold leading-none text-foreground dark:text-[#f9fafb]">
-                      {metric.isCurrency ? "$" : ""}
-                      <AnimatedCounter
-                        value={Math.round(metric.value || 0)}
-                        delay={loading ? 0 : 0.35 + i * 0.04}
-                      />
+                    <p className="text-base font-semibold text-black dark:text-white">
+                      {card.title}
                     </p>
                   </div>
                 </CardContent>
               </Card>
-            </motion.div>
-          ))}
+            ))}
+          </div>
         </div>
+
       </motion.section>
 
       {/* Operations first: Recent Orders, Trending Menus, Booking sections */}
@@ -1424,11 +1414,12 @@ export default function AdminDashboard() {
                   {t.dashboard?.recentOrders?.title || "Recent Orders"}
                 </CardTitle>
                 <div className="flex w-full flex-wrap items-center gap-2 sm:w-auto sm:flex-nowrap">
-                  <div className="flex h-8 w-full min-w-0 items-center gap-2 rounded-lg border border-border/80 bg-muted/20 px-2.5 text-[11px] text-muted-foreground sm:h-7 sm:min-w-[220px] sm:w-auto">
-                    <Search className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
-                    {t.dashboard?.recentOrders?.searchPlaceholder || "Search placeholder"}
-                  </div>
-                  <Button variant="outline" size="sm" className="h-8 w-full rounded-lg px-3 text-[11px] font-semibold sm:h-7 sm:w-auto">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="h-8 w-full rounded-lg px-3 text-[11px] font-semibold sm:h-7 sm:w-auto"
+                    onClick={() => router.push("/admin/orders")}
+                  >
                     {t.dashboard?.recentOrders?.seeAllOrders || "See All Orders"}
                   </Button>
                 </div>
@@ -1651,6 +1642,40 @@ export default function AdminDashboard() {
             </CardContent>
           </Card>
 
+          <Card className="rounded-2xl border border-green-200/70 bg-gradient-to-br from-green-50/80 to-white shadow-sm dark:border-[#1f1f1f] dark:from-[#111111] dark:to-[#111111]">
+            <CardHeader className="pb-2">
+              <div className="flex items-center justify-between">
+                <CardTitle className="text-base font-bold text-foreground dark:text-[#ffffff]">
+                  {t.dashboard?.analytics || "Revenue Analytics"}
+                </CardTitle>
+                <div className="flex items-center gap-2">
+                  <Button variant={revenueView === "day" ? "default" : "outline"} size="sm" className="h-7 text-xs" onClick={() => setRevenueView("day")}>{t.dashboard?.revenueGraph?.daily || "Daily"}</Button>
+                  <Button variant={revenueView === "month" ? "default" : "outline"} size="sm" className="h-7 text-xs" onClick={() => setRevenueView("month")}>{t.dashboard?.revenueGraph?.monthly || "Monthly"}</Button>
+                </div>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <SimpleLineAreaChart data={revenueData} loading={loading} />
+            </CardContent>
+          </Card>
+
+          <Card className="rounded-2xl border border-border bg-card shadow-sm dark:border-[#1f1f1f] dark:bg-[#111111]">
+            <CardHeader className="pb-2">
+              <div className="flex items-center justify-between">
+                <CardTitle className="text-base font-bold text-foreground dark:text-[#ffffff]">
+                  {t.dashboard?.ordersOverview?.title || "Orders Overview"}
+                </CardTitle>
+                <div className="flex items-center gap-2">
+                  <Button variant={ordersView === "day" ? "default" : "outline"} size="sm" className="h-7 text-xs" onClick={() => setOrdersView("day")}>{t.dashboard?.ordersOverview?.today || "Today"}</Button>
+                  <Button variant={ordersView === "month" ? "default" : "outline"} size="sm" className="h-7 text-xs" onClick={() => setOrdersView("month")}>{t.dashboard?.ordersOverview?.month || "Month"}</Button>
+                </div>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <SimpleBarChart data={ordersData} loading={loading} highlightColor="var(--primary)" />
+            </CardContent>
+          </Card>
+
         </div>
 
         {/* Right rail: Trending Menus + Quick Actions + Table Status */}
@@ -1741,32 +1766,35 @@ export default function AdminDashboard() {
 
           <Card className="rounded-2xl border border-border bg-card shadow-sm dark:border-[#1f1f1f] dark:bg-[#111111]">
             <CardHeader>
-              <div className="flex flex-col items-start justify-between gap-3 sm:flex-row sm:items-center">
+              <div className="space-y-3">
                 <CardTitle className="text-base font-bold text-foreground dark:text-[#ffffff]">
                   {t.dashboard?.tableStatus?.title || "Table Status"}
                 </CardTitle>
-                <div className="grid w-full grid-cols-1 gap-2 sm:w-auto sm:grid-cols-2">
+                <div className="grid w-full grid-cols-[minmax(0,1fr)_110px] gap-2 sm:ml-auto sm:max-w-[360px]">
                   <div className="relative min-w-0">
                     <CalendarDays className="pointer-events-none absolute left-2 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
                     <input
                       type="date"
                       value={selectedDate}
                       onChange={(e) => setSelectedDate(e.target.value)}
-                      className="h-9 w-full min-w-0 rounded-md border border-border bg-background pl-7 pr-2 text-xs font-medium text-foreground outline-none focus:border-primary dark:border-[#2a2a2a] dark:bg-[#0f0f0f] sm:h-8 sm:min-w-[150px]"
+                      className="h-9 w-full min-w-0 rounded-md border border-border bg-background pl-7 pr-2 text-xs font-medium text-foreground outline-none focus:border-primary dark:border-[#2a2a2a] dark:bg-[#0f0f0f]"
                     />
                   </div>
-                  <select
-                    value={selectedTime}
-                    onChange={(e) => setSelectedTime(e.target.value)}
-                    className="h-9 w-full rounded-md border border-border bg-background px-2 text-xs font-medium text-foreground outline-none focus:border-primary dark:border-[#2a2a2a] dark:bg-[#0f0f0f] sm:h-8 sm:min-w-[110px]"
-                  >
-                    {timeSlots.map((slot) => (
-                      <option key={slot} value={slot}>
-                        {slot}
-                      </option>
-                    ))}
-                  </select>
-                </div>
+                  <div className="relative min-w-0">
+                    <Clock className="pointer-events-none absolute left-2 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
+                    <select
+                      value={selectedTime}
+                      onChange={(e) => setSelectedTime(e.target.value)}
+                      className="h-9 w-full rounded-md border border-border bg-background pl-7 pr-2 text-xs font-medium text-foreground outline-none focus:border-primary dark:border-[#2a2a2a] dark:bg-[#0f0f0f]"
+                    >
+                      {timeSlots.map((slot) => (
+                        <option key={slot} value={slot}>
+                          {slot}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                </div>                
               </div>
               <p className="text-xs text-muted-foreground">
                 {(t.dashboard?.tableStatus?.availabilityFor || "Availability for")} {selectedDate} {(t.dashboard?.tableStatus?.at || "at")} {selectedTime}
@@ -1788,41 +1816,28 @@ export default function AdminDashboard() {
                   {t.dashboard?.tableStatus?.noTables || "No tables configured. Add tables in the Tables section."}
                 </div>
               ) : (
-                <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                <div className="grid grid-cols-1 gap-3 min-[420px]:grid-cols-2">
                   {dashboardTables.map((table) => (
                     <div
                       key={table.id}
-                      className={`aspect-square rounded-xl border p-3 transition-all ${
+                      className={`h-[104px] rounded-xl border-2 p-2.5 transition-all ${
                         table.status === "available"
-                          ? "border-primary/30 bg-primary/5"
-                          : "border-red-300/60 bg-red-50/70 dark:border-red-800/50 dark:bg-red-900/10"
+                          ? "border-primary/90 bg-primary/5"
+                          : "border-red-400/70 bg-red-50/70 dark:border-red-700/60 dark:bg-red-900/10"
                       }`}
                     >
-                      <div className="flex h-full flex-col items-center justify-center text-center">
+                      <div className="flex h-full flex-col items-center justify-between text-center">
                         <p className="text-sm font-bold text-foreground dark:text-[#ffffff]">
                           {table.table_name}
                         </p>
-                        <p className="mt-1 text-xs text-muted-foreground">
-                          {t.dashboard?.tableStatus?.capacity || "Capacity"}: {table.capacity}
+                        <span
+                          className={`h-2.5 w-2.5 rounded-full ${
+                            table.status === "available" ? "bg-primary" : "bg-red-500"
+                          }`}
+                        />
+                        <p className="text-xs text-muted-foreground">
+                          {t.dashboard?.tableStatus?.capacity || "Capacity"}: {table.capacity} {t.dashboard?.tableStatus?.persons || "Persons"}
                         </p>
-                        <div className="inline-flex items-center gap-1.5 rounded-full bg-background/80 px-2.5 py-1 text-[11px] font-semibold">
-                          <span
-                            className={`h-2 w-2 rounded-full ${
-                              table.status === "available" ? "bg-primary" : "bg-red-500"
-                            }`}
-                          />
-                          <span
-                            className={
-                              table.status === "available"
-                                ? "text-primary"
-                                : "text-red-700 dark:text-red-300"
-                            }
-                          >
-                            {table.status === "available"
-                              ? (t.dashboard?.tableStatus?.available || "Available")
-                              : (t.dashboard?.tableStatus?.occupied || "Occupied")}
-                          </span>
-                        </div>
                       </div>
                     </div>
                   ))}
@@ -1868,48 +1883,7 @@ export default function AdminDashboard() {
               </div>
             </CardContent>
           </Card>
-        </motion.div>
-      </div>
 
-      {/* Analytics section below operational blocks */}
-      <div className="grid gap-6 xl:grid-cols-12">
-        <div className="space-y-6 xl:col-span-8">
-          <Card className="rounded-2xl border border-green-200/70 bg-gradient-to-br from-green-50/80 to-white shadow-sm dark:border-[#1f1f1f] dark:from-[#111111] dark:to-[#111111]">
-            <CardHeader className="pb-2">
-              <div className="flex items-center justify-between">
-                <CardTitle className="text-base font-bold text-foreground dark:text-[#ffffff]">
-                  {t.dashboard?.analytics || "Revenue Analytics"}
-                </CardTitle>
-                <div className="flex items-center gap-2">
-                  <Button variant={revenueView === "day" ? "default" : "outline"} size="sm" className="h-7 text-xs" onClick={() => setRevenueView("day")}>{t.dashboard?.revenueGraph?.daily || "Daily"}</Button>
-                  <Button variant={revenueView === "month" ? "default" : "outline"} size="sm" className="h-7 text-xs" onClick={() => setRevenueView("month")}>{t.dashboard?.revenueGraph?.monthly || "Monthly"}</Button>
-                </div>
-              </div>
-            </CardHeader>
-            <CardContent>
-              <SimpleLineAreaChart data={revenueData} loading={loading} />
-            </CardContent>
-          </Card>
-
-          <Card className="rounded-2xl border border-border bg-card shadow-sm dark:border-[#1f1f1f] dark:bg-[#111111]">
-            <CardHeader className="pb-2">
-              <div className="flex items-center justify-between">
-                <CardTitle className="text-base font-bold text-foreground dark:text-[#ffffff]">
-                  {t.dashboard?.ordersOverview?.title || "Orders Overview"}
-                </CardTitle>
-                <div className="flex items-center gap-2">
-                  <Button variant={ordersView === "day" ? "default" : "outline"} size="sm" className="h-7 text-xs" onClick={() => setOrdersView("day")}>{t.dashboard?.ordersOverview?.today || "Today"}</Button>
-                  <Button variant={ordersView === "month" ? "default" : "outline"} size="sm" className="h-7 text-xs" onClick={() => setOrdersView("month")}>{t.dashboard?.ordersOverview?.month || "Month"}</Button>
-                </div>
-              </div>
-            </CardHeader>
-            <CardContent>
-              <SimpleBarChart data={ordersData} loading={loading} highlightColor="var(--primary)" />
-            </CardContent>
-          </Card>
-        </div>
-
-        <div className="space-y-6 xl:col-span-4">
           <Card className="rounded-2xl border border-green-200/70 bg-gradient-to-br from-green-50/80 to-white shadow-sm dark:border-[#1f1f1f] dark:from-[#111111] dark:to-[#111111]">
             <CardHeader>
               <CardTitle className="text-base font-bold text-foreground dark:text-[#ffffff]">{t.dashboard?.topCategories?.title || "Top Categories"}</CardTitle>
@@ -1940,7 +1914,7 @@ export default function AdminDashboard() {
               </div>
             </CardContent>
           </Card>
-        </div>
+        </motion.div>
       </div>
 
     </div>
@@ -1999,26 +1973,31 @@ function SimpleBarChart({
   if (loading) return <div className="h-56 animate-pulse rounded-xl bg-muted/50" />;
   if (!data.length) return <div className="flex h-56 items-center justify-center text-sm text-muted-foreground">{t.dashboard?.charts?.noData || "No data available"}</div>;
 
+  const isTimeSeries = data.some((d) => d.label.includes(":"));
   const maxValue = Math.max(...data.map((d) => d.value), 1);
-  const width = Math.max(360, data.length * 24);
+  const width = Math.max(360, data.length * (isTimeSeries ? 34 : 24));
   const height = 230;
   const padding = 28;
   const chartW = width - padding * 2;
   const barW = Math.max(8, chartW / data.length - 8);
+  const stepX = chartW / data.length;
 
   return (
     <div className="w-full overflow-x-auto">
       <svg viewBox={`0 0 ${width} ${height}`} className="h-52 w-full sm:h-56">
         {data.map((d, i) => {
-          const x = padding + i * (chartW / data.length) + 4;
+          const x = padding + i * stepX + Math.max((stepX - barW) / 2, 2);
           const h = (d.value / maxValue) * (height - padding * 2);
           const y = height - padding - h;
+          const showLabel = !isTimeSeries || data.length <= 8 || i % 2 === 0 || i === data.length - 1;
           return (
             <g key={`${d.label}-${i}`}>
               <rect x={x} y={y} width={barW} height={h} rx="4" fill={highlightColor} opacity={i === data.length - 1 ? 1 : 0.65} />
-              <text x={x + barW / 2} y={height - 8} textAnchor="middle" className="fill-muted-foreground text-[10px]">
-                {d.label}
-              </text>
+              {showLabel ? (
+                <text x={x + barW / 2} y={height - 8} textAnchor="middle" className="fill-muted-foreground text-[9px] sm:text-[10px]">
+                  {d.label}
+                </text>
+              ) : null}
             </g>
           );
         })}

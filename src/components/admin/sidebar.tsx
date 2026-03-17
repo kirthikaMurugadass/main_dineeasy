@@ -43,6 +43,11 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { ProCheckoutForm } from "@/components/subscription/pro-checkout-form";
+import {
+  clearCachedRestaurant,
+  getCachedRestaurantName,
+  setCachedRestaurant,
+} from "@/lib/restaurant-cache";
 
 const navItems = [
   { key: "dashboard", href: "/admin", icon: LayoutDashboard },
@@ -64,7 +69,7 @@ export function AdminSidebar() {
   const { bookingNotificationCount, resetBookingNotification } = useBookingNotification();
    const { isPro, loading } = useSubscription();
    const [upgradeOpen, setUpgradeOpen] = useState(false);
-  const [restaurantName, setRestaurantName] = useState("");
+  const [restaurantName, setRestaurantName] = useState<string>(() => getCachedRestaurantName());
 
   // Close sidebar on mobile when pathname changes
   useEffect(() => {
@@ -87,9 +92,12 @@ export function AdminSidebar() {
     const supabase = createClient();
 
     async function loadRestaurantName() {
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
+      const { data: sessionData } = await supabase.auth.getSession();
+      let user = sessionData.session?.user ?? null;
+      if (!user) {
+        const { data: userData } = await supabase.auth.getUser();
+        user = userData.user ?? null;
+      }
       if (!user) return;
 
       const { data: restaurant } = await supabase
@@ -99,7 +107,11 @@ export function AdminSidebar() {
         .single();
 
       if (mounted) {
-        setRestaurantName(restaurant?.name || "");
+        const resolvedName = restaurant?.name || "";
+        setRestaurantName(resolvedName);
+        if (resolvedName) {
+          setCachedRestaurant({ name: resolvedName });
+        }
       }
     }
 
@@ -123,6 +135,7 @@ export function AdminSidebar() {
   async function handleLogout() {
     const supabase = createClient();
     await supabase.auth.signOut();
+    clearCachedRestaurant();
     router.push("/login");
     router.refresh();
   }

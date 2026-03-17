@@ -8,6 +8,13 @@ import { Button } from "@/components/ui/button";
 import { PageTitle } from "@/components/ui/page-title";
 import { Card, CardContent } from "@/components/ui/card";
 import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
@@ -308,6 +315,11 @@ export default function BookingsPage() {
   const paginatedBookings = filteredBookings.slice(indexOfFirstBooking, indexOfLastBooking);
   const totalPages = Math.ceil(filteredBookings.length / bookingsPerPage);
 
+  const tableSummary = {
+    occupied: filteredBookings.filter((b) => b.status === "confirmed" || b.status === "completed").length,
+    reserved: filteredBookings.filter((b) => b.status === "pending").length,
+  };
+
   const paginate = (pageNumber: number) => {
     setCurrentPage(pageNumber);
   };
@@ -336,15 +348,15 @@ export default function BookingsPage() {
       </div>
 
       {/* Tabs and Date Filter */}
-      <Card className="rounded-2xl border border-[#D6D2C4]/50 bg-card shadow-sm dark:border-[#1f1f1f] dark:bg-[#111111]">
-        <CardContent className="p-6">
-          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-            {/* Tab Navigation */}
-            <div className="flex items-center gap-2 overflow-x-auto pb-1">
+      <Card className="gap-0 rounded-2xl border border-[#D6D2C4]/50 bg-card py-0 shadow-sm dark:border-[#1f1f1f] dark:bg-[#111111]">
+        <CardContent className="p-3 sm:p-4">
+          <div className="flex flex-col gap-2.5 sm:flex-row sm:items-center sm:justify-between">
+            {/* Desktop tab navigation */}
+            <div className="hidden items-center gap-2 overflow-x-auto pb-1 sm:flex">
               <button
                 onClick={() => handleTabChange("all")}
                 className={cn(
-                  "px-4 py-2 rounded-xl text-sm font-semibold transition-all duration-200",
+                  "rounded-xl px-3.5 py-1 text-sm font-semibold transition-all duration-200",
                   getActiveTab() === "all"
                     ? "bg-primary text-white shadow-md dark:bg-primary"
                     : "bg-white/50 text-[#6B7B5A] hover:bg-[#E8E4D9]/50 dark:bg-[#1a1a1a] dark:text-[#bfbfbf] dark:hover:bg-[#262626]"
@@ -355,7 +367,7 @@ export default function BookingsPage() {
               <button
                 onClick={() => handleTabChange("today")}
                 className={cn(
-                  "px-4 py-2 rounded-xl text-sm font-semibold transition-all duration-200",
+                  "rounded-xl px-3.5 py-1 text-sm font-semibold transition-all duration-200",
                   getActiveTab() === "today"
                     ? "bg-primary text-white shadow-md dark:bg-primary"
                     : "bg-white/50 text-[#6B7B5A] hover:bg-[#E8E4D9]/50 dark:bg-[#243019]/50 dark:text-[#9CA88A] dark:hover:bg-[#2D3A1A]/50"
@@ -366,7 +378,7 @@ export default function BookingsPage() {
               <button
                 onClick={() => handleTabChange("upcoming")}
                 className={cn(
-                  "px-4 py-2 rounded-xl text-sm font-semibold transition-all duration-200",
+                  "rounded-xl px-3.5 py-1 text-sm font-semibold transition-all duration-200",
                   getActiveTab() === "upcoming"
                     ? "bg-primary text-white shadow-md dark:bg-primary"
                     : "bg-white/50 text-[#6B7B5A] hover:bg-[#E8E4D9]/50 dark:bg-[#243019]/50 dark:text-[#9CA88A] dark:hover:bg-[#2D3A1A]/50"
@@ -377,7 +389,7 @@ export default function BookingsPage() {
               <button
                 onClick={() => handleTabChange("pending")}
                 className={cn(
-                  "px-4 py-2 rounded-xl text-sm font-semibold transition-all duration-200",
+                  "rounded-xl px-3.5 py-1 text-sm font-semibold transition-all duration-200",
                   getActiveTab() === "pending"
                     ? "bg-primary text-white shadow-md dark:bg-primary"
                     : "bg-white/50 text-[#6B7B5A] hover:bg-[#E8E4D9]/50 dark:bg-[#243019]/50 dark:text-[#9CA88A] dark:hover:bg-[#2D3A1A]/50"
@@ -388,7 +400,7 @@ export default function BookingsPage() {
               <button
                 onClick={() => handleTabChange("confirmed")}
                 className={cn(
-                  "px-4 py-2 rounded-xl text-sm font-semibold transition-all duration-200",
+                  "rounded-xl px-3.5 py-1 text-sm font-semibold transition-all duration-200",
                   getActiveTab() === "confirmed"
                     ? "bg-primary text-white shadow-md dark:bg-primary"
                     : "bg-white/50 text-[#6B7B5A] hover:bg-[#E8E4D9]/50 dark:bg-[#243019]/50 dark:text-[#9CA88A] dark:hover:bg-[#2D3A1A]/50"
@@ -399,7 +411,7 @@ export default function BookingsPage() {
               <button
                 onClick={() => handleTabChange("completed")}
                 className={cn(
-                  "px-4 py-2 rounded-xl text-sm font-semibold transition-all duration-200",
+                  "rounded-xl px-3.5 py-1 text-sm font-semibold transition-all duration-200",
                   getActiveTab() === "completed"
                     ? "bg-primary text-white shadow-md dark:bg-primary"
                     : "bg-white/50 text-[#6B7B5A] hover:bg-[#E8E4D9]/50 dark:bg-[#243019]/50 dark:text-[#9CA88A] dark:hover:bg-[#2D3A1A]/50"
@@ -407,6 +419,28 @@ export default function BookingsPage() {
               >
                 {t.booking?.tabs?.completed || "Completed"}
               </button>
+            </div>
+
+            {/* Mobile filter dropdown */}
+            <div className="sm:hidden">
+              <Select value={getActiveTab()} onValueChange={handleTabChange}>
+                <SelectTrigger className="h-9 w-full rounded-xl border border-border bg-background text-sm font-semibold">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent
+                  align="start"
+                  position="popper"
+                  sideOffset={6}
+                  className="z-[120] max-h-60 w-[var(--radix-select-trigger-width)] overflow-y-auto"
+                >
+                  <SelectItem className="min-h-11 px-4 py-3" value="all">{t.booking?.tabs?.all || "All Bookings"}</SelectItem>
+                  <SelectItem className="min-h-11 px-4 py-3" value="today">{t.booking?.tabs?.today || "Today"}</SelectItem>
+                  <SelectItem className="min-h-11 px-4 py-3" value="upcoming">{t.booking?.tabs?.upcoming || "Upcoming"}</SelectItem>
+                  <SelectItem className="min-h-11 px-4 py-3" value="pending">{t.booking?.tabs?.pending || "Pending"}</SelectItem>
+                  <SelectItem className="min-h-11 px-4 py-3" value="confirmed">{t.booking?.tabs?.confirmed || "Confirmed"}</SelectItem>
+                  <SelectItem className="min-h-11 px-4 py-3" value="completed">{t.booking?.tabs?.completed || "Completed"}</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
 
             {/* Date Selector and Search */}
@@ -437,7 +471,7 @@ export default function BookingsPage() {
                       setSelectedDate(e.target.value);
                       setCurrentPage(1);
                     }}
-                    className="rounded-xl border border-border bg-background px-3 py-2 text-sm text-foreground shadow-sm transition-all hover:border-primary/50 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 dark:bg-[#0f0f0f] dark:text-[#ffffff] dark:placeholder:text-[#8a8a8a]"
+                    className="h-9 rounded-xl border border-border bg-background px-3 py-1.5 text-sm text-foreground shadow-sm transition-all hover:border-primary/50 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 dark:bg-[#0f0f0f] dark:text-[#ffffff] dark:placeholder:text-[#8a8a8a]"
                   />
                   {selectedDate && (
                     <Button
@@ -455,6 +489,26 @@ export default function BookingsPage() {
                 </div>
               </div>
             )}
+          </div>
+
+          {/* Table status summary */}
+          <div className="mt-3 grid grid-cols-1 gap-2 sm:grid-cols-2">
+            <div className="rounded-xl border border-border/70 bg-background/60 p-3">
+              <div className="flex items-center justify-between">
+                <span className="text-sm font-medium text-foreground">
+                  {t.booking?.summary?.tableOccupied || "Table Occupied"}
+                </span>
+                <span className="text-base font-bold text-foreground">{tableSummary.occupied}</span>
+              </div>
+            </div>
+            <div className="rounded-xl border border-border/70 bg-background/60 p-3">
+              <div className="flex items-center justify-between">
+                <span className="text-sm font-medium text-foreground">
+                  {t.booking?.summary?.tableReserved || "Table Reserved"}
+                </span>
+                <span className="text-base font-bold text-foreground">{tableSummary.reserved}</span>
+              </div>
+            </div>
           </div>
         </CardContent>
       </Card>

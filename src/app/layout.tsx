@@ -3,6 +3,7 @@ import { Inter } from "next/font/google";
 import { Toaster } from "@/components/ui/sonner";
 import { I18nProviderWrapper } from "@/components/providers/i18n-provider-wrapper";
 import { ThemeProvider } from "@/components/providers/theme-provider";
+import { LocalAuthResetGuard } from "@/components/providers/local-auth-reset-guard";
 import "leaflet/dist/leaflet.css";
 import "./globals.css";
 
@@ -58,6 +59,7 @@ export default function RootLayout({
       >
         <ThemeProvider>
           <I18nProviderWrapper>
+            <LocalAuthResetGuard />
             {children}
             <Toaster position="top-right" richColors />
           </I18nProviderWrapper>

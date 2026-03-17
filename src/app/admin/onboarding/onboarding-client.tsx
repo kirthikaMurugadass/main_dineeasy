@@ -11,6 +11,7 @@ import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import { useI18n } from "@/lib/i18n/context";
 import { createClient } from "@/lib/supabase/client";
+import { setCachedRestaurant } from "@/lib/restaurant-cache";
 
 export function AdminOnboardingClient({
   plan,
@@ -78,6 +79,11 @@ export function AdminOnboardingClient({
         const data = await res.json();
         throw new Error(data.error ?? "Setup failed");
       }
+      const created = await res.json();
+      setCachedRestaurant({
+        id: created?.id ?? null,
+        name: name.trim(),
+      });
 
       toast.success("Restaurant created! Welcome to DineEasy.");
       if (isProIntent) {

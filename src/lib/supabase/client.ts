@@ -1,5 +1,12 @@
 import { createBrowserClient } from "@supabase/ssr";
 
+function isLocalSupabaseUrl(url: URL) {
+  return (
+    (url.hostname === "127.0.0.1" || url.hostname === "localhost") &&
+    (url.port === "54321" || url.port === "")
+  );
+}
+
 function getSupabaseConfig() {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL?.trim();
   const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY?.trim();
@@ -15,9 +22,12 @@ function getSupabaseConfig() {
     if (parsed.protocol !== "https:" && parsed.protocol !== "http:") {
       throw new Error("Invalid protocol");
     }
-    if (!parsed.hostname.includes("supabase") && !parsed.hostname.endsWith(".supabase.co")) {
+    const isHostedSupabase =
+      parsed.hostname.includes("supabase") || parsed.hostname.endsWith(".supabase.co");
+    const isLocalSupabase = isLocalSupabaseUrl(parsed);
+    if (!isHostedSupabase && !isLocalSupabase) {
       console.warn(
-        "[Supabase] NEXT_PUBLIC_SUPABASE_URL does not look like a Supabase URL (e.g. https://xxxx.supabase.co). Check your .env.local."
+        "[Supabase] NEXT_PUBLIC_SUPABASE_URL does not look like a valid hosted or local Supabase URL. Check your .env.local."
       );
     }
   } catch (e) {
@@ -34,5 +44,8 @@ function getSupabaseConfig() {
 
 export function createClient() {
   const { url, key } = getSupabaseConfig();
+  if (process.env.NODE_ENV === "development" && typeof window !== "undefined") {
+    console.log("SUPABASE URL:", process.env.NEXT_PUBLIC_SUPABASE_URL);
+  }
   return createBrowserClient(url, key);
 }

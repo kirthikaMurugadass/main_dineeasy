@@ -23,8 +23,8 @@ export function SignupClient({
 }) {
   const router = useRouter();
   const { t } = useI18n();
-  const isProIntent = plan === "pro";
-  const billingCycle = billing === "annual" ? "annual" : "monthly";
+  void plan;
+  void billing;
 
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
@@ -64,26 +64,18 @@ export function SignupClient({
         options: {
           emailRedirectTo: `${
             typeof window !== "undefined" ? window.location.origin : ""
-          }/admin`,
+          }/login`,
         },
       });
       if (error) throw error;
 
       if (data.user) {
-        toast.success(t.auth?.signup?.success || t.auth.signup.success || "Account created successfully! Signing you in...");
-        const { error: signInError } =
-          await supabase.auth.signInWithPassword({ email, password });
-        if (signInError) {
-          toast.error(t.auth?.signup?.signInAfterSignup || t.auth.signup.signInAfterSignup || "Account created but sign in failed. Please try logging in.");
-          router.push("/login");
-          return;
-        }
-        if (isProIntent) {
-          router.push(`/admin/onboarding?plan=pro&billing=${billingCycle}`);
-        } else {
-          router.push("/admin");
-        }
-        router.refresh();
+        toast.success(
+          t.auth?.signup?.success ||
+            t.auth.signup.success ||
+            "Account created successfully! Please sign in."
+        );
+        router.push("/login");
       }
     } catch (err: unknown) {
       const message =

@@ -1,9 +1,9 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
-import { Loader2, Clock, ChefHat, CheckCircle, MoreVertical, Eye, Calendar, ChevronLeft, ChevronRight, User } from "lucide-react";
+import { Loader2, Clock, ChefHat, CheckCircle, MoreVertical, Eye, Calendar, ChevronLeft, ChevronRight, User, UtensilsCrossed, Truck, ShoppingBag } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { PageTitle } from "@/components/ui/page-title";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -339,6 +339,16 @@ export default function OrdersPage() {
     }).format(date);
   }
 
+  const mobileTypeSummary = useMemo(() => {
+    const summary = { dineIn: 0, takeaway: 0, delivery: 0 };
+    for (const order of orders) {
+      if (order.order_type === "dine_in") summary.dineIn += 1;
+      else if (order.order_type === "takeaway") summary.takeaway += 1;
+      else summary.delivery += 1;
+    }
+    return summary;
+  }, [orders]);
+
   useEffect(() => {
     if (!subscriptionLoading && !isPro) {
       toast.error(
@@ -394,14 +404,14 @@ export default function OrdersPage() {
       </div>
 
       {/* Tabs and Date Filter */}
-      <Card className="rounded-2xl border border-[#D6D2C4]/50 bg-card shadow-sm dark:border-[#1f1f1f] dark:bg-[#111111]">
-        <CardContent className="p-6">
-          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-            {/* Tab Navigation */}
-            <div className="flex items-center gap-2 overflow-x-auto pb-1">
+      <Card className="gap-0 rounded-2xl border border-[#D6D2C4]/50 bg-card py-0 shadow-sm dark:border-[#1f1f1f] dark:bg-[#111111]">
+        <CardContent className="p-3 sm:p-4">
+          <div className="flex flex-col gap-2.5 sm:flex-row sm:items-center sm:justify-between">
+            {/* Desktop tab navigation */}
+            <div className="hidden items-center gap-2 overflow-x-auto pb-1 sm:flex">
               <button
                 onClick={() => handleTabChange("all")}
-                className={`px-4 py-2 rounded-xl text-sm font-semibold transition-all duration-200 ${
+                className={`rounded-xl px-3.5 py-1 text-sm font-semibold transition-all duration-200 ${
                   getActiveTab() === "all"
                     ? "bg-primary text-white shadow-md dark:bg-primary"
                     : "bg-white/50 text-[#6B7B5A] hover:bg-[#E8E4D9]/50 dark:bg-[#1a1a1a] dark:text-[#bfbfbf] dark:hover:bg-[#262626]"
@@ -411,7 +421,7 @@ export default function OrdersPage() {
               </button>
               <button
                 onClick={() => handleTabChange("pending")}
-                className={`px-4 py-2 rounded-xl text-sm font-semibold transition-all duration-200 ${
+                className={`rounded-xl px-3.5 py-1 text-sm font-semibold transition-all duration-200 ${
                   getActiveTab() === "pending"
                     ? "bg-primary text-white shadow-md dark:bg-primary"
                     : "bg-white/50 text-[#6B7B5A] hover:bg-[#E8E4D9]/50 dark:bg-[#243019]/50 dark:text-[#9CA88A] dark:hover:bg-[#2D3A1A]/50"
@@ -421,7 +431,7 @@ export default function OrdersPage() {
               </button>
               <button
                 onClick={() => handleTabChange("completed")}
-                className={`px-4 py-2 rounded-xl text-sm font-semibold transition-all duration-200 ${
+                className={`rounded-xl px-3.5 py-1 text-sm font-semibold transition-all duration-200 ${
                   getActiveTab() === "completed"
                     ? "bg-primary text-white shadow-md dark:bg-primary"
                     : "bg-white/50 text-[#6B7B5A] hover:bg-[#E8E4D9]/50 dark:bg-[#243019]/50 dark:text-[#9CA88A] dark:hover:bg-[#2D3A1A]/50"
@@ -429,6 +439,20 @@ export default function OrdersPage() {
               >
                 {t.order?.tabs?.completed || "Completed"}
               </button>
+            </div>
+
+            {/* Mobile status dropdown */}
+            <div className="sm:hidden">
+              <Select value={getActiveTab()} onValueChange={handleTabChange}>
+                <SelectTrigger className="h-9 w-full rounded-xl border border-border bg-background text-sm font-semibold">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">{t.order?.tabs?.all || "All Orders"}</SelectItem>
+                  <SelectItem value="pending">{t.order?.tabs?.pending || "Pending"}</SelectItem>
+                  <SelectItem value="completed">{t.order?.tabs?.completed || "Completed"}</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
 
             {/* Date Selector */}
@@ -442,7 +466,7 @@ export default function OrdersPage() {
                     setSelectedDate(e.target.value);
                     setCurrentPage(1);
                   }}
-                  className="rounded-xl border border-border bg-background px-3 py-2 text-sm text-foreground shadow-sm transition-all hover:border-primary/50 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 dark:bg-[#0f0f0f] dark:text-[#ffffff] dark:placeholder:text-[#8a8a8a]"
+                  className="h-9 rounded-xl border border-border bg-background px-3 py-1.5 text-sm text-foreground shadow-sm transition-all hover:border-primary/50 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 dark:bg-[#0f0f0f] dark:text-[#ffffff] dark:placeholder:text-[#8a8a8a]"
                 />
                 {selectedDate && (
                   <Button
@@ -459,6 +483,49 @@ export default function OrdersPage() {
                 )}
               </div>
             )}
+          </div>
+
+          {/* Order-type summary (mobile + desktop) */}
+          <div className="mt-3 grid grid-cols-1 gap-2 sm:grid-cols-3">
+            <div className="rounded-xl border border-border/70 bg-background/60 p-3">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <span className="rounded-md bg-primary/10 p-1.5 text-primary">
+                    <UtensilsCrossed className="h-4 w-4" />
+                  </span>
+                  <span className="text-sm font-medium text-foreground">
+                    {t.order?.type?.dineIn || "Dine In"}
+                  </span>
+                </div>
+                <span className="text-base font-bold text-foreground">{mobileTypeSummary.dineIn}</span>
+              </div>
+            </div>
+            <div className="rounded-xl border border-border/70 bg-background/60 p-3">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <span className="rounded-md bg-primary/10 p-1.5 text-primary">
+                    <ShoppingBag className="h-4 w-4" />
+                  </span>
+                  <span className="text-sm font-medium text-foreground">
+                    {t.order?.type?.takeaway || "Take Away"}
+                  </span>
+                </div>
+                <span className="text-base font-bold text-foreground">{mobileTypeSummary.takeaway}</span>
+              </div>
+            </div>
+            <div className="rounded-xl border border-border/70 bg-background/60 p-3">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <span className="rounded-md bg-primary/10 p-1.5 text-primary">
+                    <Truck className="h-4 w-4" />
+                  </span>
+                  <span className="text-sm font-medium text-foreground">
+                    {t.order?.type?.delivery || "Delivery"}
+                  </span>
+                </div>
+                <span className="text-base font-bold text-foreground">{mobileTypeSummary.delivery}</span>
+              </div>
+            </div>
           </div>
         </CardContent>
       </Card>

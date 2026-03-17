@@ -38,7 +38,7 @@ export function WorkflowSection() {
 
       <div className="mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-10 2xl:max-w-[90rem]">
         <div className="grid gap-10 sm:gap-12 lg:grid-cols-2 lg:items-center lg:gap-16 xl:gap-20">
-          <div className="text-center lg:text-left">
+          <div className="relative z-10 text-center lg:text-left">
             <FadeIn>
               <p className="text-xs font-semibold uppercase tracking-[0.25em] text-primary">
                 {t.home?.workflow?.badge || "How it works"}
@@ -72,16 +72,16 @@ export function WorkflowSection() {
               ))}
             </StaggerContainer>
             <FadeIn delay={0.25}>
-              <Link href="/signup" className="mt-8 inline-block sm:mt-10">
+              <Link href="/signup" className="mt-8 inline-flex sm:mt-10">
                 <Button size="lg" className="rounded-full px-8 shadow-lg shadow-primary/20 hover:shadow-xl hover:shadow-primary/30 transition-all duration-300">
                   {t.home?.workflow?.cta || "Start with DineEasy"}
                 </Button>
               </Link>
             </FadeIn>
           </div>
-          <FadeIn delay={0.15} direction="left">
-            <div className="relative flex justify-center lg:justify-center lg:ml-8">
-              <div className="w-full max-w-[260px] sm:max-w-[290px] lg:max-w-[280px]">
+          <FadeIn delay={0.15} direction="left" className="mt-6 sm:mt-8 lg:mt-0">
+            <div className="relative z-0 flex justify-center lg:justify-center lg:ml-8">
+              <div className="w-full max-w-[220px] sm:max-w-[260px] md:max-w-[290px] lg:max-w-[280px]">
                 <PhoneDemo />
               </div>
             </div>
