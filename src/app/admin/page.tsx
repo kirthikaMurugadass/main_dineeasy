@@ -332,7 +332,11 @@ export default function AdminDashboard() {
             .limit(10);
           
           if (ordersError) {
-            console.error("Error loading orders:", ordersError);
+            // Log as a warning to avoid noisy error overlays in dev
+            console.warn(
+              "Dashboard: failed to load recent orders",
+              ordersError?.message || ordersError
+            );
             setOrders([]);
           } else if (!ordersData || ordersData.length === 0) {
             setOrders([]);
@@ -345,7 +349,10 @@ export default function AdminDashboard() {
               .in("order_id", orderIds);
             
             if (itemsError) {
-              console.error("Error loading order items:", itemsError);
+              console.warn(
+                "Dashboard: failed to load order items for recent orders",
+                itemsError?.message || itemsError
+              );
               // Still set orders but without items
               const formattedOrders: Order[] = ordersData.map((order: any) => ({
                 id: order.id,
@@ -1283,6 +1290,7 @@ export default function AdminDashboard() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.3 }}
               className="mt-2.5 text-3xl font-bold tracking-tight text-foreground sm:text-4xl md:text-[42px]"
+              suppressHydrationWarning
             >
               {welcomeHeadline}
             </motion.h1>

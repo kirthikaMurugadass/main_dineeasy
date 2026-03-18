@@ -127,7 +127,7 @@ export default function OrdersPage() {
         .in("order_id", orderIds);
 
       if (itemsError) {
-        throw itemsError;
+        console.warn("Error fetching order items:", itemsError);
       }
 
       // Fetch translations for menu items
@@ -179,7 +179,10 @@ export default function OrdersPage() {
       setOrders(ordersWithItems);
       setCurrentPage(1); // Reset to first page when filters change
     } catch (error: any) {
-      console.error("Error loading orders:", error);
+      console.error(
+        "Error loading orders:",
+        error?.message || error
+      );
       const errorMessage =
         error?.message || t.order?.messages?.loadError || "Failed to load orders";
       toast.error(errorMessage);

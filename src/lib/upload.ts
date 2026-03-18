@@ -1,5 +1,6 @@
 import { createClient } from "@/lib/supabase/client";
 
+/** Supabase Storage bucket for menu/category images (image/jpeg, image/png, image/webp). */
 const BUCKET = "menu-items";
 const ACCEPTED_TYPES = ["image/jpeg", "image/png", "image/webp"];
 

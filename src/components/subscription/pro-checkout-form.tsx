@@ -59,8 +59,11 @@ export function ProCheckoutForm({
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-5">
-      <div className="flex items-center justify-center gap-2 rounded-full border border-border/70 bg-muted/30 px-2 py-1 text-xs font-medium text-muted-foreground">
+    <form
+      onSubmit={handleSubmit}
+      className="space-y-4 sm:space-y-5"
+    >
+      <div className="flex items-center justify-center gap-1.5 rounded-full border border-border/70 bg-muted/30 px-2 py-1 text-[11px] sm:text-xs font-medium text-muted-foreground">
         <span
           className={`cursor-pointer rounded-full px-3 py-1 transition ${!isAnnual ? "bg-primary text-primary-foreground" : ""}`}
           onClick={() => setBillingCycle("monthly")}
@@ -78,7 +81,7 @@ export function ProCheckoutForm({
         </span>
       </div>
 
-      <div className="space-y-2">
+      <div className="space-y-1.5">
         <Label htmlFor="card-number">Card number</Label>
         <Input
           id="card-number"
@@ -86,12 +89,12 @@ export function ProCheckoutForm({
           value={cardNumber}
           onChange={(e) => setCardNumber(e.target.value.replace(/\D/g, "").slice(0, 16))}
           maxLength={19}
-          className="font-mono"
+          className="font-mono py-2 px-3 text-sm"
           disabled={loading}
         />
       </div>
-      <div className="grid grid-cols-2 gap-3">
-        <div className="space-y-2">
+      <div className="grid grid-cols-2 gap-2 sm:gap-3">
+        <div className="space-y-1.5">
           <Label htmlFor="expiry">Expiry</Label>
           <Input
             id="expiry"
@@ -103,10 +106,11 @@ export function ProCheckoutForm({
               setExpiry(v.slice(0, 5));
             }}
             maxLength={5}
+            className="py-2 px-3 text-sm"
             disabled={loading}
           />
         </div>
-        <div className="space-y-2">
+        <div className="space-y-1.5">
           <Label htmlFor="cvv">CVV</Label>
           <Input
             id="cvv"
@@ -115,6 +119,7 @@ export function ProCheckoutForm({
             value={cvv}
             onChange={(e) => setCvv(e.target.value.replace(/\D/g, "").slice(0, 4))}
             maxLength={4}
+            className="py-2 px-3 text-sm"
             disabled={loading}
           />
         </div>
@@ -125,7 +130,7 @@ export function ProCheckoutForm({
       <Button
         type="submit"
         disabled={loading}
-        className="h-11 w-full rounded-xl"
+        className="w-full rounded-xl py-2.5 text-sm sm:h-11"
       >
         {loading ? (
           <Loader2 size={18} className="animate-spin" />

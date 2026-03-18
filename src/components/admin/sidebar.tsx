@@ -307,7 +307,9 @@ export function AdminSidebar() {
       </SidebarFooter>
 
       <Dialog open={upgradeOpen} onOpenChange={setUpgradeOpen}>
-        <DialogContent className="max-w-md">
+      <DialogContent
+        className="w-[90%] max-w-sm mx-auto sm:max-w-md md:max-w-lg max-h-[90vh] overflow-y-auto p-4 sm:p-6"
+      >
           <DialogHeader>
             <DialogTitle>{t.dashboard?.upgrade?.dialogTitle || t.admin.sidebar?.upgradeToPro || "Upgrade to Pro"}</DialogTitle>
           </DialogHeader>
