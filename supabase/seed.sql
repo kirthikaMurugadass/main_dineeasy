@@ -3,5 +3,5 @@
 -- ============================================
 -- Seed inserts are intentionally disabled so `supabase db reset`
 -- leaves the local database empty by default.
---
--- To seed data again, re-add explicit INSERT statements here.
+
+-- -- To seed data again, re-add explicit INSERT statements here.

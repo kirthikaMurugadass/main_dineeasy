@@ -45,62 +45,48 @@ export function AdminLoginClient({ registered }: { registered?: string }) {
 
   async function handleLogin(e: React.FormEvent) {
     e.preventDefault();
-    if (!email || !password) return;
+    const normalizedEmail = email.toLowerCase().trim();
+    const normalizedPassword = password.trim();
+
+    if (!normalizedEmail || !normalizedPassword) return;
     setLoading(true);
 
     try {
       const supabase = createClient();
-      const normalizedEmail = email.toLowerCase().trim();
+      // Clear any stale local auth session before creating a fresh login session.
+      await supabase.auth.signOut();
 
-      const { data: authData, error: authError } =
-        await supabase.auth.signInWithPassword({
-          email: normalizedEmail,
-          password,
-        });
-
-      // Debug logs (required for diagnosing auth issues)
-      console.log("[LOGIN] signInWithPassword response:", {
-        hasSession: Boolean(authData?.session),
-        userId: authData?.user?.id,
-        errorMessage: authError?.message,
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email: normalizedEmail,
+        password: normalizedPassword,
       });
+      console.log("Login:", data, error);
 
-      if (authError) {
-        const msg = authError.message || "Login failed";
-        if (msg.toLowerCase().includes("email not confirmed")) {
-          throw new Error("Please verify your email before signing in.");
-        }
-        if (msg.toLowerCase().includes("fetch")) {
-          throw new Error(
-            "Authentication service is currently unavailable. Please try again shortly."
-          );
-        }
-        throw new Error(msg);
+      if (error || !data?.session) {
+        throw error || new Error("Failed to create session. Please try again.");
       }
 
-      // If email confirmation is enabled, Supabase may return a user without a session.
-      if (!authData?.session) {
-        throw new Error("Please verify your email before signing in.");
+      if (data.session) {
+        toast.success("Welcome back!");
+        router.push("/admin");
+        router.refresh();
       }
-
-      toast.success("Welcome back!");
-      router.push("/admin");
-      router.refresh();
     } catch (err: any) {
       let errorMessage =
         "Failed to sign in. Please check your credentials.";
 
       const errorMsg = err?.message || err?.toString() || "";
+      const normalizedErrorMsg = errorMsg.toLowerCase();
       const errorName = err?.name || "";
 
       if (errorMsg.includes("Invalid") || errorMsg.includes("password")) {
         errorMessage = "Invalid email or password. Please try again.";
-      } else if (errorMsg.includes("Email not confirmed")) {
-        errorMessage = "Please verify your email before signing in.";
+      } else if (normalizedErrorMsg.includes("email not confirmed")) {
+        errorMessage = "Please verify your email before login";
       } else if (
         errorName === "TypeError" ||
-        errorMsg.includes("Failed to fetch") ||
-        errorMsg.includes("NetworkError")
+        normalizedErrorMsg.includes("failed to fetch") ||
+        normalizedErrorMsg.includes("networkerror")
       ) {
         errorMessage =
           "Cannot connect to server. Please check your connection.";

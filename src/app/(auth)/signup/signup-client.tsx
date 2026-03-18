@@ -42,15 +42,19 @@ export function SignupClient({
     if (lastSubmitRef.current && now - lastSubmitRef.current < 800) return;
     lastSubmitRef.current = now;
 
-    if (!email || !password || !confirmPassword) {
+    const normalizedEmail = email.toLowerCase().trim();
+    const normalizedPassword = password.trim();
+    const normalizedConfirmPassword = confirmPassword.trim();
+
+    if (!normalizedEmail || !normalizedPassword || !normalizedConfirmPassword) {
       toast.error(t.auth?.signup?.errors?.emptyFields || t.auth.signup.errors.emptyFields || "Please fill in all fields");
       return;
     }
-    if (password !== confirmPassword) {
+    if (normalizedPassword !== normalizedConfirmPassword) {
       toast.error(t.auth?.signup?.errors?.passwordMismatch || t.auth.signup.errors.passwordMismatch || "Passwords do not match");
       return;
     }
-    if (password.length < 6) {
+    if (normalizedPassword.length < 6) {
       toast.error(t.auth?.signup?.errors?.passwordTooShort || t.auth.signup.errors.passwordTooShort || "Password must be at least 6 characters long");
       return;
     }
@@ -59,32 +63,66 @@ export function SignupClient({
     try {
       const supabase = createClient();
       const { data, error } = await supabase.auth.signUp({
-        email,
-        password,
+        email: normalizedEmail,
+        password: normalizedPassword,
         options: {
           emailRedirectTo: `${
             typeof window !== "undefined" ? window.location.origin : ""
-          }/auth/callback`,
+          }/login`,
         },
       });
-      console.log("[SIGNUP] signUp response:", {
-        userId: data?.user?.id,
-        hasSession: Boolean(data?.session),
-        errorMessage: error?.message,
-      });
+      console.log("Signup:", data, error);
       if (error) throw error;
 
-      if (data.user) {
-        if (!data.session) {
-          toast.success(
-            "Account created. Please verify your email before signing in."
-          );
-          router.push("/admin/login?registered=1");
-          return;
-        }
+      // Supabase can return an obfuscated user object for existing accounts
+      // (especially when email confirmation is enabled). Treat it as duplicate.
+      const isDuplicateSignupResponse =
+        !!data.user &&
+        Array.isArray((data.user as { identities?: unknown[] }).identities) &&
+        ((data.user as { identities?: unknown[] }).identities?.length ?? 0) === 0;
 
-        toast.success(t.auth?.signup?.success || t.auth.signup.success || "Account created successfully!");
-        router.push("/admin");
+      if (isDuplicateSignupResponse) {
+        throw new Error("User already exists");
+      }
+
+      if (data.user) {
+        if (data.session) {
+          toast.success(
+            t.auth?.signup?.success ||
+              t.auth.signup.success ||
+              "Account created successfully! You are now signed in."
+          );
+          router.push("/admin");
+          router.refresh();
+        } else {
+          // Recommended flow: attempt immediate login so users can continue directly
+          // when email confirmation is disabled.
+          await supabase.auth.signOut();
+          const { data: loginData, error: loginError } =
+            await supabase.auth.signInWithPassword({
+              email: normalizedEmail,
+              password: normalizedPassword,
+            });
+          console.log("Login:", loginData, loginError);
+
+          if (loginData?.session) {
+            toast.success(
+              t.auth?.signup?.success ||
+                t.auth.signup.success ||
+                "Account created successfully! You are now signed in."
+            );
+            router.push("/admin");
+            router.refresh();
+            return;
+          }
+
+          if (loginError?.message?.toLowerCase().includes("email not confirmed")) {
+            toast.success("Please verify your email before login");
+          } else {
+            toast.success("Account created successfully! Please sign in.");
+          }
+          router.push("/login");
+        }
       }
     } catch (err: unknown) {
       const message =
@@ -95,7 +133,12 @@ export function SignupClient({
 
       if (message.toLowerCase().includes("rate limit")) {
         errorMessage = (t.auth?.signup?.errors as any)?.rateLimit || t.auth.signup.errors.genericError || "Too many signup attempts. Please wait a few minutes and try again.";
-      } else if (message === "User already registered") {
+      } else if (
+        message === "User already registered" ||
+        message === "User already exists" ||
+        message.toLowerCase().includes("already registered") ||
+        message.toLowerCase().includes("already exists")
+      ) {
         errorMessage = t.auth?.signup?.errors?.userExists || t.auth.signup.errors.userExists || "An account with this email already exists. Please sign in instead.";
       } else {
         errorMessage = message || t.auth?.signup?.errors?.genericError || t.auth.signup.errors.genericError || "Failed to create account. Please try again.";
