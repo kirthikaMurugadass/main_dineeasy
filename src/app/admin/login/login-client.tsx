@@ -49,57 +49,43 @@ export function AdminLoginClient({ registered }: { registered?: string }) {
     setLoading(true);
 
     try {
-      // Step 1: Verify credentials with our custom API (bcrypt)
-      const loginResponse = await fetch("/api/auth/login", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password }),
-      });
-
-      const loginData = await loginResponse.json();
-
-      if (!loginResponse.ok) {
-        throw new Error(loginData.error || "Login failed");
-      }
-
-      // Step 2: Create Supabase Auth session for compatibility
       const supabase = createClient();
+      const normalizedEmail = email.toLowerCase().trim();
+
       const { data: authData, error: authError } =
         await supabase.auth.signInWithPassword({
-          email: email.toLowerCase().trim(),
+          email: normalizedEmail,
           password,
         });
+
+      // Debug logs (required for diagnosing auth issues)
+      console.log("[LOGIN] signInWithPassword response:", {
+        hasSession: Boolean(authData?.session),
+        userId: authData?.user?.id,
+        errorMessage: authError?.message,
+      });
 
       if (authError) {
-        console.error("Supabase Auth session creation failed:", authError);
-        if (authError.message?.toLowerCase().includes("fetch")) {
-          throw new Error("Authentication service is currently unavailable. Please try again shortly.");
+        const msg = authError.message || "Login failed";
+        if (msg.toLowerCase().includes("email not confirmed")) {
+          throw new Error("Please verify your email before signing in.");
         }
-        // Try one more time after a short delay
-        await new Promise((resolve) => setTimeout(resolve, 500));
-        const { error: retryError } = await supabase.auth.signInWithPassword({
-          email: email.toLowerCase().trim(),
-          password,
-        });
-
-        if (retryError) {
-          if (retryError.message?.toLowerCase().includes("fetch")) {
-            throw new Error("Authentication service is currently unavailable. Please try again shortly.");
-          }
-          throw new Error("Failed to create session. Please try again.");
+        if (msg.toLowerCase().includes("fetch")) {
+          throw new Error(
+            "Authentication service is currently unavailable. Please try again shortly."
+          );
         }
+        throw new Error(msg);
       }
 
-      if (loginData.success && authData?.session) {
-        toast.success("Welcome back!");
-        router.push("/admin/dashboard");
-        router.refresh();
-      } else if (loginData.success) {
-        // Credentials verified but no session - wait a bit and refresh
-        await new Promise((resolve) => setTimeout(resolve, 1000));
-        router.refresh();
-        router.push("/admin/dashboard");
+      // If email confirmation is enabled, Supabase may return a user without a session.
+      if (!authData?.session) {
+        throw new Error("Please verify your email before signing in.");
       }
+
+      toast.success("Welcome back!");
+      router.push("/admin");
+      router.refresh();
     } catch (err: any) {
       let errorMessage =
         "Failed to sign in. Please check your credentials.";

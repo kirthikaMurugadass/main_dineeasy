@@ -64,18 +64,27 @@ export function SignupClient({
         options: {
           emailRedirectTo: `${
             typeof window !== "undefined" ? window.location.origin : ""
-          }/login`,
+          }/auth/callback`,
         },
+      });
+      console.log("[SIGNUP] signUp response:", {
+        userId: data?.user?.id,
+        hasSession: Boolean(data?.session),
+        errorMessage: error?.message,
       });
       if (error) throw error;
 
       if (data.user) {
-        toast.success(
-          t.auth?.signup?.success ||
-            t.auth.signup.success ||
-            "Account created successfully! Please sign in."
-        );
-        router.push("/login");
+        if (!data.session) {
+          toast.success(
+            "Account created. Please verify your email before signing in."
+          );
+          router.push("/admin/login?registered=1");
+          return;
+        }
+
+        toast.success(t.auth?.signup?.success || t.auth.signup.success || "Account created successfully!");
+        router.push("/admin");
       }
     } catch (err: unknown) {
       const message =
