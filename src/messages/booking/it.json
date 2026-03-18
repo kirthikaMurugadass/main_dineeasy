@@ -11,7 +11,8 @@
   },
   "filters": {
     "searchPlaceholder": "Cerca per nome cliente...",
-    "clear": "Pulisci"
+    "clear": "Pulisci",
+    "name": "Nome"
   },
   "tableHeaders": {
     "bookingId": "ID prenotazione",
@@ -200,5 +201,10 @@
       "setAddress": "Imposta l'indirizzo del ristorante nelle Impostazioni Admin",
       "setContactPhone": "Imposta il telefono di contatto nelle Impostazioni Admin"
     }
+  },
+  "summary": {
+    "tableReserved": "Tavolo riservato",
+    "tableAvailable": "Tavolo disponibile",
+    "completed": "Completata"
   }
 }

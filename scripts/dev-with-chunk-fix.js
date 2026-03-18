@@ -34,12 +34,10 @@ function ensureServerChunks() {
 
 function cleanupNextTypesForWindows() {
   if (process.platform !== "win32") return;
-  if (process.env.FORCE_CLEAN_NEXT !== "1") return;
 
   // Workaround: Next.js can crash on Windows/OneDrive with:
   // EINVAL: invalid argument, readlink '.next/...'
   // Clearing stale build artifacts avoids this startup failure.
-  // Keep this opt-in so we do not wipe `.next` during normal dev starts.
   const nextDir = path.join(process.cwd(), ".next");
   try {
     fs.rmSync(nextDir, { recursive: true, force: true });

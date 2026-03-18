@@ -11,7 +11,8 @@
   },
   "filters": {
     "searchPlaceholder": "Search by customer name...",
-    "clear": "Clear"
+    "clear": "Clear",
+    "name": "Name"
   },
   "tableHeaders": {
     "bookingId": "Booking ID",
@@ -200,5 +201,10 @@
       "setAddress": "Set restaurant address in Admin Settings",
       "setContactPhone": "Set contact phone in Admin Settings"
     }
+  },
+  "summary": {
+    "tableReserved": "Table Reserved",
+    "tableAvailable": "Table Available",
+    "completed": "Completed"
   }
 }

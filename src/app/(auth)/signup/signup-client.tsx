@@ -68,7 +68,7 @@ export function SignupClient({
         options: {
           emailRedirectTo: `${
             typeof window !== "undefined" ? window.location.origin : ""
-          }/login`,
+          }/auth/callback?next=/&confirmed=1`,
         },
       });
       console.log("Signup:", data, error);

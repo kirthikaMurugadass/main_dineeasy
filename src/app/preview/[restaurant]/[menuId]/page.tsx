@@ -144,9 +144,21 @@ async function getRestaurantDataForPreview(
   ) {
     const langMap = translationMap.get(entityId);
     const result: Record<string, string | null> = {};
+    const englishFallback = langMap?.get("en")?.[field] ?? null;
+    const firstFallback =
+      englishFallback ??
+      Array.from(langMap?.values() ?? [])
+        .map((entry) => entry[field])
+        .find((value) => value && String(value).trim()) ??
+      null;
+
     for (const lang of ["de", "en", "fr", "it"] as Language[]) {
       const tr = langMap?.get(lang);
-      result[lang] = tr ? tr[field] : field === "title" ? "" : null;
+      if (tr && String(tr[field] ?? "").trim()) {
+        result[lang] = tr[field];
+      } else {
+        result[lang] = firstFallback;
+      }
     }
     return result;
   }

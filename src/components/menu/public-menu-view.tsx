@@ -99,6 +99,8 @@ export function PublicMenuView({ data, restaurantId, menuId, initialLang }: Prop
         restaurantId={restaurantId}
         menuId={menuId}
         ordersEnabled={ordersEnabled}
+        viewOnlyMode={false}
+        hideOrderingChrome={!isProPlan}
         onOrderingDisabled={() => setOrdersModalOpen(true)}
       />
 

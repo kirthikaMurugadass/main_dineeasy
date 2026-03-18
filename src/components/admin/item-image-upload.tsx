@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useCallback } from "react";
+import { useRef, useCallback, useState } from "react";
 import Image from "next/image";
 import { ImagePlus, X, Loader2, AlertCircle } from "lucide-react";
 import { validateImageFile, UploadError } from "@/lib/upload";
@@ -35,10 +35,7 @@ export function ItemImageUpload({
   };
   const inputRef = useRef<HTMLInputElement>(null);
   const [dragOver, setDragOver] = useState(false);
-  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
-
-  // Show either the staged preview or the existing saved URL
-  const displayUrl = previewUrl ?? imageUrl;
+  const displayUrl = imageUrl;
 
   const handleFile = useCallback(
     (file: File) => {
@@ -51,9 +48,6 @@ export function ItemImageUpload({
         return;
       }
 
-      // Create a local preview
-      const url = URL.createObjectURL(file);
-      setPreviewUrl(url);
       onFileSelected(file);
     },
     [onFileSelected]
@@ -74,7 +68,6 @@ export function ItemImageUpload({
   }
 
   function handleRemove() {
-    setPreviewUrl(null);
     onRemove();
   }
 

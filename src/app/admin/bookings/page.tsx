@@ -3,7 +3,7 @@
 import { useEffect, useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
-import { Loader2, Clock, CheckCircle, XCircle, Calendar, MoreVertical, Eye, CalendarIcon, ChevronLeft, ChevronRight, User2 } from "lucide-react";
+import { Loader2, Clock, CheckCircle, XCircle, Calendar, MoreVertical, Eye, ChevronLeft, ChevronRight, User2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { PageTitle } from "@/components/ui/page-title";
 import { Card, CardContent } from "@/components/ui/card";
@@ -316,9 +316,9 @@ export default function BookingsPage() {
   const totalPages = Math.ceil(filteredBookings.length / bookingsPerPage);
 
   const tableSummary = {
-    reserved: filteredBookings.filter(
-      (b) => b.status === "pending" || b.status === "confirmed" || b.status === "completed"
-    ).length,
+    reserved: filteredBookings.filter((b) => b.status === "pending").length,
+    available: filteredBookings.filter((b) => b.status === "confirmed").length,
+    completed: filteredBookings.filter((b) => b.status === "completed").length,
   };
 
   const paginate = (pageNumber: number) => {
@@ -353,11 +353,11 @@ export default function BookingsPage() {
         <CardContent className="p-3 sm:p-4">
           <div className="flex flex-col gap-2.5 sm:flex-row sm:items-center sm:justify-between">
             {/* Desktop tab navigation */}
-            <div className="hidden items-center gap-2 overflow-x-auto pb-1 sm:flex">
+            <div className="hidden min-w-0 flex-1 items-center gap-2 overflow-x-auto pb-1 sm:flex">
               <button
                 onClick={() => handleTabChange("all")}
                 className={cn(
-                  "rounded-xl px-3.5 py-1 text-sm font-semibold transition-all duration-200",
+                  "shrink-0 whitespace-nowrap rounded-xl px-3.5 py-1 text-sm font-semibold transition-all duration-200",
                   getActiveTab() === "all"
                     ? "bg-primary text-white shadow-md dark:bg-primary"
                     : "bg-white/50 text-[#6B7B5A] hover:bg-[#E8E4D9]/50 dark:bg-[#1a1a1a] dark:text-[#bfbfbf] dark:hover:bg-[#262626]"
@@ -368,7 +368,7 @@ export default function BookingsPage() {
               <button
                 onClick={() => handleTabChange("today")}
                 className={cn(
-                  "rounded-xl px-3.5 py-1 text-sm font-semibold transition-all duration-200",
+                  "shrink-0 whitespace-nowrap rounded-xl px-3.5 py-1 text-sm font-semibold transition-all duration-200",
                   getActiveTab() === "today"
                     ? "bg-primary text-white shadow-md dark:bg-primary"
                     : "bg-white/50 text-[#6B7B5A] hover:bg-[#E8E4D9]/50 dark:bg-[#243019]/50 dark:text-[#9CA88A] dark:hover:bg-[#2D3A1A]/50"
@@ -379,7 +379,7 @@ export default function BookingsPage() {
               <button
                 onClick={() => handleTabChange("upcoming")}
                 className={cn(
-                  "rounded-xl px-3.5 py-1 text-sm font-semibold transition-all duration-200",
+                  "shrink-0 whitespace-nowrap rounded-xl px-3.5 py-1 text-sm font-semibold transition-all duration-200",
                   getActiveTab() === "upcoming"
                     ? "bg-primary text-white shadow-md dark:bg-primary"
                     : "bg-white/50 text-[#6B7B5A] hover:bg-[#E8E4D9]/50 dark:bg-[#243019]/50 dark:text-[#9CA88A] dark:hover:bg-[#2D3A1A]/50"
@@ -390,7 +390,7 @@ export default function BookingsPage() {
               <button
                 onClick={() => handleTabChange("pending")}
                 className={cn(
-                  "rounded-xl px-3.5 py-1 text-sm font-semibold transition-all duration-200",
+                  "shrink-0 whitespace-nowrap rounded-xl px-3.5 py-1 text-sm font-semibold transition-all duration-200",
                   getActiveTab() === "pending"
                     ? "bg-primary text-white shadow-md dark:bg-primary"
                     : "bg-white/50 text-[#6B7B5A] hover:bg-[#E8E4D9]/50 dark:bg-[#243019]/50 dark:text-[#9CA88A] dark:hover:bg-[#2D3A1A]/50"
@@ -401,7 +401,7 @@ export default function BookingsPage() {
               <button
                 onClick={() => handleTabChange("confirmed")}
                 className={cn(
-                  "rounded-xl px-3.5 py-1 text-sm font-semibold transition-all duration-200",
+                  "shrink-0 whitespace-nowrap rounded-xl px-3.5 py-1 text-sm font-semibold transition-all duration-200",
                   getActiveTab() === "confirmed"
                     ? "bg-primary text-white shadow-md dark:bg-primary"
                     : "bg-white/50 text-[#6B7B5A] hover:bg-[#E8E4D9]/50 dark:bg-[#243019]/50 dark:text-[#9CA88A] dark:hover:bg-[#2D3A1A]/50"
@@ -412,7 +412,7 @@ export default function BookingsPage() {
               <button
                 onClick={() => handleTabChange("completed")}
                 className={cn(
-                  "rounded-xl px-3.5 py-1 text-sm font-semibold transition-all duration-200",
+                  "shrink-0 whitespace-nowrap rounded-xl px-3.5 py-1 text-sm font-semibold transition-all duration-200",
                   getActiveTab() === "completed"
                     ? "bg-primary text-white shadow-md dark:bg-primary"
                     : "bg-white/50 text-[#6B7B5A] hover:bg-[#E8E4D9]/50 dark:bg-[#243019]/50 dark:text-[#9CA88A] dark:hover:bg-[#2D3A1A]/50"
@@ -447,24 +447,20 @@ export default function BookingsPage() {
             {/* Date Selector and Search */}
             {mounted && (
               <div className="flex w-full items-center gap-2 flex-wrap sm:w-auto">
-                <div className="relative w-full sm:w-auto">
+                <div className="relative w-[170px] max-w-full">
                   <input
                     type="text"
-                    placeholder={
-                      t.booking?.filters?.searchPlaceholder ||
-                      "Search by customer name..."
-                    }
+                    placeholder={t.booking?.filters?.name || "Name"}
                     value={searchQuery}
                     onChange={(e) => {
                       setSearchQuery(e.target.value);
                       setCurrentPage(1);
                     }}
-                    className="w-full rounded-xl border border-border bg-background px-3 py-2 pl-10 text-sm text-foreground shadow-sm transition-all hover:border-primary/50 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 dark:bg-[#0f0f0f] dark:text-[#ffffff] dark:placeholder:text-[#8a8a8a] sm:w-[200px]"
+                    className="h-9 w-full rounded-xl border border-border bg-background px-3 py-1.5 pl-10 text-sm text-foreground shadow-sm transition-all hover:border-primary/50 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 dark:bg-[#0f0f0f] dark:text-[#ffffff] dark:placeholder:text-[#8a8a8a]"
                   />
                   <User2 className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-[#6B7B5A] dark:text-[#bfbfbf]" />
                 </div>
                 <div className="flex items-center gap-2">
-                  <Calendar className="h-4 w-4 text-[#6B7B5A] dark:text-[#bfbfbf]" />
                   <input
                     type="date"
                     value={selectedDate}
@@ -493,13 +489,29 @@ export default function BookingsPage() {
           </div>
 
           {/* Table status summary */}
-          <div className="mt-3 grid grid-cols-1 gap-2">
+          <div className="mt-3 grid grid-cols-1 gap-2 sm:grid-cols-3">
             <div className="rounded-xl border border-border/70 bg-background/60 p-3">
               <div className="flex items-center justify-between">
                 <span className="text-sm font-medium text-foreground">
                   {t.booking?.summary?.tableReserved || "Table Reserved"}
                 </span>
                 <span className="text-base font-bold text-foreground">{tableSummary.reserved}</span>
+              </div>
+            </div>
+            <div className="rounded-xl border border-border/70 bg-background/60 p-3">
+              <div className="flex items-center justify-between">
+                <span className="text-sm font-medium text-foreground">
+                  {t.booking?.summary?.tableAvailable || "Table Available"}
+                </span>
+                <span className="text-base font-bold text-foreground">{tableSummary.available}</span>
+              </div>
+            </div>
+            <div className="rounded-xl border border-border/70 bg-background/60 p-3">
+              <div className="flex items-center justify-between">
+                <span className="text-sm font-medium text-foreground">
+                  {t.booking?.summary?.completed || "Completed"}
+                </span>
+                <span className="text-base font-bold text-foreground">{tableSummary.completed}</span>
               </div>
             </div>
           </div>
@@ -682,8 +694,8 @@ export default function BookingsPage() {
 
             {/* Pagination */}
             {totalPages > 1 && (
-              <div className="border-t border-[#D6D2C4]/30 px-6 py-4 dark:border-[#262626]">
-                <div className="flex items-center justify-between">
+              <div className="border-t border-[#D6D2C4]/30 px-3 py-4 sm:px-6 dark:border-[#262626]">
+                <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                   <div className="text-sm text-[#6B7B5A] dark:text-[#9ca3af]">
                     {t.booking?.pagination?.showing || "Showing"}{" "}
                     {indexOfFirstBooking + 1}{" "}
@@ -693,18 +705,20 @@ export default function BookingsPage() {
                     {filteredBookings.length}{" "}
                     {t.booking?.pagination?.bookings || "bookings"}
                   </div>
-                  <div className="flex items-center gap-2">
+                  <div className="flex w-full flex-wrap items-center gap-1.5 sm:w-auto sm:justify-end sm:gap-2">
                     <Button
                       variant="outline"
                       size="sm"
                       onClick={() => paginate(currentPage - 1)}
                       disabled={currentPage === 1}
-                      className="rounded-xl border-[#D6D2C4]/50 bg-white/50 hover:bg-[#E8E4D9]/50 disabled:opacity-50 dark:border-[#262626] dark:bg-[#1a1a1a] dark:text-[#ffffff] dark:hover:bg-[#262626]"
+                      className="rounded-xl border-[#D6D2C4]/50 bg-white/50 px-2.5 hover:bg-[#E8E4D9]/50 disabled:opacity-50 dark:border-[#262626] dark:bg-[#1a1a1a] dark:text-[#ffffff] dark:hover:bg-[#262626]"
                     >
                       <ChevronLeft className="h-4 w-4" />
-                      {t.booking?.pagination?.previous || "Previous"}
+                      <span className="hidden min-[420px]:inline">
+                        {t.booking?.pagination?.previous || "Previous"}
+                      </span>
                     </Button>
-                    <div className="flex items-center gap-1">
+                    <div className="flex items-center gap-1 overflow-x-auto">
                       {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
                         let pageNum;
                         if (totalPages <= 5) {
@@ -739,9 +753,11 @@ export default function BookingsPage() {
                       size="sm"
                       onClick={() => paginate(currentPage + 1)}
                       disabled={currentPage === totalPages}
-                      className="rounded-xl border-[#D6D2C4]/50 bg-white/50 hover:bg-[#E8E4D9]/50 disabled:opacity-50 dark:border-[#262626] dark:bg-[#1a1a1a] dark:text-[#ffffff] dark:hover:bg-[#262626]"
+                      className="rounded-xl border-[#D6D2C4]/50 bg-white/50 px-2.5 hover:bg-[#E8E4D9]/50 disabled:opacity-50 dark:border-[#262626] dark:bg-[#1a1a1a] dark:text-[#ffffff] dark:hover:bg-[#262626]"
                     >
-                      {t.booking?.pagination?.next || "Next"}
+                      <span className="hidden min-[420px]:inline">
+                        {t.booking?.pagination?.next || "Next"}
+                      </span>
                       <ChevronRight className="h-4 w-4" />
                     </Button>
                   </div>

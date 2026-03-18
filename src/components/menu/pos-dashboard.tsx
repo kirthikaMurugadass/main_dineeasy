@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -46,9 +46,22 @@ function getDisplayTitle(
   lang: Language
 ): string {
   if (!titleRecord) return "";
-  const order: Language[] = [lang, "de", "en", "fr", "it"];
+  const order: Language[] = [lang, "en", "de", "fr", "it"];
   for (const l of order) {
     const v = titleRecord[l];
+    if (v && String(v).trim()) return v.trim();
+  }
+  return "";
+}
+
+function getDisplayDescription(
+  descriptionRecord: Record<Language, string | null> | undefined,
+  lang: Language
+): string {
+  if (!descriptionRecord) return "";
+  const order: Language[] = [lang, "en", "de", "fr", "it"];
+  for (const l of order) {
+    const v = descriptionRecord[l];
     if (v && String(v).trim()) return v.trim();
   }
   return "";
@@ -287,12 +300,16 @@ export function PosDashboard({
   restaurantId,
   menuId,
   ordersEnabled,
+  viewOnlyMode,
+  hideOrderingChrome = false,
   onOrderingDisabled,
 }: {
   data: ViewData;
   restaurantId?: string;
   menuId?: string;
   ordersEnabled: boolean;
+  viewOnlyMode: boolean;
+  hideOrderingChrome?: boolean;
   onOrderingDisabled: () => void;
 }) {
   const router = useRouter();
@@ -337,12 +354,25 @@ export function PosDashboard({
     useCartStore();
 
   const restaurantSlug = data.restaurant.slug;
+  const showOrderingUi = !viewOnlyMode;
+  const showOrderingChrome = showOrderingUi && !hideOrderingChrome;
   const itemCount = mounted ? getItemCount() : 0;
   const hasCart = itemCount > 0;
   const visibleCartItems = mounted ? cartItems : [];
   const ThemeIcon = theme === "dark" ? Moon : theme === "light" ? Sun : Monitor;
+  const hasSetFreeDefaultThemeRef = useRef(false);
+
+  useEffect(() => {
+    // Free plan should default to light for menu readability.
+    if (!viewOnlyMode || hasSetFreeDefaultThemeRef.current) return;
+    hasSetFreeDefaultThemeRef.current = true;
+    if (theme !== "light") {
+      setTheme("light", { persist: false });
+    }
+  }, [viewOnlyMode, theme, setTheme]);
 
   const handleGoToCheckout = () => {
+    if (viewOnlyMode) return;
     if (!menuId) return;
     if (!ordersEnabled) {
       onOrderingDisabled();
@@ -360,8 +390,16 @@ export function PosDashboard({
 
   return (
     <div className="min-h-screen overflow-x-hidden bg-background text-foreground">
-      <div className="mx-auto grid w-full max-w-[95rem] grid-cols-1 gap-4 p-3 sm:p-4 lg:grid-cols-[260px_minmax(0,1fr)] xl:grid-cols-[260px_minmax(0,1fr)_360px]">
+      <div
+        className={cn(
+          "mx-auto grid w-full max-w-[95rem] grid-cols-1 gap-4 p-3 sm:p-4",
+          showOrderingChrome
+            ? "lg:grid-cols-[260px_minmax(0,1fr)] xl:grid-cols-[260px_minmax(0,1fr)_360px]"
+            : "lg:grid-cols-[260px_minmax(0,1fr)]"
+        )}
+      >
         {/* Left Sidebar */}
+        {showOrderingUi ? (
         <aside className="hidden lg:block">
           <Card className="h-[calc(100vh-2rem)] py-5">
             <CardContent className="flex h-full flex-col gap-5">
@@ -447,7 +485,7 @@ export function PosDashboard({
               </div>
 
               <div className="mt-auto">
-                {menuId ? (
+                {showOrderingChrome && menuId ? (
                   <Button
                     type="button"
                     variant="outline"
@@ -465,13 +503,25 @@ export function PosDashboard({
             </CardContent>
           </Card>
         </aside>
+        ) : null}
 
         {/* Main */}
         <section className="min-w-0">
           <Card className="py-5">
             <CardContent className="space-y-4">
+              {!showOrderingUi ? (
+                <div className="text-center">
+                  <h1 className="text-2xl font-semibold tracking-tight text-foreground sm:text-3xl font-serif">
+                    {data.restaurant.name}
+                  </h1>
+                  <p className="mt-1 text-sm font-medium tracking-wide text-muted-foreground sm:text-base">
+                    {menuPublicT?.heroTitle || "Our Menu"}
+                  </p>
+                </div>
+              ) : null}
+
               {/* Mobile/tablet header (restaurant identity) */}
-              <div className="flex items-center gap-3 lg:hidden">
+              <div className={cn("flex items-center gap-3 lg:hidden", !showOrderingUi && "hidden")}>
                 <div className="relative h-10 w-10 shrink-0 overflow-hidden rounded-2xl bg-muted">
                   {data.restaurant.logo_url ? (
                     <Image
@@ -588,46 +638,50 @@ export function PosDashboard({
                       </DropdownMenuContent>
                     </DropdownMenu>
 
-                    {/* Reserve table */}
-                    <Button
-                      type="button"
-                      onClick={() => router.push(`/r/${restaurantSlug}/book-table`)}
-                      className="h-11 flex-1 rounded-2xl px-5 text-sm font-semibold sm:min-w-[190px] sm:flex-none"
-                    >
-                      {menuPublicT?.reserveTable || "Reserve a Table"}
-                    </Button>
-
-                    {/* Mobile: Cart drawer trigger */}
-                    <Sheet>
-                      <SheetTrigger asChild>
-                        <Button variant="outline" className="h-11 rounded-2xl lg:hidden">
-                          <ShoppingCart className="mr-2 h-4 w-4" />
-                          {menuPublicT?.cart || "Cart"}
-                          {hasCart && (
-                            <span className="ml-2 inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-primary px-1.5 text-[11px] font-bold text-primary-foreground">
-                              {itemCount}
-                            </span>
-                          )}
+                    {showOrderingChrome ? (
+                      <>
+                        {/* Reserve table */}
+                        <Button
+                          type="button"
+                          onClick={() => router.push(`/r/${restaurantSlug}/book-table`)}
+                          className="h-11 flex-1 rounded-2xl px-5 text-sm font-semibold sm:min-w-[190px] sm:flex-none"
+                        >
+                          {menuPublicT?.reserveTable || "Reserve a Table"}
                         </Button>
-                      </SheetTrigger>
-                      <SheetContent side="right" className="p-0 w-full sm:max-w-sm">
-                        <SheetHeader className="border-b border-border/60">
-                          <SheetTitle className="text-sm font-bold">
-                            {menuPublicT?.cart || "Cart"}
-                          </SheetTitle>
-                        </SheetHeader>
-                        <div className="h-[calc(100vh-3.5rem)] p-4">
-                          <OrderPanel
-                            restaurantSlug={restaurantSlug}
-                            menuId={menuId}
-                            ordersEnabled={ordersEnabled}
-                            onOrderingDisabled={onOrderingDisabled}
-                            onGoToCheckout={handleGoToCheckout}
-                            className="h-full"
-                          />
-                        </div>
-                      </SheetContent>
-                    </Sheet>
+
+                        {/* Mobile: Cart drawer trigger */}
+                        <Sheet>
+                          <SheetTrigger asChild>
+                            <Button variant="outline" className="h-11 rounded-2xl lg:hidden">
+                              <ShoppingCart className="mr-2 h-4 w-4" />
+                              {menuPublicT?.cart || "Cart"}
+                              {hasCart && (
+                                <span className="ml-2 inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-primary px-1.5 text-[11px] font-bold text-primary-foreground">
+                                  {itemCount}
+                                </span>
+                              )}
+                            </Button>
+                          </SheetTrigger>
+                          <SheetContent side="right" className="p-0 w-full sm:max-w-sm">
+                            <SheetHeader className="border-b border-border/60">
+                              <SheetTitle className="text-sm font-bold">
+                                {menuPublicT?.cart || "Cart"}
+                              </SheetTitle>
+                            </SheetHeader>
+                            <div className="h-[calc(100vh-3.5rem)] p-4">
+                              <OrderPanel
+                                restaurantSlug={restaurantSlug}
+                                menuId={menuId}
+                                ordersEnabled={ordersEnabled}
+                                onOrderingDisabled={onOrderingDisabled}
+                                onGoToCheckout={handleGoToCheckout}
+                                className="h-full"
+                              />
+                            </div>
+                          </SheetContent>
+                        </Sheet>
+                      </>
+                    ) : null}
                   </div>
                 )}
               </div>
@@ -693,128 +747,180 @@ export function PosDashboard({
               </div>
 
               {/* Products */}
-              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4 lg:grid-cols-3 xl:grid-cols-4">
+              <div
+                className={cn(
+                  "grid gap-3 sm:gap-4",
+                  showOrderingUi
+                    ? "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
+                    : "grid-cols-1 md:grid-cols-2"
+                )}
+              >
                 {items.map(({ item }) => {
                   const cartItem = visibleCartItems.find((ci) => ci.id === item.id);
                   const quantity = mounted ? (cartItem?.quantity ?? 0) : 0;
                   const dietary = classifyDietary(item);
+                  const itemTitle =
+                    getDisplayTitle(item.title, language) || t.menu?.untitled || "Untitled";
+                  const itemDescription = getDisplayDescription(item.description, language);
 
                   return (
                     <div
                       key={item.id}
-                      className="group overflow-hidden rounded-3xl border border-border/60 bg-card shadow-card transition hover:-translate-y-0.5 hover:shadow-floating"
+                      className={cn(
+                        "group overflow-hidden border border-border/60 bg-card transition",
+                        showOrderingUi
+                          ? "rounded-3xl shadow-card hover:-translate-y-0.5 hover:shadow-floating"
+                          : "rounded-2xl p-4 shadow-sm"
+                      )}
                     >
-                      <div className="relative aspect-[4/3] w-full overflow-hidden bg-muted">
-                        {item.image_url ? (
-                          <Image
-                            src={item.image_url}
-                            alt={getDisplayTitle(item.title, language) || t.menu?.untitled || "Untitled"}
-                            fill
-                            className="object-cover transition duration-300 group-hover:scale-[1.02]"
-                            sizes="(min-width: 1280px) 240px, (min-width: 640px) 220px, 180px"
-                            unoptimized
-                          />
-                        ) : (
-                          <div className="flex h-full w-full items-center justify-center text-muted-foreground">
-                            <UtensilsCrossed className="h-8 w-8" />
-                          </div>
-                        )}
-                      </div>
-
-                      <div className="space-y-2 p-3 sm:p-4">
-                        <div className="flex items-start justify-between gap-3">
-                          <div className="min-w-0">
-                            <div className="truncate text-[13px] font-semibold leading-snug text-foreground sm:text-sm">
-                              {getDisplayTitle(item.title, language) || t.menu?.untitled || "Untitled"}
-                            </div>
-                            <div className="mt-1 flex items-center gap-2 text-xs text-muted-foreground">
-                              <span className="font-semibold text-foreground">
-                                {formatCurrency(currency, item.price_chf)}
-                              </span>
-                              <span className="inline-flex items-center gap-1">
-                                <span
-                                  className={cn(
-                                    "h-2 w-2 rounded-full",
-                                    dietary === "veg" && "bg-primary",
-                                    dietary === "nonveg" && "bg-destructive",
-                                    dietary === "unknown" && "bg-muted-foreground/40"
-                                  )}
-                                />
-                                <span className="truncate text-muted-foreground">
-                                  {dietary === "veg"
-                                    ? ((t.order as any)?.public?.pos?.veg || "Veg")
-                                    : dietary === "nonveg"
-                                    ? ((t.order as any)?.public?.pos?.nonVeg || "Non Veg")
-                                    : ((t.order as any)?.public?.pos?.unknownDiet || "—")}
-                                </span>
-                              </span>
-                            </div>
-                          </div>
-                        </div>
-
-                        {/* Controls */}
-                        <div className="pt-1">
-                          {ordersEnabled ? (
-                            quantity > 0 ? (
-                              <div className="flex items-center justify-between rounded-2xl border border-border/60 bg-muted/20 px-3 py-2">
-                                <Button
-                                  type="button"
-                                  variant="outline"
-                                  size="icon"
-                                  className="h-9 w-9 rounded-full sm:h-8 sm:w-8"
-                                  aria-label={menuPublicT?.decreaseQuantity || "Decrease quantity"}
-                                  onClick={() => {
-                                    if (quantity === 1) removeItem(item.id);
-                                    else updateQuantity(item.id, quantity - 1);
-                                  }}
-                                >
-                                  <Minus className="h-4 w-4" />
-                                </Button>
-                                <span className="text-sm font-semibold text-foreground">
-                                  {quantity}
-                                </span>
-                                <Button
-                                  type="button"
-                                  variant="outline"
-                                  size="icon"
-                                  className="h-9 w-9 rounded-full sm:h-8 sm:w-8"
-                                  aria-label={menuPublicT?.increaseQuantity || "Increase quantity"}
-                                  onClick={() => updateQuantity(item.id, quantity + 1)}
-                                >
-                                  <Plus className="h-4 w-4" />
-                                </Button>
-                              </div>
+                      {showOrderingUi ? (
+                        <>
+                          <div className="relative aspect-[4/3] w-full overflow-hidden bg-muted">
+                            {item.image_url ? (
+                              <Image
+                                src={item.image_url}
+                                alt={itemTitle}
+                                fill
+                                className="object-cover transition duration-300 group-hover:scale-[1.02]"
+                                sizes="(min-width: 1280px) 240px, (min-width: 640px) 220px, 180px"
+                                unoptimized
+                              />
                             ) : (
-                              <Button
-                                type="button"
-                                className="w-full rounded-2xl"
-                                onClick={() =>
-                                  addItem({
-                                    id: item.id,
-                                    title: item.title,
-                                    description: item.description,
-                                    price: item.price_chf,
-                                    image_url: item.image_url,
-                                  })
-                                }
-                              >
-                                <Plus className="mr-2 h-4 w-4" />
-                                {menuPublicT?.add || "Add"}
-                              </Button>
-                            )
-                          ) : (
-                            <Button
-                              type="button"
-                              variant="outline"
-                              className="w-full rounded-2xl"
-                              onClick={onOrderingDisabled}
-                            >
-                              <Plus className="mr-2 h-4 w-4" />
-                              {menuPublicT?.addOrderingDisabled || "Add (ordering disabled)"}
-                            </Button>
-                          )}
+                              <div className="flex h-full w-full items-center justify-center text-muted-foreground">
+                                <UtensilsCrossed className="h-8 w-8" />
+                              </div>
+                            )}
+                          </div>
+
+                          <div className="space-y-2 p-3 sm:p-4">
+                            <div className="flex items-start justify-between gap-3">
+                              <div className="min-w-0">
+                                <div className="truncate text-[13px] font-semibold leading-snug text-foreground sm:text-sm">
+                                  {itemTitle}
+                                </div>
+                                <div className="mt-1 flex items-center gap-2 text-xs text-muted-foreground">
+                                  <span className="font-semibold text-foreground">
+                                    {formatCurrency(currency, item.price_chf)}
+                                  </span>
+                                  <span className="inline-flex items-center gap-1">
+                                    <span
+                                      className={cn(
+                                        "h-2 w-2 rounded-full",
+                                        dietary === "veg" && "bg-primary",
+                                        dietary === "nonveg" && "bg-destructive",
+                                        dietary === "unknown" && "bg-muted-foreground/40"
+                                      )}
+                                    />
+                                    <span className="truncate text-muted-foreground">
+                                      {dietary === "veg"
+                                        ? ((t.order as any)?.public?.pos?.veg || "Veg")
+                                        : dietary === "nonveg"
+                                        ? ((t.order as any)?.public?.pos?.nonVeg || "Non Veg")
+                                        : ((t.order as any)?.public?.pos?.unknownDiet || "—")}
+                                    </span>
+                                  </span>
+                                </div>
+                              </div>
+                            </div>
+
+                            {showOrderingChrome ? (
+                              <div className="pt-1">
+                                {ordersEnabled ? (
+                                  quantity > 0 ? (
+                                    <div className="flex items-center justify-between rounded-2xl border border-border/60 bg-muted/20 px-3 py-2">
+                                      <Button
+                                        type="button"
+                                        variant="outline"
+                                        size="icon"
+                                        className="h-9 w-9 rounded-full sm:h-8 sm:w-8"
+                                        aria-label={menuPublicT?.decreaseQuantity || "Decrease quantity"}
+                                        onClick={() => {
+                                          if (quantity === 1) removeItem(item.id);
+                                          else updateQuantity(item.id, quantity - 1);
+                                        }}
+                                      >
+                                        <Minus className="h-4 w-4" />
+                                      </Button>
+                                      <span className="text-sm font-semibold text-foreground">
+                                        {quantity}
+                                      </span>
+                                      <Button
+                                        type="button"
+                                        variant="outline"
+                                        size="icon"
+                                        className="h-9 w-9 rounded-full sm:h-8 sm:w-8"
+                                        aria-label={menuPublicT?.increaseQuantity || "Increase quantity"}
+                                        onClick={() => updateQuantity(item.id, quantity + 1)}
+                                      >
+                                        <Plus className="h-4 w-4" />
+                                      </Button>
+                                    </div>
+                                  ) : (
+                                    <Button
+                                      type="button"
+                                      className="w-full rounded-2xl"
+                                      onClick={() =>
+                                        addItem({
+                                          id: item.id,
+                                          title: item.title,
+                                          description: item.description,
+                                          price: item.price_chf,
+                                          image_url: item.image_url,
+                                        })
+                                      }
+                                    >
+                                      <Plus className="mr-2 h-4 w-4" />
+                                      {menuPublicT?.add || "Add"}
+                                    </Button>
+                                  )
+                                ) : (
+                                  <Button
+                                    type="button"
+                                    variant="outline"
+                                    className="w-full rounded-2xl"
+                                    onClick={onOrderingDisabled}
+                                  >
+                                    <Plus className="mr-2 h-4 w-4" />
+                                    {menuPublicT?.addOrderingDisabled || "Add (ordering disabled)"}
+                                  </Button>
+                                )}
+                              </div>
+                            ) : null}
+                          </div>
+                        </>
+                      ) : (
+                        <div className="flex items-start gap-3">
+                          <div className="relative h-16 w-16 shrink-0 overflow-hidden rounded-full bg-muted sm:h-20 sm:w-20">
+                            {item.image_url ? (
+                              <Image
+                                src={item.image_url}
+                                alt={itemTitle}
+                                fill
+                                className="object-cover"
+                                sizes="80px"
+                                unoptimized
+                              />
+                            ) : (
+                              <div className="flex h-full w-full items-center justify-center text-muted-foreground">
+                                <UtensilsCrossed className="h-6 w-6" />
+                              </div>
+                            )}
+                          </div>
+                          <div className="min-w-0 flex-1">
+                            <div className="truncate text-base font-semibold text-foreground">
+                              {itemTitle}
+                            </div>
+                            {itemDescription ? (
+                              <p className="mt-1 line-clamp-2 text-sm text-muted-foreground">
+                                {itemDescription}
+                              </p>
+                            ) : null}
+                            <div className="mt-2 text-sm font-semibold text-foreground">
+                              {formatCurrency(currency, item.price_chf)}
+                            </div>
+                          </div>
                         </div>
-                      </div>
+                      )}
                     </div>
                   );
                 })}
@@ -824,24 +930,26 @@ export function PosDashboard({
         </section>
 
         {/* Right Order Panel (desktop only) */}
-        <aside className="hidden xl:block">
-          {menuId ? (
-            <div className="h-[calc(100vh-2rem)]">
-              <OrderPanel
-                restaurantSlug={restaurantSlug}
-                menuId={menuId}
-                ordersEnabled={ordersEnabled}
-                onOrderingDisabled={onOrderingDisabled}
-                onGoToCheckout={handleGoToCheckout}
-                className="h-full"
-              />
-            </div>
-          ) : null}
-        </aside>
+        {showOrderingChrome ? (
+          <aside className="hidden xl:block">
+            {menuId ? (
+              <div className="h-[calc(100vh-2rem)]">
+                <OrderPanel
+                  restaurantSlug={restaurantSlug}
+                  menuId={menuId}
+                  ordersEnabled={ordersEnabled}
+                  onOrderingDisabled={onOrderingDisabled}
+                  onGoToCheckout={handleGoToCheckout}
+                  className="h-full"
+                />
+              </div>
+            ) : null}
+          </aside>
+        ) : null}
       </div>
 
       {/* Bottom bar (mobile/tablet) */}
-      {menuId && (
+      {showOrderingChrome && menuId && (
         <div className="sticky bottom-0 z-20 border-t border-border/60 bg-background/90 backdrop-blur-xl lg:hidden">
           <div className="mx-auto flex max-w-[95rem] items-center justify-between gap-3 px-3 py-3 sm:px-4">
             <div className="min-w-0">

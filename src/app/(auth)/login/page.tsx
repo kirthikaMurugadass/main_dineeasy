@@ -62,8 +62,7 @@ export default function LoginPage() {
           setCachedRestaurant({ id: restaurant.id, name: restaurant.name });
         }
         toast.success(t.auth?.login?.success || t.auth.login.success || "Welcome back!");
-        router.push("/admin");
-        router.refresh();
+        window.location.href = "/admin";
       }
     } catch (err: unknown) {
       const i18nErrors = t.auth?.login?.errors;

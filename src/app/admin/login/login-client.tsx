@@ -68,8 +68,7 @@ export function AdminLoginClient({ registered }: { registered?: string }) {
 
       if (data.session) {
         toast.success("Welcome back!");
-        router.push("/admin");
-        router.refresh();
+        window.location.href = "/admin";
       }
     } catch (err: any) {
       let errorMessage =

@@ -28,8 +28,6 @@ import {
   Clock,
   CheckCircle,
   CalendarDays,
-  Truck,
-  ShoppingBag,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -38,7 +36,7 @@ import { useI18n } from "@/lib/i18n/context";
 import { createClient } from "@/lib/supabase/client";
 import { getGreeting } from "@/lib/utils/greeting";
 import { useSubscription } from "@/contexts/subscription-context";
-import { getCachedRestaurantName, setCachedRestaurant } from "@/lib/restaurant-cache";
+import { setCachedRestaurant } from "@/lib/restaurant-cache";
 import { ProCheckoutForm } from "@/components/subscription/pro-checkout-form";
 import { OrdersOverviewCard } from "@/components/admin/orders-overview-card";
 import {
@@ -123,7 +121,8 @@ export default function AdminDashboard() {
   const [overviewLoading, setOverviewLoading] = useState(true);
   const [restaurantId, setRestaurantId] = useState<string | null>(null);
   const [userName, setUserName] = useState<string>("");
-  const [restaurantName, setRestaurantName] = useState<string>(() => getCachedRestaurantName());
+  // Keep initial render deterministic between SSR and client hydration.
+  const [restaurantName, setRestaurantName] = useState<string>("");
   const [restaurantLogo, setRestaurantLogo] = useState<string | null>(null);
   const { isPro, loading: planLoading } = useSubscription();
   const [upgradeModalOpen, setUpgradeModalOpen] = useState(false);
@@ -170,23 +169,6 @@ export default function AdminDashboard() {
   const [ordersView, setOrdersView] = useState<"day" | "month">("day");
   const [revenueView, setRevenueView] = useState<"day" | "month">("day");
   const [bookingsView, setBookingsView] = useState<"day" | "month">("day");
-  const orderManagementCards = [
-    {
-      title: "Dine In",
-      icon: UtensilsCrossed,
-      href: "/admin/orders?type=dine_in",
-    },
-    {
-      title: "Delivery",
-      icon: Truck,
-      href: "/admin/orders?type=delivery",
-    },
-    {
-      title: "Takeaway",
-      icon: ShoppingBag,
-      href: "/admin/orders?type=takeaway",
-    },
-  ] as const;
   const timeSlots = useMemo(
     () =>
       Array.from({ length: 24 }, (_, hour) => `${hour.toString().padStart(2, "0")}:00`),
@@ -1375,40 +1357,6 @@ export default function AdminDashboard() {
           />
         </DialogContent>
       </Dialog>
-
-      <motion.section
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.2 }}
-        className="space-y-8"
-      >
-        <div className="space-y-4">
-          <h2 className="text-xl font-bold text-foreground dark:text-white">
-            Order Management
-          </h2>
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {orderManagementCards.map((card) => (
-              <Card
-                key={card.title}
-                onClick={() => router.push(card.href)}
-                className="cursor-pointer gap-0 rounded-xl border border-gray-200 bg-white py-0 transition-all hover:border-primary hover:shadow-lg dark:border-gray-700 dark:bg-gray-900"
-              >
-                <CardContent className="p-4 sm:p-5">
-                  <div className="flex items-center gap-3">
-                    <div className="rounded-lg bg-primary/10 p-1.5 text-primary">
-                      <card.icon className="h-4 w-4" />
-                    </div>
-                    <p className="text-base font-semibold text-black dark:text-white">
-                      {card.title}
-                    </p>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        </div>
-
-      </motion.section>
 
       {/* Operations first: Recent Orders, Trending Menus, Booking sections */}
 

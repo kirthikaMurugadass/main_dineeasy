@@ -85,6 +85,7 @@ interface EditableItem {
   id: string;
   price_chf: string;
   image_url: string | null;
+  _previewImageUrl?: string | null;
   is_active: boolean;
   sort_order: number;
   translations: ItemTranslation[];
@@ -136,6 +137,7 @@ function SortableItem({
 
   return (
     <motion.div
+      id={`menu-item-${item.id}`}
       ref={setNodeRef}
       style={style}
       initial={{ opacity: 0, y: 10 }}
@@ -158,23 +160,32 @@ function SortableItem({
           {/* Image Upload */}
           <div className="flex-shrink-0">
             <ItemImageUpload
-              imageUrl={item.image_url}
+              imageUrl={item._previewImageUrl ?? item.image_url}
               uploading={saving && !!item._pendingFile}
               disabled={saving}
               size="lg"
-              onFileSelected={(file) =>
+              onFileSelected={(file) => {
+                if (item._previewImageUrl?.startsWith("blob:")) {
+                  URL.revokeObjectURL(item._previewImageUrl);
+                }
+                const previewUrl = URL.createObjectURL(file);
                 onUpdate(itemIndex, {
                   _pendingFile: file,
+                  _previewImageUrl: previewUrl,
                   _deleteImage: false,
-                })
-              }
-              onRemove={() =>
+                });
+              }}
+              onRemove={() => {
+                if (item._previewImageUrl?.startsWith("blob:")) {
+                  URL.revokeObjectURL(item._previewImageUrl);
+                }
                 onUpdate(itemIndex, {
                   image_url: null,
+                  _previewImageUrl: null,
                   _pendingFile: undefined,
                   _deleteImage: true,
-                })
-              }
+                });
+              }}
             />
           </div>
 
@@ -324,6 +335,7 @@ export default function CategoryDetailPage() {
   const [cropOffsetY, setCropOffsetY] = useState(0);
   const [cropDragging, setCropDragging] = useState(false);
   const [cropApplying, setCropApplying] = useState(false);
+  const hasUserSelectedLangTabRef = useRef(false);
 
   const sensors = useSensors(
     useSensor(PointerSensor),
@@ -341,6 +353,7 @@ export default function CategoryDetailPage() {
 
   // Keep item/category language tab in sync with global UI language
   useEffect(() => {
+    if (hasUserSelectedLangTabRef.current) return;
     setLangTab(language);
   }, [language]);
 
@@ -366,6 +379,8 @@ export default function CategoryDetailPage() {
     setSlug("");
     setSlugEditable(false);
     setItems([]);
+    setLangTab(language);
+    hasUserSelectedLangTabRef.current = false;
     setValidationErrors({});
     setAutoSaveStatus("unsaved");
 
@@ -589,6 +604,7 @@ export default function CategoryDetailPage() {
           id: item.id,
           price_chf: item.price_chf.toString(),
           image_url: item.image_url ?? null,
+          _previewImageUrl: null,
           is_active: item.is_active,
           sort_order: item.sort_order,
           translations: ensureAllItemLangs(item.id),
@@ -607,10 +623,32 @@ export default function CategoryDetailPage() {
   }, [loadCategory]);
 
   function addItem() {
+    const firstUntranslatedIndex = items.findIndex((existingItem) => {
+      const currentLangTranslation = existingItem.translations.find(
+        (tr) => tr.language === langTab
+      );
+      const hasCurrentLangTitle = !!currentLangTranslation?.title?.trim();
+      return !hasCurrentLangTitle;
+    });
+
+    if (firstUntranslatedIndex >= 0) {
+      const untranslatedItem = items[firstUntranslatedIndex];
+      toast.info(
+        "Update the existing item translation in this language instead of creating a duplicate item."
+      );
+      requestAnimationFrame(() => {
+        document
+          .getElementById(`menu-item-${untranslatedItem.id}`)
+          ?.scrollIntoView({ behavior: "smooth", block: "center" });
+      });
+      return;
+    }
+
     const newItem: EditableItem = {
       id: `new-item-${Date.now()}`,
       price_chf: "",
       image_url: null,
+      _previewImageUrl: null,
       is_active: true,
       sort_order: items.length,
       translations: SUPPORTED_LANGUAGES.map((l) => ({
@@ -1018,6 +1056,9 @@ export default function CategoryDetailPage() {
           try {
             const result = await uploadItemImage(restaurant.id, itemId, item._pendingFile);
             imageUrl = result.url;
+            if (item._previewImageUrl?.startsWith("blob:")) {
+              URL.revokeObjectURL(item._previewImageUrl);
+            }
           } catch (uploadErr) {
             console.error("Image upload failed:", uploadErr);
             toast.error(`Image upload failed for item: ${item.translations[0]?.title || "unknown"}`);
@@ -1147,10 +1188,12 @@ export default function CategoryDetailPage() {
             </div>
             <div>
               <h1 className="text-2xl font-bold text-[#2D3A1A] dark:text-[#ffffff]">
-                {isNew ? "Add New Category" : t.admin.categories.editCategory}
+                {isNew ? t.admin.categories.newCategory : t.admin.categories.editCategory}
               </h1>
               <p className="text-sm text-[#6B7B5A] dark:text-[#9ca3af] mt-0.5">
-                {isNew ? "Create and organize categories for your menu" : t.admin.categories.editCategorySubtitle}
+                {isNew
+                  ? t.admin.categories.newCategorySubtitle
+                  : t.admin.categories.editCategorySubtitle}
               </p>
             </div>
           </div>
@@ -1205,7 +1248,13 @@ export default function CategoryDetailPage() {
 
       {/* Language Tabs & Category/Items */}
       <FadeIn delay={0.15}>
-        <Tabs value={langTab} onValueChange={(v) => setLangTab(v as Language)}>
+        <Tabs
+          value={langTab}
+          onValueChange={(v) => {
+            hasUserSelectedLangTabRef.current = true;
+            setLangTab(v as Language);
+          }}
+        >
           <TabsList>
             {SUPPORTED_LANGUAGES.map((lang) => (
               <TabsTrigger key={lang.code} value={lang.code} className="gap-1.5">

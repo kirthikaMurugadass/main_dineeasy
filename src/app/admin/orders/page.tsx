@@ -273,6 +273,8 @@ export default function OrdersPage() {
       setStatusFilter("all");
     } else if (tab === "pending") {
       setStatusFilter("pending");
+    } else if (tab === "preparing") {
+      setStatusFilter("preparing");
     } else if (tab === "completed") {
       setStatusFilter("completed");
     }
@@ -283,6 +285,7 @@ export default function OrdersPage() {
   const getActiveTab = () => {
     if (statusFilter === "all") return "all";
     if (statusFilter === "pending") return "pending";
+    if (statusFilter === "preparing") return "preparing";
     if (statusFilter === "completed") return "completed";
     return "all"; // Default
   };
@@ -435,6 +438,16 @@ export default function OrdersPage() {
               <button
                 onClick={() => handleTabChange("completed")}
                 className={`rounded-xl px-3.5 py-1 text-sm font-semibold transition-all duration-200 ${
+                  getActiveTab() === "preparing"
+                    ? "bg-primary text-white shadow-md dark:bg-primary"
+                    : "bg-white/50 text-[#6B7B5A] hover:bg-[#E8E4D9]/50 dark:bg-[#243019]/50 dark:text-[#9CA88A] dark:hover:bg-[#2D3A1A]/50"
+                }`}
+              >
+                {t.order?.tabs?.preparing || "Preparing"}
+              </button>
+              <button
+                onClick={() => handleTabChange("completed")}
+                className={`rounded-xl px-3.5 py-1 text-sm font-semibold transition-all duration-200 ${
                   getActiveTab() === "completed"
                     ? "bg-primary text-white shadow-md dark:bg-primary"
                     : "bg-white/50 text-[#6B7B5A] hover:bg-[#E8E4D9]/50 dark:bg-[#243019]/50 dark:text-[#9CA88A] dark:hover:bg-[#2D3A1A]/50"
@@ -453,6 +466,7 @@ export default function OrdersPage() {
                 <SelectContent>
                   <SelectItem value="all">{t.order?.tabs?.all || "All Orders"}</SelectItem>
                   <SelectItem value="pending">{t.order?.tabs?.pending || "Pending"}</SelectItem>
+                  <SelectItem value="preparing">{t.order?.tabs?.preparing || "Preparing"}</SelectItem>
                   <SelectItem value="completed">{t.order?.tabs?.completed || "Completed"}</SelectItem>
                 </SelectContent>
               </Select>
@@ -719,8 +733,8 @@ export default function OrdersPage() {
 
             {/* Pagination */}
             {totalPages > 1 && (
-              <div className="border-t border-[#D6D2C4]/30 px-6 py-4 dark:border-[#262626]">
-                <div className="flex items-center justify-between">
+              <div className="border-t border-[#D6D2C4]/30 px-3 py-4 sm:px-6 dark:border-[#262626]">
+                <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                   <div className="text-sm text-[#6B7B5A] dark:text-[#9ca3af]">
                     {t.order?.pagination?.showing || "Showing"}{" "}
                     {startIndex + 1}{" "}
@@ -730,28 +744,31 @@ export default function OrdersPage() {
                     {orders.length}{" "}
                     {t.order?.pagination?.orders || "orders"}
                   </div>
-                  <div className="flex items-center gap-2">
+                  <div className="flex w-full items-center gap-1.5 sm:w-auto sm:justify-end sm:gap-2 [&>*]:shrink-0">
                     <Button
                       variant="outline"
                       size="sm"
                       onClick={() => setCurrentPage((prev) => Math.max(1, prev - 1))}
                       disabled={currentPage === 1}
-                      className="rounded-xl border-[#D6D2C4]/50 bg-white/50 hover:bg-[#E8E4D9]/50 disabled:opacity-50 dark:border-[#262626] dark:bg-[#1a1a1a] dark:text-[#ffffff] dark:hover:bg-[#262626]"
+                      className="rounded-xl border-[#D6D2C4]/50 bg-white/50 px-2.5 hover:bg-[#E8E4D9]/50 disabled:opacity-50 dark:border-[#262626] dark:bg-[#1a1a1a] dark:text-[#ffffff] dark:hover:bg-[#262626]"
                     >
                       <ChevronLeft className="h-4 w-4" />
-                      {t.order?.pagination?.previous || "Previous"}
+                      <span className="hidden min-[420px]:inline">
+                        {t.order?.pagination?.previous || "Previous"}
+                      </span>
                     </Button>
                     <div className="flex items-center gap-1">
-                      {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                      {Array.from({ length: Math.min(4, totalPages) }, (_, i) => {
                         let pageNum;
-                        if (totalPages <= 5) {
+                        const maxVisiblePages = 4;
+                        if (totalPages <= maxVisiblePages) {
                           pageNum = i + 1;
-                        } else if (currentPage <= 3) {
-                          pageNum = i + 1;
-                        } else if (currentPage >= totalPages - 2) {
-                          pageNum = totalPages - 4 + i;
                         } else {
-                          pageNum = currentPage - 2 + i;
+                          const startPage = Math.max(
+                            1,
+                            Math.min(currentPage - 1, totalPages - maxVisiblePages + 1)
+                          );
+                          pageNum = startPage + i;
                         }
                         return (
                           <Button
@@ -775,9 +792,11 @@ export default function OrdersPage() {
                       size="sm"
                       onClick={() => setCurrentPage((prev) => Math.min(totalPages, prev + 1))}
                       disabled={currentPage === totalPages}
-                      className="rounded-xl border-[#D6D2C4]/50 bg-white/50 hover:bg-[#E8E4D9]/50 disabled:opacity-50 dark:border-[#262626] dark:bg-[#1a1a1a] dark:text-[#ffffff] dark:hover:bg-[#262626]"
+                      className="rounded-xl border-[#D6D2C4]/50 bg-white/50 px-2.5 hover:bg-[#E8E4D9]/50 disabled:opacity-50 dark:border-[#262626] dark:bg-[#1a1a1a] dark:text-[#ffffff] dark:hover:bg-[#262626]"
                     >
-                      {t.order?.pagination?.next || "Next"}
+                      <span className="hidden min-[420px]:inline">
+                        {t.order?.pagination?.next || "Next"}
+                      </span>
                       <ChevronRight className="h-4 w-4" />
                     </Button>
                   </div>

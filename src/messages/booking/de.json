@@ -11,7 +11,8 @@
   },
   "filters": {
     "searchPlaceholder": "Nach Kundennamen suchen...",
-    "clear": "Zurücksetzen"
+    "clear": "Zurücksetzen",
+    "name": "Name"
   },
   "tableHeaders": {
     "bookingId": "Buchungs-ID",
@@ -200,5 +201,10 @@
       "setAddress": "Restaurantadresse in den Admin-Einstellungen setzen",
       "setContactPhone": "Kontakttelefon in den Admin-Einstellungen setzen"
     }
+  },
+  "summary": {
+    "tableReserved": "Tisch reserviert",
+    "tableAvailable": "Tisch verfuegbar",
+    "completed": "Abgeschlossen"
   }
 }

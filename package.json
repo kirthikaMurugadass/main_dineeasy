@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "node scripts/dev-with-chunk-fix.js",
-    "build": "next build && node scripts/ensure-next-server-chunks.js",
+    "build": "node scripts/build-with-chunk-fix.js",
     "start": "node scripts/ensure-next-server-chunks.js && next start",
     "lint": "eslint"
   },
