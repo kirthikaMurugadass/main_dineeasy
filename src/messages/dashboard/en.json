@@ -14,7 +14,7 @@
     "deliveryOrders": "Delivery Orders",
     "totalTables": "Total Tables",
     "availableTables": "Available Tables",
-    "occupiedTables": "Occupied Tables",
+    "reservedTables": "Reserved Tables",
     "pendingOrders": "Pending Orders",
     "completedOrders": "Completed Orders"
   },
@@ -68,7 +68,7 @@
     "todaysRevenue": "Today's Revenue",
     "pendingOrders": "Pending Orders",
     "totalOrdersToday": "Total Orders Today",
-    "tablesOccupied": "Tables Occupied",
+    "tablesReserved": "Tables Reserved",
     "tablesAvailable": "Tables Available",
     "totalCategories": "Total Categories",
     "activeCategories": "Active Categories"
@@ -113,7 +113,6 @@
     "availabilityFor": "Availability for",
     "at": "at",
     "available": "Available",
-    "occupied": "Occupied",
     "reserved": "Reserved",
     "capacity": "Capacity",
     "totalTables": "Total Tables",

@@ -40,7 +40,6 @@
     "capacityPlural": "personnes",
     "legend": {
       "available": "Disponible",
-      "occupied": "Occupée",
       "reserved": "Réservée"
     }
   },

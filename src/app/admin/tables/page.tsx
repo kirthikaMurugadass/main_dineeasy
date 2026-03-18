@@ -538,12 +538,6 @@ export default function TablesPage() {
                   </span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <div className="h-2 w-2 rounded-full bg-[#F97316]" />
-                  <span className="text-sm text-[#6B7B5A] dark:text-[#9ca3af]">
-                    {t.table?.preview?.legend?.occupied || "Occupied"}
-                  </span>
-                </div>
-                <div className="flex items-center gap-2">
                   <div className="h-2 w-2 rounded-full bg-[#3B82F6]" />
                   <span className="text-sm text-[#6B7B5A] dark:text-[#9ca3af]">
                     {t.table?.preview?.legend?.reserved || "Reserved"}

@@ -306,22 +306,21 @@ export default function SelectTablePage() {
 
   const getStatusForTable = (tableId: string): TableStatus => {
     if (selectedTableId === tableId) return "selected";
-    if (bookedTableIds.has(tableId)) return "booked"; // Occupied
-    if (lockedTableIds.has(tableId)) return "locked"; // Reserved
+    if (bookedTableIds.has(tableId)) return "booked";
+    if (lockedTableIds.has(tableId)) return "locked";
     return "available";
   };
 
   const getStatusColor = (status: TableStatus) => {
     if (status === "selected") return "bg-primary border-primary text-primary-foreground";
-    if (status === "booked") return "bg-white border-[#F97316] text-[#2D3A1A]"; // Orange - Occupied
-    if (status === "locked") return "bg-white border-[#3B82F6] text-[#2D3A1A]"; // Blue - Reserved
+    // Treat both booked + locked as the same "Reserved" state in UI.
+    if (status === "booked" || status === "locked") return "bg-white border-[#3B82F6] text-[#2D3A1A]";
     return "bg-white border-primary text-[#2D3A1A]"; // Green - Available
   };
 
   const getStatusDotColor = (status: TableStatus) => {
     if (status === "selected") return "bg-primary";
-    if (status === "booked") return "bg-[#F97316]"; // Orange - Occupied
-    if (status === "locked") return "bg-[#3B82F6]"; // Blue - Reserved
+    if (status === "booked" || status === "locked") return "bg-[#3B82F6]";
     return "bg-primary"; // Green - Available
   };
 
@@ -770,7 +769,7 @@ export default function SelectTablePage() {
                       available: "bg-primary/10 text-primary border-primary/20",
                       selected: "bg-primary text-primary-foreground border-primary/40",
                       locked: "bg-yellow-500/10 text-yellow-700 border-yellow-500/20 dark:text-yellow-400",
-                      booked: "bg-destructive/10 text-destructive border-destructive/20",
+                      booked: "bg-yellow-500/10 text-yellow-700 border-yellow-500/20 dark:text-yellow-400",
                     }[status];
 
                     const label =
@@ -780,7 +779,7 @@ export default function SelectTablePage() {
                           ? (flowT?.status?.available || "Available")
                           : status === "locked"
                             ? (flowT?.status?.reserved || "Reserved")
-                            : (flowT?.status?.occupied || "Occupied");
+                            : (flowT?.status?.reserved || "Reserved");
 
                     return (
                       <motion.button
@@ -985,10 +984,6 @@ export default function SelectTablePage() {
                     <span className="h-2 w-2 rounded-full bg-yellow-500" />
                     <span className="text-muted-foreground">{flowT?.status?.reserved || "Reserved"}</span>
                   </div>
-                  <div className="flex items-center gap-2">
-                    <span className="h-2 w-2 rounded-full bg-destructive" />
-                    <span className="text-muted-foreground">{flowT?.status?.occupied || "Occupied"}</span>
-                  </div>
                 </div>
               </div>
 
@@ -1075,7 +1070,7 @@ export default function SelectTablePage() {
                         available: "bg-primary/10 text-primary border-primary/20",
                         selected: "bg-primary text-primary-foreground border-primary/40",
                         locked: "bg-yellow-500/10 text-yellow-700 border-yellow-500/20 dark:text-yellow-400",
-                        booked: "bg-destructive/10 text-destructive border-destructive/20",
+                      booked: "bg-yellow-500/10 text-yellow-700 border-yellow-500/20 dark:text-yellow-400",
                       }[status];
 
                       const label =
@@ -1085,7 +1080,7 @@ export default function SelectTablePage() {
                             ? (flowT?.status?.available || "Available")
                             : status === "locked"
                               ? (flowT?.status?.reserved || "Reserved")
-                              : (flowT?.status?.occupied || "Occupied");
+                            : (flowT?.status?.reserved || "Reserved");
 
                       return (
                         <motion.button

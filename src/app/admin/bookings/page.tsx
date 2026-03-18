@@ -316,8 +316,9 @@ export default function BookingsPage() {
   const totalPages = Math.ceil(filteredBookings.length / bookingsPerPage);
 
   const tableSummary = {
-    occupied: filteredBookings.filter((b) => b.status === "confirmed" || b.status === "completed").length,
-    reserved: filteredBookings.filter((b) => b.status === "pending").length,
+    reserved: filteredBookings.filter(
+      (b) => b.status === "pending" || b.status === "confirmed" || b.status === "completed"
+    ).length,
   };
 
   const paginate = (pageNumber: number) => {
@@ -492,15 +493,7 @@ export default function BookingsPage() {
           </div>
 
           {/* Table status summary */}
-          <div className="mt-3 grid grid-cols-1 gap-2 sm:grid-cols-2">
-            <div className="rounded-xl border border-border/70 bg-background/60 p-3">
-              <div className="flex items-center justify-between">
-                <span className="text-sm font-medium text-foreground">
-                  {t.booking?.summary?.tableOccupied || "Table Occupied"}
-                </span>
-                <span className="text-base font-bold text-foreground">{tableSummary.occupied}</span>
-              </div>
-            </div>
+          <div className="mt-3 grid grid-cols-1 gap-2">
             <div className="rounded-xl border border-border/70 bg-background/60 p-3">
               <div className="flex items-center justify-between">
                 <span className="text-sm font-medium text-foreground">

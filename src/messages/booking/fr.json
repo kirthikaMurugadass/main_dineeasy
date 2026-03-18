@@ -148,7 +148,6 @@
     },
     "status": {
       "available": "Disponible",
-      "occupied": "Occupée",
       "reserved": "Réservée"
     },
     "actions": {

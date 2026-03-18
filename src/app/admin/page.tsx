@@ -40,6 +40,7 @@ import { getGreeting } from "@/lib/utils/greeting";
 import { useSubscription } from "@/contexts/subscription-context";
 import { getCachedRestaurantName, setCachedRestaurant } from "@/lib/restaurant-cache";
 import { ProCheckoutForm } from "@/components/subscription/pro-checkout-form";
+import { OrdersOverviewCard } from "@/components/admin/orders-overview-card";
 import {
   Dialog,
   DialogContent,
@@ -68,7 +69,7 @@ interface TableStatus {
   id: string;
   table_name: string;
   capacity: number;
-  status: "available" | "occupied" | "reserved";
+  status: "available" | "reserved";
 }
 
 interface TodayBookingStatus {
@@ -522,7 +523,7 @@ export default function AdminDashboard() {
           .eq("is_active", true);
 
         // Initialize table metrics to 0
-        let occupiedTables = 0;
+        let reservedTables = 0;
         let availableTables = 0;
         const tableStatuses: TableStatus[] = [];
 
@@ -542,10 +543,9 @@ export default function AdminDashboard() {
                 o.table_number.toString() === table.table_name.replace("T-", "")
             );
 
-            let status: "available" | "occupied" | "reserved" = "available";
-            if (hasActiveOrder) {
-              status = "occupied";
-            } else if (isReserved) {
+            let status: "available" | "reserved" = "available";
+            // Treat any active order or confirmed booking as "Reserved".
+            if (hasActiveOrder || isReserved) {
               status = "reserved";
             }
 
@@ -556,14 +556,14 @@ export default function AdminDashboard() {
               status,
             });
 
-            // Count occupied tables (has active order or is reserved)
+            // Count reserved tables (has active order or is reserved)
             if (hasActiveOrder || isReserved) {
-              occupiedTables++;
+              reservedTables++;
             }
           });
 
           setTables(tableStatuses);
-          availableTables = tablesData.length - occupiedTables;
+          availableTables = tablesData.length - reservedTables;
         } else {
           // No tables configured - set empty array
           setTables([]);
@@ -578,7 +578,7 @@ export default function AdminDashboard() {
           takeawayOrders: takeawayOrdersCount || 0,
           dineInOrders: dineInOrdersCount || 0,
           deliveryOrders: deliveryOrdersCount || 0,
-          tablesOccupied: occupiedTables || 0,
+          tablesOccupied: reservedTables || 0,
           tablesAvailable: availableTables || 0,
           totalTables: tablesData?.length || 0,
           totalCategories: 0, // Will be loaded separately
@@ -1155,7 +1155,7 @@ export default function AdminDashboard() {
     { title: t.dashboard?.overviewCards?.deliveryOrders || "Delivery Orders", value: stats.deliveryOrders, icon: Users },
     { title: t.dashboard?.overviewCards?.totalTables || "Total Tables", value: stats.totalTables, icon: Table },
     { title: t.dashboard?.overviewCards?.availableTables || "Available Tables", value: stats.tablesAvailable, icon: CheckCircle },
-    { title: t.dashboard?.overviewCards?.occupiedTables || "Occupied Tables", value: stats.tablesOccupied, icon: Table },
+    { title: t.dashboard?.overviewCards?.reservedTables || t.dashboard?.overviewCards?.occupiedTables || "Reserved Tables", value: stats.tablesOccupied, icon: Table },
     { title: t.dashboard?.overviewCards?.pendingOrders || "Pending Orders", value: stats.pendingOrders, icon: Clock },
     { title: t.dashboard?.overviewCards?.completedOrders || "Completed Orders", value: stats.completedOrders, icon: CheckCircle },
   ];
@@ -1224,14 +1224,14 @@ export default function AdminDashboard() {
   const dashboardTables = useMemo(
     () =>
       tables.map((table) => {
-        const occupiedBySelectedBooking = selectedHourBookedTableIds.has(table.id);
+        const reservedBySelectedBooking = selectedHourBookedTableIds.has(table.id);
         const bookingDetails = selectedHourBookingsByTable.get(table.id) || null;
         return {
           ...table,
           bookingDetails,
           status:
-            occupiedBySelectedBooking
-              ? ("occupied" as const)
+            reservedBySelectedBooking
+              ? ("reserved" as const)
               : ("available" as const),
         };
       }),
@@ -1667,22 +1667,15 @@ export default function AdminDashboard() {
             </CardContent>
           </Card>
 
-          <Card className="rounded-2xl border border-border bg-card shadow-sm dark:border-[#1f1f1f] dark:bg-[#111111]">
-            <CardHeader className="pb-2">
-              <div className="flex items-center justify-between">
-                <CardTitle className="text-base font-bold text-foreground dark:text-[#ffffff]">
-                  {t.dashboard?.ordersOverview?.title || "Orders Overview"}
-                </CardTitle>
-                <div className="flex items-center gap-2">
-                  <Button variant={ordersView === "day" ? "default" : "outline"} size="sm" className="h-7 text-xs" onClick={() => setOrdersView("day")}>{t.dashboard?.ordersOverview?.today || "Today"}</Button>
-                  <Button variant={ordersView === "month" ? "default" : "outline"} size="sm" className="h-7 text-xs" onClick={() => setOrdersView("month")}>{t.dashboard?.ordersOverview?.month || "Month"}</Button>
-                </div>
-              </div>
-            </CardHeader>
-            <CardContent>
-              <SimpleBarChart data={ordersData} loading={loading} highlightColor="var(--primary)" />
-            </CardContent>
-          </Card>
+          <OrdersOverviewCard
+            title={t.dashboard?.ordersOverview?.title || "Orders Overview"}
+            todayLabel={t.dashboard?.ordersOverview?.today || "Today"}
+            monthLabel={t.dashboard?.ordersOverview?.month || "Month"}
+            ordersView={ordersView}
+            setOrdersView={setOrdersView}
+            data={ordersData}
+            loading={loading}
+          />
 
         </div>
 
@@ -1813,8 +1806,8 @@ export default function AdminDashboard() {
                   {t.dashboard?.tableStatus?.available || "Available"}
                 </span>
                 <span className="inline-flex items-center gap-1.5 text-muted-foreground">
-                  <span className="h-2 w-2 rounded-full bg-red-500" />
-                  {t.dashboard?.tableStatus?.occupied || "Occupied"}
+                  <span className="h-2 w-2 rounded-full bg-[#3B82F6]" />
+                  {t.dashboard?.tableStatus?.reserved || "Reserved"}
                 </span>
               </div>
             </CardHeader>
@@ -1831,7 +1824,7 @@ export default function AdminDashboard() {
                       className={`h-[104px] rounded-xl border-2 p-2.5 transition-all ${
                         table.status === "available"
                           ? "border-primary/90 bg-primary/5"
-                          : "border-red-400/70 bg-red-50/70 dark:border-red-700/60 dark:bg-red-900/10"
+                          : "border-[#3B82F6]/40 bg-[#3B82F6]/10 dark:bg-[#3B82F6]/15"
                       }`}
                     >
                       <div className="flex h-full flex-col items-center justify-between text-center">
@@ -1840,7 +1833,7 @@ export default function AdminDashboard() {
                         </p>
                         <span
                           className={`h-2.5 w-2.5 rounded-full ${
-                            table.status === "available" ? "bg-primary" : "bg-red-500"
+                            table.status === "available" ? "bg-primary" : "bg-[#3B82F6]"
                           }`}
                         />
                         <p className="text-xs text-muted-foreground">
@@ -2357,15 +2350,15 @@ function BookingsChart({
 
 // Tables Chart Component
 function TablesChart({
-  occupied,
+  reserved,
   available,
 }: {
-  occupied: number;
+  reserved: number;
   available: number;
 }) {
   const { t } = useI18n();
-  const total = occupied + available;
-  const occupiedPercent = total > 0 ? (occupied / total) * 100 : 0;
+  const total = reserved + available;
+  const reservedPercent = total > 0 ? (reserved / total) * 100 : 0;
   const availablePercent = total > 0 ? (available / total) * 100 : 0;
 
   return (
@@ -2384,20 +2377,20 @@ function TablesChart({
             strokeOpacity="0.1"
             className="text-foreground"
           />
-          {/* Occupied segment */}
-          {occupied > 0 && (
+          {/* Reserved segment */}
+          {reserved > 0 && (
             <motion.circle
               cx="100"
               cy="100"
               r="80"
               fill="none"
-              stroke="rgb(239, 68, 68)"
+              stroke="#3B82F6"
               strokeWidth="20"
-              strokeDasharray={`${(occupiedPercent / 100) * 502.65} 502.65`}
+              strokeDasharray={`${(reservedPercent / 100) * 502.65} 502.65`}
               strokeLinecap="round"
               initial={{ strokeDasharray: "0 502.65" }}
               animate={{
-                strokeDasharray: `${(occupiedPercent / 100) * 502.65} 502.65`,
+                strokeDasharray: `${(reservedPercent / 100) * 502.65} 502.65`,
               }}
               transition={{ duration: 1, ease: "easeOut" }}
             />
@@ -2412,12 +2405,12 @@ function TablesChart({
               stroke="var(--primary)"
               strokeWidth="20"
               strokeDasharray={`${(availablePercent / 100) * 502.65} 502.65`}
-              strokeDashoffset={-((occupiedPercent / 100) * 502.65)}
+              strokeDashoffset={-((reservedPercent / 100) * 502.65)}
               strokeLinecap="round"
               initial={{ strokeDasharray: "0 502.65" }}
               animate={{
                 strokeDasharray: `${(availablePercent / 100) * 502.65} 502.65`,
-                strokeDashoffset: -((occupiedPercent / 100) * 502.65),
+                strokeDashoffset: -((reservedPercent / 100) * 502.65),
               }}
               transition={{ duration: 1, ease: "easeOut", delay: 0.2 }}
             />
@@ -2437,9 +2430,9 @@ function TablesChart({
       {/* Legend */}
       <div className="flex items-center gap-6">
         <div className="flex items-center gap-2">
-          <div className="h-4 w-4 rounded-full bg-red-500" />
+          <div className="h-4 w-4 rounded-full bg-[#3B82F6]" />
           <span className="text-sm text-foreground dark:text-[#ffffff]">
-            {t.dashboard?.tableStatus?.occupied || "Occupied"}: {occupied}
+            {t.dashboard?.tableStatus?.reserved || "Reserved"}: {reserved}
           </span>
         </div>
         <div className="flex items-center gap-2">

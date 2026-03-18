@@ -14,7 +14,7 @@
     "deliveryOrders": "Lieferbestellungen",
     "totalTables": "Tische gesamt",
     "availableTables": "Verfügbare Tische",
-    "occupiedTables": "Belegte Tische",
+    "reservedTables": "Reservierte Tische",
     "pendingOrders": "Ausstehende Bestellungen",
     "completedOrders": "Abgeschlossene Bestellungen"
   },
@@ -68,7 +68,7 @@
     "todaysRevenue": "Heutiger Umsatz",
     "pendingOrders": "Ausstehende Bestellungen",
     "totalOrdersToday": "Gesamtbestellungen heute",
-    "tablesOccupied": "Belegte Tische",
+    "tablesReserved": "Reservierte Tische",
     "tablesAvailable": "Verfügbare Tische",
     "totalCategories": "Alle Kategorien",
     "activeCategories": "Aktive Kategorien"
@@ -113,7 +113,6 @@
     "availabilityFor": "Verfügbarkeit für",
     "at": "um",
     "available": "Verfügbar",
-    "occupied": "Belegt",
     "reserved": "Reserviert",
     "capacity": "Kapazität",
     "totalTables": "Tische gesamt",

@@ -69,7 +69,7 @@ interface BookingLock {
   locked_until: string;
 }
 
-type TableStatus = "available" | "occupied" | "selected";
+type TableStatus = "available" | "reserved" | "selected";
 
 const TIME_SLOTS = [
   "09:00",
@@ -343,7 +343,7 @@ export default function BookTablePage() {
 
   const getTableStatus = (tableId: string): TableStatus => {
     if (selectedTableId === tableId) return "selected";
-    if (bookedTableIds.has(tableId) || lockedByOthersTableIds.has(tableId)) return "occupied";
+    if (bookedTableIds.has(tableId) || lockedByOthersTableIds.has(tableId)) return "reserved";
     return "available";
   };
 
@@ -361,8 +361,8 @@ export default function BookTablePage() {
     }
 
     const status = getTableStatus(tableId);
-    if (status === "occupied") {
-      toast.error("This table is occupied for the selected time");
+    if (status === "reserved") {
+      toast.error(flowT?.messages?.tableAlreadyBooked || "This table is reserved for the selected time");
       return;
     }
 
@@ -488,7 +488,11 @@ export default function BookTablePage() {
       const receipt = {
         bookingId: data.bookingId || data.id || "N/A",
         restaurantName: restaurant.name,
+        restaurantLogoUrl: restaurant.logo_url || null,
+        status: "pending" as const,
         customerName: name.trim(),
+        phone: `${getCountryByCode(phoneCountryCode)?.dialCode || ""}${phone.trim()}`,
+        email: email.trim(),
         tableName: selectedTable?.table_name || "N/A",
         guests: guestCount,
         date,
@@ -945,7 +949,7 @@ export default function BookTablePage() {
       <form
         id="booking-form"
         onSubmit={handleConfirmBooking}
-        className="mx-auto grid w-full max-w-[1600px] grid-cols-1 gap-4 xl:grid-cols-[260px_minmax(0,1fr)_340px]"
+        className="mx-auto grid w-full max-w-[1600px] grid-cols-1 gap-4 xl:grid-cols-[260px_minmax(0,1fr)_340px] min-w-0"
       >
         <aside className="hidden xl:block">
           <Card className="sticky top-4 h-[calc(100vh-2rem)] rounded-3xl border border-border/60 bg-card shadow-soft">
@@ -983,9 +987,9 @@ export default function BookTablePage() {
                     </span>
                   </div>
                   <div className="inline-flex items-center gap-2">
-                    <span className="h-2.5 w-2.5 rounded-full bg-red-500" />
+                    <span className="h-2.5 w-2.5 rounded-full bg-[#3B82F6]" />
                     <span className="text-muted-foreground">
-                      Red - {flowT?.status?.occupied || "Occupied"}
+                      Blue - {flowT?.status?.reserved || "Reserved"}
                     </span>
                   </div>
                 </div>
@@ -1162,15 +1166,15 @@ export default function BookTablePage() {
                 <span className="text-muted-foreground">Green - {flowT?.status?.available || "Available"}</span>
               </span>
               <span className="inline-flex items-center gap-2">
-                <span className="h-2.5 w-2.5 rounded-full bg-red-500" />
-                <span className="text-muted-foreground">Red - {flowT?.status?.occupied || "Occupied"}</span>
+                <span className="h-2.5 w-2.5 rounded-full bg-[#3B82F6]" />
+                <span className="text-muted-foreground">Blue - {flowT?.status?.reserved || "Reserved"}</span>
               </span>
             </div>
             <div className="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3">
               {sortedTables.map((table) => {
                 const status = getTableStatus(table.id);
                 const mismatch = !isCapacityMatch(table);
-                const disabled = status === "occupied" || mismatch || submitting;
+                const disabled = status === "reserved" || mismatch || submitting;
                 return (
                   <button
                     key={table.id}
@@ -1180,7 +1184,7 @@ export default function BookTablePage() {
                     className={cn(
                       "rounded-2xl border p-4 text-left transition-all duration-200",
                       status === "available" && "border-primary/30 bg-primary/10 hover:scale-[1.01] hover:bg-primary/15",
-                      status === "occupied" && "cursor-not-allowed border-red-300 bg-red-50/70 dark:bg-red-900/20",
+                      status === "reserved" && "cursor-not-allowed border-[#3B82F6]/40 bg-[#3B82F6]/10 dark:bg-[#3B82F6]/15",
                       mismatch && "cursor-not-allowed border-gray-300 bg-gray-100 text-gray-500 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400",
                       status === "selected" && "border-primary bg-primary/20 ring-2 ring-primary/40 shadow-[0_0_0_3px_rgba(34,197,94,0.15)]",
                     )}
@@ -1194,7 +1198,7 @@ export default function BookTablePage() {
                           <p className="mt-1 text-xs text-muted-foreground">Guest count does not match table capacity</p>
                         ) : null}
                       </div>
-                      <span className={cn("mt-1 h-2.5 w-2.5 rounded-full", status === "occupied" ? "bg-red-500" : "bg-primary")} />
+                      <span className={cn("mt-1 h-2.5 w-2.5 rounded-full", status === "reserved" ? "bg-[#3B82F6]" : "bg-primary")} />
                     </div>
                   </button>
                 );
@@ -1288,17 +1292,41 @@ export default function BookTablePage() {
           </div>
         </section>
 
-        <aside className="rounded-3xl border border-border/60 bg-card p-5 shadow-soft xl:sticky xl:top-4 xl:h-[calc(100vh-2rem)] xl:flex xl:flex-col">
-          <h2 className="text-4xl font-semibold">{flowT?.steps?.orderSummary || "Order Summary"}</h2>
-          <div className="mt-4 space-y-2 rounded-2xl border border-border/60 bg-muted/20 p-4 text-sm">
-            <div className="flex items-center justify-between"><span className="text-muted-foreground">Restaurant</span><span className="font-semibold">{restaurant.name}</span></div>
-            <div className="flex items-center justify-between"><span className="text-muted-foreground">{flowT?.fields?.customerName || "Customer"}</span><span className="font-semibold">{name || "-"}</span></div>
-            <div className="flex items-center justify-between"><span className="text-muted-foreground">{flowT?.fields?.date || "Date"}</span><span className="font-semibold">{date || "-"}</span></div>
-            <div className="flex items-center justify-between"><span className="text-muted-foreground">{flowT?.fields?.time || "Time"}</span><span className="font-semibold">{time || "-"}</span></div>
-            <div className="flex items-center justify-between"><span className="text-muted-foreground">{flowT?.fields?.guests || "Guests"}</span><span className="font-semibold">{guestCount || "-"}</span></div>
-            <div className="flex items-center justify-between"><span className="text-muted-foreground">{flowT?.fields?.selectedTable || "Selected Table"}</span><span className="font-semibold">{selectedTable?.table_name || "-"}</span></div>
+        <aside className="min-w-0 rounded-3xl border border-border/60 bg-card p-4 shadow-soft sm:p-6 xl:sticky xl:top-4 xl:h-[calc(100vh-2rem)] xl:flex xl:flex-col overflow-hidden">
+          <h2 className="text-xl sm:text-2xl md:text-3xl font-semibold break-words whitespace-normal leading-tight">
+            {flowT?.steps?.orderSummary || "Order Summary"}
+          </h2>
+          <div className="mt-4 space-y-2 rounded-xl border border-border/60 bg-muted/20 p-4 text-sm overflow-hidden">
+            <div className="flex items-start justify-between gap-3 min-w-0">
+              <span className="text-muted-foreground text-sm">{flowT?.fields?.restaurant || "Restaurant"}</span>
+              <span className="min-w-0 max-w-[60%] text-right font-semibold break-words whitespace-normal">{restaurant.name}</span>
+            </div>
+            <div className="flex items-start justify-between gap-3 min-w-0">
+              <span className="text-muted-foreground text-sm">{flowT?.fields?.customerName || "Customer"}</span>
+              <span className="min-w-0 max-w-[60%] text-right font-semibold break-words whitespace-normal">{name || "-"}</span>
+            </div>
+            <div className="flex items-start justify-between gap-3 min-w-0">
+              <span className="text-muted-foreground text-sm">{flowT?.fields?.date || "Date"}</span>
+              <span className="min-w-0 max-w-[60%] text-right font-semibold break-words whitespace-normal">{date || "-"}</span>
+            </div>
+            <div className="flex items-start justify-between gap-3 min-w-0">
+              <span className="text-muted-foreground text-sm">{flowT?.fields?.time || "Time"}</span>
+              <span className="min-w-0 max-w-[60%] text-right font-semibold break-words whitespace-normal">{time || "-"}</span>
+            </div>
+            <div className="flex items-start justify-between gap-3 min-w-0">
+              <span className="text-muted-foreground text-sm">{flowT?.fields?.guests || "Guests"}</span>
+              <span className="min-w-0 max-w-[60%] text-right font-semibold break-words whitespace-normal">{guestCount || "-"}</span>
+            </div>
+            <div className="flex items-start justify-between gap-3 min-w-0">
+              <span className="text-muted-foreground text-sm">{flowT?.fields?.selectedTable || "Selected Table"}</span>
+              <span className="min-w-0 max-w-[60%] text-right font-semibold break-words whitespace-normal">{selectedTable?.table_name || "-"}</span>
+            </div>
           </div>
-          <Button type="submit" disabled={submitting} className="mt-auto h-10 w-full rounded-full text-base font-semibold">
+          <Button
+            type="submit"
+            disabled={submitting}
+            className="mt-auto w-full rounded-full py-2.5 text-sm sm:text-base font-semibold whitespace-normal text-center leading-tight"
+          >
             {submitting ? (
               <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -1313,7 +1341,12 @@ export default function BookTablePage() {
 
       <div className="sticky bottom-0 z-20 mt-3 border-t border-border/60 bg-background/95 py-3 backdrop-blur xl:hidden">
         <div className="mx-auto w-full max-w-[1500px] px-3 sm:px-4">
-          <Button type="submit" form="booking-form" className="h-10 w-full text-xs font-semibold" disabled={submitting}>
+          <Button
+            type="submit"
+            form="booking-form"
+            className="w-full py-2.5 text-sm sm:text-base font-semibold whitespace-normal text-center leading-tight"
+            disabled={submitting}
+          >
             {submitting ? (
               <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />

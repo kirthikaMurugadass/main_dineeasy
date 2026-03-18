@@ -92,7 +92,7 @@ interface Dictionary {
       liveBusinessOverview?: string; live?: string;
       overviewCards?: {
         todaysRevenue?: string; takeawayOrders?: string; dineInOrders?: string; todaysTotalOrders?: string;
-        deliveryOrders?: string; totalTables?: string; availableTables?: string; occupiedTables?: string;
+        deliveryOrders?: string; totalTables?: string; availableTables?: string; reservedTables?: string;
         pendingOrders?: string; completedOrders?: string;
       };
       recentOrders?: {
@@ -110,7 +110,7 @@ interface Dictionary {
       };
       tableStatus?: {
         title?: string; availabilityFor?: string; at?: string;
-        available?: string; occupied?: string; capacity?: string;
+        available?: string; reserved?: string; capacity?: string;
         totalTables?: string; noTables?: string; bookingDetails?: string; noBookingsForSelected?: string;
       };
       ordersOverview?: { title?: string; today?: string; month?: string };
@@ -508,7 +508,7 @@ const en: Dictionary = {
         deliveryOrders: "Delivery Orders",
         totalTables: "Total Tables",
         availableTables: "Available Tables",
-        occupiedTables: "Occupied Tables",
+        reservedTables: "Reserved Tables",
         pendingOrders: "Pending Orders",
         completedOrders: "Completed Orders",
       },
@@ -551,7 +551,7 @@ const en: Dictionary = {
         availabilityFor: "Availability for",
         at: "at",
         available: "Available",
-        occupied: "Occupied",
+        reserved: "Reserved",
         capacity: "Capacity",
         totalTables: "Total Tables",
         noTables: "No tables configured. Add tables in the Tables section.",
@@ -1199,7 +1199,7 @@ const de: Dictionary = {
         deliveryOrders: "Lieferbestellungen",
         totalTables: "Tische gesamt",
         availableTables: "Verfügbare Tische",
-        occupiedTables: "Belegte Tische",
+        reservedTables: "Reservierte Tische",
         pendingOrders: "Ausstehende Bestellungen",
         completedOrders: "Abgeschlossene Bestellungen",
       },
@@ -1242,7 +1242,7 @@ const de: Dictionary = {
         availabilityFor: "Verfügbarkeit für",
         at: "um",
         available: "Verfügbar",
-        occupied: "Belegt",
+        reserved: "Reserviert",
         capacity: "Kapazität",
         totalTables: "Tische gesamt",
         noTables: "Keine Tische konfiguriert. Fügen Sie Tische im Bereich „Tische“ hinzu.",
@@ -1868,7 +1868,7 @@ const fr: Dictionary = {
         deliveryOrders: "Commandes en livraison",
         totalTables: "Total des tables",
         availableTables: "Tables disponibles",
-        occupiedTables: "Tables occupées",
+        reservedTables: "Tables réservées",
         pendingOrders: "Commandes en attente",
         completedOrders: "Commandes terminées",
       },
@@ -1911,7 +1911,7 @@ const fr: Dictionary = {
         availabilityFor: "Disponibilité pour",
         at: "à",
         available: "Disponible",
-        occupied: "Occupée",
+        reserved: "Réservée",
         capacity: "Capacité",
         totalTables: "Total des tables",
         noTables: "Aucune table configurée. Ajoutez des tables dans la section Tables.",
@@ -2537,7 +2537,7 @@ const it: Dictionary = {
         deliveryOrders: "Ordini a domicilio",
         totalTables: "Tavoli totali",
         availableTables: "Tavoli disponibili",
-        occupiedTables: "Tavoli occupati",
+        reservedTables: "Tavoli riservati",
         pendingOrders: "Ordini in sospeso",
         completedOrders: "Ordini completati",
       },
@@ -2580,7 +2580,7 @@ const it: Dictionary = {
         availabilityFor: "Disponibilità per",
         at: "alle",
         available: "Disponibile",
-        occupied: "Occupato",
+        reserved: "Prenotato",
         capacity: "Capacità",
         totalTables: "Tavoli totali",
         noTables: "Nessun tavolo configurato. Aggiungi tavoli nella sezione Tavoli.",

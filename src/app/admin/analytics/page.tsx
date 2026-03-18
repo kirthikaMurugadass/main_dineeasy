@@ -10,6 +10,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useI18n } from "@/lib/i18n/context";
 import { createClient } from "@/lib/supabase/client";
 import { toast } from "sonner";
+import { OrdersOverviewCard } from "@/components/admin/orders-overview-card";
 
 type OrderRow = {
   created_at: string;
@@ -255,20 +256,15 @@ export default function AnalyticsPage() {
             </CardContent>
           </Card>
 
-          <Card className="w-full min-w-0 overflow-hidden rounded-2xl border border-border bg-card shadow-sm dark:border-[#1f1f1f] dark:bg-[#111111]">
-            <CardHeader className="pb-2">
-              <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                <CardTitle className="text-base font-bold text-foreground dark:text-[#ffffff]">{analyticsT?.ordersStatistics || "Orders Statistics"}</CardTitle>
-                <div className="grid w-full grid-cols-2 gap-2 sm:flex sm:w-auto sm:justify-end">
-                  <Button variant={ordersView === "day" ? "default" : "outline"} size="sm" className="h-8 w-full min-w-0 px-2 text-xs sm:w-auto sm:px-3" onClick={() => setOrdersView("day")}>{analyticsT?.today || "Today"}</Button>
-                  <Button variant={ordersView === "month" ? "default" : "outline"} size="sm" className="h-8 w-full min-w-0 px-2 text-xs sm:w-auto sm:px-3" onClick={() => setOrdersView("month")}>{analyticsT?.month || "Month"}</Button>
-                </div>
-              </div>
-            </CardHeader>
-            <CardContent className="px-3 pb-4 pt-0 sm:px-6">
-              <SimpleBarChart data={ordersData} loading={loading} highlightColor="var(--primary)" />
-            </CardContent>
-          </Card>
+          <OrdersOverviewCard
+            title={t.dashboard?.ordersOverview?.title || "Orders Overview"}
+            todayLabel={t.dashboard?.ordersOverview?.today || analyticsT?.today || "Today"}
+            monthLabel={t.dashboard?.ordersOverview?.month || analyticsT?.month || "Month"}
+            ordersView={ordersView}
+            setOrdersView={setOrdersView}
+            data={ordersData}
+            loading={loading}
+          />
         </div>
 
         <div className="min-w-0 space-y-4 sm:space-y-6 xl:col-span-4">
@@ -304,7 +300,7 @@ export default function AnalyticsPage() {
               </div>
             </CardHeader>
             <CardContent className="px-3 pb-4 pt-0 sm:px-6">
-              <SimpleBarChart data={performanceData} loading={loading} highlightColor="#86efac" />
+              <PerformanceBarChart data={performanceData} loading={loading} highlightColor="#86efac" />
             </CardContent>
           </Card>
         </div>
@@ -354,7 +350,7 @@ function SimpleLineAreaChart({ data, loading }: { data: Point[]; loading: boolea
   );
 }
 
-function SimpleBarChart({
+function PerformanceBarChart({
   data,
   loading,
   highlightColor,
@@ -366,7 +362,13 @@ function SimpleBarChart({
   const { t } = useI18n();
   const analyticsT = t.analytics || t.admin?.analytics || {};
   if (loading) return <div className="h-32 animate-pulse rounded-xl bg-muted/50 sm:h-48 lg:h-56" />;
-  if (!data.length) return <div className="flex h-32 items-center justify-center text-sm text-muted-foreground sm:h-48 lg:h-56">{analyticsT?.noData || "No data available"}</div>;
+  if (!data.length) {
+    return (
+      <div className="flex h-32 items-center justify-center text-sm text-muted-foreground sm:h-48 lg:h-56">
+        {analyticsT?.noData || "No data available"}
+      </div>
+    );
+  }
 
   const maxValue = Math.max(...data.map((d) => d.value), 1);
   const width = 100;
@@ -379,22 +381,47 @@ function SimpleBarChart({
   const barW = Math.max(1.2, slotW * 0.55);
 
   return (
-    <div className="w-full min-w-0">
-      <svg viewBox={`0 0 ${width} ${height}`} className="h-32 w-full sm:h-48 lg:h-56" preserveAspectRatio="none">
-        {data.map((d, i) => {
-          const x = paddingX + i * slotW + (slotW - barW) / 2;
-          const h = (d.value / maxValue) * (height - topPadding - bottomPadding);
-          const y = height - bottomPadding - h;
-          return (
-            <g key={`${d.label}-${i}`}>
-              <rect x={x} y={y} width={barW} height={h} rx="1" fill={highlightColor} opacity={i === data.length - 1 ? 1 : 0.65} />
-              <text x={x + barW / 2} y={height - 6} textAnchor="middle" className="fill-muted-foreground text-[4px]">
-                {d.label}
-              </text>
-            </g>
-          );
-        })}
-      </svg>
+    <div className="w-full min-w-0 overflow-x-auto sm:overflow-visible">
+      <div className={data.length > 10 ? "min-w-[520px]" : undefined}>
+        <svg
+          viewBox={`0 0 ${width} ${height}`}
+          className="h-32 w-full sm:h-48 lg:h-56"
+          preserveAspectRatio="none"
+        >
+          {data.map((d, i) => {
+            const x = paddingX + i * slotW + (slotW - barW) / 2;
+            const h = (d.value / maxValue) * (height - topPadding - bottomPadding);
+            const y = height - bottomPadding - h;
+            const showLabel = data.length <= 8 || i % 2 === 0 || i === data.length - 1;
+            return (
+              <g key={`${d.label}-${i}`}>
+                <rect
+                  x={x}
+                  y={y}
+                  width={barW}
+                  height={h}
+                  rx="1"
+                  fill={highlightColor}
+                  opacity={i === data.length - 1 ? 1 : 0.65}
+                />
+                {showLabel ? (
+                  <text
+                    x={x + barW / 2}
+                    y={height - 6}
+                    textAnchor="middle"
+                    className="fill-muted-foreground"
+                    fontSize={4}
+                  >
+                    {d.label}
+                  </text>
+                ) : null}
+              </g>
+            );
+          })}
+        </svg>
+      </div>
     </div>
   );
 }
+
+// Orders Statistics chart removed: Analytics reuses Dashboard Orders Overview UI.

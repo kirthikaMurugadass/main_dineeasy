@@ -46,11 +46,7 @@ export default function SettingsPage() {
   const [bookingEnabled, setBookingEnabled] = useState(true);
   const [maxGuestsPerTable, setMaxGuestsPerTable] = useState("");
   const [minGuestsPerTable, setMinGuestsPerTable] = useState("");
-  const [advanceBookingLimit, setAdvanceBookingLimit] = useState("");
-  const [bookingIntervalMinutes, setBookingIntervalMinutes] = useState("");
   const [defaultTableCapacity, setDefaultTableCapacity] = useState("");
-  const [allowMultipleReservations, setAllowMultipleReservations] =
-    useState(false);
   const [autoConfirmBooking, setAutoConfirmBooking] = useState(false);
   const [requireApproval, setRequireApproval] = useState(true);
   const [cancellationTimeLimit, setCancellationTimeLimit] = useState("");
@@ -114,23 +110,10 @@ export default function SettingsPage() {
             ? String(booking.minGuestsPerTable)
             : "",
         );
-        setAdvanceBookingLimit(
-          booking.advanceBookingLimitDays != null
-            ? String(booking.advanceBookingLimitDays)
-            : "",
-        );
-        setBookingIntervalMinutes(
-          booking.bookingIntervalMinutes != null
-            ? String(booking.bookingIntervalMinutes)
-            : "",
-        );
         setDefaultTableCapacity(
           booking.defaultTableCapacity != null
             ? String(booking.defaultTableCapacity)
             : "",
-        );
-        setAllowMultipleReservations(
-          booking.allowMultipleReservations ?? false,
         );
         setAutoConfirmBooking(booking.autoConfirm ?? false);
         setRequireApproval(
@@ -188,16 +171,9 @@ export default function SettingsPage() {
             minGuestsPerTable: minGuestsPerTable
               ? Number(minGuestsPerTable)
               : null,
-            advanceBookingLimitDays: advanceBookingLimit
-              ? Number(advanceBookingLimit)
-              : null,
-            bookingIntervalMinutes: bookingIntervalMinutes
-              ? Number(bookingIntervalMinutes)
-              : null,
             defaultTableCapacity: defaultTableCapacity
               ? Number(defaultTableCapacity)
               : null,
-            allowMultipleReservations,
             autoConfirm: autoConfirmBooking,
             requireApproval,
             cancellationTimeLimitMinutes: cancellationTimeLimit
@@ -524,31 +500,6 @@ export default function SettingsPage() {
                         className="h-11 rounded-xl border-2 border-[#D6D2C4]/70 bg-white/80 text-sm shadow-sm transition-all focus-visible:border-primary focus-visible:ring-primary/20 dark:border-[#1f1f1f] dark:bg-[#0f0f0f] dark:text-white"
                       />
                     </div>
-                    <div className="space-y-2">
-                      <Label>{settingsT?.page?.fields?.advanceBookingLimit || "Advance Booking Limit (days)"}</Label>
-                      <Input
-                        type="number"
-                        min={0}
-                        value={advanceBookingLimit}
-                        onChange={(e) => setAdvanceBookingLimit(e.target.value)}
-                        placeholder={settingsT?.page?.placeholders?.advanceBookingLimit || "e.g. 7"}
-                        className="h-11 rounded-xl border-2 border-[#D6D2C4]/70 bg-white/80 text-sm shadow-sm transition-all focus-visible:border-primary focus-visible:ring-primary/20 dark:border-[#1f1f1f] dark:bg-[#0f0f0f] dark:text-white"
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label>{settingsT?.page?.fields?.bookingTimeInterval || "Booking Time Interval (minutes)"}</Label>
-                      <Input
-                        type="number"
-                        min={5}
-                        step={5}
-                        value={bookingIntervalMinutes}
-                        onChange={(e) =>
-                          setBookingIntervalMinutes(e.target.value)
-                        }
-                        placeholder={settingsT?.page?.placeholders?.bookingTimeInterval || "e.g. 30"}
-                        className="h-11 rounded-xl border-2 border-[#D6D2C4]/70 bg-white/80 text-sm shadow-sm transition-all focus-visible:border-primary focus-visible:ring-primary/20 dark:border-[#1f1f1f] dark:bg-[#0f0f0f] dark:text-white"
-                      />
-                    </div>
                   </div>
                 </div>
               </div>
@@ -571,20 +522,6 @@ export default function SettingsPage() {
                       onChange={(e) => setDefaultTableCapacity(e.target.value)}
                       placeholder={settingsT?.page?.placeholders?.defaultTableCapacity || "e.g. 4"}
                       className="h-11 rounded-xl border-2 border-[#D6D2C4]/70 bg-white/80 text-sm shadow-sm transition-all focus-visible:border-primary focus-visible:ring-primary/20 dark:border-[#1f1f1f] dark:bg-[#0f0f0f] dark:text-white"
-                    />
-                  </div>
-                  <div className="flex items-center justify-between rounded-xl bg-[#F6F4EA] px-3 py-2.5 text-sm dark:bg-[#000000] dark:border dark:border-[#1f1f1f]">
-                    <div className="space-y-0.5">
-                      <p className="font-medium text-[#2D3A1A] dark:text-[#E8E4D9]">
-                        {settingsT?.page?.toggles?.allowMultipleReservations || "Allow Multiple Reservations"}
-                      </p>
-                      <p className="text-xs text-[#6B7B5A] dark:text-[#9CA88A]">
-                        {settingsT?.page?.toggles?.allowMultipleReservationsHint || "Allow multiple bookings for the same time slot."}
-                      </p>
-                    </div>
-                    <Switch
-                      checked={allowMultipleReservations}
-                      onCheckedChange={setAllowMultipleReservations}
                     />
                   </div>
                 </div>

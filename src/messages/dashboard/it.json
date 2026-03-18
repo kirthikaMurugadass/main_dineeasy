@@ -14,7 +14,7 @@
     "deliveryOrders": "Ordini a domicilio",
     "totalTables": "Tavoli totali",
     "availableTables": "Tavoli disponibili",
-    "occupiedTables": "Tavoli occupati",
+    "reservedTables": "Tavoli riservati",
     "pendingOrders": "Ordini in sospeso",
     "completedOrders": "Ordini completati"
   },
@@ -68,7 +68,7 @@
     "todaysRevenue": "Ricavi di oggi",
     "pendingOrders": "Ordini in attesa",
     "totalOrdersToday": "Totale ordini oggi",
-    "tablesOccupied": "Tavoli occupati",
+    "tablesReserved": "Tavoli riservati",
     "tablesAvailable": "Tavoli disponibili",
     "totalCategories": "Categorie totali",
     "activeCategories": "Categorie attive"
@@ -113,7 +113,6 @@
     "availabilityFor": "Disponibilità per",
     "at": "alle",
     "available": "Disponibile",
-    "occupied": "Occupato",
     "reserved": "Prenotato",
     "capacity": "Capacità",
     "totalTables": "Tavoli totali",
