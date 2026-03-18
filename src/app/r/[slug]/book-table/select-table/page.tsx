@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import { ArrowLeft, Calendar, CheckCircle2, Clock, Loader2, Search, Table2, Users } from "lucide-react";
@@ -57,6 +57,7 @@ export default function SelectTablePage() {
   const [restaurant, setRestaurant] = useState<Restaurant | null>(null);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
+  const confirmOnceRef = useRef(false);
   const [stepData, setStepData] = useState<BookingStepData | null>(null);
   const [tables, setTables] = useState<RestaurantTable[]>([]);
   const [bookedTableIds, setBookedTableIds] = useState<Set<string>>(new Set());
@@ -372,13 +373,16 @@ export default function SelectTablePage() {
 
   const handleConfirm = async () => {
     if (!restaurant || !stepData) return;
+    if (confirmOnceRef.current || submitting) return;
     if (!selectedTableId) {
       toast.error(flowT?.validation?.selectTableRequired || "Please select a table to continue.");
       return;
     }
 
     // Check if lock is still valid
+    let confirmed = false;
     try {
+      confirmOnceRef.current = true;
       setSubmitting(true);
       const nowIso = new Date().toISOString();
       const { data: locks, error: lockError } = await supabase
@@ -446,6 +450,7 @@ export default function SelectTablePage() {
 
       toast.success(flowT?.messages?.bookingRequestSent || "Booking request sent! We will confirm shortly.");
       setSuccess(true);
+      confirmed = true;
       
       // Auto-close success modal after 5 seconds
       setTimeout(() => {
@@ -457,7 +462,11 @@ export default function SelectTablePage() {
         error instanceof Error ? error.message : flowT?.messages?.failedConfirmBooking || "Failed to confirm booking"
       );
     } finally {
-      setSubmitting(false);
+      // If we didn't reach success state, re-enable and allow retry.
+      if (!confirmed) {
+        confirmOnceRef.current = false;
+        setSubmitting(false);
+      }
     }
   };
 

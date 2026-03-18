@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
 import Image from "next/image";
 import { motion } from "framer-motion";
@@ -113,6 +113,7 @@ export default function BookTablePage() {
   const [mounted, setMounted] = useState(false);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
+  const confirmOnceRef = useRef(false);
   const [bookingDisabled, setBookingDisabled] = useState(false);
   const [showIntro, setShowIntro] = useState(true);
 
@@ -397,6 +398,7 @@ export default function BookTablePage() {
   const handleConfirmBooking = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!restaurant) return;
+    if (confirmOnceRef.current || submitting) return;
 
     if (!name.trim()) {
       toast.error(flowT?.validation?.nameRequired || "Please enter your name");
@@ -437,7 +439,9 @@ export default function BookTablePage() {
       return;
     }
 
+    confirmOnceRef.current = true;
     setSubmitting(true);
+    let confirmed = false;
     try {
       const nowIso = new Date().toISOString();
       const { data: validLocks } = await supabase
@@ -502,11 +506,15 @@ export default function BookTablePage() {
         sessionStorage.setItem(`dineeasy-booking-receipt-${slug}`, JSON.stringify(receipt));
       }
 
+      confirmed = true;
       router.push(`/r/${slug}/book-table/success?bookingId=${encodeURIComponent(receipt.bookingId)}`);
     } catch (error) {
       toast.error(error instanceof Error ? error.message : (flowT?.messages?.failedConfirmBooking || "Failed to confirm booking"));
     } finally {
-      setSubmitting(false);
+      if (!confirmed) {
+        confirmOnceRef.current = false;
+        setSubmitting(false);
+      }
     }
   };
 
@@ -737,8 +745,8 @@ export default function BookTablePage() {
                               "relative w-full min-w-0 justify-start rounded-xl px-4 pr-11 text-left text-sm font-normal shadow-none transition-all focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/30",
                               isIframePreview ? "h-[42px]" : "h-[52px]",
                               isDarkTheme
-                                ? "border-white/35 bg-black/45 text-white hover:bg-black/55"
-                                : "border-white/45 bg-white/90 text-slate-900 hover:bg-white",
+                                ? "border-white/35 bg-black/45 text-white hover:bg-black/55 hover:text-white"
+                                : "border-white/45 bg-white/90 text-slate-900 hover:bg-white hover:text-slate-900",
                               !date && (isDarkTheme ? "text-white/70" : "text-slate-500"),
                             )}
                           >
