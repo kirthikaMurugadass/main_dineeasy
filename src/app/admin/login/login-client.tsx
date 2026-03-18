@@ -45,76 +45,48 @@ export function AdminLoginClient({ registered }: { registered?: string }) {
 
   async function handleLogin(e: React.FormEvent) {
     e.preventDefault();
-    if (!email || !password) return;
+    const normalizedEmail = email.toLowerCase().trim();
+    const normalizedPassword = password.trim();
+
+    if (!normalizedEmail || !normalizedPassword) return;
     setLoading(true);
 
     try {
-      // Step 1: Verify credentials with our custom API (bcrypt)
-      const loginResponse = await fetch("/api/auth/login", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password }),
-      });
-
-      const loginData = await loginResponse.json();
-
-      if (!loginResponse.ok) {
-        throw new Error(loginData.error || "Login failed");
-      }
-
-      // Step 2: Create Supabase Auth session for compatibility
       const supabase = createClient();
-      const { data: authData, error: authError } =
-        await supabase.auth.signInWithPassword({
-          email: email.toLowerCase().trim(),
-          password,
-        });
+      // Clear any stale local auth session before creating a fresh login session.
+      await supabase.auth.signOut();
 
-      if (authError) {
-        console.error("Supabase Auth session creation failed:", authError);
-        if (authError.message?.toLowerCase().includes("fetch")) {
-          throw new Error("Authentication service is currently unavailable. Please try again shortly.");
-        }
-        // Try one more time after a short delay
-        await new Promise((resolve) => setTimeout(resolve, 500));
-        const { error: retryError } = await supabase.auth.signInWithPassword({
-          email: email.toLowerCase().trim(),
-          password,
-        });
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email: normalizedEmail,
+        password: normalizedPassword,
+      });
+      console.log("Login:", data, error);
 
-        if (retryError) {
-          if (retryError.message?.toLowerCase().includes("fetch")) {
-            throw new Error("Authentication service is currently unavailable. Please try again shortly.");
-          }
-          throw new Error("Failed to create session. Please try again.");
-        }
+      if (error || !data?.session) {
+        throw error || new Error("Failed to create session. Please try again.");
       }
 
-      if (loginData.success && authData?.session) {
+      if (data.session) {
         toast.success("Welcome back!");
-        router.push("/admin/dashboard");
+        router.push("/admin");
         router.refresh();
-      } else if (loginData.success) {
-        // Credentials verified but no session - wait a bit and refresh
-        await new Promise((resolve) => setTimeout(resolve, 1000));
-        router.refresh();
-        router.push("/admin/dashboard");
       }
     } catch (err: any) {
       let errorMessage =
         "Failed to sign in. Please check your credentials.";
 
       const errorMsg = err?.message || err?.toString() || "";
+      const normalizedErrorMsg = errorMsg.toLowerCase();
       const errorName = err?.name || "";
 
       if (errorMsg.includes("Invalid") || errorMsg.includes("password")) {
         errorMessage = "Invalid email or password. Please try again.";
-      } else if (errorMsg.includes("Email not confirmed")) {
-        errorMessage = "Please verify your email before signing in.";
+      } else if (normalizedErrorMsg.includes("email not confirmed")) {
+        errorMessage = "Please verify your email before login";
       } else if (
         errorName === "TypeError" ||
-        errorMsg.includes("Failed to fetch") ||
-        errorMsg.includes("NetworkError")
+        normalizedErrorMsg.includes("failed to fetch") ||
+        normalizedErrorMsg.includes("networkerror")
       ) {
         errorMessage =
           "Cannot connect to server. Please check your connection.";

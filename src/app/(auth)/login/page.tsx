@@ -25,82 +25,34 @@ export default function LoginPage() {
 
   async function handleLogin(e: React.FormEvent) {
     e.preventDefault();
-    if (!email || !password) {
+    const normalizedEmail = email.toLowerCase().trim();
+    const normalizedPassword = password.trim();
+
+    if (!normalizedEmail || !normalizedPassword) {
       toast.error(t.auth?.login?.errors?.emptyFields || t.auth.login.errors.emptyFields || "Please enter both email and password");
       return;
     }
     setLoading(true);
     try {
       const supabase = createClient();
-      const normalizedEmail = email.toLowerCase().trim();
       const i18nErrors = t.auth?.login?.errors;
       const defaultGenericError = i18nErrors?.genericError || "Something went wrong. Please try again.";
 
-      // Primary login path: Supabase Auth (used by current signup flow).
-      let authData: Awaited<ReturnType<typeof supabase.auth.signInWithPassword>>["data"] | null = null;
-      let authError: Awaited<ReturnType<typeof supabase.auth.signInWithPassword>>["error"] | null = null;
-      let authNetworkFailure = false;
-      try {
-        const result = await supabase.auth.signInWithPassword({
-          email: normalizedEmail,
-          password,
-        });
-        authData = result.data;
-        authError = result.error;
-      } catch (error: unknown) {
-        // Browser/network failures can throw directly instead of returning `result.error`.
-        // Treat any thrown sign-in error as a temporary auth transport failure.
-        const message = error instanceof Error ? error.message : String(error ?? "");
-        const normalizedMessage = message.toLowerCase();
-        authNetworkFailure = true;
-        if (!normalizedMessage.includes("fetch")) {
-          console.warn("Supabase sign-in threw non-fetch error, handling as network failure:", error);
-        }
+      // Clear any stale local auth session before creating a fresh login session.
+      await supabase.auth.signOut();
+
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email: normalizedEmail,
+        password: normalizedPassword,
+      });
+      console.log("Login:", data, error);
+
+      if (error || !data?.session) {
+        throw error || new Error("Failed to create session. Please try again.");
       }
 
-      // Legacy fallback: old custom users table API verifies bcrypt and syncs auth account.
-      if (authNetworkFailure || authError || !authData?.session) {
-        const loginResponse = await fetch("/api/auth/login", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ email: normalizedEmail, password }),
-        });
-
-        if (!loginResponse.ok) {
-          const loginData = await loginResponse.json().catch(() => ({} as any));
-          throw new Error(loginData?.error || "Invalid email or password");
-        }
-
-        // After legacy verification/sync, retry Supabase session creation.
-        if (!authNetworkFailure) {
-          await new Promise((resolve) => setTimeout(resolve, 250));
-          try {
-            const retry = await supabase.auth.signInWithPassword({
-              email: normalizedEmail,
-              password,
-            });
-            authData = retry.data;
-            authError = retry.error;
-            if (retry.error?.message?.toLowerCase().includes("fetch")) {
-              authNetworkFailure = true;
-            }
-          } catch {
-            authNetworkFailure = true;
-          }
-        }
-      }
-
-      if (authNetworkFailure) {
-        throw new Error("Authentication service is currently unavailable. Please try again shortly.");
-      }
-
-      if (authError || !authData?.session) {
-        const sessionError = defaultGenericError || "Failed to create session. Please try again.";
-        throw new Error(sessionError);
-      }
-
-      if (authData?.session) {
-        const authUserId = authData.session.user.id;
+      if (data.session) {
+        const authUserId = data.session.user.id;
         const { data: restaurant } = await supabase
           .from("restaurants")
           .select("id, name")
@@ -120,11 +72,14 @@ export default function LoginPage() {
         err && typeof err === "object" && "message" in err
           ? (err as { message: string }).message
           : "";
+      const normalizedMessage = message.toLowerCase();
 
-      if (message === "Failed to fetch" || message.toLowerCase().includes("fetch")) {
+      if (message === "Failed to fetch" || normalizedMessage.includes("fetch")) {
         const connectionError =
           defaultGenericError || "Cannot reach server. Please check your connection and try again.";
         toast.error(connectionError);
+      } else if (normalizedMessage.includes("email not confirmed")) {
+        toast.error("Please verify your email before login");
       } else {
         const errorMessage =
           message.includes("Invalid") || message.includes("password")
