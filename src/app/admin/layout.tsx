@@ -50,8 +50,8 @@ function AdminLayoutInner({ children }: { children: React.ReactNode }) {
             <AdminSidebar />
             <SidebarInset className="relative flex min-h-screen flex-col bg-background dark:bg-[#000000]">
               <AdminTopbar />
-              <main className="relative flex-1 overflow-x-hidden px-2 pb-5 pt-2 sm:px-4 sm:pb-8 sm:pt-4 lg:px-8 lg:pb-10 lg:pt-6">
-                <div className="relative mx-auto flex h-full w-full max-w-[95rem] flex-col rounded-2xl border border-border/70 bg-card px-3 py-4 shadow-card sm:rounded-3xl sm:px-6 sm:py-6 lg:px-8 lg:py-8 dark:border-[#1f1f1f] dark:bg-[#000000]">
+              <main className="relative flex-1 min-w-0 overflow-x-auto px-2 pb-5 pt-2 sm:px-4 sm:pb-8 sm:pt-4 lg:px-8 lg:pb-10 lg:pt-6">
+                <div className="relative mx-auto flex h-full w-full max-w-full flex-col rounded-2xl border border-border/70 bg-card px-3 py-4 shadow-card sm:rounded-3xl sm:px-6 sm:py-6 lg:px-8 lg:py-8 dark:border-[#1f1f1f] dark:bg-[#000000]">
                   <PageTransition>{children}</PageTransition>
                 </div>
               </main>
