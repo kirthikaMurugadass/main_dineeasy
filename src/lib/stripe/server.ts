@@ -9,7 +9,7 @@ export function getStripeServer() {
     throw new Error("Missing STRIPE_SECRET_KEY in environment");
   }
   cached = new Stripe(secretKey, {
-    apiVersion: "2024-06-20",
+    apiVersion: "2026-02-25.clover",
     typescript: true,
   });
   return cached;
