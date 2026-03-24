@@ -5,14 +5,15 @@ import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import { CreditCard, Loader2 } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
-import { ProCheckoutForm } from "@/components/subscription/pro-checkout-form";
 import { toast } from "sonner";
+import { redirectToCheckoutSession } from "@/lib/stripe/redirect";
 
 export function AdminCheckoutClient({ billing }: { billing?: string }) {
   const router = useRouter();
   const [status, setStatus] = useState<"loading" | "ready" | "already_pro">(
     "loading"
   );
+  const [redirecting, setRedirecting] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -47,7 +48,39 @@ export function AdminCheckoutClient({ billing }: { billing?: string }) {
     };
   }, [router]);
 
-  const defaultBilling = billing === "annual" ? "annual" : "monthly";
+  useEffect(() => {
+    let cancelled = false;
+    async function go() {
+      if (status !== "ready" || redirecting) return;
+      setRedirecting(true);
+      try {
+        const res = await fetch("/api/create-pro-session", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            billingCycle: billing === "annual" ? "annual" : "monthly",
+          }),
+          credentials: "same-origin",
+        });
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok) throw new Error(data?.error || "Failed to start checkout");
+        await redirectToCheckoutSession({
+          sessionId: data.sessionId as string,
+          url: (data.url as string | undefined) ?? null,
+        });
+      } catch (err) {
+        if (cancelled) return;
+        toast.error(err instanceof Error ? err.message : "Failed to start checkout");
+        router.replace("/admin");
+      } finally {
+        if (!cancelled) setRedirecting(false);
+      }
+    }
+    go();
+    return () => {
+      cancelled = true;
+    };
+  }, [status, redirecting, billing, router]);
 
   if (status === "loading") {
     return (
@@ -80,19 +113,15 @@ export function AdminCheckoutClient({ billing }: { billing?: string }) {
         </div>
         <div>
           <h1 className="text-xl font-semibold">
-            Complete your Pro subscription
+            Redirecting to secure checkout
           </h1>
           <p className="text-sm text-muted-foreground">
-            Choose billing and enter card details. No real charge — demo only.
+            You’ll complete payment on Stripe’s hosted checkout page.
           </p>
         </div>
       </div>
-      <div className="rounded-2xl border border-border/70 bg-card p-6 shadow-sm">
-        <ProCheckoutForm
-          defaultBilling={defaultBilling}
-          compact={false}
-          onSuccess={() => router.replace("/admin")}
-        />
+      <div className="flex items-center justify-center rounded-2xl border border-border/70 bg-card p-10 shadow-sm">
+        <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
       </div>
     </motion.div>
   );

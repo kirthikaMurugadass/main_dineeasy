@@ -22,6 +22,14 @@ import { toast } from "sonner";
 import type { Language } from "@/types/database";
 import { LocationPickerMap, type LatLng } from "@/components/checkout/location-picker-map";
 import { cn } from "@/lib/utils";
+import { redirectToCheckoutSession } from "@/lib/stripe/redirect";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { QRCode } from "react-qrcode-logo";
 import {
   countryCodes,
   getCountryByCode,
@@ -75,29 +83,98 @@ export default function CheckoutPage({
   const posT = (t.order as any)?.public?.pos;
   const currency = t.menu?.currency || "CHF";
   const [payment, setPayment] = useState<"cash" | "card" | "qr">("cash");
-  const cardT = checkoutT?.card;
   const celebrateT = checkoutT?.celebration;
+  const [qrOpen, setQrOpen] = useState(false);
 
   const [celebrateOpen, setCelebrateOpen] = useState(false);
   const [celebrateOrderId, setCelebrateOrderId] = useState<string | null>(null);
   const confettiCanvasRef = useRef<HTMLCanvasElement | null>(null);
   const [confettiVisible, setConfettiVisible] = useState(false);
 
-  const [cardholderName, setCardholderName] = useState("");
-  const [cardNumber, setCardNumber] = useState("");
-  const [expiry, setExpiry] = useState("");
-  const [cvv, setCvv] = useState("");
-  const [billingName, setBillingName] = useState("");
-  const [cardErrors, setCardErrors] = useState<{
-    cardholderName?: string;
-    cardNumber?: string;
-    expiry?: string;
-    cvv?: string;
-  }>({});
-
   useEffect(() => {
     setMounted(true);
   }, []);
+
+
+  async function placeOrderCashOrQr() {
+    if (!restaurantId) {
+      toast.error(checkoutT?.messages?.restaurantInfoMissing || "Restaurant information is missing");
+      return;
+    }
+    if (!resolvedParams) return;
+
+    const locationSuffix =
+      orderType === "delivery" && deliveryLocation
+        ? ` (Location: ${deliveryLocation.lat.toFixed(5)}, ${deliveryLocation.lng.toFixed(5)})`
+        : "";
+
+    const response = await fetch("/api/orders", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        restaurantId,
+        customerName: customerName.trim(),
+        orderType,
+        tableNumber: orderType === "dine_in" ? parseInt(tableNumber || "", 10) : null,
+        deliveryAddress:
+          orderType === "delivery"
+            ? `${deliveryAddress.trim()}${locationSuffix}`
+            : null,
+        phoneNumber:
+          orderType === "delivery"
+            ? `${getCountryByCode(phoneCountryCode)?.dialCode || ""}${phoneNumber.trim()}`
+            : null,
+        items: items.map((item) => ({
+          itemId: item.id,
+          quantity: item.quantity,
+          price: item.price,
+        })),
+        // Payment method is UI-only for now (no API changes)
+      }),
+    });
+
+    const data = await response.json();
+    if (!response.ok) {
+      throw new Error(data.error || checkoutT?.messages?.failedPlaceOrder || "Failed to place order");
+    }
+
+    const placedOrderId = (data?.orderId as string | undefined) ?? null;
+
+    // Persist receipt snapshot for the success page (no API changes)
+    if (typeof window !== "undefined" && placedOrderId) {
+      const key = `dineeasy-order-receipt-${placedOrderId}`;
+      const createdAt = new Date().toISOString();
+      const subtotal = getTotal();
+      const tax = 0;
+      const totalAmount = subtotal + tax;
+      const snapshot = {
+        orderId: placedOrderId,
+        createdAt,
+        orderType,
+        tableNumber: orderType === "dine_in" ? tableNumber.trim() : "",
+        deliveryAddress: orderType === "delivery" ? deliveryAddress.trim() : "",
+        phoneNumber:
+          orderType === "delivery"
+            ? `${getCountryByCode(phoneCountryCode)?.dialCode || ""}${phoneNumber.trim()}`
+            : "",
+        paymentMethod: payment,
+        items: items.map((it) => ({
+          id: it.id,
+          title: it.title,
+          price: it.price,
+          quantity: it.quantity,
+        })),
+        subtotal,
+        tax,
+        totalAmount,
+      };
+      sessionStorage.setItem(key, JSON.stringify(snapshot));
+    }
+
+    clearCart();
+    setCelebrateOrderId(placedOrderId);
+    setCelebrateOpen(true);
+  }
 
   useEffect(() => {
     params.then((p) => setResolvedParams(p));
@@ -210,59 +287,7 @@ export default function CheckoutPage({
     };
   }, [celebrateOpen]);
 
-  // Reset card form errors when leaving card payment
-  useEffect(() => {
-    if (payment !== "card") {
-      setCardErrors({});
-    } else {
-      setBillingName((prev) => prev || customerName);
-    }
-  }, [payment, customerName]);
 
-  function formatCardNumber(digits: string) {
-    return digits.replace(/(\d{4})(?=\d)/g, "$1 ");
-  }
-
-  function validateCardForm() {
-    const nextErrors: typeof cardErrors = {};
-
-    const name = cardholderName.trim();
-    if (name.length < 2) {
-      nextErrors.cardholderName =
-        cardT?.validation?.cardholderNameRequired || "Cardholder name is required";
-    }
-
-    const numberDigits = cardNumber.replace(/\D/g, "");
-    if (numberDigits.length < 13 || numberDigits.length > 19) {
-      nextErrors.cardNumber = cardT?.validation?.cardNumberInvalid || "Enter a valid card number";
-    }
-
-    const exp = expiry.trim();
-    const match = exp.match(/^(\d{2})\s*\/\s*(\d{2})$/);
-    if (!match) {
-      nextErrors.expiry = cardT?.validation?.expiryInvalid || "Enter expiry as MM/YY";
-    } else {
-      const mm = Number(match[1]);
-      const yy = Number(match[2]);
-      const validMonth = mm >= 1 && mm <= 12;
-      const year = 2000 + yy;
-      const now = new Date();
-      const expEnd = new Date(year, mm, 0, 23, 59, 59, 999);
-      if (!validMonth) {
-        nextErrors.expiry = cardT?.validation?.expiryInvalid || "Enter expiry as MM/YY";
-      } else if (expEnd.getTime() < now.getTime()) {
-        nextErrors.expiry = cardT?.validation?.expiryExpired || "Card has expired";
-      }
-    }
-
-    const cvvDigits = cvv.replace(/\D/g, "");
-    if (cvvDigits.length < 3 || cvvDigits.length > 4) {
-      nextErrors.cvv = cardT?.validation?.cvvInvalid || "Enter a valid CVV";
-    }
-
-    setCardErrors(nextErrors);
-    return Object.keys(nextErrors).length === 0;
-  }
 
   // Geocode address when it changes
   const geocodeAddress = useCallback(
@@ -391,32 +416,26 @@ export default function CheckoutPage({
 
     if (!resolvedParams) return;
 
-    if (payment === "card") {
-      const ok = validateCardForm();
-      if (!ok) {
-        toast.error(cardT?.validation?.fixErrors || "Please fix the card details");
-        return;
-      }
-    }
+    // Stripe Checkout handles card entry for online payments (Card/QR)
 
     setLoading(true);
     try {
-      const locationSuffix =
-        orderType === "delivery" && deliveryLocation
-          ? ` (Location: ${deliveryLocation.lat.toFixed(5)}, ${deliveryLocation.lng.toFixed(5)})`
-          : "";
+      // For Card/QR: redirect to Stripe Checkout BEFORE creating the order.
+      if (payment === "card") {
+        if (!resolvedParams) return;
 
-      const response = await fetch("/api/orders", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
+        const orderPayload = {
           restaurantId,
           customerName: customerName.trim(),
           orderType,
           tableNumber: orderType === "dine_in" ? parseInt(tableNumber || "", 10) : null,
           deliveryAddress:
             orderType === "delivery"
-              ? `${deliveryAddress.trim()}${locationSuffix}`
+              ? `${deliveryAddress.trim()}${
+                  orderType === "delivery" && deliveryLocation
+                    ? ` (Location: ${deliveryLocation.lat.toFixed(5)}, ${deliveryLocation.lng.toFixed(5)})`
+                    : ""
+                }`
               : null,
           phoneNumber:
             orderType === "delivery"
@@ -424,54 +443,54 @@ export default function CheckoutPage({
               : null,
           items: items.map((item) => ({
             itemId: item.id,
+            title: item.title,
             quantity: item.quantity,
             price: item.price,
           })),
-          // Payment method is UI-only for now (no API changes)
-        }),
-      });
-
-      const data = await response.json();
-      if (!response.ok) {
-        throw new Error(data.error || checkoutT?.messages?.failedPlaceOrder || "Failed to place order");
-      }
-
-      const placedOrderId = (data?.orderId as string | undefined) ?? null;
-
-      // Persist receipt snapshot for the success page (no API changes)
-      if (typeof window !== "undefined" && placedOrderId) {
-        const key = `dineeasy-order-receipt-${placedOrderId}`;
-        const createdAt = new Date().toISOString();
-        const subtotal = getTotal();
-        const tax = 0;
-        const totalAmount = subtotal + tax;
-        const snapshot = {
-          orderId: placedOrderId,
-          createdAt,
-          orderType,
-          tableNumber: orderType === "dine_in" ? tableNumber.trim() : "",
-          deliveryAddress: orderType === "delivery" ? deliveryAddress.trim() : "",
-          phoneNumber:
-            orderType === "delivery"
-              ? `${getCountryByCode(phoneCountryCode)?.dialCode || ""}${phoneNumber.trim()}`
-              : "",
-          paymentMethod: payment,
-          items: items.map((it) => ({
-            id: it.id,
-            title: it.title,
-            price: it.price,
-            quantity: it.quantity,
-          })),
-          subtotal,
-          tax,
-          totalAmount,
+          restaurantSlug: resolvedParams.restaurant,
+          menuId: resolvedParams.menuId,
         };
-        sessionStorage.setItem(key, JSON.stringify(snapshot));
+
+        // Persist pending order for /success?type=order (no changes to existing order API)
+        if (typeof window !== "undefined") {
+          const raw = JSON.stringify(orderPayload);
+          window.sessionStorage.setItem("dineeasy-pending-order", raw);
+          // Also store in localStorage so it survives full redirects (Stripe) more reliably.
+          window.localStorage.setItem("dineeasy-pending-order", raw);
+        }
+
+        const sessionRes = await fetch("/api/create-order-session", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            restaurantId,
+            restaurantSlug: resolvedParams.restaurant,
+            menuId: resolvedParams.menuId,
+            pendingOrder: orderPayload,
+            items: items.map((item) => ({
+              name: getDisplayTitle(item.title, language, t.order?.labels?.unknownItem || "Unknown Item"),
+              price: item.price,
+              quantity: item.quantity,
+            })),
+            currency,
+            cancelPath: `/public-menu/${resolvedParams.restaurant}/${resolvedParams.menuId}`,
+          }),
+        });
+        const sessionData = await sessionRes.json().catch(() => ({}));
+        if (!sessionRes.ok) {
+          // Don't throw in event handler (causes Next.js error overlay). Show a toast instead.
+          toast.error(sessionData?.error || "Failed to start payment");
+          return;
+        }
+        await redirectToCheckoutSession({
+          sessionId: sessionData.sessionId as string,
+          url: (sessionData.url as string | undefined) ?? null,
+        });
+        return;
       }
 
-      clearCart();
-      setCelebrateOrderId(placedOrderId);
-      setCelebrateOpen(true);
+      // Cash or QR demo payment confirms order immediately
+      await placeOrderCashOrQr();
 
     } catch (error) {
       console.error("Order error:", error);
@@ -912,127 +931,15 @@ export default function CheckoutPage({
                 type="button"
                 variant={payment === "qr" ? "default" : "outline"}
                 className="h-10 rounded-2xl"
-                onClick={() => setPayment("qr")}
+                onClick={() => {
+                  setPayment("qr");
+                  setQrOpen(true);
+                }}
               >
                 <QrCode className="mr-2 h-4 w-4" />
                 {posT?.payment?.qr || "QR"}
               </Button>
             </div>
-
-            {/* Card details form (only when Card selected) */}
-            {payment === "card" && (
-              <motion.div
-                initial={{ opacity: 0, y: 8 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="rounded-2xl border border-border/60 bg-muted/20 p-4"
-              >
-                <div className="text-sm font-semibold text-foreground">
-                  {cardT?.title || "Card Details"}
-                </div>
-
-                <div className="mt-4 grid gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="cardholderName">
-                      {cardT?.fields?.cardholderName || "Cardholder Name"}{" "}
-                      <span className="text-destructive">*</span>
-                    </Label>
-                    <Input
-                      id="cardholderName"
-                      value={cardholderName}
-                      onChange={(e) => setCardholderName(e.target.value)}
-                      placeholder={cardT?.placeholders?.cardholderName || "Name on card"}
-                      autoComplete="cc-name"
-                      disabled={loading}
-                      className={cardErrors.cardholderName ? "border-destructive focus-visible:ring-destructive" : ""}
-                    />
-                    {cardErrors.cardholderName && (
-                      <p className="text-xs text-destructive">{cardErrors.cardholderName}</p>
-                    )}
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="cardNumber">
-                      {cardT?.fields?.cardNumber || "Card Number"}{" "}
-                      <span className="text-destructive">*</span>
-                    </Label>
-                    <Input
-                      id="cardNumber"
-                      value={formatCardNumber(cardNumber.replace(/\D/g, ""))}
-                      onChange={(e) => {
-                        const digits = e.target.value.replace(/\D/g, "").slice(0, 19);
-                        setCardNumber(digits);
-                      }}
-                      placeholder={cardT?.placeholders?.cardNumber || "1234 5678 9012 3456"}
-                      inputMode="numeric"
-                      autoComplete="cc-number"
-                      disabled={loading}
-                      className={cardErrors.cardNumber ? "border-destructive focus-visible:ring-destructive" : ""}
-                    />
-                    {cardErrors.cardNumber && (
-                      <p className="text-xs text-destructive">{cardErrors.cardNumber}</p>
-                    )}
-                  </div>
-
-                  <div className="grid grid-cols-2 gap-3">
-                    <div className="space-y-2">
-                      <Label htmlFor="expiry">
-                        {cardT?.fields?.expiry || "Expiry (MM/YY)"}{" "}
-                        <span className="text-destructive">*</span>
-                      </Label>
-                      <Input
-                        id="expiry"
-                        value={expiry}
-                        onChange={(e) => {
-                          const digits = e.target.value.replace(/\D/g, "").slice(0, 4);
-                          const next = digits.length >= 3 ? `${digits.slice(0, 2)}/${digits.slice(2)}` : digits;
-                          setExpiry(next);
-                        }}
-                        placeholder={cardT?.placeholders?.expiry || "MM/YY"}
-                        inputMode="numeric"
-                        autoComplete="cc-exp"
-                        disabled={loading}
-                        className={cardErrors.expiry ? "border-destructive focus-visible:ring-destructive" : ""}
-                      />
-                      {cardErrors.expiry && <p className="text-xs text-destructive">{cardErrors.expiry}</p>}
-                    </div>
-
-                    <div className="space-y-2">
-                      <Label htmlFor="cvv">
-                        {cardT?.fields?.cvv || "CVV"} <span className="text-destructive">*</span>
-                      </Label>
-                      <Input
-                        id="cvv"
-                        value={cvv}
-                        onChange={(e) => setCvv(e.target.value.replace(/\D/g, "").slice(0, 4))}
-                        placeholder={cardT?.placeholders?.cvv || "123"}
-                        inputMode="numeric"
-                        autoComplete="cc-csc"
-                        disabled={loading}
-                        className={cardErrors.cvv ? "border-destructive focus-visible:ring-destructive" : ""}
-                      />
-                      {cardErrors.cvv && <p className="text-xs text-destructive">{cardErrors.cvv}</p>}
-                    </div>
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="billingName">
-                      {cardT?.fields?.billingName || "Billing Name"}{" "}
-                      <span className="text-muted-foreground">
-                        {cardT?.labels?.optional || "(optional)"}
-                      </span>
-                    </Label>
-                    <Input
-                      id="billingName"
-                      value={billingName}
-                      onChange={(e) => setBillingName(e.target.value)}
-                      placeholder={cardT?.placeholders?.billingName || customerName || ""}
-                      autoComplete="name"
-                      disabled={loading}
-                    />
-                  </div>
-                </div>
-              </motion.div>
-            )}
           </div>
 
           {/* Confirm order */}
@@ -1055,6 +962,46 @@ export default function CheckoutPage({
           </Button>
         </motion.form>
       </div>
+
+      {/* QR demo modal */}
+      <Dialog open={qrOpen} onOpenChange={setQrOpen}>
+        <DialogContent className="max-w-sm">
+          <DialogHeader>
+            <DialogTitle>Scan to Pay (Demo)</DialogTitle>
+          </DialogHeader>
+          <div className="flex flex-col items-center gap-4 py-2">
+            <div className="rounded-xl border border-border/60 bg-white p-3">
+              <QRCode
+                value={`DineEasy Demo Payment | ${resolvedParams?.restaurant ?? ""} | ${Date.now()}`}
+                size={180}
+                qrStyle="squares"
+                eyeRadius={6}
+              />
+            </div>
+            <p className="text-xs text-muted-foreground text-center">
+              This is a demo QR. Scan to Pay (Demo), then click “I Have Paid” to confirm your order.
+            </p>
+            <Button
+              type="button"
+              className="w-full rounded-xl"
+              onClick={async () => {
+                if (loading) return;
+                setQrOpen(false);
+                setLoading(true);
+                try {
+                  await placeOrderCashOrQr();
+                } catch (err) {
+                  toast.error(err instanceof Error ? err.message : "Failed to place order");
+                } finally {
+                  setLoading(false);
+                }
+              }}
+            >
+              I Have Paid
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

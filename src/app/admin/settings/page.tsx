@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Link from "next/link";
 import {
   Save,
   Loader2,
@@ -259,6 +260,23 @@ export default function SettingsPage() {
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-6">
+              {/* Online payments (Stripe Connect) */}
+              <div className="rounded-2xl border border-[#D6D2C4]/60 bg-white/70 p-4 shadow-sm dark:border-[#1f1f1f] dark:bg-[#000000]">
+                <div className="flex items-start justify-between gap-3">
+                  <div className="min-w-0">
+                    <p className="text-sm font-semibold text-[#2D3A1A] dark:text-[#E8E4D9]">
+                      Online payments
+                    </p>
+                    <p className="mt-1 text-xs text-muted-foreground">
+                      Enable Stripe onboarding to accept Card/QR payments.
+                    </p>
+                  </div>
+                  <Button asChild size="sm" className="shrink-0 rounded-xl">
+                    <Link href="/admin/connect">Enable</Link>
+                  </Button>
+                </div>
+              </div>
+
               {/* Restaurant Basic Info */}
               <div className="rounded-2xl border border-[#D6D2C4]/60 bg-white/70 p-4 shadow-sm dark:border-[#1f1f1f] dark:bg-[#000000]">
                 <div className="mb-3 flex items-center gap-2">

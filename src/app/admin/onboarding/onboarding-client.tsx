@@ -86,6 +86,12 @@ export function AdminOnboardingClient({
       });
 
       toast.success("Restaurant created! Welcome to DineEasy.");
+
+      // If Stripe Connect onboarding was created, send owner to Stripe onboarding (test mode)
+      if (created?.stripeOnboardingUrl) {
+        window.location.href = created.stripeOnboardingUrl;
+        return;
+      }
       if (isProIntent) {
         router.push(`/admin/checkout?billing=${billingCycle}`);
       } else {

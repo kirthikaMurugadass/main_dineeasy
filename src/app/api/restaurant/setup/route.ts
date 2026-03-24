@@ -2,6 +2,9 @@ import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { defaultThemeConfig } from "@/types/database";
+import { getStripeServer } from "@/lib/stripe/server";
+
+export const runtime = "nodejs";
 
 export async function POST(request: Request) {
   try {
@@ -123,7 +126,52 @@ export async function POST(request: Request) {
       });
     }
 
-    return NextResponse.json(restaurant);
+    // Stripe Connect (Express) — create account + onboarding link (TEST MODE ONLY)
+    // If Stripe isn't configured, we keep existing behavior (no blocking).
+    let stripeOnboardingUrl: string | null = null;
+    try {
+      const stripe = getStripeServer();
+      const origin = request.headers.get("origin") ?? new URL(request.url).origin;
+
+      const connectCountry = process.env.STRIPE_CONNECT_COUNTRY || "IN";
+
+      const account = await stripe.accounts.create({
+        type: "express",
+        country: connectCountry,
+        email: user.email ?? undefined,
+        capabilities: {
+          card_payments: { requested: true },
+          transfers: { requested: true },
+        },
+        metadata: {
+          restaurantId: restaurant.id,
+          ownerId: user.id,
+        },
+      });
+
+      // Store on restaurant (requires `restaurants.stripe_account_id` column)
+      const { error: updateError } = await adminClient
+        .from("restaurants")
+        .update({ stripe_account_id: account.id } as any)
+        .eq("id", restaurant.id);
+
+      if (updateError) {
+        // Missing column? Don't block restaurant creation.
+        console.error("Stripe account id save error:", updateError);
+      } else {
+        const accountLink = await stripe.accountLinks.create({
+          account: account.id,
+          type: "account_onboarding",
+          refresh_url: `${origin}/admin/onboarding`,
+          return_url: `${origin}/admin?stripe=onboarded`,
+        });
+        stripeOnboardingUrl = accountLink.url;
+      }
+    } catch (stripeErr) {
+      console.error("Stripe Connect setup skipped:", stripeErr);
+    }
+
+    return NextResponse.json({ ...restaurant, stripeOnboardingUrl });
   } catch (error: any) {
     console.error("Setup error:", error);
     

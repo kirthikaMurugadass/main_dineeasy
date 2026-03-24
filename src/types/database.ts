@@ -6,6 +6,7 @@ export interface Restaurant {
   slug: string;
   logo_url: string | null;
   owner_id: string;
+  stripe_account_id?: string | null;
   theme_config: ThemeConfig;
   qr_url: string | null;
   qr_svg: string | null;

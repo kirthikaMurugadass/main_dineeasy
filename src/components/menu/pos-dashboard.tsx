@@ -798,11 +798,11 @@ export function PosDashboard({
                                 <div className="truncate text-[13px] font-semibold leading-snug text-foreground sm:text-sm">
                                   {itemTitle}
                                 </div>
-                                <div className="mt-1 flex items-center gap-2 text-xs text-muted-foreground">
-                                  <span className="font-semibold text-foreground">
+                                <div className="mt-1 flex flex-nowrap items-center gap-2 text-xs text-muted-foreground">
+                                  <span className="shrink-0 whitespace-nowrap font-semibold text-foreground">
                                     {formatCurrency(currency, item.price_chf)}
                                   </span>
-                                  <span className="inline-flex items-center gap-1">
+                                  <span className="inline-flex shrink-0 items-center gap-1 whitespace-nowrap">
                                     <span
                                       className={cn(
                                         "h-2 w-2 rounded-full",
@@ -811,7 +811,7 @@ export function PosDashboard({
                                         dietary === "unknown" && "bg-muted-foreground/40"
                                       )}
                                     />
-                                    <span className="truncate text-muted-foreground">
+                                    <span className="text-muted-foreground whitespace-nowrap">
                                       {dietary === "veg"
                                         ? ((t.order as any)?.public?.pos?.veg || "Veg")
                                         : dietary === "nonveg"

@@ -36,13 +36,8 @@ import { useOrderNotification } from "@/contexts/order-notification-context";
 import { useBookingNotification } from "@/contexts/booking-notification-context";
 import { useSubscription } from "@/contexts/subscription-context";
 import { Button } from "@/components/ui/button";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
-import { ProCheckoutForm } from "@/components/subscription/pro-checkout-form";
+import { toast } from "sonner";
+import { redirectToCheckoutSession } from "@/lib/stripe/redirect";
 import {
   clearCachedRestaurant,
   getCachedRestaurantName,
@@ -68,8 +63,30 @@ export function AdminSidebar() {
   const { notificationCount, resetNotification } = useOrderNotification();
   const { bookingNotificationCount, resetBookingNotification } = useBookingNotification();
    const { isPro, loading } = useSubscription();
-   const [upgradeOpen, setUpgradeOpen] = useState(false);
+   const [upgradeLoading, setUpgradeLoading] = useState(false);
   const [restaurantName, setRestaurantName] = useState<string>(() => getCachedRestaurantName());
+  async function startProCheckout() {
+    if (upgradeLoading) return;
+    setUpgradeLoading(true);
+    try {
+      const res = await fetch("/api/create-pro-session", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "same-origin",
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data?.error || "Failed to start checkout");
+      await redirectToCheckoutSession({
+        sessionId: data.sessionId as string,
+        url: (data.url as string | undefined) ?? null,
+      });
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Failed to start checkout");
+    } finally {
+      setUpgradeLoading(false);
+    }
+  }
+
 
   // Close sidebar on mobile when pathname changes
   useEffect(() => {
@@ -208,7 +225,7 @@ export function AdminSidebar() {
                           onClick={(e) => {
                             if (isDisabled) {
                               e.preventDefault();
-                              setUpgradeOpen(true);
+                              startProCheckout();
                             }
                           }}
                           className="relative flex w-full items-center justify-start gap-3 md:group-data-[collapsible=icon]:justify-center md:group-data-[collapsible=icon]:gap-0 overflow-visible"
@@ -305,20 +322,6 @@ export function AdminSidebar() {
           </SidebarMenuItem>
         </SidebarMenu>
       </SidebarFooter>
-
-      <Dialog open={upgradeOpen} onOpenChange={setUpgradeOpen}>
-      <DialogContent
-        className="w-[90%] max-w-sm mx-auto sm:max-w-md md:max-w-lg max-h-[90vh] overflow-y-auto p-4 sm:p-6"
-      >
-          <DialogHeader>
-            <DialogTitle>{t.dashboard?.upgrade?.dialogTitle || t.admin.sidebar?.upgradeToPro || "Upgrade to Pro"}</DialogTitle>
-          </DialogHeader>
-          <ProCheckoutForm
-            compact
-            onSuccess={() => setUpgradeOpen(false)}
-          />
-        </DialogContent>
-      </Dialog>
     </Sidebar>
   );
 }

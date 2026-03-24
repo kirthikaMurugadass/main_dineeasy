@@ -37,14 +37,9 @@ import { createClient } from "@/lib/supabase/client";
 import { getGreeting } from "@/lib/utils/greeting";
 import { useSubscription } from "@/contexts/subscription-context";
 import { setCachedRestaurant } from "@/lib/restaurant-cache";
-import { ProCheckoutForm } from "@/components/subscription/pro-checkout-form";
 import { OrdersOverviewCard } from "@/components/admin/orders-overview-card";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+import { toast } from "sonner";
+import { redirectToCheckoutSession } from "@/lib/stripe/redirect";
 
 interface Order {
   id: string;
@@ -125,7 +120,7 @@ export default function AdminDashboard() {
   const [restaurantName, setRestaurantName] = useState<string>("");
   const [restaurantLogo, setRestaurantLogo] = useState<string | null>(null);
   const { isPro, loading: planLoading } = useSubscription();
-  const [upgradeModalOpen, setUpgradeModalOpen] = useState(false);
+  const [upgradeLoading, setUpgradeLoading] = useState(false);
 
   // Real-time data state
   const [orders, setOrders] = useState<Order[]>([]);
@@ -175,6 +170,28 @@ export default function AdminDashboard() {
     []
   );
   const getStatsCacheKey = useCallback((restId: string) => `dineeasy-dashboard-stats:${restId}`, []);
+
+  const startProCheckout = useCallback(async () => {
+    if (upgradeLoading) return;
+    setUpgradeLoading(true);
+    try {
+      const res = await fetch("/api/create-pro-session", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "same-origin",
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data?.error || "Failed to start checkout");
+      await redirectToCheckoutSession({
+        sessionId: data.sessionId as string,
+        url: (data.url as string | undefined) ?? null,
+      });
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Failed to start checkout");
+    } finally {
+      setUpgradeLoading(false);
+    }
+  }, [upgradeLoading]);
 
   // Load initial data and set up real-time subscriptions
   useEffect(() => {
@@ -1335,7 +1352,8 @@ export default function AdminDashboard() {
             <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
               <Button
                 className="shrink-0 rounded-xl bg-gradient-to-r from-green-600 to-green-500 text-white shadow-lg transition-all hover:shadow-xl hover:from-green-700 hover:to-green-600 dark:from-green-500 dark:to-green-600"
-                onClick={() => setUpgradeModalOpen(true)}
+                onClick={startProCheckout}
+                disabled={upgradeLoading}
               >
                 {t.dashboard?.upgrade?.button || "Upgrade to Pro"}
               </Button>
@@ -1343,20 +1361,6 @@ export default function AdminDashboard() {
           </div>
         </motion.div>
       )}
-
-      <Dialog open={upgradeModalOpen} onOpenChange={setUpgradeModalOpen}>
-        <DialogContent className="max-w-md">
-          <DialogHeader>
-            <DialogTitle>{t.dashboard?.upgrade?.dialogTitle || "Upgrade to Pro"}</DialogTitle>
-          </DialogHeader>
-          <ProCheckoutForm
-            compact
-            onSuccess={() => {
-              setUpgradeModalOpen(false);
-            }}
-          />
-        </DialogContent>
-      </Dialog>
 
       {/* Operations first: Recent Orders, Trending Menus, Booking sections */}
 
@@ -1693,7 +1697,7 @@ export default function AdminDashboard() {
                         isDisabled
                           ? (e) => {
                               e.preventDefault();
-                              setUpgradeModalOpen(true);
+                              startProCheckout();
                             }
                           : undefined
                       }
